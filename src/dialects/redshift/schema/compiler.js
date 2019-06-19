@@ -3,12 +3,12 @@
 // Redshift Table Builder & Compiler
 // -------
 
-import inherits from 'inherits';
-import SchemaCompiler_PG from '../../postgres/schema/compiler';
+const inherits = require('inherits');
+const SchemaCompiler_PG = require('../../postgres/schema/compiler');
 
 function SchemaCompiler_Redshift() {
   SchemaCompiler_PG.apply(this, arguments);
 }
 inherits(SchemaCompiler_Redshift, SchemaCompiler_PG);
 
-export default SchemaCompiler_Redshift;
+module.exports = SchemaCompiler_Redshift;

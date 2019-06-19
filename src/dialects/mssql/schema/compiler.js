@@ -1,9 +1,9 @@
 // MySQL Schema Compiler
 // -------
-import inherits from 'inherits';
-import SchemaCompiler from '../../../schema/compiler';
+const inherits = require('inherits');
+const SchemaCompiler = require('../../../schema/compiler');
 
-import { assign } from 'lodash';
+const { assign } = require('lodash');
 
 function SchemaCompiler_MSSQL(client, builder) {
   SchemaCompiler.call(this, client, builder);
@@ -58,4 +58,4 @@ function prefixedTableName(prefix, table) {
   return prefix ? `${prefix}.${table}` : table;
 }
 
-export default SchemaCompiler_MSSQL;
+module.exports = SchemaCompiler_MSSQL;

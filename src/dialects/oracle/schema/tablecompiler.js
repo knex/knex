@@ -1,12 +1,12 @@
 /* eslint max-len:0 */
 
-import inherits from 'inherits';
-import * as utils from '../utils';
-import TableCompiler from '../../../schema/tablecompiler';
-import * as helpers from '../../../helpers';
-import Trigger from './trigger';
+const inherits = require('inherits');
+const utils = require('../utils');
+const TableCompiler = require('../../../schema/tablecompiler');
+const helpers = require('../../../helpers');
+const Trigger = require('./trigger');
 
-import { assign, map } from 'lodash';
+const { assign, map } = require('lodash');
 
 // Table Compiler
 // ------
@@ -164,4 +164,4 @@ assign(TableCompiler_Oracle.prototype, {
   },
 });
 
-export default TableCompiler_Oracle;
+module.exports = TableCompiler_Oracle;

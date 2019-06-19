@@ -1,5 +1,5 @@
 provide: seed
-seed = (knex, Promise) ->
+seed = (knex) ->
   ;; Deletes ALL existing entries
   knex(.table_name).del()
   .then(() ->

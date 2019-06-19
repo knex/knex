@@ -1,6 +1,6 @@
-import { isEmpty, isArray, map, clone, each } from 'lodash';
+const { isEmpty, isArray, map, clone, each } = require('lodash');
 
-export default function(Target) {
+module.exports = function(Target) {
   Target.prototype.toQuery = function(tz) {
     let data = this.toSQL(this._method, tz);
     if (!isArray(data)) data = [data];
@@ -91,7 +91,6 @@ export default function(Target) {
       'spread',
       'map',
       'reduce',
-      'tap',
       'thenReturn',
       'return',
       'yield',
@@ -108,4 +107,4 @@ export default function(Target) {
       };
     }
   );
-}
+};

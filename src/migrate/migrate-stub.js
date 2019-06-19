@@ -3,11 +3,9 @@
 // available.
 const StubMigrate = (module.exports = function() {});
 
-import Promise from 'bluebird';
-
-const noSuchMethod = Promise.method(function() {
+const noSuchMethod = async function() {
   throw new Error('Migrations are not supported');
-});
+};
 
 StubMigrate.prototype = {
   make: noSuchMethod,

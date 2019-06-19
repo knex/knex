@@ -1,12 +1,11 @@
-/*global describe, expect, it, testPromise*/
+/*global describe, expect, it*/
 
 'use strict';
 
-const Promise = testPromise;
+const Bluebird = require('bluebird');
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const sinon = require('sinon');
-const { isNode6 } = require('../../../lib/util/version-helper');
 
 module.exports = function(knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
@@ -376,17 +375,13 @@ module.exports = function(knex) {
         });
     });
 
-    it('does not reject promise when rolling back a transaction', () => {
+    it('does not reject promise when rolling back a transaction', async () => {
       const trxProvider = knex.transactionProvider();
       const trxPromise = trxProvider();
 
-      return trxPromise
-        .then((trx) => {
-          return trx.rollback();
-        })
-        .then((result) => {
-          expect(result.sql).to.be.ok;
-        });
+      await trxPromise.then((trx) => {
+        return trx.rollback();
+      });
     });
 
     it('should allow for nested transactions', function() {
@@ -406,10 +401,6 @@ module.exports = function(knex) {
     });
 
     it('#855 - Query Event should trigger on Transaction Client AND main Client', function() {
-      if (isNode6()) {
-        return;
-      }
-
       let queryEventTriggered = false;
 
       knex.once('query', function(queryData) {
@@ -494,7 +485,7 @@ module.exports = function(knex) {
         .then(function() {
           throw new Error('should not get here');
         })
-        .catch(Promise.TimeoutError, function(error) {});
+        .catch(Bluebird.TimeoutError, function(error) {});
     });
 
     /**
@@ -603,8 +594,8 @@ module.exports = function(knex) {
           .into('accounts');
       });
 
-      return Promise.all([transactionReturning, transactionReturning]).spread(
-        function(ret1, ret2) {
+      return Promise.all([transactionReturning, transactionReturning]).then(
+        ([ret1, ret2]) => {
           expect(ret1).to.equal(ret2);
         }
       );

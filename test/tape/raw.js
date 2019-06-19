@@ -1,7 +1,7 @@
 'use strict';
 
-const Raw = require('../../lib/raw');
-const Client = require('../../lib/client');
+const Raw = require('../../src/raw');
+const Client = require('../../src/client');
 const test = require('tape');
 const _ = require('lodash');
 

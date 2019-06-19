@@ -4,6 +4,69 @@
 
 - Do not reject promise on transaction rollback (only for new, non-callback, style of transactions for now to avoid breaking old code) #3235
 
+### New features:
+
+- Use extension from knexfile for generating migrations unless overriden #3282
+- Use migrations.extension from config when generating migration #3242
+
+### Test / internal changes:
+
+- Drop support for Node.js 6 #3227
+- Remove Babel #3227
+- Remove Bluebird #3290 #3287 #3285 #3267 #3266 #3263
+
+### Typings
+
+- Add workarounds for degraded inference when strictNullChecks is set to false #3275
+- Add stub type definition for Migrator config #3279
+- Fix MSSQL config typings #3269
+
+# 0.17.5 - 8 June, 2019
+
+### Typings
+
+- Include result.d.ts in published package #3271
+
+# 0.17.4 - 8 June, 2019
+
+### Typings
+
+- Fix some cases of left-to-right inference causing type mismatch #3265
+- Improve count typings #3249
+
+### Bug fixes:
+
+- Fix error message bubbling up on seed error #3248
+
+# 0.17.3 - 2 June, 2019
+
+### Typings
+
+- Improve typings for aggregations #3245
+- Add decimalNumbers to MySqlConnectionConfig interface #3244
+
+# 0.17.2 - 1 June, 2019
+
+### Typings
+
+- Improve count typings #3239
+
+### Bug fixes:
+
+- "colorette" dependency breaks browserify builds #3238
+
+# 0.17.1 - 31 May, 2019
+
+### New features:
+
+- Add migrate:down functionality #3228
+
+### Typings
+
+- Update type of aggregation results to not be arrays when first has been invoked before #3237
+- Include undefined in type of single row results #3231
+- Fix incorrect type definitions for single row queries #3230
+
 # 0.17.0 - 28 May, 2019
 
 ### New features:

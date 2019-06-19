@@ -1,6 +1,7 @@
 # [knex.js](http://knexjs.org)
 
 [![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
+[![npm downloads](https://img.shields.io/npm/dm/knex.svg)](https://npmjs.org/package/knex)
 [![Build Status](https://travis-ci.org/tgriesser/knex.svg?branch=master)](https://travis-ci.org/tgriesser/knex)
 [![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
 [![Dependencies Status](https://david-dm.org/tgriesser/knex.svg)](https://david-dm.org/tgriesser/knex)
@@ -19,7 +20,7 @@ Node.js, featuring:
 - a [thorough test suite](https://travis-ci.org/tgriesser/knex)
 - the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
 
-Node.js versions 6+ are supported.
+Node.js versions 8+ are supported.
 
 [Read the full documentation to get started!](http://knexjs.org)  
 [Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/tgriesser/knex/wiki/Recipes)  

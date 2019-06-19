@@ -1,18 +1,18 @@
 // MySQL Client
 // -------
-import inherits from 'inherits';
+const inherits = require('inherits');
 
-import Client from '../../client';
-import Promise from 'bluebird';
+const Client = require('../../client');
+const Bluebird = require('bluebird');
 
-import Transaction from './transaction';
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import TableCompiler from './schema/tablecompiler';
-import ColumnCompiler from './schema/columncompiler';
+const Transaction = require('./transaction');
+const QueryCompiler = require('./query/compiler');
+const SchemaCompiler = require('./schema/compiler');
+const TableCompiler = require('./schema/tablecompiler');
+const ColumnCompiler = require('./schema/columncompiler');
 
-import { assign, map } from 'lodash';
-import { makeEscape } from '../../query/string';
+const { assign, map } = require('lodash');
+const { makeEscape } = require('../../query/string');
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
@@ -20,6 +20,7 @@ import { makeEscape } from '../../query/string';
 function Client_MySQL(config) {
   Client.call(this, config);
 }
+
 inherits(Client_MySQL, Client);
 
 assign(Client_MySQL.prototype, {
@@ -60,7 +61,7 @@ assign(Client_MySQL.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    return new Promise((resolver, rejecter) => {
+    return new Bluebird((resolver, rejecter) => {
       const connection = this.driver.createConnection(this.connectionSettings);
       connection.on('error', (err) => {
         connection.__knex__disposed = err;
@@ -79,7 +80,7 @@ assign(Client_MySQL.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    return Promise.fromCallback(connection.end.bind(connection))
+    return Bluebird.fromCallback(connection.end.bind(connection))
       .catch((err) => {
         connection.__knex__disposed = err;
       })
@@ -101,7 +102,7 @@ assign(Client_MySQL.prototype, {
   _stream(connection, obj, stream, options) {
     options = options || {};
     const queryOptions = assign({ sql: obj.sql }, obj.options);
-    return new Promise((resolver, rejecter) => {
+    return new Bluebird((resolver, rejecter) => {
       stream.on('error', rejecter);
       stream.on('end', resolver);
       const queryStream = connection
@@ -121,7 +122,7 @@ assign(Client_MySQL.prototype, {
   // and any other necessary prep work.
   _query(connection, obj) {
     if (!obj || typeof obj === 'string') obj = { sql: obj };
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       if (!obj.sql) {
         resolver();
         return;
@@ -188,4 +189,4 @@ assign(Client_MySQL.prototype, {
   },
 });
 
-export default Client_MySQL;
+module.exports = Client_MySQL;

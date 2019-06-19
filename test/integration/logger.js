@@ -66,12 +66,13 @@ module.exports = function(knex) {
         const oldThen = qb.then;
         qb.then = function() {
           let promise = oldThen.apply(this, []);
-          promise = promise.tap(function(resp) {
+          promise = promise.then(function(resp) {
             if (typeof returnval === 'function') {
               expect(!!returnval(resp)).to.equal(true);
             } else {
               expect(stripDates(resp)).to.eql(returnval);
             }
+            return resp;
           });
           return promise.then.apply(promise, arguments);
         };

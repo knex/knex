@@ -1,5 +1,5 @@
-import { assign } from 'lodash';
-import assert from 'assert';
+const { assign } = require('lodash');
+const assert = require('assert');
 
 // JoinClause
 // -------
@@ -269,4 +269,4 @@ JoinClause.prototype.andOnNotExists = JoinClause.prototype.onNotExists;
 JoinClause.prototype.andOnBetween = JoinClause.prototype.onBetween;
 JoinClause.prototype.andOnNotBetween = JoinClause.prototype.onNotBetween;
 
-export default JoinClause;
+module.exports = JoinClause;

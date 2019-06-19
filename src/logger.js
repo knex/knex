@@ -1,7 +1,7 @@
 /* eslint no-console:0 */
 
-import color from 'colorette';
-import { isFunction, isNil } from 'lodash';
+const color = require('colorette');
+const { isFunction, isNil } = require('lodash');
 
 function log(message, userFn, colorFn) {
   if (!isNil(userFn) && !isFunction(userFn)) {
@@ -45,4 +45,4 @@ class Logger {
   }
 }
 
-export default Logger;
+module.exports = Logger;

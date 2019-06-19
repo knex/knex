@@ -1,5 +1,5 @@
-import inherits from 'inherits';
-import ColumnBuilder from '../../../schema/columnbuilder';
+const inherits = require('inherits');
+const ColumnBuilder = require('../../../schema/columnbuilder');
 
 function ColumnBuilder_Redshift() {
   ColumnBuilder.apply(this, arguments);
@@ -17,4 +17,4 @@ ColumnBuilder_Redshift.prototype.index = function() {
   return this;
 };
 
-export default ColumnBuilder_Redshift;
+module.exports = ColumnBuilder_Redshift;
