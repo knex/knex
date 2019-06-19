@@ -1520,9 +1520,15 @@ declare namespace Knex {
     collate(val: string): CreateTableBuilder;
   }
 
+  interface PostgreSqlTableBuilder extends CreateTableBuilder {
+    inherits(val: string): CreateTableBuilder;
+  }
+
   interface AlterTableBuilder extends TableBuilder {}
 
   interface MySqlAlterTableBuilder extends AlterTableBuilder {}
+
+  interface PostgreSqlAlterTableBuilder extends AlterTableBuilder {}
 
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
