@@ -22,7 +22,6 @@
     "babel-preset-es2015-loose": "^7.0.0",
     "babel-preset-react": "^6.11.1",
     "babel-preset-stage-1": "^6.13.0",
-    "child-process-promise": "^2.0.3",
     "colors": "^1.1.2",
     "css-loader": "^2.0.1",
     "dedent": "^0.7.0",
@@ -47,7 +46,8 @@
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.14",
-    "yargs": "^4.8.1"
+    "yargs": "^4.8.1",
+    "execa": "^1.0.0"
   },
   "author": {
     "name": "Tim Griesser",

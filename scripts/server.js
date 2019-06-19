@@ -1,6 +1,5 @@
 /* eslint no-console: 0 */
 import 'colors'
-import https from 'https'
 import fs from 'fs'
 import express from 'express'
 import httpProxy from 'http-proxy'
@@ -11,72 +10,62 @@ import ReactDOMServer from 'react-dom/server'
 import Documentation from '../components/Documentation'
 const {version} = require('knex/package')
 
-const DOC_URL = 'https://cdn.jsdelivr.net/gh/tgriesser/knex@master/CHANGELOG.md'
+const changelog = fs.readFileSync(require.resolve('knex/CHANGELOG.md')).toString()
 
-https.get(DOC_URL, (res) => {
-  let changelog = ''
-  res.setEncoding('utf8')
-  res.on('data', chunk => changelog += chunk)
-  res.on('end', () => {
+fs.writeFileSync(path.join(__dirname, '../build/version.js'), `module.exports = "${version}"`)
+fs.writeFileSync(path.join(__dirname, '../build/CHANGELOG.md'), changelog)
 
-    fs.writeFileSync(path.join(__dirname, '../build/version.js'), `module.exports = "${version}"`)
-    fs.writeFileSync(path.join(__dirname, '../build/CHANGELOG.md'), changelog)
+const development = process.env.NODE_ENV !== 'production'
+const port = process.env.PORT || 4000
 
-    const development = process.env.NODE_ENV !== 'production'
-    const port = process.env.PORT || 4000
+if (development) {
+  const app = express()
 
-    const app = express()
+  const proxy = httpProxy.createProxyServer()
+  const webpackPort = process.env.WEBPACK_DEV_PORT
 
-    if (development) {
-      const proxy = httpProxy.createProxyServer()
-      const webpackPort = process.env.WEBPACK_DEV_PORT
+  const target = `http://${ip.address()}:${webpackPort}`
 
-      const target = `http://${ip.address()}:${webpackPort}`
-
-      app.get('/assets/*', (req, res) => {
-        proxy.web(req, res, { target })
-      })
-      app.get('/build/*', (req, res) => {
-        proxy.web(req, res, { target })
-      })
-
-      proxy.on('error', e => {
-        console.log('Could not connect to webpack proxy'.red)
-        console.log(e.toString().red)
-      })
-
-      console.log('Prop data generation finished:'.green)
-
-      app.get('/', function renderApp(req, res) {
-        res.header('Access-Control-Allow-Origin', target)
-        res.header('Access-Control-Allow-Headers', 'X-Requested-With')
-        let html
-        try {
-          html = ReactDOMServer.renderToString(
-            <Documentation changelog={changelog} version={version} />
-          )
-        } catch (e) {
-          html = `<pre>${e.stack.replace(new RegExp(__dirname, 'g'), '~')}</pre>`
-        }
-        res.send(renderContent(html))
-      })
-
-      app.listen(port, () => {
-        console.log(`Server started at:`)
-        console.log(`- http://localhost:${port}`)
-        console.log(`- http://${ip.address()}:${port}`)
-      })
-
-    } else {
-      fs.writeFileSync(
-        path.join(__dirname, '../index.html'),
-        renderContent(ReactDOMServer.renderToString(<Documentation changelog={changelog} version={version} />))
-      )
-    }
-
+  app.get('/assets/*', (req, res) => {
+    proxy.web(req, res, { target })
   })
-})
+  app.get('/build/*', (req, res) => {
+    proxy.web(req, res, { target })
+  })
 
+  proxy.on('error', e => {
+    console.log('Could not connect to webpack proxy'.red)
+    console.log(e.toString().red)
+  })
+
+  console.log('Prop data generation finished:'.green)
+
+  app.get('/', function renderApp(req, res) {
+    res.header('Access-Control-Allow-Origin', target)
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With')
+    let html
+    try {
+      html = ReactDOMServer.renderToString(
+        <Documentation changelog={changelog} version={version} />
+      )
+    } catch (e) {
+      html = `<pre>${e.stack.replace(new RegExp(__dirname, 'g'), '~')}</pre>`
+    }
+    res.send(renderContent(html))
+  })
+
+  app.listen(port, () => {
+    console.log(`Server started at:`)
+    console.log(`- http://localhost:${port}`)
+    console.log(`- http://${ip.address()}:${port}`)
+  })
+
+} else {
+  fs.writeFileSync(
+    path.join(__dirname, '../index.html'),
+    renderContent(ReactDOMServer.renderToString(<Documentation changelog={changelog} version={version} />))
+  )
+}
 
 function renderContent(content) {
   return `<!DOCTYPE HTML>
