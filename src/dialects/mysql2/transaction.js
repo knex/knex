@@ -1,7 +1,7 @@
-import Transaction from '../../transaction';
+const Transaction = require('../../transaction');
 const debug = require('debug')('knex:tx');
 
-import { assign, isUndefined } from 'lodash';
+const { assign, isUndefined } = require('lodash');
 
 class Transaction_MySQL2 extends Transaction {}
 
@@ -25,13 +25,14 @@ assign(Transaction_MySQL2.prototype, {
         t._completed = true;
         debug('%s error running transaction query', t.txid);
       })
-      .tap(function() {
+      .then(function(res) {
         if (status === 1) t._resolver(value);
         if (status === 2) {
           if (isUndefined(value)) {
             value = new Error(`Transaction rejected with non-error: ${value}`);
           }
           t._rejecter(value);
+          return res;
         }
       });
     if (status === 1 || status === 2) {
@@ -41,4 +42,4 @@ assign(Transaction_MySQL2.prototype, {
   },
 });
 
-export default Transaction_MySQL2;
+module.exports = Transaction_MySQL2;

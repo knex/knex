@@ -6,8 +6,8 @@
 // method, pushing everything we want to do onto the "allStatements" array,
 // which is then compiled into sql.
 // ------
-import { extend, each, toArray, isString, isFunction } from 'lodash';
-import * as helpers from '../helpers';
+const { extend, each, toArray, isString, isFunction } = require('lodash');
+const helpers = require('../helpers');
 
 function TableBuilder(client, method, tableName, fn) {
   this.client = client;
@@ -282,4 +282,4 @@ AlterMethods.dropColumn = AlterMethods.dropColumns = function() {
   return this;
 };
 
-export default TableBuilder;
+module.exports = TableBuilder;

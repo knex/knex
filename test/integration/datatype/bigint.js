@@ -1,8 +1,6 @@
-/*global it, expect, testPromise*/
+/*global it, expect*/
 
 'use strict';
-
-const Promise = testPromise;
 
 module.exports = function(knex) {
   const bigintTimestamp = 1464294366973;

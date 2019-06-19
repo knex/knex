@@ -6,7 +6,7 @@ const QueryCompiler = require('./query/compiler');
 const ColumnCompiler = require('./schema/columncompiler');
 const BlobHelper = require('./utils').BlobHelper;
 const ReturningHelper = require('./utils').ReturningHelper;
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const stream = require('stream');
 const Transaction = require('./transaction');
 const Client_Oracle = require('../oracle');
@@ -77,7 +77,7 @@ Client_Oracledb.prototype.prepBindings = function(bindings) {
 // connection needs to be added to the pool.
 Client_Oracledb.prototype.acquireRawConnection = function() {
   const client = this;
-  const asyncConnection = new Promise(function(resolver, rejecter) {
+  const asyncConnection = new Bluebird(function(resolver, rejecter) {
     // If external authentication dont have to worry about username/password and
     // if not need to set the username and password
     const oracleDbConfig = client.connectionSettings.externalAuth
@@ -107,7 +107,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
         return rejecter(err);
       }
       connection.commitAsync = function() {
-        return new Promise((commitResolve, commitReject) => {
+        return new Bluebird((commitResolve, commitReject) => {
           if (connection.isTransaction) {
             return commitResolve();
           }
@@ -120,7 +120,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
         });
       };
       connection.rollbackAsync = function() {
-        return new Promise((rollbackResolve, rollbackReject) => {
+        return new Bluebird((rollbackResolve, rollbackReject) => {
           this.rollback(function(err) {
             if (err) {
               return rollbackReject(err);
@@ -177,7 +177,7 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
       };
       connection.executeAsync = function(sql, bindParams, options) {
         // Read all lob
-        return new Promise(function(resultResolve, resultReject) {
+        return new Bluebird(function(resultResolve, resultReject) {
           fetchAsync(sql, bindParams, options, function(err, results) {
             if (err) {
               return resultReject(err);
@@ -197,8 +197,8 @@ Client_Oracledb.prototype.acquireRawConnection = function() {
                 }
               }
             }
-            Promise.each(lobs, function(lob) {
-              return new Promise(function(lobResolve, lobReject) {
+            Bluebird.each(lobs, function(lob) {
+              return new Bluebird(function(lobResolve, lobReject) {
                 readStream(lob.stream, function(err, d) {
                   if (err) {
                     if (results.resultSet) {
@@ -246,7 +246,7 @@ Client_Oracledb.prototype.destroyRawConnection = function(connection) {
 // Runs the query on the specified connection, providing the bindings
 // and any other necessary prep work.
 Client_Oracledb.prototype._query = function(connection, obj) {
-  return new Promise(function(resolver, rejecter) {
+  return new Bluebird(function(resolver, rejecter) {
     if (!obj.sql) {
       return rejecter(new Error('The query is empty'));
     }
@@ -289,12 +289,12 @@ Client_Oracledb.prototype._query = function(connection, obj) {
         }
         const rowIds = [];
         let offset = 0;
-        Promise.each(obj.outBinding, function(ret, line) {
+        Bluebird.each(obj.outBinding, function(ret, line) {
           offset =
             offset +
             (obj.outBinding[line - 1] ? obj.outBinding[line - 1].length : 0);
-          return Promise.each(ret, function(out, index) {
-            return new Promise(function(bindResolver, bindRejecter) {
+          return Bluebird.each(ret, function(out, index) {
+            return new Bluebird(function(bindResolver, bindRejecter) {
               if (out instanceof BlobHelper) {
                 const blob = outBinds[index + offset];
                 if (out.returning) {
@@ -366,7 +366,7 @@ function readStream(stream, cb) {
   });
 }
 
-// Process the response as returned from the query.
+// Process the response as returned = require(the query.
 Client_Oracledb.prototype.processResponse = function(obj, runner) {
   let response = obj.response;
   const method = obj.method;

@@ -1,9 +1,9 @@
 // MySQL Query Compiler
 // ------
-import inherits from 'inherits';
-import QueryCompiler from '../../../query/compiler';
+const inherits = require('inherits');
+const QueryCompiler = require('../../../query/compiler');
 
-import { assign, identity } from 'lodash';
+const { assign, identity } = require('lodash');
 
 function QueryCompiler_MySQL(client, builder) {
   QueryCompiler.call(this, client, builder);
@@ -16,6 +16,7 @@ function QueryCompiler_MySQL(client, builder) {
     );
   }
 }
+
 inherits(QueryCompiler_MySQL, QueryCompiler);
 
 assign(QueryCompiler_MySQL.prototype, {
@@ -91,4 +92,4 @@ assign(QueryCompiler_MySQL.prototype, {
 
 // Set the QueryBuilder & QueryCompiler on the client object,
 // in case anyone wants to modify things to suit their own purposes.
-export default QueryCompiler_MySQL;
+module.exports = QueryCompiler_MySQL;

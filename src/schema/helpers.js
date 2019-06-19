@@ -1,8 +1,8 @@
-import { isString, tail } from 'lodash';
+const { isString, tail } = require('lodash');
 
 // Push a new query onto the compiled "sequence" stack,
 // creating a new formatter, returning the compiler.
-export function pushQuery(query) {
+function pushQuery(query) {
   if (!query) return;
   if (isString(query)) {
     query = { sql: query };
@@ -16,7 +16,7 @@ export function pushQuery(query) {
 }
 
 // Used in cases where we need to push some additional column specific statements.
-export function pushAdditional(fn) {
+function pushAdditional(fn) {
   const child = new this.constructor(
     this.client,
     this.tableCompiler,
@@ -30,7 +30,7 @@ export function pushAdditional(fn) {
 
 // Unshift a new query onto the compiled "sequence" stack,
 // creating a new formatter, returning the compiler.
-export function unshiftQuery(query) {
+function unshiftQuery(query) {
   if (!query) return;
   if (isString(query)) {
     query = { sql: query };
@@ -42,3 +42,9 @@ export function unshiftQuery(query) {
 
   this.formatter = this.client.formatter(this._commonBuilder);
 }
+
+module.exports = {
+  pushAdditional,
+  pushQuery,
+  unshiftQuery,
+};

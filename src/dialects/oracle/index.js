@@ -1,27 +1,28 @@
 // Oracle Client
 // -------
-import { assign, map, flatten, values } from 'lodash';
+const { assign, map, flatten, values } = require('lodash');
 
-import inherits from 'inherits';
-import Client from '../../client';
-import Promise from 'bluebird';
-import { bufferToString } from '../../query/string';
-import Formatter from './formatter';
+const inherits = require('inherits');
+const Client = require('../../client');
+const Bluebird = require('bluebird');
+const { bufferToString } = require('../../query/string');
+const Formatter = require('./formatter');
 
-import Transaction from './transaction';
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import ColumnBuilder from './schema/columnbuilder';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import { ReturningHelper } from './utils';
+const Transaction = require('./transaction');
+const QueryCompiler = require('./query/compiler');
+const SchemaCompiler = require('./schema/compiler');
+const ColumnBuilder = require('./schema/columnbuilder');
+const ColumnCompiler = require('./schema/columncompiler');
+const TableCompiler = require('./schema/tablecompiler');
+const { ReturningHelper } = require('./utils');
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
 // objects, which extend the base 'lib/query/builder' and
 // 'lib/query/compiler', respectively.
-export default function Client_Oracle(config) {
+function Client_Oracle(config) {
   Client.call(this, config);
 }
+
 inherits(Client_Oracle, Client);
 
 assign(Client_Oracle.prototype, {
@@ -78,10 +79,10 @@ assign(Client_Oracle.prototype, {
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
   acquireRawConnection() {
-    return new Promise((resolver, rejecter) => {
+    return new Bluebird((resolver, rejecter) => {
       this.driver.connect(this.connectionSettings, (err, connection) => {
         if (err) return rejecter(err);
-        Promise.promisifyAll(connection);
+        Bluebird.promisifyAll(connection);
         if (this.connectionSettings.prefetchRowCount) {
           connection.setPrefetchRowCount(
             this.connectionSettings.prefetchRowCount
@@ -95,7 +96,7 @@ assign(Client_Oracle.prototype, {
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    return Promise.fromCallback(connection.close.bind(connection));
+    return Bluebird.fromCallback(connection.close.bind(connection));
   },
 
   // Return the database for the Oracle client.
@@ -113,7 +114,7 @@ assign(Client_Oracle.prototype, {
   },
 
   _stream(connection, obj, stream, options) {
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       stream.on('error', (err) => {
         if (this.isConnectionError(err)) {
           connection.__knex__disposed = err;
@@ -161,7 +162,7 @@ assign(Client_Oracle.prototype, {
       });
   },
 
-  // Process the response as returned from the query.
+  // Process the response as returned = require(the query.
   processResponse(obj, runner) {
     let { response } = obj;
     const { method } = obj;
@@ -228,3 +229,5 @@ assign(Client_Oracle.prototype, {
     });
   },
 });
+
+module.exports = Client_Oracle;

@@ -1,7 +1,7 @@
-import { isNumber, isArray, chunk, flatten, assign } from 'lodash';
-import Promise from 'bluebird';
+const { isNumber, isArray, chunk, flatten, assign } = require('lodash');
+const Bluebird = require('bluebird');
 
-export default function batchInsert(
+module.exports = function batchInsert(
   client,
   tableName,
   batch,
@@ -12,7 +12,7 @@ export default function batchInsert(
   let transaction = null;
 
   const getTransaction = () =>
-    new Promise((resolve, reject) => {
+    new Bluebird((resolve, reject) => {
       if (transaction) {
         autoTransaction = false;
         return resolve(transaction);
@@ -23,7 +23,7 @@ export default function batchInsert(
     });
 
   const wrapper = assign(
-    new Promise((resolve, reject) => {
+    new Bluebird((resolve, reject) => {
       const chunks = chunk(batch, chunkSize);
 
       if (!isNumber(chunkSize) || chunkSize < 1) {
@@ -37,10 +37,10 @@ export default function batchInsert(
       }
 
       //Next tick to ensure wrapper functions are called if needed
-      return Promise.delay(1)
+      return Bluebird.delay(1)
         .then(getTransaction)
         .then((tr) => {
-          return Promise.mapSeries(chunks, (items) =>
+          return Bluebird.mapSeries(chunks, (items) =>
             tr(tableName).insert(items, returning)
           )
             .then((result) => {
@@ -48,7 +48,7 @@ export default function batchInsert(
 
               if (autoTransaction) {
                 //TODO: -- Oracle tr.commit() does not return a 'thenable' !? Ugly hack for now.
-                return (tr.commit(result) || Promise.resolve()).then(
+                return (tr.commit(result) || Bluebird.resolve()).then(
                   () => result
                 );
               }
@@ -57,10 +57,10 @@ export default function batchInsert(
             })
             .catch((error) => {
               if (autoTransaction) {
-                return tr.rollback(error).then(() => Promise.reject(error));
+                return tr.rollback(error).then(() => Bluebird.reject(error));
               }
 
-              return Promise.reject(error);
+              return Bluebird.reject(error);
             });
         })
         .then(resolve)
@@ -81,4 +81,4 @@ export default function batchInsert(
   );
 
   return wrapper;
-}
+};

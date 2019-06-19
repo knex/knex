@@ -1,12 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-import Promise from 'bluebird';
-import { sortBy, filter } from 'lodash';
+const fs = require('fs');
+const path = require('path');
+const Bluebird = require('bluebird');
+const { sortBy, filter } = require('lodash');
 
 const readDirAsync = (path) =>
-  Promise.promisify(fs.readdir, { context: fs })(path);
+  Bluebird.promisify(fs.readdir, { context: fs })(path);
 
-export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
+const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.co',
   '.coffee',
   '.eg',
@@ -17,7 +17,7 @@ export const DEFAULT_LOAD_EXTENSIONS = Object.freeze([
   '.ts',
 ]);
 
-export default class FsMigrations {
+class FsMigrations {
   constructor(migrationDirectories, sortDirsSeparately, loadExtensions) {
     this.sortDirsSeparately = sortDirsSeparately;
 
@@ -92,3 +92,8 @@ function filterMigrations(migrationSource, migrations, loadExtensions) {
     return loadExtensions.includes(extension);
   });
 }
+
+module.exports = {
+  DEFAULT_LOAD_EXTENSIONS,
+  FsMigrations,
+};

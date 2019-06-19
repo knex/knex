@@ -1,7 +1,7 @@
-const Knex = require('../../../lib/index');
+const Knex = require('../../../src/index');
 const { expect } = require('chai');
 const sqliteConfig = require('../../knexfile').sqlite3;
-const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
+const FsMigrations = require('../../../src/migrate/sources/fs-migrations')
   .default;
 
 describe('Migrator', () => {
@@ -21,18 +21,61 @@ describe('Migrator', () => {
     });
 
     afterEach(() => {
-      knex.destroy();
+      return knex.destroy();
     });
 
     it('latest', (done) => {
       expect(() => {
-        knex.migrate
+        return knex.migrate
           .latest({
             directory: 'test/unit/migrate/migrations',
           })
           .then(() => {
             done();
           });
+      }).not.to.throw();
+    });
+  });
+
+  describe('supports running migrations in transaction', (done) => {
+    let migrationSource;
+    let knex;
+    let wasProcessed = false;
+    let wasWrapped = false;
+    beforeEach(() => {
+      migrationSource = new FsMigrations('test/unit/migrate/migrations/');
+      knex = Knex({
+        ...sqliteConfig,
+        connection: ':memory:',
+        migrationSource,
+        postProcessResponse: (response) => {
+          wasProcessed = true;
+          return response;
+        },
+        wrapIdentifier: (value, wrap) => {
+          wasWrapped = true;
+          return wrap(value);
+        },
+      });
+    });
+
+    afterEach(() => {
+      return knex.destroy();
+    });
+
+    it('latest', (done) => {
+      expect(() => {
+        return knex.transaction((txn) => {
+          txn.migrate
+            .latest({
+              directory: 'test/unit/migrate/migrations',
+            })
+            .then(() => {
+              expect(wasProcessed).to.equal(false);
+              expect(wasWrapped).to.equal(false);
+              done();
+            });
+        });
       }).not.to.throw();
     });
   });
@@ -47,7 +90,7 @@ describe('Migrator', () => {
     });
 
     afterEach(() => {
-      knex.destroy();
+      return knex.destroy();
     });
 
     it('latest', (done) => {
@@ -56,8 +99,9 @@ describe('Migrator', () => {
         ...sqliteConfig,
         connection: ':memory:',
         migrationSource,
-        postProcessResponse: () => {
+        postProcessResponse: (response) => {
           wasPostProcessed = true;
+          return response;
         },
       });
 

@@ -1,5 +1,5 @@
 'use strict';
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const harness = require('./harness');
 const tape = require('tape');
 const JSONStream = require('JSONStream');
@@ -485,7 +485,7 @@ module.exports = function(knex) {
 
     return knex
       .transaction(function(tx) {
-        Promise.each(
+        Bluebird.each(
           ['SET join_collapse_limit to 1', 'SET enable_nestloop = off'],
           function(request) {
             return tx.raw(request);

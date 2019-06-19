@@ -1,9 +1,9 @@
 // PostgreSQL Column Compiler
 // -------
 
-import inherits from 'inherits';
-import ColumnCompiler from '../../../schema/columncompiler';
-import { isObject } from 'lodash';
+const inherits = require('inherits');
+const ColumnCompiler = require('../../../schema/columncompiler');
+const { isObject } = require('lodash');
 
 function ColumnCompiler_PG() {
   ColumnCompiler.apply(this, arguments);
@@ -110,4 +110,4 @@ function jsonColumn(client, jsonb) {
   return 'text';
 }
 
-export default ColumnCompiler_PG;
+module.exports = ColumnCompiler_PG;

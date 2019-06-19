@@ -1,17 +1,18 @@
 /* eslint no-console:0 */
 
-import {
+const {
   isFunction,
   isUndefined,
   isPlainObject,
   isArray,
   isTypedArray,
-} from 'lodash';
-import { CLIENT_ALIASES } from './constants';
+} = require('lodash');
+const { CLIENT_ALIASES } = require('./constants');
 
 // Check if the first argument is an array, otherwise uses all arguments as an
 // array.
-export function normalizeArr() {
+
+function normalizeArr() {
   const args = new Array(arguments.length);
   for (let i = 0; i < args.length; i++) {
     args[i] = arguments[i];
@@ -22,7 +23,7 @@ export function normalizeArr() {
   return args;
 }
 
-export function containsUndefined(mixed) {
+function containsUndefined(mixed) {
   let argContainsUndefined = false;
 
   if (isTypedArray(mixed)) return false;
@@ -51,7 +52,7 @@ export function containsUndefined(mixed) {
   return argContainsUndefined;
 }
 
-export function addQueryContext(Target) {
+function addQueryContext(Target) {
   // Stores or returns (if called with no arguments) context passed to
   // wrapIdentifier and postProcessResponse hooks
   Target.prototype.queryContext = function(context) {
@@ -63,6 +64,13 @@ export function addQueryContext(Target) {
   };
 }
 
-export function resolveClientNameWithAliases(clientName) {
+function resolveClientNameWithAliases(clientName) {
   return CLIENT_ALIASES[clientName] || clientName;
 }
+
+module.exports = {
+  addQueryContext,
+  containsUndefined,
+  normalizeArr,
+  resolveClientNameWithAliases,
+};

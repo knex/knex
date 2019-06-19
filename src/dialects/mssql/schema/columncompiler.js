@@ -1,9 +1,9 @@
 // MySQL Column Compiler
 // -------
-import inherits from 'inherits';
-import ColumnCompiler from '../../../schema/columncompiler';
+const inherits = require('inherits');
+const ColumnCompiler = require('../../../schema/columncompiler');
 
-import { assign } from 'lodash';
+const { assign } = require('lodash');
 
 function ColumnCompiler_MSSQL() {
   ColumnCompiler.apply(this, arguments);
@@ -113,4 +113,4 @@ assign(ColumnCompiler_MSSQL.prototype, {
   },
 });
 
-export default ColumnCompiler_MSSQL;
+module.exports = ColumnCompiler_MSSQL;

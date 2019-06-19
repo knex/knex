@@ -3,7 +3,7 @@
 let tableSql;
 
 const sinon = require('sinon');
-const PG_Client = require('../../../lib/dialects/postgres');
+const PG_Client = require('../../../src/dialects/postgres');
 const client = new PG_Client({ client: 'pg' });
 const knex = require('../../../knex');
 

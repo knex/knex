@@ -1,7 +1,7 @@
-import inherits from 'inherits';
-import TableCompiler from '../../../schema/tablecompiler';
+const inherits = require('inherits');
+const TableCompiler = require('../../../schema/tablecompiler');
 
-import { filter, values } from 'lodash';
+const { filter, values } = require('lodash');
 
 // Table Compiler
 // -------
@@ -153,4 +153,4 @@ TableCompiler_SQLite3.prototype.dropColumn = function() {
   });
 };
 
-export default TableCompiler_SQLite3;
+module.exports = TableCompiler_SQLite3;

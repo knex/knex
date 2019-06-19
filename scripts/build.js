@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-var fs = require('fs');
-var path = require('path');
-var child_process = require('child_process');
-var Promise = require('bluebird');
-var _ = require('lodash');
+const fs = require('fs');
+const path = require('path');
+const child_process = require('child_process');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
-var exec = function(cmd, args) {
+const exec = function(cmd, args) {
   return new Promise(function(resolve, reject) {
     // Execute command
-    var child = child_process.exec(cmd, {
+    const child = child_process.exec(cmd, {
       cwd: process.cwd(),
       env: process.env,
     });
@@ -29,8 +29,8 @@ var exec = function(cmd, args) {
   });
 };
 
-var CWD = process.cwd();
-var POSTINSTALL_BUILD_CWD = process.env.POSTINSTALL_BUILD_CWD;
+const CWD = process.cwd();
+const POSTINSTALL_BUILD_CWD = process.env.POSTINSTALL_BUILD_CWD;
 
 // If we didn't have this check, then we'd be stuck in an infinite `postinstall`
 // loop, since we run `npm install --only=dev` below, triggering another
@@ -41,8 +41,8 @@ var POSTINSTALL_BUILD_CWD = process.env.POSTINSTALL_BUILD_CWD;
 // the dev dependencies we're installing might use `postinstall-build` too, and
 // we don't want the flag to prevent them from running.
 if (POSTINSTALL_BUILD_CWD !== CWD) {
-  var BUILD_ARTIFACT = process.argv[2];
-  var BUILD_COMMAND = process.argv[3];
+  const BUILD_ARTIFACT = process.argv[2];
+  const BUILD_COMMAND = process.argv[3];
 
   fs.stat(BUILD_ARTIFACT, function(err, stats) {
     if (err || !(stats.isFile() || stats.isDirectory())) {
@@ -55,22 +55,22 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
       // in the first place. So only install dev.
 
       // Fetch package.json
-      var pkgJson = require(path.join(CWD, 'package.json'));
-      var devDeps = pkgJson.devDependencies;
+      const pkgJson = require(path.join(CWD, 'package.json'));
+      const devDeps = pkgJson.devDependencies;
       // Values listed under `buildDependencies` contain the dependency names
       // that are required for `lib` building.
-      var buildDependencies = _.pick(devDeps, pkgJson.buildDependencies);
+      const buildDependencies = _.pick(devDeps, pkgJson.buildDependencies);
 
       // Proceed only if there is something to install
       if (!_.isEmpty(buildDependencies)) {
-        var opts = { env: process.env, stdio: 'inherit' };
+        const opts = { env: process.env, stdio: 'inherit' };
 
         console.log('Building Knex.js');
 
         // Map all key (dependency) value (semver) pairs to
         // "dependency@semver dependency@semver ..." string that can be used
         // for `npm install` command
-        var installArgs = _(buildDependencies)
+        const installArgs = _(buildDependencies)
           .pickBy(function(semver, dep) {
             // Check if the dependency is already installed
             try {
@@ -86,13 +86,11 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
           })
           .value()
           .join(' ');
-
-        Promise.try(function() {
-          if (!_.isEmpty(installArgs)) {
-            console.log('Installing dependencies');
-            return exec('npm install ' + installArgs, opts);
-          }
-        })
+        const needsDepInstallation = !_.isEmpty(installArgs);
+        const dependenciesInstalledQ = needsDepInstallation
+          ? exec('npm install ' + installArgs, opts)
+          : Promise.resolve();
+        dependenciesInstalledQ
           .then(function(stdout, stderr) {
             console.log('✓');
             // Don't need the flag anymore as `postinstall` was already run.

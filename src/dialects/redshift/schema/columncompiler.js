@@ -1,10 +1,10 @@
 // Redshift Column Compiler
 // -------
 
-import inherits from 'inherits';
-import ColumnCompiler_PG from '../../postgres/schema/columncompiler';
+const inherits = require('inherits');
+const ColumnCompiler_PG = require('../../postgres/schema/columncompiler');
 
-import { assign } from 'lodash';
+const { assign } = require('lodash');
 
 function ColumnCompiler_Redshift() {
   ColumnCompiler_PG.apply(this, arguments);
@@ -59,4 +59,4 @@ assign(ColumnCompiler_Redshift.prototype, {
   },
 });
 
-export default ColumnCompiler_Redshift;
+module.exports = ColumnCompiler_Redshift;
