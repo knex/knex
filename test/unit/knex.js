@@ -362,7 +362,7 @@ describe('knex', () => {
     expect(result).to.be.undefined;
   });
 
-  it('rejects execution promise if there was a rollback', async () => {
+  it('resolves execution promise if there was a manual rollback', async () => {
     const knex = Knex(sqliteConfig);
 
     const trx = await knex.transaction();
@@ -373,17 +373,8 @@ describe('knex', () => {
     expect(rows[0].result).to.equal(1);
     await trx.rollback();
 
-    let errorWasThrown;
-    try {
-      await executionPromise;
-    } catch (err) {
-      errorWasThrown = true;
-      expect(err.message).to.equal(
-        'Transaction rejected with non-error: undefined'
-      );
-    }
-
-    expect(errorWasThrown).to.be.true;
+    const result = await executionPromise;
+    expect(result).to.be.undefined;
   });
 
   it('does not reject promise when rolling back a transaction', async () => {
