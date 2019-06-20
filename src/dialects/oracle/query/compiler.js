@@ -2,7 +2,7 @@
 
 // Oracle Query Builder & Compiler
 // ------
-import {
+const {
   assign,
   isPlainObject,
   isEmpty,
@@ -11,10 +11,10 @@ import {
   reduce,
   compact,
   identity,
-} from 'lodash';
-import inherits from 'inherits';
-import QueryCompiler from '../../../query/compiler';
-import { ReturningHelper } from '../utils';
+} = require('lodash');
+const inherits = require('inherits');
+const QueryCompiler = require('../../../query/compiler');
+const { ReturningHelper } = require('../utils');
 
 const components = [
   'columns',
@@ -36,6 +36,7 @@ const components = [
 function QueryCompiler_Oracle(client, builder) {
   QueryCompiler.call(this, client, builder);
 }
+
 inherits(QueryCompiler_Oracle, QueryCompiler);
 
 assign(QueryCompiler_Oracle.prototype, {
@@ -321,4 +322,4 @@ assign(QueryCompiler_Oracle.prototype, {
 // the empties, and returning a generated query string.
 QueryCompiler_Oracle.prototype.first = QueryCompiler_Oracle.prototype.select;
 
-export default QueryCompiler_Oracle;
+module.exports = QueryCompiler_Oracle;

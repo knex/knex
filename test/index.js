@@ -11,11 +11,11 @@ const chai = (global.chai = require('chai'));
 chai.use(require('sinon-chai'));
 chai.should();
 
-const Promise = (global.testPromise = require('bluebird'));
+const bluebird = require('bluebird');
 global.expect = chai.expect;
 global.d = new Date();
 
-Promise.longStackTraces();
+bluebird.longStackTraces();
 
 describe('Query Building Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
@@ -31,6 +31,8 @@ describe('Query Building Tests', function() {
   require('./unit/schema/oracledb');
   require('./unit/migrate/migration-list-resolver');
   require('./unit/seed/seeder');
+  // require('./unit/interface'); ToDo Uncomment after fixed
+  require('./unit/knex');
 });
 
 describe('Integration Tests', function() {
@@ -56,3 +58,9 @@ if (config.sqlite3) {
     require('./unit/dialects/sqlite3');
   });
 }
+
+describe('CLI tests', function() {
+  this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+  require('./cli/knexfile-test.spec');
+  require('./cli/migrate-make.spec');
+});

@@ -1,18 +1,18 @@
-import { EventEmitter } from 'events';
+const { EventEmitter } = require('events');
 
-import Migrator from '../migrate/Migrator';
-import Seeder from '../seed';
-import FunctionHelper from '../functionhelper';
-import QueryInterface from '../query/methods';
-import { assign } from 'lodash';
-import batchInsert from './batchInsert';
-import * as bluebird from 'bluebird';
+const { Migrator } = require('../migrate/Migrator');
+const Seeder = require('../seed/Seeder');
+const FunctionHelper = require('../functionhelper');
+const QueryInterface = require('../query/methods');
+const { assign, merge } = require('lodash');
+const batchInsert = require('./batchInsert');
 
-export default function makeKnex(client) {
+function makeKnex(client) {
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
     return createQueryBuilder(knex.context, tableName, options);
   }
+
   redefineProperties(knex, client);
   return knex;
 }
@@ -32,12 +32,31 @@ function initContext(knexFn) {
       return batchInsert(this, table, batch, chunkSize);
     },
 
-    // Runs a new transaction, taking a container and returning a promise
-    // for when the transaction is resolved.
+    // Creates a new transaction.
+    // If container is provided, returns a promise for when the transaction is resolved.
+    // If container is not provided, returns a promise with a transaction that is resolved
+    // when transaction is ready to be used.
     transaction(container, config) {
       const trx = this.client.transaction(container, config);
       trx.userParams = this.userParams;
-      return trx;
+
+      if (container) {
+        return trx;
+      }
+      // If no container was passed, assume user wants to get a transaction and use it directly
+      else {
+        return trx.initPromise;
+      }
+    },
+
+    transactionProvider(config) {
+      let trx;
+      return () => {
+        if (!trx) {
+          trx = this.transaction(config);
+        }
+        return trx;
+      };
     },
 
     // Typically never needed, initializes the pool for a knex client.
@@ -81,15 +100,16 @@ function initContext(knexFn) {
     withUserParams(params) {
       const knexClone = shallowCloneFunction(knexFn); // We need to include getters in our clone
       if (this.client) {
-        knexClone.client = Object.assign({}, this.client); // Clone client to avoid leaking listeners that are set on it
+        knexClone.client = Object.create(this.client.constructor.prototype); // Clone client to avoid leaking listeners that are set on it
+        merge(knexClone.client, this.client);
         knexClone.client.config = Object.assign({}, this.client.config); // Clone client config to make sure they can be modified independently
-        const parentPrototype = Object.getPrototypeOf(this.client);
-        if (parentPrototype) {
-          Object.setPrototypeOf(knexClone.client, parentPrototype);
-        }
       }
 
       redefineProperties(knexClone, knexClone.client);
+      _copyEventListeners('query', knexFn, knexClone);
+      _copyEventListeners('query-error', knexFn, knexClone);
+      _copyEventListeners('query-response', knexFn, knexClone);
+      _copyEventListeners('start', knexFn, knexClone);
       knexClone.userParams = params;
       return knexClone;
     },
@@ -100,8 +120,15 @@ function initContext(knexFn) {
   }
 }
 
+function _copyEventListeners(eventName, sourceKnex, targetKnex) {
+  const listeners = sourceKnex.listeners(eventName);
+  listeners.forEach((listener) => {
+    targetKnex.on(eventName, listener);
+  });
+}
+
 function redefineProperties(knex, client) {
-  // Allow chaining methods from the root object, before
+  // Allow chaining methods = require(the root object, before
   // any other information is specified.
   QueryInterface.forEach(function(method) {
     knex[method] = function() {
@@ -118,10 +145,11 @@ function redefineProperties(knex, client) {
       set(context) {
         knex._context = context;
 
-        // Redefine public API for knex instance that would be proxying methods from correct context
+        // Redefine public API for knex instance that would be proxying methods = require(correct context
         knex.raw = context.raw;
         knex.batchInsert = context.batchInsert;
         knex.transaction = context.transaction;
+        knex.transactionProvider = context.transactionProvider;
         knex.initialize = context.initialize;
         knex.destroy = context.destroy;
         knex.ref = context.ref;
@@ -183,7 +211,6 @@ function redefineProperties(knex, client) {
   });
 
   initContext(knex);
-  knex.Promise = bluebird;
   knex.client = client;
   knex.client.makeKnex = makeKnex;
   knex.userParams = {};
@@ -194,18 +221,35 @@ function redefineProperties(knex, client) {
     knex[key] = ee[key];
   }
 
+  // Unfortunately, something seems to be broken in Node 6 and removing events = require(a clone also mutates original Knex,
+  // which is highly undesireable
+  if (knex._internalListeners) {
+    knex._internalListeners.forEach(({ eventName, listener }) => {
+      knex.client.removeListener(eventName, listener); // Remove duplicates for copies
+    });
+  }
+  knex._internalListeners = [];
+
   // Passthrough all "start" and "query" events to the knex object.
-  knex.client.on('start', function(obj) {
+  _addInternalListener(knex, 'start', (obj) => {
     knex.emit('start', obj);
   });
-  knex.client.on('query', function(obj) {
+  _addInternalListener(knex, 'query', (obj) => {
     knex.emit('query', obj);
   });
-  knex.client.on('query-error', function(err, obj) {
+  _addInternalListener(knex, 'query-error', (err, obj) => {
     knex.emit('query-error', err, obj);
   });
-  knex.client.on('query-response', function(response, obj, builder) {
+  _addInternalListener(knex, 'query-response', (response, obj, builder) => {
     knex.emit('query-response', response, obj, builder);
+  });
+}
+
+function _addInternalListener(knex, eventName, listener) {
+  knex.client.on(eventName, listener);
+  knex._internalListeners.push({
+    eventName,
+    listener,
   });
 }
 
@@ -234,3 +278,5 @@ function shallowCloneFunction(originalFunction) {
   clonedFunction._context = knexContext;
   return clonedFunction;
 }
+
+module.exports = makeKnex;

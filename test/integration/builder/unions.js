@@ -2,6 +2,8 @@
 
 'use strict';
 
+const expect = require('chai').expect;
+
 module.exports = function(knex) {
   describe('unions', function() {
     it('handles unions with a callback', function() {
@@ -112,4 +114,220 @@ module.exports = function(knex) {
         );
     });
   });
+
+  if (
+    ['pg', 'mssql', 'pg-redshift', 'oracledb', 'sqlite3'].includes(
+      knex.client.driverName
+    )
+  ) {
+    describe('intersects', function() {
+      before(function() {
+        return knex.schema.createTable('intersect_test', function(t) {
+          t.integer('id');
+          t.integer('test_col_1');
+          t.integer('test_col_2');
+          t.integer('test_col_3');
+        });
+      });
+
+      beforeEach(function() {
+        return knex('intersect_test').insert([
+          {
+            id: 1,
+            test_col_1: 1,
+            test_col_2: 2,
+            test_col_3: 1,
+          },
+          {
+            id: 2,
+            test_col_1: 2,
+            test_col_2: 3,
+            test_col_3: 1,
+          },
+          {
+            id: 3,
+            test_col_1: 2,
+            test_col_2: 3,
+            test_col_3: 2,
+          },
+          {
+            id: 4,
+            test_col_1: 1,
+            test_col_2: 2,
+            test_col_3: 2,
+          },
+          {
+            id: 5,
+            test_col_1: 1,
+            test_col_2: 2,
+            test_col_3: 1,
+          },
+        ]);
+      });
+
+      after(function() {
+        return knex.schema.dropTable('intersect_test');
+      });
+
+      it('handles intersects with a callback', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 1)
+          .intersect(function() {
+            this.select('*')
+              .from('intersect_test')
+              .where('test_col_2', 2);
+          })
+          .then(function(result) {
+            expect(result.length).to.equal(3);
+            expect(result.map((r) => r.id)).to.have.members([1, 4, 5]);
+          });
+      });
+
+      it('handles intersects with an array of callbacks', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 1)
+          .intersect([
+            function() {
+              this.select('*')
+                .from('intersect_test')
+                .where('test_col_2', 2);
+            },
+            function() {
+              this.select('*')
+                .from('intersect_test')
+                .where('test_col_3', 1);
+            },
+          ])
+          .then(function(result) {
+            expect(result.length).to.equal(2);
+            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+          });
+      });
+
+      it('handles intersects with a list of callbacks', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 1)
+          .intersect(
+            function() {
+              this.select('*')
+                .from('intersect_test')
+                .where('test_col_2', 2);
+            },
+            function() {
+              this.select('*')
+                .from('intersect_test')
+                .where('test_col_3', 1);
+            }
+          )
+          .then(function(result) {
+            expect(result.length).to.equal(2);
+            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+          });
+      });
+
+      it('handles intersects with an array of builders', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 1)
+          .intersect([
+            knex
+              .select('*')
+              .from('intersect_test')
+              .where('test_col_2', 2),
+            knex
+              .select('*')
+              .from('intersect_test')
+              .where('test_col_3', 1),
+          ])
+          .then(function(result) {
+            expect(result.length).to.equal(2);
+            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+          });
+      });
+
+      it('handles intersects with a list of builders', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 1)
+          .intersect(
+            knex
+              .select('*')
+              .from('intersect_test')
+              .where('test_col_2', 2),
+            knex
+              .select('*')
+              .from('intersect_test')
+              .where('test_col_3', 1)
+          )
+          .then(function(result) {
+            expect(result.length).to.equal(2);
+            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+          });
+      });
+
+      it('handles intersects with a raw query', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 2)
+          .intersect(
+            knex.raw('select * from ?? where ?? = ?', [
+              'intersect_test',
+              'test_col_2',
+              3,
+            ])
+          )
+          .then(function(result) {
+            expect(result.length).to.equal(2);
+            expect(result.map((r) => r.id)).to.have.members([2, 3]);
+          });
+      });
+
+      it('handles intersects with an array raw queries', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 1)
+          .intersect([
+            knex.raw('select * from ?? where ?? = ?', [
+              'intersect_test',
+              'test_col_2',
+              2,
+            ]),
+            knex.raw('select * from ?? where ?? = ?', [
+              'intersect_test',
+              'test_col_3',
+              1,
+            ]),
+          ])
+          .then(function(result) {
+            expect(result.length).to.equal(2);
+            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+          });
+      });
+
+      it('handles intersects with a list of raw queries', function() {
+        return knex('intersect_test')
+          .select('*')
+          .where('test_col_1', '=', 1)
+          .intersect(
+            knex.raw('select * from ?? where ?? = ?', [
+              'intersect_test',
+              'test_col_2',
+              2,
+            ]),
+            knex.raw('select * from ?? where ?? = ?', [
+              'intersect_test',
+              'test_col_3',
+              1,
+            ])
+          )
+          .then(function(result) {
+            expect(result.length).to.equal(2);
+            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+          });
+      });
+    });
+  }
 };

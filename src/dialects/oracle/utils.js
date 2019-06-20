@@ -39,4 +39,48 @@ ReturningHelper.prototype.toString = function() {
   return `[object ReturningHelper:${this.columnName}]`;
 };
 
-export { generateCombinedName, wrapSqlWithCatch, ReturningHelper };
+// If the error is any of these, we'll assume we need to
+// mark the connection as failed
+function isConnectionError(err) {
+  return [
+    'ORA-03114', // not connected to ORACLE
+    'ORA-03113', // end-of-file on communication channel
+    'ORA-03135', // connection lost contact
+    'ORA-12514', // listener does not currently know of service requested in connect descriptor
+    'ORA-22', // invalid session ID; access denied
+    'ORA-28', // your session has been killed
+    'ORA-31', // your session has been marked for kill
+    'ORA-45', // your session has been terminated with no replay
+    'ORA-378', // buffer pools cannot be created as specified
+    'ORA-602', // internal programming exception
+    'ORA-603', // ORACLE server session terminated by fatal error
+    'ORA-609', // could not attach to incoming connection
+    'ORA-1012', // not logged on
+    'ORA-1041', // internal error. hostdef extension doesn't exist
+    'ORA-1043', // user side memory corruption
+    'ORA-1089', // immediate shutdown or close in progress
+    'ORA-1092', // ORACLE instance terminated. Disconnection forced
+    'ORA-2396', // exceeded maximum idle time, please connect again
+    'ORA-3122', // attempt to close ORACLE-side window on user side
+    'ORA-12153', // TNS'not connected
+    'ORA-12537', // TNS'connection closed
+    'ORA-12547', // TNS'lost contact
+    'ORA-12570', // TNS'packet reader failure
+    'ORA-12583', // TNS'no reader
+    'ORA-27146', // post/wait initialization failed
+    'ORA-28511', // lost RPC connection
+    'ORA-56600', // an illegal OCI function call was issued
+    'NJS-040',
+    'NJS-024',
+    'NJS-003',
+  ].some(function(prefix) {
+    return err.message.indexOf(prefix) === 0;
+  });
+}
+
+module.exports = {
+  generateCombinedName,
+  isConnectionError,
+  wrapSqlWithCatch,
+  ReturningHelper,
+};

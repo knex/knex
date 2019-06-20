@@ -4,8 +4,17 @@
 // columns and changing datatypes.
 // -------
 
-import Promise from 'bluebird';
-import { assign, uniqueId, find, identity, map, omit } from 'lodash';
+const Bluebird = require('bluebird');
+const {
+  assign,
+  uniqueId,
+  find,
+  identity,
+  map,
+  omit,
+  invert,
+  fromPairs,
+} = require('lodash');
 
 // So altering the schema in SQLite3 is a major pain.
 // We have our own object to deal with the renaming and altering the types
@@ -14,37 +23,54 @@ function SQLite3_DDL(client, tableCompiler, pragma, connection) {
   this.client = client;
   this.tableCompiler = tableCompiler;
   this.pragma = pragma;
-  this.tableName = this.tableCompiler.tableNameRaw;
+  this.tableNameRaw = this.tableCompiler.tableNameRaw;
   this.alteredName = uniqueId('_knex_temp_alter');
   this.connection = connection;
+  this.formatter =
+    client && client.config && client.config.wrapIdentifier
+      ? client.config.wrapIdentifier
+      : (value) => value;
 }
 
 assign(SQLite3_DDL.prototype, {
-  getColumn: Promise.method(function(column) {
-    const currentCol = find(this.pragma, { name: column });
+  tableName() {
+    return this.formatter(this.tableNameRaw, (value) => value);
+  },
+
+  getColumn: async function(column) {
+    const currentCol = find(this.pragma, (col) => {
+      return (
+        this.client.wrapIdentifier(col.name) ===
+        this.client.wrapIdentifier(column)
+      );
+    });
     if (!currentCol)
       throw new Error(
-        `The column ${column} is not in the ${this.tableName} table`
+        `The column ${column} is not in the ${this.tableName()} table`
       );
     return currentCol;
-  }),
+  },
 
   getTableSql() {
+    this.trx.disableProcessing();
+    return this.trx
+      .raw(
+        `SELECT name, sql FROM sqlite_master WHERE type="table" AND name="${this.tableName()}"`
+      )
+      .then((result) => {
+        this.trx.enableProcessing();
+        return result;
+      });
+  },
+
+  renameTable: async function() {
     return this.trx.raw(
-      `SELECT name, sql FROM sqlite_master WHERE type="table" AND name="${
-        this.tableName
-      }"`
+      `ALTER TABLE "${this.tableName()}" RENAME TO "${this.alteredName}"`
     );
   },
 
-  renameTable: Promise.method(function() {
-    return this.trx.raw(
-      `ALTER TABLE "${this.tableName}" RENAME TO "${this.alteredName}"`
-    );
-  }),
-
   dropOriginal() {
-    return this.trx.raw(`DROP TABLE "${this.tableName}"`);
+    return this.trx.raw(`DROP TABLE "${this.tableName()}"`);
   },
 
   dropTempTable() {
@@ -53,7 +79,7 @@ assign(SQLite3_DDL.prototype, {
 
   copyData() {
     return this.trx
-      .raw(`SELECT * FROM "${this.tableName}"`)
+      .raw(`SELECT * FROM "${this.tableName()}"`)
       .bind(this)
       .then(this.insertChunked(20, this.alteredName));
   },
@@ -63,7 +89,7 @@ assign(SQLite3_DDL.prototype, {
       return this.trx
         .raw(`SELECT * FROM "${this.alteredName}"`)
         .bind(this)
-        .then(this.insertChunked(20, this.tableName, iterator));
+        .then(this.insertChunked(20, this.tableName(), iterator));
     };
   },
 
@@ -72,7 +98,7 @@ assign(SQLite3_DDL.prototype, {
     return function(result) {
       let batch = [];
       const ddl = this;
-      return Promise.reduce(
+      return Bluebird.reduce(
         result,
         function(memo, row) {
           memo++;
@@ -85,7 +111,7 @@ assign(SQLite3_DDL.prototype, {
               .then(function() {
                 batch = [];
               })
-              .thenReturn(memo);
+              .then(() => memo);
           }
           return memo;
         },
@@ -97,7 +123,7 @@ assign(SQLite3_DDL.prototype, {
   createTempTable(createTable) {
     return function() {
       return this.trx.raw(
-        createTable.sql.replace(this.tableName, this.alteredName)
+        createTable.sql.replace(this.tableName(), this.alteredName)
       );
     };
   },
@@ -202,46 +228,52 @@ assign(SQLite3_DDL.prototype, {
   },
 
   // Boy, this is quite a method.
-  renameColumn: Promise.method(function(from, to) {
+  renameColumn: async function(from, to) {
     return this.client.transaction(
-      (trx) => {
+      async (trx) => {
         this.trx = trx;
-        return this.getColumn(from)
-          .bind(this)
-          .then(this.getTableSql)
-          .then(function(sql) {
-            const a = this.client.wrapIdentifier(from);
-            const b = this.client.wrapIdentifier(to);
-            const createTable = sql[0];
-            const newSql = this._doReplace(createTable.sql, a, b);
-            if (sql === newSql) {
-              throw new Error('Unable to find the column to change');
-            }
-            return Promise.bind(this)
-              .then(this.createTempTable(createTable))
-              .then(this.copyData)
-              .then(this.dropOriginal)
-              .then(function() {
-                return this.trx.raw(newSql);
-              })
-              .then(
-                this.reinsertData(function(row) {
-                  row[to] = row[from];
-                  return omit(row, from);
-                })
-              )
-              .then(this.dropTempTable);
-          });
+        const column = await this.getColumn(from);
+        const sql = await this.getTableSql(column);
+        const a = this.client.wrapIdentifier(from);
+        const b = this.client.wrapIdentifier(to);
+        const createTable = sql[0];
+        const newSql = this._doReplace(createTable.sql, a, b);
+        if (sql === newSql) {
+          throw new Error('Unable to find the column to change');
+        }
+        const { from: mappedFrom, to: mappedTo } = invert(
+          this.client.postProcessResponse(
+            invert({
+              from,
+              to,
+            })
+          )
+        );
+
+        return Bluebird.bind(this)
+          .then(this.createTempTable(createTable))
+          .then(this.copyData)
+          .then(this.dropOriginal)
+          .then(function() {
+            return this.trx.raw(newSql);
+          })
+          .then(
+            this.reinsertData(function(row) {
+              row[mappedTo] = row[mappedFrom];
+              return omit(row, mappedFrom);
+            })
+          )
+          .then(this.dropTempTable);
       },
       { connection: this.connection }
     );
-  }),
+  },
 
-  dropColumn: Promise.method(function(columns) {
+  dropColumn: async function(columns) {
     return this.client.transaction(
       (trx) => {
         this.trx = trx;
-        return Promise.all(columns.map((column) => this.getColumn(column)))
+        return Bluebird.all(columns.map((column) => this.getColumn(column)))
           .bind(this)
           .then(this.getTableSql)
           .then(function(sql) {
@@ -254,20 +286,25 @@ assign(SQLite3_DDL.prototype, {
             if (sql === newSql) {
               throw new Error('Unable to find the column to change');
             }
-            return Promise.bind(this)
+            const mappedColumns = Object.keys(
+              this.client.postProcessResponse(
+                fromPairs(columns.map((column) => [column, column]))
+              )
+            );
+            return Bluebird.bind(this)
               .then(this.createTempTable(createTable))
               .then(this.copyData)
               .then(this.dropOriginal)
               .then(function() {
                 return this.trx.raw(newSql);
               })
-              .then(this.reinsertData((row) => omit(row, ...columns)))
+              .then(this.reinsertData((row) => omit(row, ...mappedColumns)))
               .then(this.dropTempTable);
           });
       },
       { connection: this.connection }
     );
-  }),
+  },
 });
 
-export default SQLite3_DDL;
+module.exports = SQLite3_DDL;

@@ -1,11 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-import mkdirp from 'mkdirp';
-import Promise from 'bluebird';
-import { template } from 'lodash';
-import { getMergedConfig } from './Migrator';
+const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const bluebird = require('bluebird');
+const { template } = require('lodash');
+const { getMergedConfig } = require('./configuration-merger');
 
-export default class MigrationGenerator {
+class MigrationGenerator {
   constructor(migrationConfig) {
     this.config = getMergedConfig(migrationConfig);
   }
@@ -30,9 +30,9 @@ export default class MigrationGenerator {
     const dirs = this._absoluteConfigDirs();
 
     const promises = dirs.map((dir) => {
-      return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
-        Promise.promisify(mkdirp)(dir)
-      );
+      return bluebird
+        .promisify(fs.stat, { context: fs })(dir)
+        .catch(() => bluebird.promisify(mkdirp)(dir));
     });
 
     return Promise.all(promises);
@@ -45,9 +45,9 @@ export default class MigrationGenerator {
       this.config.stub ||
       path.join(__dirname, 'stub', this.config.extension + '.stub');
 
-    return Promise.promisify(fs.readFile, { context: fs })(stubPath).then(
-      (stub) => template(stub.toString(), { variable: 'd' })
-    );
+    return bluebird
+      .promisify(fs.readFile, { context: fs })(stubPath)
+      .then((stub) => template(stub.toString(), { variable: 'd' }));
   }
 
   // Write a new migration to disk, using the config and generated filename,
@@ -60,10 +60,12 @@ export default class MigrationGenerator {
     if (name[0] === '-') name = name.slice(1);
     const filename = yyyymmddhhmmss() + '_' + name + '.' + config.extension;
 
-    return Promise.promisify(fs.writeFile, { context: fs })(
-      path.join(dir, filename),
-      tmpl(config.variables || {})
-    ).return(path.join(dir, filename));
+    return bluebird
+      .promisify(fs.writeFile, { context: fs })(
+        path.join(dir, filename),
+        tmpl(config.variables || {})
+      )
+      .return(path.join(dir, filename));
   }
 
   _absoluteConfigDirs() {
@@ -71,6 +73,12 @@ export default class MigrationGenerator {
       ? this.config.directory
       : [this.config.directory];
     return directories.map((directory) => {
+      if (!directory) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          'Failed to resolve config file, knex cannot determine where to generate migrations'
+        );
+      }
       return path.resolve(process.cwd(), directory);
     });
   }
@@ -95,3 +103,5 @@ function yyyymmddhhmmss() {
     padDate(d.getSeconds())
   );
 }
+
+module.exports = MigrationGenerator;

@@ -1,9 +1,9 @@
-import Promise from 'bluebird';
-import Transaction from '../../transaction';
-import { isUndefined } from 'lodash';
+const Bluebird = require('bluebird');
+const Transaction = require('../../transaction');
+const { isUndefined } = require('lodash');
 const debug = require('debug')('knex:tx');
 
-export default class Transaction_MSSQL extends Transaction {
+module.exports = class Transaction_MSSQL extends Transaction {
   begin(conn) {
     debug('%s: begin', this.txid);
     return conn.tx_.begin().then(this._resolver, this._rejecter);
@@ -11,7 +11,7 @@ export default class Transaction_MSSQL extends Transaction {
 
   savepoint(conn) {
     debug('%s: savepoint at', this.txid);
-    return Promise.resolve().then(() =>
+    return Bluebird.resolve().then(() =>
       this.query(conn, `SAVE TRANSACTION ${this.txid}`)
     );
   }
@@ -46,7 +46,7 @@ export default class Transaction_MSSQL extends Transaction {
 
   rollbackTo(conn, error) {
     debug('%s: rolling backTo', this.txid);
-    return Promise.resolve()
+    return Bluebird.resolve()
       .then(() =>
         this.query(conn, `ROLLBACK TRANSACTION ${this.txid}`, 2, error)
       )
@@ -59,19 +59,24 @@ export default class Transaction_MSSQL extends Transaction {
   acquireConnection(config) {
     const t = this;
     const configConnection = config && config.connection;
-    return Promise.try(() => {
-      return (
-        (t.outerTx ? t.outerTx.conn : null) ||
-        configConnection ||
-        t.client.acquireConnection()
-      );
+    return new Bluebird((resolve, reject) => {
+      try {
+        resolve(
+          (t.outerTx ? t.outerTx.conn : null) ||
+            configConnection ||
+            t.client.acquireConnection()
+        );
+      } catch (e) {
+        reject(e);
+      }
     })
-      .tap(function(conn) {
+      .then(function(conn) {
         conn.__knexTxId = t.txid;
         if (!t.outerTx) {
           t.conn = conn;
           conn.tx_ = conn.transaction();
         }
+        return conn;
       })
       .disposer(function(conn) {
         if (t.outerTx) return;
@@ -91,4 +96,4 @@ export default class Transaction_MSSQL extends Transaction {
         }
       });
   }
-}
+};

@@ -1,9 +1,9 @@
 // MySQL Column Compiler
 // -------
-import inherits from 'inherits';
-import ColumnCompiler from '../../../schema/columncompiler';
+const inherits = require('inherits');
+const ColumnCompiler = require('../../../schema/columncompiler');
 
-import { assign } from 'lodash';
+const { assign } = require('lodash');
 
 function ColumnCompiler_MSSQL() {
   ColumnCompiler.apply(this, arguments);
@@ -30,18 +30,18 @@ assign(ColumnCompiler_MSSQL.prototype, {
     return `float`;
   },
 
-  integer(length) {
-    length = length ? `(${this._num(length, 11)})` : '';
-    return `int${length}`;
+  integer() {
+    // mssql does not support length
+    return 'int';
   },
 
   mediumint: 'int',
 
   smallint: 'smallint',
 
-  tinyint(length) {
-    length = length ? `(${this._num(length, 1)})` : '';
-    return `tinyint${length}`;
+  tinyint() {
+    // mssql does not support length
+    return 'tinyint';
   },
 
   varchar(length) {
@@ -113,4 +113,4 @@ assign(ColumnCompiler_MSSQL.prototype, {
   },
 });
 
-export default ColumnCompiler_MSSQL;
+module.exports = ColumnCompiler_MSSQL;

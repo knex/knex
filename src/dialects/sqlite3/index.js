@@ -1,17 +1,18 @@
 // SQLite3
 // -------
-import Promise from 'bluebird';
+const Bluebird = require('bluebird');
 
-import inherits from 'inherits';
-import { isUndefined, map, assign, defaults } from 'lodash';
+const inherits = require('inherits');
+const { isUndefined, map, assign, defaults } = require('lodash');
 
-import Client from '../../client';
+const Client = require('../../client');
 
-import QueryCompiler from './query/compiler';
-import SchemaCompiler from './schema/compiler';
-import ColumnCompiler from './schema/columncompiler';
-import TableCompiler from './schema/tablecompiler';
-import SQLite3_DDL from './schema/ddl';
+const QueryCompiler = require('./query/compiler');
+const SchemaCompiler = require('./schema/compiler');
+const ColumnCompiler = require('./schema/columncompiler');
+const TableCompiler = require('./schema/tablecompiler');
+const SQLite3_DDL = require('./schema/ddl');
+const SQLite3_Formatter = require('./formatter');
 
 function Client_SQLite3(config) {
   Client.call(this, config);
@@ -23,6 +24,7 @@ function Client_SQLite3(config) {
     );
   }
 }
+
 inherits(Client_SQLite3, Client);
 
 assign(Client_SQLite3.prototype, {
@@ -60,7 +62,7 @@ assign(Client_SQLite3.prototype, {
 
   // Get a raw connection from the database, returning a promise with the connection object.
   acquireRawConnection() {
-    return new Promise((resolve, reject) => {
+    return new Bluebird((resolve, reject) => {
       const db = new this.driver.Database(
         this.connectionSettings.filename,
         (err) => {
@@ -76,7 +78,7 @@ assign(Client_SQLite3.prototype, {
   // Used to explicitly close a connection, called internally by the pool when
   // a connection times out or the pool is shutdown.
   destroyRawConnection(connection) {
-    return Promise.fromCallback(connection.close.bind(connection));
+    return Bluebird.fromCallback(connection.close.bind(connection));
   },
 
   // Runs the query on the specified connection, providing the bindings and any
@@ -94,7 +96,7 @@ assign(Client_SQLite3.prototype, {
       default:
         callMethod = 'all';
     }
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       if (!connection || !connection[callMethod]) {
         return rejecter(
           new Error(`Error calling ${callMethod} on connection.`)
@@ -114,7 +116,7 @@ assign(Client_SQLite3.prototype, {
 
   _stream(connection, sql, stream) {
     const client = this;
-    return new Promise(function(resolver, rejecter) {
+    return new Bluebird(function(resolver, rejecter) {
       stream.on('error', rejecter);
       stream.on('end', resolver);
       return client
@@ -160,6 +162,10 @@ assign(Client_SQLite3.prototype, {
       Client.prototype.poolDefaults.call(this)
     );
   },
+
+  formatter() {
+    return new SQLite3_Formatter(this, ...arguments);
+  },
 });
 
-export default Client_SQLite3;
+module.exports = Client_SQLite3;

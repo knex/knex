@@ -11,4 +11,4 @@ FunctionHelper.prototype.now = function(precision) {
   return this.client.raw('CURRENT_TIMESTAMP');
 };
 
-export default FunctionHelper;
+module.exports = FunctionHelper;

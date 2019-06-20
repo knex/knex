@@ -1,13 +1,21 @@
 // Seeder
 // -------
 
-import fs from 'fs';
-import path from 'path';
-import mkdirp from 'mkdirp';
-import Promise from 'bluebird';
-import { filter, includes, map, bind, template, each, extend } from 'lodash';
+const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const Bluebird = require('bluebird');
+const {
+  filter,
+  includes,
+  map,
+  bind,
+  template,
+  each,
+  extend,
+} = require('lodash');
 
-// The new seeds we're performing, typically called from the `knex.seed`
+// The new seeds we're performing, typically called = require(the `knex.seed`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the seeds.
 function Seeder(knex) {
@@ -16,20 +24,20 @@ function Seeder(knex) {
 }
 
 // Runs all seed files for the given environment.
-Seeder.prototype.run = Promise.method(function(config) {
+Seeder.prototype.run = async function(config) {
   this.config = this.setConfig(config);
   return this._seedData()
     .bind(this)
-    .spread(function(all) {
+    .then(([all]) => {
       return this._runSeeds(all);
     });
-});
+};
 
 // Creates a new seed file, with a given name.
 Seeder.prototype.make = function(name, config) {
   this.config = this.setConfig(config);
   if (!name)
-    Promise.rejected(
+    Bluebird.rejected(
       new Error('A name must be specified for the generated seed')
     );
   return this._ensureFolder(config)
@@ -39,10 +47,10 @@ Seeder.prototype.make = function(name, config) {
 };
 
 // Lists all available seed files as a sorted array.
-Seeder.prototype._listAll = Promise.method(function(config) {
+Seeder.prototype._listAll = async function(config) {
   this.config = this.setConfig(config);
   const loadExtensions = this.config.loadExtensions;
-  return Promise.promisify(fs.readdir, { context: fs })(
+  return Bluebird.promisify(fs.readdir, { context: fs })(
     this._absoluteConfigDir()
   )
     .bind(this)
@@ -52,28 +60,28 @@ Seeder.prototype._listAll = Promise.method(function(config) {
         return includes(loadExtensions, extension);
       }).sort()
     );
-});
+};
 
-// Gets the seed file list from the specified seed directory.
+// Gets the seed file list = require(the specified seed directory.
 Seeder.prototype._seedData = function() {
-  return Promise.join(this._listAll());
+  return Bluebird.join(this._listAll());
 };
 
 // Ensures a folder for the seeds exist, dependent on the
 // seed config settings.
 Seeder.prototype._ensureFolder = function() {
   const dir = this._absoluteConfigDir();
-  return Promise.promisify(fs.stat, { context: fs })(dir).catch(() =>
-    Promise.promisify(mkdirp)(dir)
+  return Bluebird.promisify(fs.stat, { context: fs })(dir).catch(() =>
+    Bluebird.promisify(mkdirp)(dir)
   );
 };
 
 // Run seed files, in sequence.
 Seeder.prototype._runSeeds = function(seeds) {
-  return Promise.all(map(seeds, bind(this._validateSeedStructure, this)))
+  return Bluebird.all(map(seeds, bind(this._validateSeedStructure, this)))
     .bind(this)
     .then(function(seeds) {
-      return Promise.bind(this).then(function() {
+      return Bluebird.bind(this).then(function() {
         return this._waterfallBatch(seeds);
       });
     });
@@ -93,7 +101,7 @@ Seeder.prototype._generateStubTemplate = function() {
   const stubPath =
     this.config.stub ||
     path.join(__dirname, 'stub', this.config.extension + '.stub');
-  return Promise.promisify(fs.readFile, { context: fs })(stubPath).then(
+  return Bluebird.promisify(fs.readFile, { context: fs })(stubPath).then(
     (stub) => template(stub.toString(), { variable: 'd' })
   );
 };
@@ -106,7 +114,7 @@ Seeder.prototype._writeNewSeed = function(name) {
   return function(tmpl) {
     if (name[0] === '-') name = name.slice(1);
     const filename = name + '.' + config.extension;
-    return Promise.promisify(fs.writeFile, { context: fs })(
+    return Bluebird.promisify(fs.writeFile, { context: fs })(
       path.join(dir, filename),
       tmpl(config.variables || {})
     ).return(path.join(dir, filename));
@@ -117,21 +125,36 @@ Seeder.prototype._writeNewSeed = function(name) {
 Seeder.prototype._waterfallBatch = function(seeds) {
   const { knex } = this;
   const seedDirectory = this._absoluteConfigDir();
-  let current = Promise.bind({ failed: false, failedOn: 0 });
+  let current = Bluebird.bind({ failed: false, failedOn: 0 });
   const log = [];
   each(seeds, (seed) => {
     const name = path.join(seedDirectory, seed);
     seed = require(name);
 
     // Run each seed file.
-    current = current
-      .then(() => seed.seed(knex, Promise))
-      .then(() => {
-        log.push(name);
-      });
+    current = current.then(() =>
+      // Nesting promise to prevent bubbling up of error on catch
+      Promise.resolve()
+        .then(() => seed.seed(knex))
+        .then(() => log.push(name))
+        .catch((originalError) => {
+          const error = new Error(
+            `Error while executing "${name}" seed: ${originalError.message}`
+          );
+          error.original = originalError;
+          error.stack =
+            error.stack
+              .split('\n')
+              .slice(0, 2)
+              .join('\n') +
+            '\n' +
+            originalError.stack;
+          throw error;
+        })
+    );
   });
 
-  return current.thenReturn([log]);
+  return current.then(() => [log]);
 };
 
 Seeder.prototype._absoluteConfigDir = function() {
@@ -159,4 +182,4 @@ Seeder.prototype.setConfig = function(config) {
   );
 };
 
-export default Seeder;
+module.exports = Seeder;

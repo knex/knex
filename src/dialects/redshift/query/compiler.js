@@ -1,15 +1,16 @@
 // Redshift Query Builder & Compiler
 // ------
-import inherits from 'inherits';
+const inherits = require('inherits');
 
-import QueryCompiler from '../../../query/compiler';
-import QueryCompiler_PG from '../../postgres/query/compiler';
+const QueryCompiler = require('../../../query/compiler');
+const QueryCompiler_PG = require('../../postgres/query/compiler');
 
-import { assign, reduce, identity } from 'lodash';
+const { assign, reduce, identity } = require('lodash');
 
 function QueryCompiler_Redshift(client, builder) {
   QueryCompiler_PG.call(this, client, builder);
 }
+
 inherits(QueryCompiler_Redshift, QueryCompiler_PG);
 
 assign(QueryCompiler_Redshift.prototype, {
@@ -118,4 +119,4 @@ assign(QueryCompiler_Redshift.prototype, {
   },
 });
 
-export default QueryCompiler_Redshift;
+module.exports = QueryCompiler_Redshift;

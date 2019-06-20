@@ -1,10 +1,9 @@
-/*global describe, expect, it, testPromise, d*/
+/*global describe, expect, it, d*/
 'use strict';
 
 const _ = require('lodash');
 const assert = require('assert');
-const Promise = testPromise;
-const Runner = require('../../../lib/runner');
+const Runner = require('../../../src/runner');
 
 module.exports = function(knex) {
   describe('Selects', function() {
@@ -824,10 +823,7 @@ module.exports = function(knex) {
     });
 
     it('handles multi-column "where in" cases', function() {
-      if (
-        knex.client.driverName !== 'sqlite3' &&
-        knex.client.driverName !== 'mssql'
-      ) {
+      if (knex.client.driverName !== 'mssql') {
         return knex('composite_key_test')
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
           .orderBy('status', 'desc')
@@ -893,6 +889,25 @@ module.exports = function(knex) {
             tester(
               'oracledb',
               'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
+              [1, 1, 1, 2],
+              [
+                {
+                  column_a: 1,
+                  column_b: 1,
+                  details: 'One, One, One',
+                  status: 1,
+                },
+                {
+                  column_a: 1,
+                  column_b: 2,
+                  details: 'One, Two, Zero',
+                  status: 0,
+                },
+              ]
+            );
+            tester(
+              'sqlite3',
+              'select * from `composite_key_test` where (`column_a`, `column_b`) in ( values (?, ?), (?, ?)) order by `status` desc',
               [1, 1, 1, 2],
               [
                 {
@@ -1100,6 +1115,13 @@ module.exports = function(knex) {
 
           return true;
         });
+    });
+
+    it.skip('select forUpdate().first() bug in oracle (--------- TODO: FIX)', function() {
+      return knex('accounts')
+        .where('id', 1)
+        .forUpdate()
+        .first();
     });
 
     it('select for update locks selected row', function() {

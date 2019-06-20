@@ -1,10 +1,173 @@
 # Master (Unreleased)
 
+### New features:
+
+- Use extension from knexfile for generating migrations unless overriden #3282
+- Use migrations.extension from config when generating migration #3242
+- Expose executionPromise for transactors #3297
+
+### Bug fixes:
+
+- Oracle: Updated handling of connection errors for disposal #2608
+- Fix extension resolution from env configs #3294
+
+### Test / internal changes:
+
+- Drop support for Node.js 6 #3227
+- Remove Babel #3227
+- Remove Bluebird #3290 #3287 #3285 #3267 #3266 #3263
+
+### Typings
+
+- Add workarounds for degraded inference when strictNullChecks is set to false #3275
+- Add stub type definition for Migrator config #3279
+- Add stub to seeds type #3296
+- Fix MSSQL config typings #3269
+- Add pgsql specific table builder method typings #3146
+
+# 0.17.5 - 8 June, 2019
+
+### Typings
+
+- Include result.d.ts in published package #3271
+
+# 0.17.4 - 8 June, 2019
+
+### Typings
+
+- Fix some cases of left-to-right inference causing type mismatch #3265
+- Improve count typings #3249
+
+### Bug fixes:
+
+- Fix error message bubbling up on seed error #3248
+
+# 0.17.3 - 2 June, 2019
+
+### Typings
+
+- Improve typings for aggregations #3245
+- Add decimalNumbers to MySqlConnectionConfig interface #3244
+
+# 0.17.2 - 1 June, 2019
+
+### Typings
+
+- Improve count typings #3239
+
+### Bug fixes:
+
+- "colorette" dependency breaks browserify builds #3238
+
+# 0.17.1 - 31 May, 2019
+
+### New features:
+
+- Add migrate:down functionality #3228
+
+### Typings
+
+- Update type of aggregation results to not be arrays when first has been invoked before #3237
+- Include undefined in type of single row results #3231
+- Fix incorrect type definitions for single row queries #3230
+
+# 0.17.0 - 28 May, 2019
+
+### New features:
+
+- Add support for returning started transaction without immediately executing it #3099
+- Add support for passing transaction around with only starting it when needed #3099
+- Add clearHaving function #3141
+- Add --all flag for rollback in CLI #3187
+- Add error detail log to knex CLI #3149
+- Support multi-column whereIn in sqlite through values clause #3220
+- Allow users to specify the migrations "tableName" parameter via the CLI #3214
+- Unify object options handling for datetime/timestamp across dialects #3181
+- Add "up" command for migrations #3205
+
+### Typings
+
+- Add default values for generic types (fixes backwards compatibility broken by 0.16.6) #3189
+- Make function types generic in type definitions #3168
+- Add missing types to MigratorConfig #3174
+- Add types for havingBetween, orHavingBetween, havingNotBetween and orHavingNotBetween #3144
+- Update Knex.Config types to include log #3221
+- Fix some more cases of missing typings #3223
+- Support type safe refs #3215
+- Expose some utility types #3211
+- Fix issues with typings of joins and some conflicts with Bluebird typings #3209
+
+### Bug fixes:
+
+- Fix order of migration rollback #3172
+
+### Test / internal changes:
+
+- Execute CI tests on Node.js 12 #3171
+- Docker-based test dbs #3157
+- Use cli-testlab for testing CLI #3191
+
+# 0.16.5 - 11 Apr, 2019
+
+- Bundle polyfills with knex for 0.16.x line again #3139
+
+# 0.16.4 - 11 Apr, 2019
+
+### New features:
+
+- Boolean param for rollback() to rollback all migrations #2968
+- seed:run print the file name of the failing seed #2972 #2973
+- verbose option to CLI commands #2887
+- add intersect() #3023
+- Improved format for TS stubs #3080
+- MySQL: Support nullable timestamps #3100
+- MySQL: Warn `.returning()` does not have any effect #3039
+
+### Bug fixes:
+
+- Respect "loadExtensions" configuration #2969
+- Fix event listener duplication when using Migrator #2982
+- Fix fs-migrations breaking docs #3022
+- Fix sqlite3 drop/renameColumn() breaks with postProcessResponse #3040
+- Fix transaction support for migrations #3084
+- Fix queryContext not being passed to raw queries #3111
+- Typings: Allow to pass query builders, identifiers and raw in various places as parameters #2960
+- Typings: toNative() definition #2996
+- Typings: asCallback() definition #2963
+- Typings: queryContext() type definition Knex.Raw #3002
+- Typings: Add "constraintName" arg to primary() definition #3006
+- Typings: Add missing schemaName in MigratorConfig #3016
+- Typings: Add missing supported parameter types and toSQL method #2960
+- Typings: Update enum arguments to reflect latest signature #3043
+- Typings: Add size parameter to integer method #3074
+- Typings: Add 'string' as accepted Knex constructor type definition #3105
+- Typings: Add boolean as a column name in join #3121
+- Typings: Add missing clearOrder & clearCounters types #3109
+- Dependencies: Fix security warning #3082 
+- Do not use unsupported column width/length arguments on data types int and tinyint in MSSQL #2738
+
+### Changes:
+
+- Make unionAll()'s call signature match union() #3055
+
+### Test / internal changes:
+
+- Swap chalk→colorette / minimist→getopts #2718
+- Always use well documented pg client query() config argument #3004
+- Do not bundle polyfills with knex #3024
+
+# 0.16.3 - 19 Dec, 2018
+
+### Bug fixes:
+
+- @babel/polyfill loaded multiple times #2955
+- Resolve migrations and seeds relatively to knexfile directory when specified (the way it used to be before 0.16.1) #2952
+
 # 0.16.2 - 10 Dec, 2018
 
 ### Bug fixes:
 
-- Add TypeScript types to the "files" entry so they are properly included in the release.
+- Add TypeScript types to the "files" entry so they are properly included in the release #2943
 
 # 0.16.1 - 28 Nov, 2018
 

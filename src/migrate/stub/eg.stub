@@ -1,6 +1,6 @@
 provide: up, down
 
-up = (knex, Promise) ->
+up = (knex) ->
   <% if (d.tableName) { %>
   knex.schema.createTable "<%= d.tableName %>": t ->
     t.increments()
@@ -8,7 +8,7 @@ up = (knex, Promise) ->
   <% } %>
 
 
-down = (knex, Promise) ->
+down = (knex) ->
   <% if (d.tableName) { %>
   knex.schema.dropTable("<%= d.tableName %>")
   <% } %>

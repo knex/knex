@@ -1,6 +1,6 @@
 // All properties we can use to start a query chain
-// from the `knex` object, e.g. `knex.select('*').from(...`
-export default [
+// = require(the `knex` object, e.g. `knex.select('*').from(...`
+module.exports = [
   'with',
   'withRecursive',
   'select',
@@ -56,6 +56,7 @@ export default [
   'orderByRaw',
   'union',
   'unionAll',
+  'intersect',
   'having',
   'havingRaw',
   'orHaving',
@@ -78,6 +79,7 @@ export default [
   'clearSelect',
   'clearWhere',
   'clearOrder',
+  'clearHaving',
   'insert',
   'update',
   'returning',

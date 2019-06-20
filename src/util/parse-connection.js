@@ -1,7 +1,8 @@
-import url from 'url';
-import { parse as parsePG } from 'pg-connection-string';
+const url = require('url');
+const { parse } = require('pg-connection-string');
+const parsePG = parse;
 
-export default function parseConnectionString(str) {
+module.exports = function parseConnectionString(str) {
   const parsed = url.parse(str);
   let { protocol } = parsed;
   if (protocol === null) {
@@ -22,7 +23,7 @@ export default function parseConnectionString(str) {
     client: protocol,
     connection: isPG ? parsePG(str) : connectionObject(parsed),
   };
-}
+};
 
 function connectionObject(parsed) {
   const connection = {};
