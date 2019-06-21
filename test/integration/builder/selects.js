@@ -1248,15 +1248,13 @@ module.exports = function(knex) {
         });
     });
 
-    it('forUpdate().skipLocked() should return the first non-locked row', function() {
-      if (
-        knex.client.driverName !== 'pg' &&
-        knex.client.driverName !== 'mysql'
-      ) {
+    it('forUpdate().skipLocked() with order by should return the first non-locked row', function() {
+      // Note: this test doesn't work properly on MySQL - see https://bugs.mysql.com/bug.php?id=67745
+      if (knex.client.driverName !== 'pg') {
         return;
       }
 
-      const rowName = 'row for skipLocked() test';
+      const rowName = 'row for skipLocked() test #1';
       return knex('test_default_table')
         .insert([
           { string: rowName, tinyint: 1 },
@@ -1283,6 +1281,42 @@ module.exports = function(knex) {
             })
             .then((res) => {
               expect(res.tinyint).to.equal(2);
+            });
+        });
+    });
+
+    it('forUpdate().skipLocked() should return an empty set when all rows are locked', function() {
+      if (
+        knex.client.driverName !== 'pg' &&
+        knex.client.driverName !== 'mysql'
+      ) {
+        return;
+      }
+
+      const rowName = 'row for skipLocked() test #2';
+      return knex('test_default_table')
+        .insert([
+          { string: rowName, tinyint: 1 },
+          { string: rowName, tinyint: 2 },
+        ])
+        .then(() => {
+          return knex
+            .transaction((trx) => {
+              // lock all of the test rows
+              return trx('test_default_table')
+                .where({ string: rowName })
+                .forUpdate()
+                .then((res) => {
+                  // try to aquire the lock on at least one more row (which isn't available)
+                  return knex('test_default_table')
+                    .where({ string: rowName })
+                    .forUpdate()
+                    .skipLocked()
+                    .limit(1);
+                });
+            })
+            .then((res) => {
+              expect(res).to.be.empty;
             });
         });
     });
