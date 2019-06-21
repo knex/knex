@@ -552,12 +552,16 @@ assign(QueryCompiler.prototype, {
 
   // Fail on unsupported databases
   skipLocked() {
-    throw new Error('.skipLocked() is currently only supported on PostgreSQL');
+    throw new Error(
+      '.skipLocked() is currently only supported on MySQL 8.0+ and PostgreSQL 9.5+'
+    );
   },
 
   // Fail on unsupported databases
   noWait() {
-    throw new Error('.noWait() is currently only supported on PostgreSQL');
+    throw new Error(
+      '.noWait() is currently only supported on MySQL 8.0+, MariaDB 10.3.0+ and PostgreSQL 9.5+'
+    );
   },
 
   // On Clause

@@ -1249,8 +1249,10 @@ module.exports = function(knex) {
     });
 
     it('forUpdate().skipLocked() should return the first non-locked row', function() {
-      // TODO: enable this test on MySQL when updating test suite to MySQL 8.0
-      if (knex.client.driverName !== 'pg') {
+      if (
+        knex.client.driverName !== 'pg' &&
+        knex.client.driverName !== 'mysql'
+      ) {
         return;
       }
 
@@ -1286,8 +1288,10 @@ module.exports = function(knex) {
     });
 
     it('forUpdate().noWait() should reject immediately when a row is locked', function() {
-      // TODO: enable this test on MySQL when updating test suite to MySQL 8.0
-      if (knex.client.driverName !== 'pg') {
+      if (
+        knex.client.driverName !== 'pg' &&
+        knex.client.driverName !== 'mysql'
+      ) {
         return;
       }
 
