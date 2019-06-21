@@ -7040,6 +7040,44 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('noWait and skipLocked require a lock mode to be set', function() {
+    expect(function() {
+      qb()
+        .select('*')
+        .noWait()
+        .toString();
+    }).to.throw(
+      '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
+    );
+    expect(function() {
+      qb()
+        .select('*')
+        .skipLocked()
+        .toString();
+    }).to.throw(
+      '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
+    );
+  });
+
+  it('skipLocked conflicts with noWait and vice-versa', function() {
+    expect(function() {
+      qb()
+        .select('*')
+        .forUpdate()
+        .noWait()
+        .skipLocked()
+        .toString();
+    }).to.throw('.skipLocked() cannot be used together with .noWait()!');
+    expect(function() {
+      qb()
+        .select('*')
+        .forUpdate()
+        .skipLocked()
+        .noWait()
+        .toString();
+    }).to.throw('.noWait() cannot be used together with .skipLocked()!');
+  });
+
   it('allows insert values of sub-select, #121', function() {
     testsql(
       qb()
