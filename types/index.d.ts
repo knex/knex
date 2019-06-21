@@ -1585,6 +1585,7 @@ declare namespace Knex {
       | MariaSqlConnectionConfig
       | MySqlConnectionConfig
       | MsSqlConnectionConfig
+      | PostgreSqlConnectionConfig
       | Sqlite3ConnectionConfig
       | SocketConnectionConfig;
     pool?: PoolConfig;
@@ -1612,7 +1613,6 @@ declare namespace Knex {
     instanceName?: string;
     debug?: boolean;
     requestTimeout?: number;
-    keepAlive?: boolean;
   }
 
   // Config object for mssql: see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mssql/index.d.ts
@@ -1711,6 +1711,19 @@ declare namespace Knex {
     flags?: string;
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
+  }
+
+  // Config object for postgresql: https://node-postgres.com/api/client
+  interface PostgreSqlConnectionConfig {
+    host: string;
+    user: string;
+    password: string;
+    database: string;
+    domain?: string;
+    instanceName?: string;
+    debug?: boolean;
+    requestTimeout?: number;
+    keepAlive?: boolean;
   }
 
   /** Used with SQLite3 adapter */
