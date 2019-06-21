@@ -950,10 +950,8 @@ assign(Builder.prototype, {
   // Sets the values for a `select` query, informing that only the first
   // row should be returned (limit 1).
   first() {
-    const { _method } = this;
-
-    if (!includes(['pluck', 'first', 'select'], _method)) {
-      throw new Error(`Cannot chain .first() on "${_method}" query!`);
+    if (!this._isSelectQuery()) {
+      throw new Error(`Cannot chain .first() on "${this._method}" query!`);
     }
 
     const args = new Array(arguments.length);
@@ -1095,17 +1093,16 @@ assign(Builder.prototype, {
 
   // Skips locked rows when using a lock constraint.
   skipLocked() {
-    const { _method } = this;
-    if (!includes(['pluck', 'first', 'select'], _method)) {
-      throw new Error(`Cannot chain .skipLocked() on "${_method}" query!`);
+    if (!this._isSelectQuery()) {
+      throw new Error(`Cannot chain .skipLocked() on "${this._method}" query!`);
     }
-    if (!includes(['forShare', 'forUpdate'], this._single.lock)) {
+    if (!this._hasLockMode()) {
       throw new Error(
         '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
       );
     }
     if (this._single.waitMode === 'noWait') {
-      throw new Error('.skipLocked() cannot be used with .noWait()!');
+      throw new Error('.skipLocked() cannot be used together with .noWait()!');
     }
     this._single.waitMode = 'skipLocked';
     return this;
@@ -1113,17 +1110,16 @@ assign(Builder.prototype, {
 
   // Causes error when acessing a locked row instead of waiting for it to be released.
   noWait() {
-    const { _method } = this;
-    if (!includes(['pluck', 'first', 'select'], _method)) {
-      throw new Error(`Cannot chain .noWait() on "${_method}" query!`);
+    if (!this._isSelectQuery()) {
+      throw new Error(`Cannot chain .noWait() on "${this._method}" query!`);
     }
-    if (!includes(['forShare', 'forUpdate'], this._single.lock)) {
+    if (!this._hasLockMode()) {
       throw new Error(
         '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
       );
     }
     if (this._single.waitMode === 'skipLocked') {
-      throw new Error('.noWait() cannot be used with .skipLocked()!');
+      throw new Error('.noWait() cannot be used together with .skipLocked()!');
     }
     this._single.waitMode = 'noWait';
     return this;
@@ -1214,6 +1210,16 @@ assign(Builder.prototype, {
   // Helper function for clearing or reseting a grouping type from the builder
   _clearGrouping(grouping) {
     this._statements = reject(this._statements, { grouping });
+  },
+
+  // Helper function that checks if the builder will emit a select query
+  _isSelectQuery() {
+    return includes(['pluck', 'first', 'select'], this._method);
+  },
+
+  // Helper function that checks if the query has a lock mode set
+  _hasLockMode() {
+    return includes(['forShare', 'forUpdate'], this._single.lock);
   },
 });
 
