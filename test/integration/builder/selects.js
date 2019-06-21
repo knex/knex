@@ -1263,14 +1263,14 @@ module.exports = function(knex) {
         .then(() => {
           return knex
             .transaction((trx) => {
-              // select and lock only the first row from this test
+              // lock only the first row from this test
               return trx('test_default_table')
                 .where({ string: rowName })
                 .orderBy('tinyint', 'asc')
                 .first()
                 .forUpdate()
                 .then((res) => {
-                  // try to lock the second row
+                  // try to lock the next available row
                   return knex('test_default_table')
                     .where({ string: rowName })
                     .orderBy('tinyint', 'asc')
