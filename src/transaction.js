@@ -8,7 +8,7 @@ const makeKnex = require('./util/make-knex');
 
 const debug = Debug('knex:tx');
 
-const { uniqueId, isUndefined } = require('lodash');
+const { uniqueId, isUndefined, get } = require('lodash');
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
@@ -20,12 +20,26 @@ class Transaction extends EventEmitter {
 
     // If there is no container provided, assume user wants to get instance of transaction and use it directly
     if (!container) {
+      // Default behaviour for new style of transactions is not to reject on rollback
+      if (!config || isUndefined(config.doNotRejectOnRollback)) {
+        this.doNotRejectOnRollback = true;
+      } else {
+        this.doNotRejectOnRollback = config.doNotRejectOnRollback;
+      }
+
       this.initPromise = new Promise((resolve, reject) => {
         this.initRejectFn = reject;
         container = (transactor) => {
           resolve(transactor);
         };
       });
+    } else {
+      // Default behaviour for old style of transactions is to reject on rollback
+      if (!config || isUndefined(config.doNotRejectOnRollback)) {
+        this.doNotRejectOnRollback = false;
+      } else {
+        this.doNotRejectOnRollback = config.doNotRejectOnRollback;
+      }
     }
 
     this.client = client;
@@ -173,6 +187,14 @@ class Transaction extends EventEmitter {
         }
         if (status === 2) {
           if (isUndefined(value)) {
+            if (
+              get(res, 'context.sql', '').toUpperCase() === 'ROLLBACK' &&
+              this.doNotRejectOnRollback
+            ) {
+              this._resolver();
+              return;
+            }
+
             value = new Error(`Transaction rejected with non-error: ${value}`);
           }
           this._rejecter(value);

@@ -362,10 +362,27 @@ describe('knex', () => {
     expect(result).to.be.undefined;
   });
 
-  it('rejects execution promise if there was a rollback', async () => {
+  it('resolves execution promise if there was a manual rollback and transaction is set not to reject', async () => {
     const knex = Knex(sqliteConfig);
 
     const trx = await knex.transaction();
+    const executionPromise = trx.executionPromise;
+
+    expect(trx.client.transacting).to.equal(true);
+    const rows = await knex.transacting(trx).select(knex.raw('1 as result'));
+    expect(rows[0].result).to.equal(1);
+    await trx.rollback();
+
+    const result = await executionPromise;
+    expect(result).to.be.undefined;
+  });
+
+  it('rejects execution promise if there was a manual rollback and transaction is set to reject', async () => {
+    const knex = Knex(sqliteConfig);
+
+    const trx = await knex.transaction(undefined, {
+      doNotRejectOnRollback: false,
+    });
     const executionPromise = trx.executionPromise;
 
     expect(trx.client.transacting).to.equal(true);
@@ -382,8 +399,17 @@ describe('knex', () => {
         'Transaction rejected with non-error: undefined'
       );
     }
-
     expect(errorWasThrown).to.be.true;
+  });
+
+  it('does not reject promise when rolling back a transaction', async () => {
+    const knex = Knex(sqliteConfig);
+    const trxProvider = knex.transactionProvider();
+    const trxPromise = trxProvider();
+
+    await trxPromise.then((trx) => {
+      return trx.rollback();
+    });
   });
 
   it('creating transaction copy with user params should throw an error', () => {
@@ -409,6 +435,7 @@ describe('knex', () => {
     function ClientFoobar(config) {
       SqliteClient.call(this, config);
     }
+
     inherits(ClientFoobar, SqliteClient);
 
     ClientFoobar.prototype._driver = () => {

@@ -29,6 +29,10 @@ module.exports = class Oracle_Transaction extends Transaction {
       .throw(err)
       .catch((error) => {
         if (isUndefined(error)) {
+          if (this.doNotRejectOnRollback) {
+            this._resolver();
+            return;
+          }
           error = new Error(`Transaction rejected with non-error: ${error}`);
         }
 

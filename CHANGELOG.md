@@ -1,5 +1,9 @@
 # Master (Unreleased)
 
+### Bug fixes:
+
+- Do not reject promise on transaction rollback (only for new, non-callback, style of transactions for now to avoid breaking old code) #3235
+
 ### New features:
 
 - Use extension from knexfile for generating migrations unless overriden #3282
