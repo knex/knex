@@ -16,6 +16,7 @@ const SUPPORTED_CLIENTS = Object.freeze(
     'postgres',
     'redshift',
     'sqlite3',
+    'clickhouse',
   ].concat(keys(CLIENT_ALIASES))
 );
 

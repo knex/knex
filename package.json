@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "bluebird": "^3.5.5",
+    "clickhouse": "^1.2.20",
     "colorette": "1.0.8",
     "commander": "^2.20.0",
     "debug": "4.1.1",
@@ -38,6 +39,7 @@
     "lodash": "^4.17.11",
     "mkdirp": "^0.5.1",
     "pg-connection-string": "2.0.0",
+    "sqlstring": "^2.3.1",
     "tarn": "^1.1.5",
     "tildify": "2.0.0",
     "uuid": "^3.3.2",
