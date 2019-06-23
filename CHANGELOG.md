@@ -2,10 +2,11 @@
 
 ### Bug fixes:
 
-- Do not reject promise on transaction rollback (only for new, non-callback, style of transactions for now to avoid breaking old code) #3235
+- Do not reject promise on transaction rollback (by default only for new, non-callback, style of transactions for now to avoid breaking old code) #3235
 
 ### New features:
 
+- Added `doNotRejectOnRollback` options for starting transactions, to prevent rejecting promises on rollback for callback-style transactions.
 - Use extension from knexfile for generating migrations unless overriden #3282
 - Use migrations.extension from config when generating migration #3242
 - Expose executionPromise for transactors #3297
