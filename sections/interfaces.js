@@ -415,7 +415,7 @@ export default [
       "on bindings, etc. Useful for debugging and building queries for running them",
       "manually with DB driver. `.toSQL().toNative()` outputs object with sql string",
       "and bindings in a dialects format in the same way that knex internally sends",
-      "them to unterlying DB driver."
+      "them to underlying DB driver."
     ].join(' '),
     children: [
       {
