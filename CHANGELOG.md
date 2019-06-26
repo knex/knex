@@ -1,5 +1,7 @@
 # Master (Unreleased)
 
+# 0.18.0 - 26 June, 2019
+
 ### Bug fixes:
 
 - Do not reject promise on transaction rollback (by default only for new, non-callback, style of transactions for now to avoid breaking old code) #3235
@@ -21,6 +23,7 @@
 - Drop support for Node.js 6 #3227
 - Remove Babel #3227
 - Remove Bluebird #3290 #3287 #3285 #3267 #3266 #3263
+- Fix comments that were modified by find & replace #3308
 
 ### Typings
 

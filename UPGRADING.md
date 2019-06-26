@@ -7,6 +7,10 @@
 * Knex.Promise was removed, use native promises;
 * Promise is no longer passed to migrations and seeds, use native one.
 
+### Upgrading to version 0.17.0+
+
+* Generic support was implemented for TypeScript bindings, which may break TS builds in some edge cases. Please refer to https://knexjs.org/#typescript-support for more elaborate documentation.
+
 ### Upgrading to version 0.16.0+
 
 * MSSQL: DB versions older than 2008 are no longer supported, make sure to update your DB;
