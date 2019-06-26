@@ -235,7 +235,7 @@ assign(Runner.prototype, {
 
   // Check whether there's a transaction flag, and that it has a connection.
   ensureConnection() {
-    // Use override = require(a builder if passed
+    // Use override from a builder if passed
     if (this.builder._connection) {
       return Bluebird.resolve(this.builder._connection);
     }
@@ -253,7 +253,7 @@ assign(Runner.prototype, {
         throw error;
       })
       .disposer(() => {
-        // need to return promise or null = require(handler to prevent warning = require(bluebird
+        // need to return promise or null from handler to prevent warning from bluebird
         return this.client.releaseConnection(this.connection);
       });
   },

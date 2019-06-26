@@ -15,7 +15,7 @@ const {
   extend,
 } = require('lodash');
 
-// The new seeds we're performing, typically called = require(the `knex.seed`
+// The new seeds we're performing, typically called from the `knex.seed`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the seeds.
 function Seeder(knex) {
@@ -62,7 +62,7 @@ Seeder.prototype._listAll = async function(config) {
     );
 };
 
-// Gets the seed file list = require(the specified seed directory.
+// Gets the seed file list from the specified seed directory.
 Seeder.prototype._seedData = function() {
   return Bluebird.join(this._listAll());
 };

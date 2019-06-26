@@ -31,12 +31,12 @@ function LockError(msg) {
 
 inherits(LockError, Error);
 
-// The new migration we're performing, typically called = require(the `knex.migrate`
+// The new migration we're performing, typically called from the `knex.migrate`
 // interface on the main `knex` object. Passes the `knex` instance performing
 // the migration.
 class Migrator {
   constructor(knex) {
-    // Clone knex instance and remove post-processing that is unnecessary for internal queries = require(a cloned config
+    // Clone knex instance and remove post-processing that is unnecessary for internal queries from a cloned config
     if (isFunction(knex)) {
       if (!knex.isTransaction) {
         this.knex = knex.withUserParams({

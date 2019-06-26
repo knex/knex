@@ -162,7 +162,7 @@ assign(Client_Oracle.prototype, {
       });
   },
 
-  // Process the response as returned = require(the query.
+  // Process the response as returned from the query.
   processResponse(obj, runner) {
     let { response } = obj;
     const { method } = obj;

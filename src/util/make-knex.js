@@ -128,7 +128,7 @@ function _copyEventListeners(eventName, sourceKnex, targetKnex) {
 }
 
 function redefineProperties(knex, client) {
-  // Allow chaining methods = require(the root object, before
+  // Allow chaining methods from the root object, before
   // any other information is specified.
   QueryInterface.forEach(function(method) {
     knex[method] = function() {
@@ -145,7 +145,7 @@ function redefineProperties(knex, client) {
       set(context) {
         knex._context = context;
 
-        // Redefine public API for knex instance that would be proxying methods = require(correct context
+        // Redefine public API for knex instance that would be proxying methods from correct context
         knex.raw = context.raw;
         knex.batchInsert = context.batchInsert;
         knex.transaction = context.transaction;
@@ -221,7 +221,7 @@ function redefineProperties(knex, client) {
     knex[key] = ee[key];
   }
 
-  // Unfortunately, something seems to be broken in Node 6 and removing events = require(a clone also mutates original Knex,
+  // Unfortunately, something seems to be broken in Node 6 and removing events from a clone also mutates original Knex,
   // which is highly undesireable
   if (knex._internalListeners) {
     knex._internalListeners.forEach(({ eventName, listener }) => {
