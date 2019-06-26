@@ -1537,6 +1537,39 @@ export default [
   },
   {
     type: "method",
+    method: "intersect",
+    example: ".intersect([*queries], [wrap])",
+    description: "Creates an intersect query, taking an array or a list of callbacks, builders, or raw statements to build the intersect statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses. The intersect method is unsupported on MySQL.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').whereNull('last_name').intersect(function() {
+            this.select('*').from('users').whereNull('first_name')
+          })
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').whereNull('last_name').intersect([
+            knex.select('*').from('users').whereNull('first_name')
+          ])
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').whereNull('last_name').intersect(
+            knex.raw('select * from users where first_name is null'),
+            knex.raw('select * from users where email is null')
+          )
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "insert",
     example: ".insert(data, [returning])",
     description: "Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#Builder-returning)",
