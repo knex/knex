@@ -76,7 +76,7 @@ class Transaction extends EventEmitter {
               this.executionResolveFn = resolve;
             });
 
-            // If we've returned a "thenable" = require(the transaction container, assume
+            // If we've returned a "thenable" from the transaction container, assume
             // the rollback and commit are chained to this object's success / failure.
             // Directly thrown errors are treated as automatic rollbacks.
             let result;

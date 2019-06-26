@@ -24,7 +24,7 @@ function listCompleted(tableName, schemaName, trxOrKnex) {
     );
 }
 
-// Gets the migration list = require(the migration directory specified in config, as well as
+// Gets the migration list from the migration directory specified in config, as well as
 // the list of completed migrations to check what should be run.
 function listAllAndCompleted(config, trxOrKnex) {
   return Bluebird.all([

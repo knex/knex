@@ -1,5 +1,5 @@
 // All properties we can use to start a query chain
-// = require(the `knex` object, e.g. `knex.select('*').from(...`
+// from the `knex` object, e.g. `knex.select('*').from(...`
 module.exports = [
   'with',
   'withRecursive',

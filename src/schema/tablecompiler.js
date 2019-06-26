@@ -149,7 +149,7 @@ TableCompiler.prototype.getColumnTypes = (columns) =>
     { sql: [], bindings: [] }
   );
 
-// Adds all of the additional queries = require(the "column"
+// Adds all of the additional queries from the "column"
 TableCompiler.prototype.columnQueries = function(columns) {
   const queries = reduce(
     map(columns, tail),
