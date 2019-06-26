@@ -150,5 +150,29 @@ export default [
       books.forEach((book) => book.catalogue_id = ids2[0]);
       await sameTrx('books').insert(books);
     `
+  },
+  {
+    type: "text",
+    content: "You can access promise that gets resolved after transaction is rolled back explicitly by user or committed, or rejected if it gets rolled back by DB itself, when using either way of creating transaction, from field `executionPromise`:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      const trxProvider = knex.transactionProvider();
+      const trx = await trxProvider();
+      const trxPromise = trx.executionPromise;
+      
+      const trx2 = await knex.transaction();
+      const trx2Promise = trx2.executionPromise;
+
+      const trxInitPromise = new Promise(async (resolve, reject) => {
+        knex.transaction((transaction) => {
+          resolve(transaction);
+        });
+      });
+      const trx3 = await trxInitPromise;
+      const trx3Promise = trx3.executionPromise;
+    `
   }
 ]
