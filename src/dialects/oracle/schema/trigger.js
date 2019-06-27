@@ -1,7 +1,7 @@
 const utils = require('../utils');
 
 const trigger = {
-  renameColumnTrigger: function(logger, tableName, columnName, to) {
+  renameColumnTrigger: function(logger, tableName, columnName, to, owner) {
     const triggerName = utils.generateCombinedName(
       logger,
       'autoinc_trg',
@@ -20,6 +20,7 @@ const trigger = {
       `    FROM all_constraints cons, all_cons_columns cols` +
       `    WHERE cons.constraint_type = 'P'` +
       `    AND cons.constraint_name = cols.constraint_name` +
+      `    AND cons.owner = ${owner}` +
       `    AND cons.owner = cols.owner` +
       `    AND cols.table_name = '${tableName}';` +
       `    IF ('${to}' = PK_NAME) THEN` +
@@ -43,7 +44,7 @@ const trigger = {
     );
   },
 
-  createAutoIncrementTrigger: function(logger, tableName) {
+  createAutoIncrementTrigger: function(logger, tableName, owner) {
     const triggerName = utils.generateCombinedName(
       logger,
       'autoinc_trg',
@@ -59,6 +60,7 @@ const trigger = {
       `  FROM all_constraints cons, all_cons_columns cols` +
       `  WHERE cons.constraint_type = 'P'` +
       `  AND cons.constraint_name = cols.constraint_name` +
+      `  AND cons.owner = ${owner}` +
       `  AND cons.owner = cols.owner` +
       `  AND cols.table_name = '${tableName}';` +
       `  execute immediate ('create or replace trigger "${triggerName}"` +
@@ -79,7 +81,7 @@ const trigger = {
     );
   },
 
-  renameTableAndAutoIncrementTrigger: function(logger, tableName, to) {
+  renameTableAndAutoIncrementTrigger: function(logger, tableName, to, owner) {
     const triggerName = utils.generateCombinedName(
       logger,
       'autoinc_trg',
@@ -102,6 +104,7 @@ const trigger = {
       `    FROM all_constraints cons, all_cons_columns cols` +
       `    WHERE cons.constraint_type = 'P'` +
       `    AND cons.constraint_name = cols.constraint_name` +
+      `    AND cons.owner = ${owner}` +
       `    AND cons.owner = cols.owner` +
       `    AND cols.table_name = '${to}';` +
       `    EXECUTE IMMEDIATE ('create or replace trigger "${toTriggerName}"` +

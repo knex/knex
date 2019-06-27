@@ -15,7 +15,8 @@ SchemaCompiler_Oracle.prototype.renameTable = function(tableName, to) {
   const renameTable = Trigger.renameTableAndAutoIncrementTrigger(
     this.client.logger,
     tableName,
-    to
+    to,
+    this.client.config.connection.user
   );
   this.pushQuery(renameTable);
 };
