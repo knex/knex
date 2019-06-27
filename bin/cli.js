@@ -128,16 +128,18 @@ function invoke(env) {
   const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
   let pending = null;
 
+  const cliVersion = [
+    color.blue('Knex CLI version:'),
+    color.green(cliPkg.version),
+  ].join(' ');
+
+  const localVersion = [
+    color.blue('Knex Local version:'),
+    color.green(env.modulePackage.version),
+  ].join(' ');
+
   commander
-    .version(
-      color.blue('Knex CLI version: ', color.green(cliPkg.version)) +
-        '\n' +
-        color.blue(
-          'Local Knex version: ',
-          color.green(env.modulePackage.version)
-        ) +
-        '\n'
-    )
+    .version([cliVersion, localVersion].join('\n'))
     .option('--debug', 'Run with debugging.')
     .option('--knexfile [path]', 'Specify the knexfile path.')
     .option('--knexpath [path]', 'Specify the path to knex instance.')
