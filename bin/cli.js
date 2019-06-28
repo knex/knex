@@ -99,6 +99,8 @@ function initKnex(env, opts) {
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
   const knex = require(env.modulePath);
+  // attach working config after it is populated
+  env.workingConfig = resolvedConfig;
   return knex(resolvedConfig);
 }
 
@@ -197,13 +199,30 @@ function invoke(env) {
       `-x [${filetypes.join('|')}]`,
       'Specify the stub extension (default js)'
     )
+    .option(
+      `--stub [<relative/path/from/knexfile> | <name>]`,
+      'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
+    )
     .action((name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
       const instance = initKnex(env, opts);
       const ext = getMigrationExtension(env, opts);
+      let { stub } = argv;
+      if (stub) {
+        if (!stub.includes('/')) {
+          // stub <name> option used, attempt to prefix the stub directory
+          const stubDirectory = env.workingConfig.migrations.directory;
+          if (!stubDirectory) {
+            console.log(color.red('Failed to load stub'), color.magenta(stub));
+            exit('config.migrations.directory in knexfile must be defined');
+          }
+          stub = path.join(stubDirectory, stub);
+        }
+        console.log('Attemping to use stub:', color.magenta(stub));
+      }
       pending = instance.migrate
-        .make(name, { extension: ext })
+        .make(name, { extension: ext, stub })
         .then((name) => {
           success(color.green(`Created Migration: ${name}`));
         })
