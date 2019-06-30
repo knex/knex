@@ -135,11 +135,11 @@ function invoke(env) {
 
   const localVersion = [
     color.blue('Knex Local version:'),
-    color.green(env.modulePackage.version),
+    color.green(env.modulePackage.version || 'None'),
   ].join(' ');
 
   commander
-    .version([cliVersion, localVersion].join('\n'))
+    .version(`${cliVersion}\n${localVersion}`)
     .option('--debug', 'Run with debugging.')
     .option('--knexfile [path]', 'Specify the knexfile path.')
     .option('--knexpath [path]', 'Specify the path to knex instance.')
