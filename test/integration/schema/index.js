@@ -437,6 +437,8 @@ module.exports = function(knex) {
       });
 
       it('sets default values with defaultTo', function() {
+        const defaultMetadata = { a: 10 };
+        const defaultDetails = { b: { d: 20 } };
         return knex.schema
           .createTable('test_table_three', function(table) {
             table.engine('InnoDB');
@@ -445,9 +447,9 @@ module.exports = function(knex) {
               .notNullable()
               .primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
-            table.json('metadata').defaultTo({a: 10});
+            table.json('metadata').defaultTo(defaultMetadata);
             if (knex.client.driverName === 'pg') {
-              table.jsonb('details').defaultTo({b: {d: 20}});
+              table.jsonb('details').defaultTo(defaultDetails);
             }
           })
           .testSql(function(tester) {
@@ -471,7 +473,7 @@ module.exports = function(knex) {
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('mssql', [
-              'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), [metadata] text default \'{"a":10}\', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
+              'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default \'Lorem ipsum Qui quis qui in.\', [metadata] text default \'{"a":10}\', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
             ]);
           })
           .then(function () {
@@ -489,12 +491,15 @@ module.exports = function(knex) {
               expect(result.paragraph).to.eql(
                 'Lorem ipsum Qui quis qui in.'
               );
+              return;
             }
             if (knex.client.driverName === 'pg') {
-              expect(result.metadata).to.eql({ a: 10 });
-              expect(result.details).to.eql({ b: { d: 20 } });
+              expect(result.metadata).to.eql(defaultMetadata);
+              expect(result.details).to.eql(defaultDetails);
+            } else if (_.isString(result.metadata)) {
+              expect(JSON.parse(result.metadata)).to.eql(defaultMetadata);
             } else {
-              expect(result.metadata).to.eql('{"a":10}');
+              expect(result.metadata).to.eql(defaultMetadata);
             }
           })
       });
