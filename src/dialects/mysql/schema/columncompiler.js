@@ -123,7 +123,10 @@ Object.assign(ColumnCompiler_MySQL.prototype, {
     if (value === null || value === undefined) {
       return;
     }
-
+    if ((this.type === 'json' || this.type === 'jsonb') && isObject(value)) {
+      // Default value for json will work only it is an expression
+      return `default ('${JSON.stringify(value)}')`;
+    }
     const defaultVal = ColumnCompiler_MySQL.super_.prototype.defaultTo.apply(
       this,
       arguments

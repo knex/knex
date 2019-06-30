@@ -82,17 +82,6 @@ assign(ColumnCompiler_MSSQL.prototype, {
   // Modifiers
   // ------
 
-  defaultTo(value) {
-    const defaultVal = ColumnCompiler_MSSQL.super_.prototype.defaultTo.apply(
-      this,
-      arguments
-    );
-    if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
-      return defaultVal;
-    }
-    return '';
-  },
-
   first() {
     this.client.logger.warn('Column first modifier not available for MSSQL');
     return '';

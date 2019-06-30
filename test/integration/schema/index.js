@@ -437,6 +437,8 @@ module.exports = function(knex) {
       });
 
       it('sets default values with defaultTo', function() {
+        const defaultMetadata = { a: 10 };
+        const defaultDetails = { b: { d: 20 } };
         return knex.schema
           .createTable('test_table_three', function(table) {
             table.engine('InnoDB');
@@ -445,31 +447,61 @@ module.exports = function(knex) {
               .notNullable()
               .primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
+            table.json('metadata').defaultTo(defaultMetadata);
+            if (knex.client.driverName === 'pg') {
+              table.jsonb('details').defaultTo(defaultDetails);
+            }
           })
           .testSql(function(tester) {
             tester('mysql', [
-              'create table `test_table_three` (`main` int not null, `paragraph` text) default character set utf8 engine = InnoDB',
+              'create table `test_table_three` (`main` int not null, `paragraph` text, `metadata` json default (\'{"a":10}\')) default character set utf8 engine = InnoDB',
               'alter table `test_table_three` add primary key `test_table_three_pkey`(`main`)',
             ]);
             tester('pg', [
-              'create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\')',
+              'create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', "metadata" json default \'{"a":10}\', "details" jsonb default \'{"b":{"d":20}}\')',
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('pg-redshift', [
-              'create table "test_table_three" ("main" integer not null, "paragraph" varchar(max) default \'Lorem ipsum Qui quis qui in.\')',
+              'create table "test_table_three" ("main" integer not null, "paragraph" varchar(max) default \'Lorem ipsum Qui quis qui in.\',  "metadata" json default \'{"a":10}\', "details" jsonb default \'{"b":{"d":20}}\')',
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('sqlite3', [
-              "create table `test_table_three` (`main` integer not null, `paragraph` text default 'Lorem ipsum Qui quis qui in.', primary key (`main`))",
+              "create table `test_table_three` (`main` integer not null, `paragraph` text default 'Lorem ipsum Qui quis qui in.', `metadata` json default '{\"a\":10}', primary key (`main`))",
             ]);
             tester('oracledb', [
-              'create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\')',
+              'create table "test_table_three" ("main" integer not null, "paragraph" clob default \'Lorem ipsum Qui quis qui in.\', "metadata" clob default \'{"a":10}\')',
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('mssql', [
-              'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
+              'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default \'Lorem ipsum Qui quis qui in.\', [metadata] text default \'{"a":10}\', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
             ]);
-          });
+          })
+          .then(function () {
+            return knex('test_table_three').insert([{
+              main: 1
+            }])
+          })
+          .then(function() {
+            return knex('test_table_three').where({main: 1}).first()
+          })
+          .then(function(result) {
+            expect(result.main).to.equal(1);
+            if (!knex.client.driverName.match(/^mysql/)) {
+              // MySQL doesn't support default values in text columns
+              expect(result.paragraph).to.eql(
+                'Lorem ipsum Qui quis qui in.'
+              );
+              return;
+            }
+            if (knex.client.driverName === 'pg') {
+              expect(result.metadata).to.eql(defaultMetadata);
+              expect(result.details).to.eql(defaultDetails);
+            } else if (_.isString(result.metadata)) {
+              expect(JSON.parse(result.metadata)).to.eql(defaultMetadata);
+            } else {
+              expect(result.metadata).to.eql(defaultMetadata);
+            }
+          })
       });
 
       it('handles numeric length correctly', function() {
