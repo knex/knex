@@ -65,16 +65,17 @@ class Transaction extends EventEmitter {
         const init = client.transacting
           ? this.savepoint(connection)
           : this.begin(connection);
+        const executionPromise = new Bluebird((resolver, rejecter) => {
+          this._resolver = resolver;
+          this._rejecter = rejecter;
+        });
 
         init
           .then(() => {
             return makeTransactor(this, connection, trxClient);
           })
           .then((transactor) => {
-            transactor.executionPromise = new Promise((resolve, reject) => {
-              this.executionRejectFn = reject;
-              this.executionResolveFn = resolve;
-            });
+            transactor.executionPromise = executionPromise;
 
             // If we've returned a "thenable" from the transaction container, assume
             // the rollback and commit are chained to this object's success / failure.
@@ -103,16 +104,7 @@ class Transaction extends EventEmitter {
             return this._rejecter(e);
           });
 
-        return new Bluebird((resolver, rejecter) => {
-          this._resolver = (value) => {
-            this.executionResolveFn(value);
-            resolver(value);
-          };
-          this._rejecter = (err) => {
-            this.executionRejectFn(err);
-            rejecter(err);
-          };
-        });
+        return executionPromise;
       }
     ).catch((err) => {
       if (this.initRejectFn) {
