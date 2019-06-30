@@ -154,8 +154,8 @@ ColumnCompiler.prototype.defaultTo = function(value) {
   } else if (this.type === 'bool') {
     if (value === 'false') value = 0;
     value = `'${value ? 1 : 0}'`;
-  } else if (this.type === 'json' && isObject(value)) {
-    return JSON.stringify(value);
+  } else if ((this.type === 'json' || this.type === 'jsonb') && isObject(value)) {
+    value = `'${JSON.stringify(value)}'`;
   } else {
     value = `'${value}'`;
   }

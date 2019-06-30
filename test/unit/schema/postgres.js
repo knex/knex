@@ -1162,7 +1162,21 @@ describe('PostgreSQL SchemaBuilder', function() {
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
-      'alter table "user" add column "preferences" json not null {}'
+      'alter table "user" add column "preferences" json not null default \'{}\''
+    );
+  });
+
+  it('allows adding default jsonb objects when the column is json', function() {
+    tableSql = client
+      .schemaBuilder()
+      .table('user', function(t) {
+        t.jsonb('preferences')
+          .defaultTo({})
+          .notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      'alter table "user" add column "preferences" jsonb not null default \'{}\''
     );
   });
 
