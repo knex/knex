@@ -473,7 +473,30 @@ module.exports = function(knex) {
             tester('mssql', [
               'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max), [metadata] text default \'{"a":10}\', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
             ]);
-          });
+          })
+          .then(function () {
+            return knex('test_table_three').insert([{
+              main: 1
+            }])
+          })
+          .then(function() {
+            return knex('test_table_three').where({main: 1}).first()
+          })
+          .then(function(result) {
+            expect(result.main).to.equal(1);
+            if (!knex.client.driverName.match(/^mysql/)) {
+              // MySQL doesn't support default values in text columns
+              expect(result.paragraph).to.eql(
+                'Lorem ipsum Qui quis qui in.'
+              );
+            }
+            if (knex.client.driverName === 'pg') {
+              expect(result.metadata).to.eql({ a: 10 });
+              expect(result.details).to.eql({ b: { d: 20 } });
+            } else {
+              expect(result.metadata).to.eql('{"a":10}');
+            }
+          })
       });
 
       it('handles numeric length correctly', function() {
