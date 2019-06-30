@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.18.1 - 30 June, 2019
+
+### Bug fixes:
+
+- Do not reject duplicate promise on transaction rollback #3319
+
 # 0.18.0 - 26 June, 2019
 
 ### Bug fixes:
