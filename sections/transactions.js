@@ -116,7 +116,6 @@ export default [
         })
         .then(trx.commit)
         .catch(trx.rollback);
-      })
     `
   },
   {
