@@ -13,69 +13,14 @@ const cliPkg = require('../package');
 const {
   mkConfigObj,
   resolveKnexFilePath,
+  resolveEnvironmentConfig,
+  exit,
+  success,
+  checkLocalModule,
+  getMigrationExtension,
+  getStubPath,
 } = require('./utils/cli-config-utils');
 const { DEFAULT_EXT } = require('./utils/constants');
-
-function exit(text) {
-  if (text instanceof Error) {
-    console.error(
-      color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
-    );
-  } else {
-    console.error(color.red(text));
-  }
-  process.exit(1);
-}
-
-function success(text) {
-  console.log(text);
-  process.exit(0);
-}
-
-function checkLocalModule(env) {
-  if (!env.modulePath) {
-    console.log(
-      color.red('No local knex install found in:'),
-      color.magenta(tildify(env.cwd))
-    );
-    exit('Try running: npm install knex');
-  }
-}
-
-function getMigrationExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
-
-  let ext = DEFAULT_EXT;
-  if (argv.x) {
-    ext = argv.x;
-  } else if (config.migrations && config.migrations.extension) {
-    ext = config.migrations.extension;
-  } else if (config.ext) {
-    ext = config.ext;
-  }
-  return ext.toLowerCase();
-}
-
-function getStubPath(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
-  const stubDirectory = config.migrations && config.migrations.directory;
-
-  const { stub } = argv;
-  if (!stub) {
-    return null;
-  } else if (stub.includes('/')) {
-    // relative path to stub
-    return stub;
-  }
-
-  // using stub <name> must have config.migrations.directory defined
-  if (!stubDirectory) {
-    console.log(color.red('Failed to load stub'), color.magenta(stub));
-    exit('config.migrations.directory in knexfile must be defined');
-  }
-
-  return path.join(stubDirectory, stub);
-}
 
 function initKnex(env, opts) {
   checkLocalModule(env);
@@ -120,29 +65,7 @@ function initKnex(env, opts) {
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
   const knex = require(env.modulePath);
-  // attach working config after it is populated
-  env.workingConfig = resolvedConfig;
   return knex(resolvedConfig);
-}
-
-function resolveEnvironmentConfig(opts, allConfigs) {
-  const environment = opts.env || process.env.NODE_ENV || 'development';
-  const result = allConfigs[environment] || allConfigs;
-
-  if (allConfigs[environment]) {
-    console.log('Using environment:', color.magenta(environment));
-  }
-
-  if (!result) {
-    console.log(color.red('Warning: unable to read knexfile config'));
-    process.exit(1);
-  }
-
-  if (argv.debug !== undefined) {
-    result.debug = argv.debug;
-  }
-
-  return result;
 }
 
 function invoke(env) {
