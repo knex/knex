@@ -56,6 +56,27 @@ function getMigrationExtension(env, opts) {
   return ext.toLowerCase();
 }
 
+function getStubPath(env, opts) {
+  const config = resolveEnvironmentConfig(opts, env.configuration);
+  const stubDirectory = config.migrations && config.migrations.directory;
+
+  const { stub } = argv;
+  if (!stub) {
+    return null;
+  } else if (stub.includes('/')) {
+    // relative path to stub
+    return stub;
+  }
+
+  // using stub <name> must have config.migrations.directory defined
+  if (!stubDirectory) {
+    console.log(color.red('Failed to load stub'), color.magenta(stub));
+    exit('config.migrations.directory in knexfile must be defined');
+  }
+
+  return path.join(stubDirectory, stub);
+}
+
 function initKnex(env, opts) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
@@ -200,7 +221,7 @@ function invoke(env) {
       'Specify the stub extension (default js)'
     )
     .option(
-      `--stub [<relative/path/from/knexfile> | <name>]`,
+      `--stub [<relative/path/from/knexfile>|<name>]`,
       'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
     )
     .action((name) => {
@@ -208,19 +229,7 @@ function invoke(env) {
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
       const instance = initKnex(env, opts);
       const ext = getMigrationExtension(env, opts);
-      let { stub } = argv;
-      if (stub) {
-        if (!stub.includes('/')) {
-          // stub <name> option used, attempt to prefix the stub directory
-          const stubDirectory = env.workingConfig.migrations.directory;
-          if (!stubDirectory) {
-            console.log(color.red('Failed to load stub'), color.magenta(stub));
-            exit('config.migrations.directory in knexfile must be defined');
-          }
-          stub = path.join(stubDirectory, stub);
-        }
-        console.log('Attemping to use stub:', color.magenta(stub));
-      }
+      const stub = getStubPath(env, opts);
       pending = instance.migrate
         .make(name, { extension: ext, stub })
         .then((name) => {
