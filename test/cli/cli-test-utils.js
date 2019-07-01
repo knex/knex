@@ -1,3 +1,8 @@
+'use strict';
+
+const path = require('path');
+const { FileTestHelper } = require('cli-testlab');
+
 function migrationStubOptionSetup(fileHelper) {
   const migrationGlobPath = 'test/jake-util/knexfile_migrations/*_somename.js';
 
@@ -34,7 +39,18 @@ function migrationMatchesStub(stubPath, migrationGlobPath, fileHelper) {
   return stubContent === migrationContent;
 }
 
+function setupFileHelper() {
+  const fileHelper = new FileTestHelper(
+    path.resolve(__dirname, '../jake-util')
+  );
+  fileHelper.deleteFile('test.sqlite3');
+  fileHelper.registerForCleanup('test.sqlite3');
+
+  return fileHelper;
+}
+
 module.exports = {
   migrationStubOptionSetup,
   migrationMatchesStub,
+  setupFileHelper,
 };
