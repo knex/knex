@@ -98,9 +98,6 @@ class Transaction extends EventEmitter {
             return null;
           })
           .catch((e) => {
-            if (this.initRejectFn) {
-              this.initRejectFn(e);
-            }
             return this._rejecter(e);
           });
 
@@ -109,8 +106,9 @@ class Transaction extends EventEmitter {
     ).catch((err) => {
       if (this.initRejectFn) {
         this.initRejectFn(err);
+      } else {
+        throw err;
       }
-      throw err;
     });
 
     this._completed = false;
