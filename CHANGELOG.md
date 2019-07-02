@@ -1,5 +1,13 @@
 # Master (Unreleased)
 
+# 0.18.2 - 03 July, 2019
+
+### Bug fixes:
+
+- Fix remove duplicate transaction rejection #3324
+- Fix issues around specifying default values for columns #3318
+- CLI: Fix empty --version output #3312
+
 # 0.18.1 - 30 June, 2019
 
 ### Bug fixes:
