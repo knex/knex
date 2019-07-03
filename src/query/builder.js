@@ -25,6 +25,8 @@ const {
 } = require('lodash');
 const saveAsyncStack = require('../util/save-async-stack');
 
+const { lockMode, waitMode } = require('./constants');
+
 // Typically called from `knex.builder`,
 // start a new query building chain.
 function Builder(client) {
@@ -1079,14 +1081,14 @@ assign(Builder.prototype, {
 
   // Set a lock for update constraint.
   forUpdate() {
-    this._single.lock = 'forUpdate';
+    this._single.lock = lockMode.forUpdate;
     this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
     return this;
   },
 
   // Set a lock for share constraint.
   forShare() {
-    this._single.lock = 'forShare';
+    this._single.lock = lockMode.forShare;
     this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
     return this;
   },
@@ -1101,10 +1103,10 @@ assign(Builder.prototype, {
         '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
       );
     }
-    if (this._single.waitMode === 'noWait') {
+    if (this._single.waitMode === waitMode.noWait) {
       throw new Error('.skipLocked() cannot be used together with .noWait()!');
     }
-    this._single.waitMode = 'skipLocked';
+    this._single.waitMode = waitMode.skipLocked;
     return this;
   },
 
@@ -1118,10 +1120,10 @@ assign(Builder.prototype, {
         '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
       );
     }
-    if (this._single.waitMode === 'skipLocked') {
+    if (this._single.waitMode === waitMode.skipLocked) {
       throw new Error('.noWait() cannot be used together with .skipLocked()!');
     }
-    this._single.waitMode = 'noWait';
+    this._single.waitMode = waitMode.noWait;
     return this;
   },
 
@@ -1219,7 +1221,7 @@ assign(Builder.prototype, {
 
   // Helper function that checks if the query has a lock mode set
   _hasLockMode() {
-    return includes(['forShare', 'forUpdate'], this._single.lock);
+    return includes([lockMode.forShare, lockMode.forUpdate], this._single.lock);
   },
 });
 
