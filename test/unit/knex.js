@@ -323,6 +323,9 @@ describe('knex', () => {
       .then((rows) => {
         expect(rows[0].result).to.equal(1);
         return transaction.commit();
+      })
+      .then(() => {
+        return transaction.executionPromise;
       });
   });
 
@@ -405,11 +408,10 @@ describe('knex', () => {
   it('does not reject promise when rolling back a transaction', async () => {
     const knex = Knex(sqliteConfig);
     const trxProvider = knex.transactionProvider();
-    const trxPromise = trxProvider();
+    const trx = await trxProvider();
 
-    await trxPromise.then((trx) => {
-      return trx.rollback();
-    });
+    await trx.rollback();
+    await trx.executionPromise;
   });
 
   it('creating transaction copy with user params should throw an error', () => {
