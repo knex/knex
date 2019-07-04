@@ -377,11 +377,10 @@ module.exports = function(knex) {
 
     it('does not reject promise when rolling back a transaction', async () => {
       const trxProvider = knex.transactionProvider();
-      const trxPromise = trxProvider();
+      const trx = await trxProvider();
 
-      await trxPromise.then((trx) => {
-        return trx.rollback();
-      });
+      await trx.rollback();
+      await trx.executionPromise;
     });
 
     it('should allow for nested transactions', function() {

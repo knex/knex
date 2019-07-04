@@ -53,7 +53,7 @@ function initContext(knexFn) {
       let trx;
       return () => {
         if (!trx) {
-          trx = this.transaction(config);
+          trx = this.transaction(undefined, config);
         }
         return trx;
       };

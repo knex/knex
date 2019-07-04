@@ -8,7 +8,7 @@ const makeKnex = require('./util/make-knex');
 
 const debug = Debug('knex:tx');
 
-const { uniqueId, isUndefined, get } = require('lodash');
+const { uniqueId, isUndefined } = require('lodash');
 
 // Acts as a facade for a Promise, keeping the internal state
 // and managing any child transactions.
@@ -75,7 +75,13 @@ class Transaction extends EventEmitter {
             return makeTransactor(this, connection, trxClient);
           })
           .then((transactor) => {
-            transactor.executionPromise = executionPromise;
+            if (this.initPromise) {
+              transactor.executionPromise = executionPromise.catch((err) => {
+                throw err;
+              });
+            } else {
+              transactor.executionPromise = executionPromise;
+            }
 
             // If we've returned a "thenable" from the transaction container, assume
             // the rollback and commit are chained to this object's success / failure.
@@ -177,10 +183,7 @@ class Transaction extends EventEmitter {
         }
         if (status === 2) {
           if (isUndefined(value)) {
-            if (
-              get(res, 'context.sql', '').toUpperCase() === 'ROLLBACK' &&
-              this.doNotRejectOnRollback
-            ) {
+            if (this.doNotRejectOnRollback && /^ROLLBACK\b/i.test(sql)) {
               this._resolver();
               return;
             }
