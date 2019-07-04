@@ -13,48 +13,14 @@ const cliPkg = require('../package');
 const {
   mkConfigObj,
   resolveKnexFilePath,
+  resolveEnvironmentConfig,
+  exit,
+  success,
+  checkLocalModule,
+  getMigrationExtension,
+  getStubPath,
 } = require('./utils/cli-config-utils');
 const { DEFAULT_EXT } = require('./utils/constants');
-
-function exit(text) {
-  if (text instanceof Error) {
-    console.error(
-      color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
-    );
-  } else {
-    console.error(color.red(text));
-  }
-  process.exit(1);
-}
-
-function success(text) {
-  console.log(text);
-  process.exit(0);
-}
-
-function checkLocalModule(env) {
-  if (!env.modulePath) {
-    console.log(
-      color.red('No local knex install found in:'),
-      color.magenta(tildify(env.cwd))
-    );
-    exit('Try running: npm install knex');
-  }
-}
-
-function getMigrationExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
-
-  let ext = DEFAULT_EXT;
-  if (argv.x) {
-    ext = argv.x;
-  } else if (config.migrations && config.migrations.extension) {
-    ext = config.migrations.extension;
-  } else if (config.ext) {
-    ext = config.ext;
-  }
-  return ext.toLowerCase();
-}
 
 function initKnex(env, opts) {
   checkLocalModule(env);
@@ -100,26 +66,6 @@ function initKnex(env, opts) {
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
   const knex = require(env.modulePath);
   return knex(resolvedConfig);
-}
-
-function resolveEnvironmentConfig(opts, allConfigs) {
-  const environment = opts.env || process.env.NODE_ENV || 'development';
-  const result = allConfigs[environment] || allConfigs;
-
-  if (allConfigs[environment]) {
-    console.log('Using environment:', color.magenta(environment));
-  }
-
-  if (!result) {
-    console.log(color.red('Warning: unable to read knexfile config'));
-    process.exit(1);
-  }
-
-  if (argv.debug !== undefined) {
-    result.debug = argv.debug;
-  }
-
-  return result;
 }
 
 function invoke(env) {
@@ -199,13 +145,18 @@ function invoke(env) {
       `-x [${filetypes.join('|')}]`,
       'Specify the stub extension (default js)'
     )
+    .option(
+      `--stub [<relative/path/from/knexfile>|<name>]`,
+      'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
+    )
     .action((name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
       const instance = initKnex(env, opts);
       const ext = getMigrationExtension(env, opts);
+      const stub = getStubPath(env, opts);
       pending = instance.migrate
-        .make(name, { extension: ext })
+        .make(name, { extension: ext, stub })
         .then((name) => {
           success(color.green(`Created Migration: ${name}`));
         })
