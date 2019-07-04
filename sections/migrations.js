@@ -75,6 +75,30 @@ export default [
     `
   },
   {
+    type:"list",
+    content: [
+      "you can also create your migration using a specific stub file, this serves as a migration template to speed up development for common migration operations",
+      "if the --stub option is not passed, the CLI will use either the knex default stub for the chosen extension, or the config.stub file"
+    ]
+  },
+  {
+    type:"code",
+    content: `
+      $ knex migrate:make --stub </path/to/stub/file>
+
+      # or
+
+      $ knex migrate:make --stub <name>
+    `
+  },
+  {
+    type:"list",
+    content: [
+      "if a stub path is provided, it must be relative to the knexfile.[js, ts, etc] location",
+      "if a <name> is used, the stub is selected by its file name. The CLI will look for this file in the config.migrations.directory folder. If the config.migrations.directory is not defined, this operation will fail",
+    ]
+  },
+  {
     type: "text",
     content: "Once you have finished writing the migrations, you can update the database matching your `NODE_ENV` by running:"
   },
