@@ -1,5 +1,15 @@
 # Master (Unreleased)
 
+# 0.18.3 - 04 July, 2019
+
+### New features:
+
+- CLI: add --stub option to migration:make #3316
+
+### Bug fixes:
+
+- Fix return duplicate transaction promise for standalone transactions #3328
+
 # 0.18.2 - 03 July, 2019
 
 ### Bug fixes:
