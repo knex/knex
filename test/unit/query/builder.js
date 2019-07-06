@@ -6998,6 +6998,86 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('lock for update with skip locked #1937', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .first()
+        .forUpdate()
+        .skipLocked(),
+      {
+        mysql: {
+          sql: 'select * from `foo` limit ? for update skip locked',
+          bindings: [1],
+        },
+        pg: {
+          sql: 'select * from "foo" limit ? for update skip locked',
+          bindings: [1],
+        },
+      }
+    );
+  });
+
+  it('lock for update with nowait #1937', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .first()
+        .forUpdate()
+        .noWait(),
+      {
+        mysql: {
+          sql: 'select * from `foo` limit ? for update nowait',
+          bindings: [1],
+        },
+        pg: {
+          sql: 'select * from "foo" limit ? for update nowait',
+          bindings: [1],
+        },
+      }
+    );
+  });
+
+  it('noWait and skipLocked require a lock mode to be set', function() {
+    expect(function() {
+      qb()
+        .select('*')
+        .noWait()
+        .toString();
+    }).to.throw(
+      '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
+    );
+    expect(function() {
+      qb()
+        .select('*')
+        .skipLocked()
+        .toString();
+    }).to.throw(
+      '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
+    );
+  });
+
+  it('skipLocked conflicts with noWait and vice-versa', function() {
+    expect(function() {
+      qb()
+        .select('*')
+        .forUpdate()
+        .noWait()
+        .skipLocked()
+        .toString();
+    }).to.throw('.skipLocked() cannot be used together with .noWait()!');
+    expect(function() {
+      qb()
+        .select('*')
+        .forUpdate()
+        .skipLocked()
+        .noWait()
+        .toString();
+    }).to.throw('.noWait() cannot be used together with .skipLocked()!');
+  });
+
   it('allows insert values of sub-select, #121', function() {
     testsql(
       qb()

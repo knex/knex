@@ -48,6 +48,16 @@ assign(QueryCompiler_MySQL.prototype, {
     return 'lock in share mode';
   },
 
+  // Only supported on MySQL 8.0+
+  skipLocked() {
+    return 'skip locked';
+  },
+
+  // Supported on MySQL 8.0+ and MariaDB 10.3.0+
+  noWait() {
+    return 'nowait';
+  },
+
   // Compiles a `columnInfo` query.
   columnInfo() {
     const column = this.single.columnInfo;

@@ -25,6 +25,8 @@ const {
 } = require('lodash');
 const saveAsyncStack = require('../util/save-async-stack');
 
+const { lockMode, waitMode } = require('./constants');
+
 // Typically called from `knex.builder`,
 // start a new query building chain.
 function Builder(client) {
@@ -950,10 +952,8 @@ assign(Builder.prototype, {
   // Sets the values for a `select` query, informing that only the first
   // row should be returned (limit 1).
   first() {
-    const { _method } = this;
-
-    if (!includes(['pluck', 'first', 'select'], _method)) {
-      throw new Error(`Cannot chain .first() on "${_method}" query!`);
+    if (!this._isSelectQuery()) {
+      throw new Error(`Cannot chain .first() on "${this._method}" query!`);
     }
 
     const args = new Array(arguments.length);
@@ -1081,15 +1081,49 @@ assign(Builder.prototype, {
 
   // Set a lock for update constraint.
   forUpdate() {
-    this._single.lock = 'forUpdate';
+    this._single.lock = lockMode.forUpdate;
     this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
     return this;
   },
 
   // Set a lock for share constraint.
   forShare() {
-    this._single.lock = 'forShare';
+    this._single.lock = lockMode.forShare;
     this._single.lockTables = helpers.normalizeArr.apply(null, arguments);
+    return this;
+  },
+
+  // Skips locked rows when using a lock constraint.
+  skipLocked() {
+    if (!this._isSelectQuery()) {
+      throw new Error(`Cannot chain .skipLocked() on "${this._method}" query!`);
+    }
+    if (!this._hasLockMode()) {
+      throw new Error(
+        '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
+      );
+    }
+    if (this._single.waitMode === waitMode.noWait) {
+      throw new Error('.skipLocked() cannot be used together with .noWait()!');
+    }
+    this._single.waitMode = waitMode.skipLocked;
+    return this;
+  },
+
+  // Causes error when acessing a locked row instead of waiting for it to be released.
+  noWait() {
+    if (!this._isSelectQuery()) {
+      throw new Error(`Cannot chain .noWait() on "${this._method}" query!`);
+    }
+    if (!this._hasLockMode()) {
+      throw new Error(
+        '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
+      );
+    }
+    if (this._single.waitMode === waitMode.skipLocked) {
+      throw new Error('.noWait() cannot be used together with .skipLocked()!');
+    }
+    this._single.waitMode = waitMode.noWait;
     return this;
   },
 
@@ -1178,6 +1212,16 @@ assign(Builder.prototype, {
   // Helper function for clearing or reseting a grouping type from the builder
   _clearGrouping(grouping) {
     this._statements = reject(this._statements, { grouping });
+  },
+
+  // Helper function that checks if the builder will emit a select query
+  _isSelectQuery() {
+    return includes(['pluck', 'first', 'select'], this._method);
+  },
+
+  // Helper function that checks if the query has a lock mode set
+  _hasLockMode() {
+    return includes([lockMode.forShare, lockMode.forUpdate], this._single.lock);
   },
 });
 
