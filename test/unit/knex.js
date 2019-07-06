@@ -468,4 +468,30 @@ describe('knex', () => {
         });
     });
   });
+
+  describe('extend query builder', () => {
+    let connection;
+    beforeEach(() => {
+      connection = new sqlite3.Database(':memory:');
+    });
+
+    afterEach(() => {
+      connection.close();
+    });
+
+    it('should extend default queryBuilder', (done) => {
+      Knex.QueryBuilder.extend('customSelect', function(value) {
+        return this.select(this.client.raw(`${value} as value`));
+      });
+
+      const knex = Knex({ client: 'sqlite3' });
+      knex
+        .connection(connection)
+        .customSelect(42)
+        .then((result) => {
+          expect(result[0].value).to.equal(42);
+          done();
+        });
+    });
+  });
 });

@@ -43,6 +43,7 @@ function Builder(client) {
   this._notFlag = false;
   this._asColumnFlag = false;
 }
+
 inherits(Builder, EventEmitter);
 
 const validateWithArgs = function(alias, statement, method) {
@@ -1218,5 +1219,9 @@ Builder.prototype.del = Builder.prototype.delete;
 // Attach all of the top level promise methods that should be chainable.
 require('../interface')(Builder);
 helpers.addQueryContext(Builder);
+
+Builder.extend = function(methodName, fn) {
+  assign(Builder.prototype, { [methodName]: fn });
+};
 
 module.exports = Builder;

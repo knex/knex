@@ -1,5 +1,6 @@
 const Raw = require('./raw');
 const Client = require('./client');
+const QueryBuilder = require('./query/builder');
 
 const makeKnex = require('./util/make-knex');
 const parseConnection = require('./util/parse-connection');
@@ -56,6 +57,7 @@ function Knex(config) {
 
 // Expose Client on the main Knex namespace.
 Knex.Client = Client;
+Knex.QueryBuilder = QueryBuilder;
 
 /* eslint no-console:0 */
 

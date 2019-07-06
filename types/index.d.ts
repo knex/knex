@@ -353,6 +353,10 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
   seed: Knex.Seeder;
   fn: Knex.FunctionHelper;
   ref: Knex.RefBuilder;
+
+  QueryBuilder: {
+    extend(methodName: string, fn: Function): void;
+  };
 }
 
 declare function Knex<TRecord = any, TResult = unknown[]>(
