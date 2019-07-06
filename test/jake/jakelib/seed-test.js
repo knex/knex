@@ -35,6 +35,16 @@ test(taskList, 'seed:run prints verbose logs', (temp) => {
   });
 });
 
+test(taskList, 'seed:run runs specific file', () => {
+  return assertExec(
+    `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile.js --knexpath=../knex.js --specific=second.js`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Ran 1 seed files');
+    assert.notInclude(stdout, 'first.js');
+    assert.notInclude(stdout, 'second.js');
+  });
+});
+
 test(taskList, 'Handles seeding errors correctly', (temp) => {
   return assertExecError(
     `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-error-knexfile.js --knexpath=../knex.js`
