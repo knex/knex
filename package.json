@@ -8,11 +8,11 @@
     "node": ">=8"
   },
   "scripts": {
-    "format": "prettier --write \"{src,bin,scripts,test}/**/*.js\"",
+    "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/index.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
+    "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\"",
     "lint:types": "dtslint types",
     "pretest": "npm run lint && npm run lint:types",
     "test": "mocha --exit -t 10000 test/index.js && npm run test:tape && npm run test:cli",
@@ -125,9 +125,9 @@
     }
   ],
   "browser": {
-    "./src/migrate/Migrator.js": "./src/util/noop.js",
-    "./src/bin/cli.js": "./src/util/noop.js",
-    "./src/seed/Seeder.js": "./src/util/noop.js",
+    "./lib/migrate/Migrator.js": "./lib/util/noop.js",
+    "./lib/bin/cli.js": "./lib/util/noop.js",
+    "./lib/seed/Seeder.js": "./lib/util/noop.js",
     "mssql": false,
     "mssql/lib/base": false,
     "tedious": false,
@@ -140,14 +140,14 @@
     "oracledb": false
   },
   "react-native": {
-    "./src/migrate": "./src/util/noop.js",
-    "./src/seed": "./src/util/noop.js"
+    "./lib/migrate": "./lib/util/noop.js",
+    "./lib/seed": "./lib/util/noop.js"
   },
   "files": [
     "CONTRIBUTING.md",
     "README.md",
     "bin/*",
-    "src/*",
+    "lib/*",
     "lib/*",
     "knex.js",
     "LICENSE",

@@ -1,4 +1,4 @@
-const Knex = require('../../src/index');
+const Knex = require('../../lib/index');
 const { expect } = require('chai');
 const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
@@ -433,7 +433,7 @@ describe('knex', () => {
 
   it('throws if client module has not been installed', () => {
     // create dummy dialect which always fails when trying to load driver
-    const SqliteClient = require(`../../src/dialects/sqlite3/index.js`);
+    const SqliteClient = require(`../../lib/dialects/sqlite3/index.js`);
     function ClientFoobar(config) {
       SqliteClient.call(this, config);
     }

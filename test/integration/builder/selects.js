@@ -3,7 +3,7 @@
 
 const _ = require('lodash');
 const assert = require('assert');
-const Runner = require('../../../src/runner');
+const Runner = require('../../../lib/runner');
 
 module.exports = function(knex) {
   describe('Selects', function() {
