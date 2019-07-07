@@ -129,7 +129,7 @@
     "./src/bin/cli.js": "./src/util/noop.js",
     "./src/seed/Seeder.js": "./src/util/noop.js",
     "mssql": false,
-    "mssql/src/base": false,
+    "mssql/lib/base": false,
     "tedious": false,
     "mysql": false,
     "mysql2": false,
