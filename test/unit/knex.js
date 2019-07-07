@@ -495,5 +495,11 @@ describe('knex', () => {
           done();
         });
     });
+
+    it('should throw exception when extending existing method', () => {
+      expect(() =>
+        Knex.QueryBuilder.extend('select', function(value) {})
+      ).to.throw(`Can't extend QueryBuilder with existing method ('select')`);
+    });
   });
 });

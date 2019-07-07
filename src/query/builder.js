@@ -1221,6 +1221,12 @@ require('../interface')(Builder);
 helpers.addQueryContext(Builder);
 
 Builder.extend = function(methodName, fn) {
+  if (Builder.prototype.hasOwnProperty(methodName)) {
+    throw new Error(
+      `Can't extend QueryBuilder with existing method ('${methodName}').`
+    );
+  }
+
   assign(Builder.prototype, { [methodName]: fn });
 };
 
