@@ -57,7 +57,7 @@ function Knex(config) {
 
 // Expose Client on the main Knex namespace.
 Knex.Client = Client;
-Knex.QueryBuilder = QueryBuilder;
+Knex.QueryBuilder = { extend: QueryBuilder.extend };
 
 /* eslint no-console:0 */
 
