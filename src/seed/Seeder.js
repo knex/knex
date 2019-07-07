@@ -23,13 +23,18 @@ function Seeder(knex) {
   this.config = this.setConfig(knex.client.config.seeds);
 }
 
-// Runs all seed files for the given environment.
+// Runs seed files for the given environment.
 Seeder.prototype.run = async function(config) {
   this.config = this.setConfig(config);
   return this._seedData()
     .bind(this)
     .then(([all]) => {
-      return this._runSeeds(all);
+      const files =
+        config && config.specific
+          ? all.filter((file) => file === config.specific)
+          : all;
+
+      return this._runSeeds(files);
     });
 };
 
