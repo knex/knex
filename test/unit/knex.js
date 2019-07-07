@@ -1,4 +1,5 @@
 const Knex = require('../../src/index');
+const QueryBuilder = require('../../src/query/builder');
 const { expect } = require('chai');
 const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
@@ -477,6 +478,7 @@ describe('knex', () => {
 
     afterEach(() => {
       connection.close();
+      delete QueryBuilder.prototype.customSelect;
     });
 
     it('should extend default queryBuilder', (done) => {
