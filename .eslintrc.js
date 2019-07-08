@@ -18,6 +18,7 @@ module.exports = {
     'no-debugger': warning,
     'prefer-const': warning,
     'no-fallthrough': warning,
+    'no-prototype-builtins': warning,
   },
   env: {
     node: true,

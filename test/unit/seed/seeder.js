@@ -1,4 +1,4 @@
-/*global after, before, beforeEach, expect, describe, it*/
+/*global expect*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
