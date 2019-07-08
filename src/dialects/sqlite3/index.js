@@ -65,6 +65,9 @@ assign(Client_SQLite3.prototype, {
     return new Bluebird((resolve, reject) => {
       const db = new this.driver.Database(
         this.connectionSettings.filename,
+        this.driver.OPEN_URI |
+          this.driver.OPEN_READWRITE |
+          this.driver.OPEN_CREATE,
         (err) => {
           if (err) {
             return reject(err);
