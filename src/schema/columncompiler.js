@@ -39,7 +39,7 @@ ColumnCompiler.prototype._defaultMap = {
 };
 
 ColumnCompiler.prototype.defaults = function(label) {
-  if (this._defaultMap.hasOwnProperty(label)) {
+  if (Object.prototype.hasOwnProperty.call(this._defaultMap, label)) {
     return this._defaultMap[label].bind(this)();
   } else {
     throw new Error(
