@@ -1,4 +1,4 @@
-/*global describe, it, expect, before, after*/
+/*global expect*/
 
 'use strict';
 
@@ -473,24 +473,26 @@ module.exports = function(knex) {
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('mssql', [
-              'CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default \'Lorem ipsum Qui quis qui in.\', [metadata] text default \'{"a":10}\', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))',
+              "CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default 'Lorem ipsum Qui quis qui in.', [metadata] text default '{\"a\":10}', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))",
             ]);
           })
-          .then(function () {
-            return knex('test_table_three').insert([{
-              main: 1
-            }])
+          .then(function() {
+            return knex('test_table_three').insert([
+              {
+                main: 1,
+              },
+            ]);
           })
           .then(function() {
-            return knex('test_table_three').where({main: 1}).first()
+            return knex('test_table_three')
+              .where({ main: 1 })
+              .first();
           })
           .then(function(result) {
             expect(result.main).to.equal(1);
             if (!knex.client.driverName.match(/^mysql/)) {
               // MySQL doesn't support default values in text columns
-              expect(result.paragraph).to.eql(
-                'Lorem ipsum Qui quis qui in.'
-              );
+              expect(result.paragraph).to.eql('Lorem ipsum Qui quis qui in.');
               return;
             }
             if (knex.client.driverName === 'pg') {
@@ -501,7 +503,7 @@ module.exports = function(knex) {
             } else {
               expect(result.metadata).to.eql(defaultMetadata);
             }
-          })
+          });
       });
 
       it('handles numeric length correctly', function() {

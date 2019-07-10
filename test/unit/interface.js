@@ -1,5 +1,4 @@
 'use strict';
-/*global describe, it*/
 const _interface = require('../../src/interface');
 const chai = require('chai');
 

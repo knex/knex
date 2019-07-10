@@ -364,7 +364,7 @@ assign(QueryCompiler.prototype, {
     while (++i < wheres.length) {
       const stmt = wheres[i];
       if (
-        stmt.hasOwnProperty('value') &&
+        Object.prototype.hasOwnProperty.call(stmt, 'value') &&
         helpers.containsUndefined(stmt.value)
       ) {
         this._undefinedInWhereClause = true;

@@ -39,12 +39,11 @@ function containsUndefined(mixed) {
       argContainsUndefined = this.containsUndefined(mixed[i]);
     }
   } else if (isPlainObject(mixed)) {
-    for (const key in mixed) {
-      if (mixed.hasOwnProperty(key)) {
-        if (argContainsUndefined) break;
+    Object.keys(mixed).forEach((key) => {
+      if (!argContainsUndefined) {
         argContainsUndefined = this.containsUndefined(mixed[key]);
       }
-    }
+    });
   } else {
     argContainsUndefined = isUndefined(mixed);
   }
