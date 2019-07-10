@@ -1,5 +1,4 @@
 'use strict';
-/*global describe, it*/
 const saveAsyncStack = require('../../../lib/util/save-async-stack');
 const chai = require('chai');
 

@@ -1,4 +1,3 @@
-/*global after, before, describe, it*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 

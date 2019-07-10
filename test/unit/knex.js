@@ -347,7 +347,7 @@ describe('knex', () => {
 
   it('supports accessing execution promise from transaction with a callback', async () => {
     const knex = Knex(sqliteConfig);
-    const trxPromise = new Promise(async (resolve, reject) => {
+    const trxPromise = new Promise((resolve, reject) => {
       knex.transaction((transaction) => {
         resolve(transaction);
       });

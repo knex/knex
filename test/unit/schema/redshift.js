@@ -1,4 +1,4 @@
-/*global describe, expect, it*/
+/*global expect*/
 /* eslint max-len:0 */
 
 'use strict';

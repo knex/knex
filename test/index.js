@@ -1,5 +1,3 @@
-/*global describe*/
-
 'use strict';
 
 require('source-map-support').install();
