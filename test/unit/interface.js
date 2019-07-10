@@ -1,5 +1,5 @@
 'use strict';
-const _interface = require('../../src/interface');
+const _interface = require('../../lib/interface');
 const chai = require('chai');
 
 describe('interface', function() {

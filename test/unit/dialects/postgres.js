@@ -1,7 +1,7 @@
 const knex = require('../../../knex');
 const expect = require('chai').expect;
 const sinon = require('sinon');
-const pgDialect = require('../../../src/dialects/postgres/index.js');
+const pgDialect = require('../../../lib/dialects/postgres/index.js');
 const pg = require('pg');
 const _ = require('lodash');
 

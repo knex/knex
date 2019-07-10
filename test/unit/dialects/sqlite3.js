@@ -2,7 +2,7 @@
 
 'use strict';
 const sinon = require('sinon');
-const DDL = require('../../../src/dialects/sqlite3/schema/ddl');
+const DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 
 it('[backwards compatible] can rename column with double quotes', function() {
   const client = sinon.stub();

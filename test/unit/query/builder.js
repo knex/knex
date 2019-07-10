@@ -2,12 +2,12 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
-var MySQL_Client = require('../../../src/dialects/mysql');
-var PG_Client = require('../../../src/dialects/postgres');
-var Redshift_Client = require('../../../src/dialects/redshift');
-var Oracledb_Client = require('../../../src/dialects/oracledb');
-var SQLite3_Client = require('../../../src/dialects/sqlite3');
-var MSSQL_Client = require('../../../src/dialects/mssql');
+var MySQL_Client = require('../../../lib/dialects/mysql');
+var PG_Client = require('../../../lib/dialects/postgres');
+var Redshift_Client = require('../../../lib/dialects/redshift');
+var Oracledb_Client = require('../../../lib/dialects/oracledb');
+var SQLite3_Client = require('../../../lib/dialects/sqlite3');
+var MSSQL_Client = require('../../../lib/dialects/mssql');
 
 // use driverName as key
 var clients = {

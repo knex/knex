@@ -3,7 +3,7 @@
 'use strict';
 
 const sinon = require('sinon');
-const Oracle_Client = require('../../../src/dialects/oracledb');
+const Oracle_Client = require('../../../lib/dialects/oracledb');
 const client = new Oracle_Client({ client: 'oracledb' });
 
 describe('OracleDb SchemaBuilder', function() {

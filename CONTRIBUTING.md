@@ -1,6 +1,6 @@
 ## How to contribute to Knex.js
 
-- Make changes in the `/src` directory. 
+- Make changes in the `/lib` directory. 
 
 - Before sending a pull request for a feature or bug fix, be sure to have
   [tests](https://github.com/tgriesser/knex/tree/master/test). Every pull request that changes the queries should have
@@ -33,7 +33,7 @@ So if you like to write your own dialect, you can just inherit own dialect from 
 require('sqlite3-offline');
 const Knex = require('knex');
 
-const Dialect = require(`knex/src/dialects/sqlite3/index.js`);
+const Dialect = require(`knex/lib/dialects/sqlite3/index.js`);
 Dialect.prototype._driver = () => require('sqlite3-offline');
 
 const knex = Knex({
