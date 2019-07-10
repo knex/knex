@@ -1,5 +1,17 @@
 # Master (Unreleased)
 
+# 0.18.4 - 10 July, 2019
+
+### New features:
+
+- Seeds: Option to run specific seed file #3335
+- Implement "skipLocked()" and "noWait()" #2961
+
+### Bug fixes:
+
+- CLI: Respect the knexfile stub option while generating a migration #3337
+- Fix mssql import not being ignored, breaking webpack builds #3336
+
 # 0.18.3 - 04 July, 2019
 
 ### New features:
