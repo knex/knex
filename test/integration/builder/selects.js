@@ -1,4 +1,4 @@
-/*global describe, expect, it, d*/
+/*global expect, d*/
 'use strict';
 
 const _ = require('lodash');

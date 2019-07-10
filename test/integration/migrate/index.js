@@ -1,4 +1,4 @@
-/*global after, before, describe, expect, it*/
+/*global expect*/
 'use strict';
 
 const equal = require('assert').equal;

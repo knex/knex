@@ -160,7 +160,7 @@ function replaceKeyBindings(raw, formatter) {
     const value = values[part];
 
     if (value === undefined) {
-      if (values.hasOwnProperty(part)) {
+      if (Object.prototype.hasOwnProperty.call(values, part)) {
         formatter.bindings.push(value);
       }
 

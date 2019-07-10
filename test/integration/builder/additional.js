@@ -1,4 +1,4 @@
-/*global describe, expect, it*/
+/*global expect*/
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
@@ -679,7 +679,7 @@ module.exports = function(knex) {
         },
       };
 
-      if (!testQueries.hasOwnProperty(driverName)) {
+      if (!Object.prototype.hasOwnProperty.call(testQueries, driverName)) {
         throw new Error('Missing test query for driver: ' + driverName);
       }
 
@@ -732,7 +732,7 @@ module.exports = function(knex) {
         },
       };
 
-      if (!testQueries.hasOwnProperty(driverName)) {
+      if (!Object.prototype.hasOwnProperty.call(testQueries, driverName)) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
 
@@ -765,7 +765,9 @@ module.exports = function(knex) {
         },
       };
 
-      if (!getProcessesQueries.hasOwnProperty(driverName)) {
+      if (
+        !Object.prototype.hasOwnProperty.call(getProcessesQueries, driverName)
+      ) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
 
@@ -849,7 +851,7 @@ module.exports = function(knex) {
         },
       };
 
-      if (!testQueries.hasOwnProperty(driverName)) {
+      if (!Object.prototype.hasOwnProperty.call(testQueries, driverName)) {
         throw new Error('Missing test query for dialect: ' + driverName);
       }
 
@@ -891,7 +893,7 @@ module.exports = function(knex) {
         pg: (sleepSeconds) => `SELECT pg_sleep(${sleepSeconds})`,
       };
 
-      if (!rawTestQueries.hasOwnProperty(driverName)) {
+      if (!Object.prototype.hasOwnProperty.call(rawTestQueries, driverName)) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
 

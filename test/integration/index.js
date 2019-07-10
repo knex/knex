@@ -1,5 +1,3 @@
-/*global after*/
-
 'use strict';
 
 const knex = require('../../knex');
