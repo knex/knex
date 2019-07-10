@@ -43,7 +43,7 @@ Instead, use "mysql" or "mysql2" dialects.
 
 ```
 await knex.migrate.latest({
-    directory: 'lib/services/orders/database/migrations',
+    directory: 'src/services/orders/database/migrations',
     tableName: 'orders.orders_migrations'
 })
 ```
@@ -52,7 +52,7 @@ Instead, starting from 0.14.5 you should use new parameter schemaName:
 
 ```
 await knex.migrate.latest({
-    directory: 'lib/services/orders/database/migrations',
+    directory: 'src/services/orders/database/migrations',
     tableName: 'orders_migrations',
     schemaName: 'orders'
 })
