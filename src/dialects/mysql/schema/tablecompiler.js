@@ -5,8 +5,6 @@
 const inherits = require('inherits');
 const TableCompiler = require('../../../schema/tablecompiler');
 
-const { assign } = require('lodash');
-
 // Table Compiler
 // ------
 
@@ -16,7 +14,7 @@ function TableCompiler_MySQL() {
 
 inherits(TableCompiler_MySQL, TableCompiler);
 
-assign(TableCompiler_MySQL.prototype, {
+Object.assign(TableCompiler_MySQL.prototype, {
   createQuery(columns, ifNot) {
     const createStatement = ifNot
       ? 'create table if not exists '

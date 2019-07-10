@@ -1,6 +1,6 @@
 // MSSQL Client
 // -------
-const { assign, map, flatten, values } = require('lodash');
+const { map, flatten, values } = require('lodash');
 const inherits = require('inherits');
 
 const Client = require('../../client');
@@ -40,7 +40,7 @@ function Client_MSSQL(config = {}) {
 
 inherits(Client_MSSQL, Client);
 
-assign(Client_MSSQL.prototype, {
+Object.assign(Client_MSSQL.prototype, {
   dialect: 'mssql',
 
   driverName: 'mssql',

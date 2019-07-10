@@ -1,6 +1,6 @@
 // Oracle Client
 // -------
-const { assign, map, flatten, values } = require('lodash');
+const { map, flatten, values } = require('lodash');
 
 const inherits = require('inherits');
 const Client = require('../../client');
@@ -25,7 +25,7 @@ function Client_Oracle(config) {
 
 inherits(Client_Oracle, Client);
 
-assign(Client_Oracle.prototype, {
+Object.assign(Client_Oracle.prototype, {
   dialect: 'oracle',
 
   driverName: 'oracle',

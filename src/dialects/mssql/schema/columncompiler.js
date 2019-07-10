@@ -3,8 +3,6 @@
 const inherits = require('inherits');
 const ColumnCompiler = require('../../../schema/columncompiler');
 
-const { assign } = require('lodash');
-
 function ColumnCompiler_MSSQL() {
   ColumnCompiler.apply(this, arguments);
   this.modifiers = ['nullable', 'defaultTo', 'first', 'after', 'comment'];
@@ -14,7 +12,7 @@ inherits(ColumnCompiler_MSSQL, ColumnCompiler);
 // Types
 // ------
 
-assign(ColumnCompiler_MSSQL.prototype, {
+Object.assign(ColumnCompiler_MSSQL.prototype, {
   increments: 'int identity(1,1) not null primary key',
 
   bigincrements: 'bigint identity(1,1) not null primary key',

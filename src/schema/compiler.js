@@ -1,6 +1,6 @@
 const { pushQuery, pushAdditional, unshiftQuery } = require('./helpers');
 
-const { assign, isUndefined } = require('lodash');
+const { isUndefined } = require('lodash');
 
 // The "SchemaCompiler" takes all of the query statements which have been
 // gathered in the "SchemaBuilder" and turns them into an array of
@@ -14,7 +14,7 @@ function SchemaCompiler(client, builder) {
   this.sequence = [];
 }
 
-assign(SchemaCompiler.prototype, {
+Object.assign(SchemaCompiler.prototype, {
   pushQuery: pushQuery,
 
   pushAdditional: pushAdditional,

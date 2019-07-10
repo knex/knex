@@ -1,4 +1,3 @@
-const { assign } = require('lodash');
 const assert = require('assert');
 
 // JoinClause
@@ -52,7 +51,7 @@ function getClauseFromArguments(compilerType, bool, first, operator, second) {
   return data;
 }
 
-assign(JoinClause.prototype, {
+Object.assign(JoinClause.prototype, {
   grouping: 'join',
 
   // Adds an "on" clause to the current join object.

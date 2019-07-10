@@ -6,7 +6,7 @@ const TableCompiler = require('../../../schema/tablecompiler');
 const helpers = require('../../../helpers');
 const Trigger = require('./trigger');
 
-const { assign, map } = require('lodash');
+const { map } = require('lodash');
 
 // Table Compiler
 // ------
@@ -16,7 +16,7 @@ function TableCompiler_Oracle() {
 }
 inherits(TableCompiler_Oracle, TableCompiler);
 
-assign(TableCompiler_Oracle.prototype, {
+Object.assign(TableCompiler_Oracle.prototype, {
   addColumns(columns, prefix) {
     if (columns.sql.length > 0) {
       prefix = prefix || this.addColumnsPrefix;

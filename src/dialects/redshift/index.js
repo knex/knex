@@ -2,7 +2,7 @@
 // -------
 const inherits = require('inherits');
 const Client_PG = require('../postgres');
-const { assign, map } = require('lodash');
+const { map } = require('lodash');
 
 const Transaction = require('./transaction');
 const QueryCompiler = require('./query/compiler');
@@ -16,7 +16,7 @@ function Client_Redshift(config) {
 }
 inherits(Client_Redshift, Client_PG);
 
-assign(Client_Redshift.prototype, {
+Object.assign(Client_Redshift.prototype, {
   transaction() {
     return new Transaction(this, ...arguments);
   },

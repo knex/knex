@@ -1,4 +1,3 @@
-const { assign, isArray } = require('lodash');
 const Bluebird = require('bluebird');
 
 let PassThrough;
@@ -16,7 +15,7 @@ function Runner(client, builder) {
   this.connection = void 0;
 }
 
-assign(Runner.prototype, {
+Object.assign(Runner.prototype, {
   // "Run" the target, calling "toSQL" on the builder, returning
   // an object or array of queries to run, each of which are run on
   // a single connection.
@@ -34,7 +33,7 @@ assign(Runner.prototype, {
           runner.client.logger.debug(sql);
         }
 
-        if (isArray(sql)) {
+        if (Array.isArray(sql)) {
           return runner.queryArray(sql);
         }
         return runner.query(sql);
@@ -88,7 +87,7 @@ assign(Runner.prototype, {
       try {
         const sql = runner.builder.toSQL();
 
-        if (isArray(sql) && hasHandler) {
+        if (Array.isArray(sql) && hasHandler) {
           throw new Error(
             'The stream may only be used with a single query statement.'
           );
@@ -130,7 +129,7 @@ assign(Runner.prototype, {
   query: async function(obj) {
     const { __knexUid, __knexTxId } = this.connection;
 
-    this.builder.emit('query', assign({ __knexUid, __knexTxId }, obj));
+    this.builder.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
 
     const runner = this;
     let queryPromise = this.client.query(this.connection, obj);
@@ -154,14 +153,14 @@ assign(Runner.prototype, {
         this.builder.emit(
           'query-response',
           postProcessedResponse,
-          assign({ __knexUid: this.connection.__knexUid }, obj),
+          Object.assign({ __knexUid: this.connection.__knexUid }, obj),
           this.builder
         );
 
         this.client.emit(
           'query-response',
           postProcessedResponse,
-          assign({ __knexUid: this.connection.__knexUid }, obj),
+          Object.assign({ __knexUid: this.connection.__knexUid }, obj),
           this.builder
         );
 
@@ -191,7 +190,7 @@ assign(Runner.prototype, {
             this.connection.__knex__disposed = error;
 
             // cancellation failed
-            throw assign(cancelError, {
+            throw Object.assign(cancelError, {
               message: `After query timeout of ${timeout}ms exceeded, cancelling of query failed.`,
               sql,
               bindings,
@@ -200,7 +199,7 @@ assign(Runner.prototype, {
           })
           .then(() => {
             // cancellation succeeded, rethrow timeout error
-            throw assign(error, {
+            throw Object.assign(error, {
               message: `Defined query timeout of ${timeout}ms exceeded when running query.`,
               sql,
               bindings,
@@ -212,7 +211,7 @@ assign(Runner.prototype, {
         this.builder.emit(
           'query-error',
           error,
-          assign({ __knexUid: this.connection.__knexUid }, obj)
+          Object.assign({ __knexUid: this.connection.__knexUid }, obj)
         );
         throw error;
       });
