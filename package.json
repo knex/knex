@@ -35,7 +35,7 @@
     "inherits": "~2.0.4",
     "interpret": "^1.2.0",
     "liftoff": "3.1.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.14",
     "mkdirp": "^0.5.1",
     "pg-connection-string": "2.0.0",
     "tarn": "^1.1.5",
@@ -63,7 +63,7 @@
     "eslint-plugin-import": "^2.18.0",
     "husky": "^3.0.0",
     "jake": "^8.1.1",
-    "lint-staged": "^9.1.0",
+    "lint-staged": "^9.2.0",
     "mocha": "^6.1.4",
     "mock-fs": "^4.10.1",
     "mssql": "^5.1.0",
@@ -81,7 +81,7 @@
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0",
     "toxiproxy-node-client": "^2.0.6",
-    "typescript": "^3.5.2",
+    "typescript": "^3.5.3",
     "webpack-cli": "^3.3.5"
   },
   "buildDependencies": [
