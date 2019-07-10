@@ -1,4 +1,4 @@
-const { assign, uniq, map } = require('lodash');
+const { uniq, map } = require('lodash');
 const inherits = require('inherits');
 const Raw = require('../../../raw');
 const ColumnCompiler = require('../../../schema/columncompiler');
@@ -13,7 +13,7 @@ function ColumnCompiler_Oracle() {
 }
 inherits(ColumnCompiler_Oracle, ColumnCompiler);
 
-assign(ColumnCompiler_Oracle.prototype, {
+Object.assign(ColumnCompiler_Oracle.prototype, {
   // helper function for pushAdditional in increments() and bigincrements()
   _createAutoIncrementTriggerAndSequence() {
     // TODO Add warning that sequence etc is created

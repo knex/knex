@@ -21,7 +21,7 @@ const inherits = require('inherits');
 const { EventEmitter } = require('events');
 
 const { makeEscape } = require('./query/string');
-const { assign, uniqueId, cloneDeep, defaults } = require('lodash');
+const { uniqueId, cloneDeep, defaults } = require('lodash');
 
 const Logger = require('./logger');
 
@@ -69,7 +69,7 @@ function Client(config = {}) {
 
 inherits(Client, EventEmitter);
 
-assign(Client.prototype, {
+Object.assign(Client.prototype, {
   formatter(builder) {
     return new Formatter(this, builder);
   },
@@ -149,7 +149,7 @@ assign(Client.prototype, {
 
     const { __knexUid, __knexTxId } = connection;
 
-    this.emit('query', assign({ __knexUid, __knexTxId }, obj));
+    this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
     debugQuery(obj.sql, __knexTxId);
     debugBindings(obj.bindings, __knexTxId);
 
@@ -158,7 +158,11 @@ assign(Client.prototype, {
     return this._query(connection, obj).catch((err) => {
       err.message =
         this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message;
-      this.emit('query-error', err, assign({ __knexUid, __knexTxId }, obj));
+      this.emit(
+        'query-error',
+        err,
+        Object.assign({ __knexUid, __knexTxId }, obj)
+      );
       throw err;
     });
   },
@@ -169,7 +173,7 @@ assign(Client.prototype, {
 
     const { __knexUid, __knexTxId } = connection;
 
-    this.emit('query', assign({ __knexUid, __knexTxId }, obj));
+    this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
     debugQuery(obj.sql, __knexTxId);
     debugBindings(obj.bindings, __knexTxId);
 

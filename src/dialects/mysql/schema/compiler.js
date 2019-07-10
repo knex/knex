@@ -3,14 +3,14 @@
 const inherits = require('inherits');
 const SchemaCompiler = require('../../../schema/compiler');
 
-const { assign, some } = require('lodash');
+const { some } = require('lodash');
 
 function SchemaCompiler_MySQL(client, builder) {
   SchemaCompiler.call(this, client, builder);
 }
 inherits(SchemaCompiler_MySQL, SchemaCompiler);
 
-assign(SchemaCompiler_MySQL.prototype, {
+Object.assign(SchemaCompiler_MySQL.prototype, {
   // Rename a table on the schema.
   renameTable(tableName, to) {
     this.pushQuery(

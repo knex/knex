@@ -1,11 +1,11 @@
 const Transaction = require('../../transaction');
 const debug = require('debug')('knex:tx');
 
-const { assign, isUndefined } = require('lodash');
+const { isUndefined } = require('lodash');
 
 class Transaction_MySQL2 extends Transaction {}
 
-assign(Transaction_MySQL2.prototype, {
+Object.assign(Transaction_MySQL2.prototype, {
   query(conn, sql, status, value) {
     const t = this;
     const q = this.trxClient

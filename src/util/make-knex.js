@@ -4,7 +4,7 @@ const { Migrator } = require('../migrate/Migrator');
 const Seeder = require('../seed/Seeder');
 const FunctionHelper = require('../functionhelper');
 const QueryInterface = require('../query/methods');
-const { assign, merge } = require('lodash');
+const { merge } = require('lodash');
 const batchInsert = require('./batchInsert');
 
 function makeKnex(client) {
@@ -19,7 +19,7 @@ function makeKnex(client) {
 
 function initContext(knexFn) {
   const knexContext = knexFn.context || {};
-  assign(knexContext, {
+  Object.assign(knexContext, {
     queryBuilder() {
       return this.client.queryBuilder();
     },

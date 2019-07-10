@@ -1,7 +1,7 @@
 // MySQL Client
 // -------
 const inherits = require('inherits');
-
+const { map } = require('lodash');
 const Client = require('../../client');
 const Bluebird = require('bluebird');
 
@@ -11,7 +11,6 @@ const SchemaCompiler = require('./schema/compiler');
 const TableCompiler = require('./schema/tablecompiler');
 const ColumnCompiler = require('./schema/columncompiler');
 
-const { assign, map } = require('lodash');
 const { makeEscape } = require('../../query/string');
 
 // Always initialize with the "QueryBuilder" and "QueryCompiler"
@@ -23,7 +22,7 @@ function Client_MySQL(config) {
 
 inherits(Client_MySQL, Client);
 
-assign(Client_MySQL.prototype, {
+Object.assign(Client_MySQL.prototype, {
   dialect: 'mysql',
 
   driverName: 'mysql',
@@ -101,7 +100,7 @@ assign(Client_MySQL.prototype, {
   // and pass that through to the stream we've sent back to the client.
   _stream(connection, obj, stream, options) {
     options = options || {};
-    const queryOptions = assign({ sql: obj.sql }, obj.options);
+    const queryOptions = Object.assign({ sql: obj.sql }, obj.options);
     return new Bluebird((resolver, rejecter) => {
       stream.on('error', rejecter);
       stream.on('end', resolver);
@@ -127,7 +126,7 @@ assign(Client_MySQL.prototype, {
         resolver();
         return;
       }
-      const queryOptions = assign({ sql: obj.sql }, obj.options);
+      const queryOptions = Object.assign({ sql: obj.sql }, obj.options);
       connection.query(queryOptions, obj.bindings, function(err, rows, fields) {
         if (err) return rejecter(err);
         obj.response = [rows, fields];
@@ -148,7 +147,9 @@ assign(Client_MySQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first': {
-        if (method === 'pluck') return map(rows, obj.pluck);
+        if (method === 'pluck') {
+          return map(rows, obj.pluck);
+        }
         return method === 'first' ? rows[0] : rows;
       }
       case 'insert':

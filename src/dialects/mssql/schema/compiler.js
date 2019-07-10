@@ -3,14 +3,12 @@
 const inherits = require('inherits');
 const SchemaCompiler = require('../../../schema/compiler');
 
-const { assign } = require('lodash');
-
 function SchemaCompiler_MSSQL(client, builder) {
   SchemaCompiler.call(this, client, builder);
 }
 inherits(SchemaCompiler_MSSQL, SchemaCompiler);
 
-assign(SchemaCompiler_MSSQL.prototype, {
+Object.assign(SchemaCompiler_MSSQL.prototype, {
   dropTablePrefix: 'DROP TABLE ',
   dropTableIfExists(tableName) {
     const name = this.formatter.wrap(prefixedTableName(this.schema, tableName));

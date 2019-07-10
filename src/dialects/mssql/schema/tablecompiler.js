@@ -6,8 +6,6 @@ const inherits = require('inherits');
 const TableCompiler = require('../../../schema/tablecompiler');
 const helpers = require('../../../helpers');
 
-const { assign } = require('lodash');
-
 // Table Compiler
 // ------
 
@@ -16,7 +14,7 @@ function TableCompiler_MSSQL() {
 }
 inherits(TableCompiler_MSSQL, TableCompiler);
 
-assign(TableCompiler_MSSQL.prototype, {
+Object.assign(TableCompiler_MSSQL.prototype, {
   createAlterTableMethods: ['foreign', 'primary'],
   createQuery(columns, ifNot) {
     const createStatement = ifNot

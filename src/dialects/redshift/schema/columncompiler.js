@@ -4,14 +4,12 @@
 const inherits = require('inherits');
 const ColumnCompiler_PG = require('../../postgres/schema/columncompiler');
 
-const { assign } = require('lodash');
-
 function ColumnCompiler_Redshift() {
   ColumnCompiler_PG.apply(this, arguments);
 }
 inherits(ColumnCompiler_Redshift, ColumnCompiler_PG);
 
-assign(ColumnCompiler_Redshift.prototype, {
+Object.assign(ColumnCompiler_Redshift.prototype, {
   // Types:
   // ------
   bigincrements: 'bigint identity(1,1) primary key not null',

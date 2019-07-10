@@ -1,9 +1,9 @@
-const { isEmpty, isArray, map, clone, each } = require('lodash');
+const { isEmpty, map, clone, each } = require('lodash');
 
 module.exports = function(Target) {
   Target.prototype.toQuery = function(tz) {
     let data = this.toSQL(this._method, tz);
-    if (!isArray(data)) data = [data];
+    if (!Array.isArray(data)) data = [data];
     return map(data, (statement) => {
       return this.client._formatQuery(statement.sql, statement.bindings, tz);
     }).join(';\n');
