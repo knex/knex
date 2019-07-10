@@ -2,12 +2,12 @@
 
 const path = require('path');
 const { execCommand } = require('cli-testlab');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 const {
   migrationStubOptionSetup,
-  migrationMatchesStub,
+  expectMigrationMatchesStub,
   setupFileHelper,
 } = require('./cli-test-utils');
 
@@ -252,9 +252,28 @@ development: {
         'test/jake-util/knexfile_migrations/*_somename.js'
       );
       expect(fileCount).to.equal(1);
-      expect(
-        migrationMatchesStub(stubPath, migrationGlobPath, fileHelper)
-      ).equal(true);
+      expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper);
+    });
+
+    it('Create a new migration with stub parameter in knexfile', async () => {
+      const migrationGlobPath = 'test/jake-util/knexfile-stubs/*_somename.js';
+      fileHelper.registerGlobForCleanup(migrationGlobPath);
+
+      await execCommand(
+        `node ${KNEX} migrate:make somename --knexfile=test/jake-util/knexfile-stubs/knexfile.js --knexpath=../knex.js`,
+        {
+          expectedOutput: 'Created Migration',
+        }
+      );
+
+      const fileCount = fileHelper.fileGlobExists(
+        'test/jake-util/knexfile-stubs/*_somename.js'
+      );
+
+      const stubName = 'table.stub';
+      const stubPath = `test/jake-util/knexfile-stubs/${stubName}`;
+      expect(fileCount).to.equal(1);
+      expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper);
     });
 
     it('Create a new migration with --stub <name> in config.migrations.directory', async () => {
@@ -274,9 +293,7 @@ development: {
         'test/jake-util/knexfile_migrations/*_somename.js'
       );
       expect(fileCount).to.equal(1);
-      expect(
-        migrationMatchesStub(stubPath, migrationGlobPath, fileHelper)
-      ).equal(true);
+      expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper);
     });
 
     it('Create a new migration with --stub <name> when file does not exist', async () => {

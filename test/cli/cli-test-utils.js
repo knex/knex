@@ -2,6 +2,7 @@
 
 const path = require('path');
 const { FileTestHelper } = require('cli-testlab');
+const { expect } = require('chai');
 
 function migrationStubOptionSetup(fileHelper) {
   const migrationGlobPath = 'test/jake-util/knexfile_migrations/*_somename.js';
@@ -28,7 +29,7 @@ function migrationStubOptionSetup(fileHelper) {
   return { migrationGlobPath };
 }
 
-function migrationMatchesStub(stubPath, migrationGlobPath, fileHelper) {
+function expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper) {
   // accepts full or relative stub path
   const relativeStubPath = stubPath.replace('test/jake-util/', '');
   const stubContent = fileHelper.getFileTextContent(relativeStubPath);
@@ -36,7 +37,7 @@ function migrationMatchesStub(stubPath, migrationGlobPath, fileHelper) {
     migrationGlobPath
   );
 
-  return stubContent === migrationContent;
+  expect(migrationContent).equals(stubContent);
 }
 
 function setupFileHelper() {
@@ -50,7 +51,7 @@ function setupFileHelper() {
 }
 
 module.exports = {
+  expectMigrationMatchesStub,
   migrationStubOptionSetup,
-  migrationMatchesStub,
   setupFileHelper,
 };
