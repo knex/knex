@@ -1,7 +1,7 @@
 // MySQL Client
 // -------
 const inherits = require('inherits');
-
+const { map } = require('lodash');
 const Client = require('../../client');
 const Bluebird = require('bluebird');
 
@@ -147,12 +147,8 @@ Object.assign(Client_MySQL.prototype, {
       case 'select':
       case 'pluck':
       case 'first': {
-        if (!rows) {
-          return [];
-        }
-
         if (method === 'pluck') {
-          return rows.map(obj.pluck);
+          return map(rows, obj.pluck);
         }
         return method === 'first' ? rows[0] : rows;
       }

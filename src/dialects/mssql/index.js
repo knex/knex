@@ -13,8 +13,6 @@ const SchemaCompiler = require('./schema/compiler');
 const TableCompiler = require('./schema/tablecompiler');
 const ColumnCompiler = require('./schema/columncompiler');
 
-const { isArray } = Array;
-
 const SQL_INT4 = { MIN: -2147483648, MAX: 2147483647 };
 const SQL_BIGINT_SAFE = { MIN: -9007199254740991, MAX: 9007199254740991 };
 
@@ -350,7 +348,7 @@ Object.assign(Client_MSSQL.prototype, {
           }
 
           if (
-            (isArray(obj.returning) && obj.returning.length > 1) ||
+            (Array.isArray(obj.returning) && obj.returning.length > 1) ||
             obj.returning[0] === '*'
           ) {
             return response;

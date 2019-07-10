@@ -1,4 +1,4 @@
-const { isNumber, isArray, chunk, flatten, assign } = require('lodash');
+const { isNumber, chunk, flatten } = require('lodash');
 const Bluebird = require('bluebird');
 
 module.exports = function batchInsert(
@@ -22,7 +22,7 @@ module.exports = function batchInsert(
       client.transaction(resolve).catch(reject);
     });
 
-  const wrapper = assign(
+  const wrapper = Object.assign(
     new Bluebird((resolve, reject) => {
       const chunks = chunk(batch, chunkSize);
 
@@ -30,7 +30,7 @@ module.exports = function batchInsert(
         return reject(new TypeError(`Invalid chunkSize: ${chunkSize}`));
       }
 
-      if (!isArray(batch)) {
+      if (!Array.isArray(batch)) {
         return reject(
           new TypeError(`Invalid batch: Expected array, got ${typeof batch}`)
         );

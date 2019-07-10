@@ -1,6 +1,6 @@
 // PostgreSQL
 // -------
-const { extend, isString } = require('lodash');
+const { map, extend, isString } = require('lodash');
 const inherits = require('inherits');
 const Client = require('../../client');
 const Bluebird = require('bluebird');
@@ -248,7 +248,7 @@ Object.assign(Client_PG.prototype, {
     const { returning } = obj;
     if (resp.command === 'SELECT') {
       if (obj.method === 'first') return resp.rows[0];
-      if (obj.method === 'pluck') return resp.rows.map(obj.pluck);
+      if (obj.method === 'pluck') return map(resp.rows, obj.pluck);
       return resp.rows;
     }
     if (returning) {

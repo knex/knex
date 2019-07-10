@@ -3,7 +3,7 @@
 const Bluebird = require('bluebird');
 
 const inherits = require('inherits');
-const { isUndefined, map, assign, defaults } = require('lodash');
+const { isUndefined, map, defaults } = require('lodash');
 
 const Client = require('../../client');
 
@@ -27,7 +27,7 @@ function Client_SQLite3(config) {
 
 inherits(Client_SQLite3, Client);
 
-assign(Client_SQLite3.prototype, {
+Object.assign(Client_SQLite3.prototype, {
   dialect: 'sqlite3',
 
   driverName: 'sqlite3',
