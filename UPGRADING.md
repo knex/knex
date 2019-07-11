@@ -3,6 +3,7 @@
 ### Upgrading to version 0.19.0+
 
 * Passing unknown properties to connection pool configuration now throws errors (see https://github.com/Vincit/tarn.js/issues/19 for details);
+* `beforeDestroy` pool configuration option was removed. You should use tarn.js event handlers if you still need similar functionality.
 
 ### Upgrading to version 0.18.0+
 
