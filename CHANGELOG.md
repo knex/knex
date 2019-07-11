@@ -1,5 +1,9 @@
 # Master (Unreleased)
 
+### Changes:
+
+- Config: `beforeDestroy` configuration option was removed
+
 # 0.18.4 - 10 July, 2019
 
 ### New features:

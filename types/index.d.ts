@@ -1742,7 +1742,6 @@ declare namespace Knex {
     create?: Function;
     afterCreate?: Function;
     destroy?: Function;
-    beforeDestroy?: Function;
     min?: number;
     max?: number;
     refreshIdle?: boolean;

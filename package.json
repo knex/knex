@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.18.4",
+  "version": "0.19.0",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "types": "types/index.d.ts",
@@ -14,7 +14,6 @@
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\"",
     "lint:types": "dtslint types",
-    "pretest": "npm run lint && npm run lint:types",
     "test": "mocha --exit -t 10000 test/index.js && npm run test:tape && npm run test:cli",
     "test:nyc": "nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 test/index.js && npm run test:tape && npm run test:cli",
     "test:sqlite": "cross-env DB=sqlite3 npm test",
@@ -38,7 +37,7 @@
     "lodash": "^4.17.14",
     "mkdirp": "^0.5.1",
     "pg-connection-string": "2.0.0",
-    "tarn": "^1.1.5",
+    "tarn": "^2.0.0",
     "tildify": "2.0.0",
     "uuid": "^3.3.2",
     "v8flags": "^3.1.3"
