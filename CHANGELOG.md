@@ -1,8 +1,12 @@
 # Master (Unreleased)
 
+# 0.19.0 - 11 July, 2019
+
 ### Changes:
 
-- Config: `beforeDestroy` configuration option was removed
+- Pooling: tarn.js connection pool was updated to version 2.0.0. This fixes issue with destroying connections and introduces support for connection pool event handlers. Please see tarn.js documentation for more details #3345 
+- Pooling: Passing unsupported pooling configuration options now throws an error
+- Pooling: `beforeDestroy` configuration option was removed
 
 # 0.18.4 - 10 July, 2019
 
