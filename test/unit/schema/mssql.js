@@ -731,7 +731,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'ALTER TABLE [users] ADD [foo] nvarchar(100)'
+      'ALTER TABLE [users] ADD [foo] nvarchar(100) CHECK (foo IN(\'bar\', \'baz\'))'
     );
   });
 
