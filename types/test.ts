@@ -1173,7 +1173,7 @@ const main = async () => {
   // $ExpectType string
   await knex.seed.make('test', {
       extension: 'ts',
-      directory: 'src/seeds'
+      directory: 'lib/seeds'
   });
 
   // $ExpectType string[]
@@ -1182,6 +1182,6 @@ const main = async () => {
   // $ExpectType string[]
   await knex.seed.run({
       extension: 'ts',
-      directory: 'src/seeds'
+      directory: 'lib/seeds'
   });
 };

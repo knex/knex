@@ -1,5 +1,5 @@
-const Knex = require('../../src/index');
-const QueryBuilder = require('../../src/query/builder');
+const Knex = require('../../lib/index');
+const QueryBuilder = require('../../lib/query/builder');
 const { expect } = require('chai');
 const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
@@ -348,7 +348,7 @@ describe('knex', () => {
 
   it('supports accessing execution promise from transaction with a callback', async () => {
     const knex = Knex(sqliteConfig);
-    const trxPromise = new Promise(async (resolve, reject) => {
+    const trxPromise = new Promise((resolve, reject) => {
       knex.transaction((transaction) => {
         resolve(transaction);
       });
@@ -434,7 +434,7 @@ describe('knex', () => {
 
   it('throws if client module has not been installed', () => {
     // create dummy dialect which always fails when trying to load driver
-    const SqliteClient = require(`../../src/dialects/sqlite3/index.js`);
+    const SqliteClient = require(`../../lib/dialects/sqlite3/index.js`);
     function ClientFoobar(config) {
       SqliteClient.call(this, config);
     }

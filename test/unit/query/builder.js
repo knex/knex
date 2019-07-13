@@ -1,13 +1,13 @@
-/*global expect, describe, it*/
+/*global expect*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
-var MySQL_Client = require('../../../src/dialects/mysql');
-var PG_Client = require('../../../src/dialects/postgres');
-var Redshift_Client = require('../../../src/dialects/redshift');
-var Oracledb_Client = require('../../../src/dialects/oracledb');
-var SQLite3_Client = require('../../../src/dialects/sqlite3');
-var MSSQL_Client = require('../../../src/dialects/mssql');
+var MySQL_Client = require('../../../lib/dialects/mysql');
+var PG_Client = require('../../../lib/dialects/postgres');
+var Redshift_Client = require('../../../lib/dialects/redshift');
+var Oracledb_Client = require('../../../lib/dialects/oracledb');
+var SQLite3_Client = require('../../../lib/dialects/sqlite3');
+var MSSQL_Client = require('../../../lib/dialects/mssql');
 
 // use driverName as key
 var clients = {
@@ -6996,6 +6996,86 @@ describe('QueryBuilder', function() {
         },
       }
     );
+  });
+
+  it('lock for update with skip locked #1937', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .first()
+        .forUpdate()
+        .skipLocked(),
+      {
+        mysql: {
+          sql: 'select * from `foo` limit ? for update skip locked',
+          bindings: [1],
+        },
+        pg: {
+          sql: 'select * from "foo" limit ? for update skip locked',
+          bindings: [1],
+        },
+      }
+    );
+  });
+
+  it('lock for update with nowait #1937', function() {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .first()
+        .forUpdate()
+        .noWait(),
+      {
+        mysql: {
+          sql: 'select * from `foo` limit ? for update nowait',
+          bindings: [1],
+        },
+        pg: {
+          sql: 'select * from "foo" limit ? for update nowait',
+          bindings: [1],
+        },
+      }
+    );
+  });
+
+  it('noWait and skipLocked require a lock mode to be set', function() {
+    expect(function() {
+      qb()
+        .select('*')
+        .noWait()
+        .toString();
+    }).to.throw(
+      '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
+    );
+    expect(function() {
+      qb()
+        .select('*')
+        .skipLocked()
+        .toString();
+    }).to.throw(
+      '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
+    );
+  });
+
+  it('skipLocked conflicts with noWait and vice-versa', function() {
+    expect(function() {
+      qb()
+        .select('*')
+        .forUpdate()
+        .noWait()
+        .skipLocked()
+        .toString();
+    }).to.throw('.skipLocked() cannot be used together with .noWait()!');
+    expect(function() {
+      qb()
+        .select('*')
+        .forUpdate()
+        .skipLocked()
+        .noWait()
+        .toString();
+    }).to.throw('.noWait() cannot be used together with .skipLocked()!');
   });
 
   it('allows insert values of sub-select, #121', function() {

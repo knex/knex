@@ -125,7 +125,7 @@ function invoke(env) {
       pending = fs
         .readFileAsync(
           path.dirname(env.modulePath) +
-            '/src/migrate/stub/knexfile-' +
+            '/lib/migrate/stub/knexfile-' +
             type +
             '.stub'
         )
@@ -154,9 +154,15 @@ function invoke(env) {
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
       const instance = initKnex(env, opts);
       const ext = getMigrationExtension(env, opts);
+      const configOverrides = { extension: ext };
+
       const stub = getStubPath(env, opts);
+      if (stub) {
+        configOverrides.stub = stub;
+      }
+
       pending = instance.migrate
-        .make(name, { extension: ext, stub })
+        .make(name, configOverrides)
         .then((name) => {
           success(color.green(`Created Migration: ${name}`));
         })
@@ -289,9 +295,10 @@ function invoke(env) {
     .command('seed:run')
     .description('        Run seed files.')
     .option('--verbose', 'verbose')
+    .option('--specific', 'run specific seed file')
     .action(() => {
       pending = initKnex(env, commander.opts())
-        .seed.run()
+        .seed.run({ specific: argv.specific })
         .then(([log]) => {
           if (log.length === 0) {
             success(color.cyan('No seed files exist'));

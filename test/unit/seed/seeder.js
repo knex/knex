@@ -1,4 +1,4 @@
-/*global after, before, beforeEach, expect, describe, it*/
+/*global expect*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
@@ -90,7 +90,7 @@ describe('Seeder._waterfallBatch', function() {
   it('should throw an error with correct file name', (done) => {
     seeder._waterfallBatch(['1-first.js', '2-second.js']).catch((error) => {
       expect(error.message).to.match(
-        /^Error while executing "(\/\w+)+\/1-first\.js" seed: throwing in first file$/
+        /^Error while executing .*1-first.js" seed: throwing in first file$/
       );
       done();
     });

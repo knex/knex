@@ -1,6 +1,6 @@
 'use strict';
 
-const parseConnection = require('../../src/util/parse-connection');
+const parseConnection = require('../../lib/util/parse-connection');
 const test = require('tape');
 
 test('parses standard connections', function(t) {

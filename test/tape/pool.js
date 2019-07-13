@@ -1,7 +1,7 @@
 'use strict';
 
 const test = require('tape');
-const Client = require('../../src/dialects/sqlite3');
+const Client = require('../../lib/dialects/sqlite3');
 const tarn = require('tarn');
 const Pool = tarn.Pool;
 const knexfile = require('../knexfile');

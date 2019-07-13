@@ -1360,6 +1360,9 @@ declare namespace Knex {
     forShare(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forShare(tableNames: string[]): QueryBuilder<TRecord, TResult>;
 
+    skipLocked(): QueryBuilder<TRecord, TResult>;
+    noWait(): QueryBuilder<TRecord, TResult>;
+
     toSQL(): Sql;
 
     on(event: string, callback: Function): QueryBuilder<TRecord, TResult>;
@@ -1743,7 +1746,6 @@ declare namespace Knex {
     create?: Function;
     afterCreate?: Function;
     destroy?: Function;
-    beforeDestroy?: Function;
     min?: number;
     max?: number;
     refreshIdle?: boolean;
