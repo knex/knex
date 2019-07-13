@@ -321,7 +321,7 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
   VERSION: string;
   __knex__: string;
 
-  raw: Knex.RawBuilder<TRecord, TResult>;
+  raw: Knex.RawBuilder<TRecord>;
 
   transactionProvider(
     config?: any
@@ -1306,7 +1306,7 @@ declare namespace Knex {
     queryContext(context: any): Raw<TResult>;
   }
 
-  interface RawBuilder<TRecord extends {} = any, TResult = unknown[]> {
+  interface RawBuilder<TRecord extends {} = any, TResult = any> {
     <TResult2 = TResult>(value: Value): Raw<TResult2>;
     <TResult2 = TResult>(sql: string, ...bindings: RawBinding[]): Raw<TResult2>;
     <TResult2 = TResult>(sql: string, bindings: RawBinding[] | ValueDict): Raw<TResult2>;

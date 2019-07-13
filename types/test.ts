@@ -137,10 +137,13 @@ const main = async () => {
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users').select('id', 'age');
 
-  // $ExpectType any[]
+  // $ExpectType any
   await knex.raw('select * from users');
 
-  // $ExpectType any[]
+  // $ExpectType User[]
+  await knex.raw<User[]>('select * from users');
+
+  // $ExpectType any
   await knex.raw(
       'select * from users where id in ?',
       knex('contacts').select('name')
