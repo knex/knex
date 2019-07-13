@@ -353,10 +353,6 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
   seed: Knex.Seeder;
   fn: Knex.FunctionHelper;
   ref: Knex.RefBuilder;
-
-  QueryBuilder: {
-    extend(methodName: string, fn: Function): void;
-  };
 }
 
 declare function Knex<TRecord = any, TResult = unknown[]>(
@@ -1842,6 +1838,16 @@ declare namespace Knex {
     acquireRawConnection(): Promise<any>;
     destroyRawConnection(connection: any): Promise<void>;
     validateConnection(connection: any): Promise<boolean>;
+  }
+
+  class QueryBuilder {
+    public static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex<TRecord, TResult>,
+        ...args: any[]
+      ) => QueryBuilder<TRecord, TResult>
+    ): void;
   }
 }
 

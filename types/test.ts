@@ -6,9 +6,13 @@ import * as Knex from 'knex';
 
 declare module 'knex' {
   interface QueryBuilder {
-    onDuplicateUpdate(...columnNames: string[]): QueryBuilder;
+    customSelect<TRecord, TResult>(value: number): QueryBuilder<TRecord, TResult>;
   }
 }
+
+Knex.QueryBuilder.extend('customSelect', function(value: number) {
+  return this.select(this.client.raw(`${value} as value`));
+});
 
 const clientConfig = {
   client: 'sqlite3',
@@ -79,6 +83,9 @@ const main = async () => {
 
   // $ExpectType any[]
   await knex('users');
+
+  // $ExpectType number[]
+  const x = await knex('users').customSelect<any, number[]>(42);
 
   // This test (others similar to it) may seem useless but they are needed
   // to test for left-to-right inference issues eg: #3260
