@@ -496,6 +496,18 @@ describe('knex', () => {
         });
     });
 
+    it('should have custom method with transaction', async () => {
+      Knex.QueryBuilder.extend('customSelect', function(value) {
+        return this.select(this.client.raw(`${value} as value`));
+      });
+
+      const knex = Knex(sqliteConfig);
+      const trx = await knex.transaction();
+
+      const result = await trx.customSelect(42);
+      expect(result[0].value).to.equal(42);
+    });
+
     it('should throw exception when extending existing method', () => {
       expect(() =>
         Knex.QueryBuilder.extend('select', function(value) {})
