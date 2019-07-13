@@ -4,6 +4,12 @@ import * as Knex from 'knex';
 // import Knex from 'knex'
 // when "esModuleInterop": true
 
+declare module 'knex' {
+  interface QueryBuilder {
+    onDuplicateUpdate(...columnNames: string[]): QueryBuilder;
+  }
+}
+
 const clientConfig = {
   client: 'sqlite3',
   connection: {
