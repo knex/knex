@@ -508,6 +508,17 @@ describe('knex', () => {
       expect(result[0].value).to.equal(42);
     });
 
+    it('should have custom method on knex with user params', async () => {
+      Knex.QueryBuilder.extend('customSelect', function(value) {
+        return this.select(this.client.raw(`${value} as value`));
+      });
+
+      const knex = Knex(sqliteConfig);
+      const knewWithParams = knex.withUserParams({ foo: 'bar' });
+      const result = await knewWithParams.customSelect(42);
+      expect(result[0].value).to.equal(42);
+    });
+
     it('should throw exception when extending existing method', () => {
       expect(() =>
         Knex.QueryBuilder.extend('select', function(value) {})
