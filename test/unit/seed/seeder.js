@@ -96,3 +96,93 @@ describe('Seeder._waterfallBatch', function() {
     });
   });
 });
+
+describe('When there are multiple directories', function() {
+
+  const config = {
+    client: 'postgres',
+    connection: {
+      user: 'postgres',
+      password: '',
+      host: '127.0.0.1',
+      database: 'knex_test',
+    },
+    seeds: {
+      directory: ['test/integration/seed/seeds/production', 'test/integration/seed/seeds/test'],
+      sortDirsSeparately: true,
+    },
+  };
+
+  let seeder;
+
+  before(function() {
+    mockFs({
+      'test/integration/seed/seeds/production': {
+        '001-js-seed-prod.js': 'js seed content',
+        '002-js-seed-prod.js': 'js seed content',
+      },
+      'test/integration/seed/seeds/test': {
+        '001-js-seed-test.js': 'js seed content',
+        '002-js-seed-test.js': 'js seed content',
+      }
+    });
+  });
+
+  after(function() {
+    mockFs.restore();
+  });
+
+  beforeEach(function() {
+    seeder = knex(config).seed;
+  });
+
+  describe('Seeder._absoluteConfigDirs', function() {
+
+    it('should yield a list of directories', async () => {
+      const list = await seeder._absoluteConfigDirs();
+      expect(list[0]).to.equal(process.cwd() + '/test/integration/seed/seeds/production');
+      expect(list[1]).to.equal(process.cwd() + '/test/integration/seed/seeds/test');
+    });
+
+  });
+
+  describe('Seeder._listAll', function() {
+
+    it('should list all files in each directory, in order', async () => {
+
+      return seeder._listAll().then(function(list) {
+        expect(list).to.eql([
+          '001-js-seed-prod.js',
+          '002-js-seed-prod.js',
+          '001-js-seed-test.js',
+          '002-js-seed-test.js',
+        ]);
+      });
+
+    });
+
+    describe('When sortDirsSeperately is not true', function() {
+      it('should list all files in each directory, in order', async () => {
+        seeder = knex(Object.assign(
+          {},
+          config,
+          {
+            seeds: {
+              directory: ['test/integration/seed/seeds/production', 'test/integration/seed/seeds/test'],
+              sortDirsSeparately: false
+            }
+          })).seed;
+
+
+        return seeder._listAll().then(function(list) {
+          expect(list).to.eql([
+            '001-js-seed-prod.js',
+            '001-js-seed-test.js',
+            '002-js-seed-prod.js',
+            '002-js-seed-test.js',
+          ]);
+        });
+      });
+    });
+  });
+});

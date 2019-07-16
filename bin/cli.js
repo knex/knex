@@ -271,6 +271,10 @@ function invoke(env) {
     .command('seed:make <name>')
     .description('        Create a named seed file.')
     .option(
+      '--subdirectory [<name of subdirectory>]',
+      'Specify the seed file\'s destination subdirectory; e.g, "test"'
+    )
+    .option(
       `-x [${filetypes.join('|')}]`,
       'Specify the stub extension (default js)'
     )
@@ -284,7 +288,7 @@ function invoke(env) {
         DEFAULT_EXT
       ).toLowerCase();
       pending = instance.seed
-        .make(name, { extension: ext })
+        .make(name, { extension: ext }, argv.subdirectory)
         .then((name) => {
           success(color.green(`Created seed file: ${name}`));
         })

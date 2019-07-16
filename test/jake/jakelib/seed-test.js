@@ -15,6 +15,75 @@ const KNEX = path.normalize(__dirname + '/../../../bin/cli.js');
 const taskList = [];
 /* * * TESTS * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+test(
+  taskList,
+  "seed:make's --subdirectory specifies the destination directory",
+  (temp) => {
+    return assertExec(
+      `node ${KNEX} seed:make --subdirectory=test --knexfile=test/jake-util/seeds-knexfile-multiple-seeds.js --knexpath=../knex.js a-new-seed-file`
+    )
+      .then(({ stdout }) => {
+        assert.include(
+          stdout,
+          `Created seed file: ${process.cwd()}/test/jake-util/seeds-in-subdirs/test/a-new-seed-file`
+        );
+      })
+      .then(() => {
+        return assertExec(
+          `ls ${process.cwd()}/test/jake-util/seeds-in-subdirs/test/a-new-seed-file.js`
+        ).then(({ stdout }) => {
+          assert.include(stdout, 'a-new-seed-file.js');
+        });
+      });
+  }
+);
+
+test(
+  taskList,
+  "seed:make's subdirectory may be bundled with the seed name",
+  (temp) => {
+    return assertExec(
+      `node ${KNEX} seed:make --knexfile=test/jake-util/seeds-knexfile-multiple-seeds.js --knexpath=../knex.js test/an-interesting-new-seed-file`
+    )
+      .then(({ stdout }) => {
+        assert.include(
+          stdout,
+          `Created seed file: ${process.cwd()}/test/jake-util/seeds-in-subdirs/test/an-interesting-new-seed-file`
+        );
+      })
+      .then(() => {
+        return assertExec(
+          `ls ${process.cwd()}/test/jake-util/seeds-in-subdirs/test/an-interesting-new-seed-file.js`
+        ).then(({ stdout }) => {
+          assert.include(stdout, 'an-interesting-new-seed-file.js');
+        });
+      });
+  }
+);
+
+test(
+  taskList,
+  "seed:make's --subdirectory is optional when config.directory is a list with one item",
+  (temp) => {
+    return assertExec(
+      `node ${KNEX} seed:make --knexfile=test/jake-util/seeds-knexfile-list-with-one-directory.js --knexpath=../knex.js a-new-seed-file`
+    )
+      .then(({ stdout }) => {
+        assert.include(
+          stdout,
+          `Created seed file: ${process.cwd()}/test/jake-util/seeds-in-subdirs/production/a-new-seed-file`
+        );
+      })
+      .then(() => {
+        return assertExec(
+          `ls ${process.cwd()}/test/jake-util/seeds-in-subdirs/production/a-new-seed-file.js`
+        ).then(({ stdout }) => {
+          assert.include(stdout, 'a-new-seed-file.js');
+        });
+      });
+  }
+);
+
 test(taskList, 'seed:run prints non verbose logs', (temp) => {
   return assertExec(
     `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile.js --knexpath=../knex.js`

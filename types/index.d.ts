@@ -1803,7 +1803,7 @@ declare namespace Knex {
 
   interface SeederConfig {
     extension?: string;
-    directory?: string;
+    directory?: string | string[];
     loadExtensions?: string[];
   }
 
