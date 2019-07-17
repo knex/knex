@@ -1776,13 +1776,19 @@ export default [
   {
     type: "method",
     method: "count",
-    example: ".count(column|columns|raw)",
-    description: "Performs a count on the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions. Note that in Postgres, count returns a bigint type which will be a String and not a Number (more info).",
+    example: ".count(column|columns|raw, [options])",
+    description: "Performs a count on the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions. The value returned from count (and other aggregation queries) is an array of objects like: `[{'COUNT(*)': 1}]`. The actual keys are dialect specific, so usually we would want to specify an alias (Refer examples below). Note that in Postgres, count returns a bigint type which will be a String and not a Number ([more info](https://github.com/brianc/node-pg-types#use)).",
     children: [
       {
         type: "runnable",
         content: `
           knex('users').count('active')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').count('active', {as: 'a'})
         `
       },
       {
@@ -1795,6 +1801,12 @@ export default [
         type: "runnable",
         content: `
           knex('users').count({ a: 'active' })
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').count({ a: 'active', v: 'valid' })
         `
       },
       {
@@ -1868,13 +1880,19 @@ export default [
   {
     type: "method",
     method: "min",
-    example: ".min(column|columns|raw)",
+    example: ".min(column|columns|raw, [options])",
     description: "Gets the minimum value for the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions.",
     children: [
       {
         type: "runnable",
         content: `
           knex('users').min('age')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').min('age', {as: 'a'})
         `
       },
       {
@@ -1887,6 +1905,12 @@ export default [
         type: "runnable",
         content: `
           knex('users').min({ a: 'age' })
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').min({ a: 'age', b: 'experience' })
         `
       },
       {
@@ -1912,13 +1936,19 @@ export default [
   {
     type: "method",
     method: "max",
-    example: ".max(column|columns|raw)",
+    example: ".max(column|columns|raw, [options])",
     description: "Gets the maximum value for the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions.",
     children: [
       {
         type: "runnable",
         content: `
           knex('users').max('age')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').max('age', {as: 'a'})
         `
       },
       {
@@ -1943,6 +1973,12 @@ export default [
         type: "runnable",
         content: `
           knex('users').max({ max: ['age', 'logins'] })
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').max({ max: 'age', exp: 'experience' })
         `
       },
       {
