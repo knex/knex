@@ -1775,6 +1775,40 @@ export default [
   },
   {
     type: "method",
+    method: "skipLocked",
+    example: ".skipLocked()",
+    description: "MySQL 8.0+ and PostgreSQL 9.5+ only. This method can be used after a lock mode has been specified with either forUpdate or forShare, and will cause the query to skip any locked rows, returning an empty set if none are available.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('tableName')
+            .select('*')
+            .forUpdate()
+            .skipLocked()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "noWait",
+    example: ".noWait()",
+    description: "MySQL 8.0+ and PostgreSQL 9.5+ only. This method can be used after a lock mode has been specified with either forUpdate or forShare, and will cause the query to fail immediately if any selected rows are currently locked.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('tableName')
+            .select('*')
+            .forUpdate()
+            .noWait()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "count",
     example: ".count(column|columns|raw, [options])",
     description: "Performs a count on the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions. The value returned from count (and other aggregation queries) is an array of objects like: `[{'COUNT(*)': 1}]`. The actual keys are dialect specific, so usually we would want to specify an alias (Refer examples below). Note that in Postgres, count returns a bigint type which will be a String and not a Number ([more info](https://github.com/brianc/node-pg-types#use)).",
