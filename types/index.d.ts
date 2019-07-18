@@ -1596,6 +1596,7 @@ declare namespace Knex {
       | MariaSqlConnectionConfig
       | MySqlConnectionConfig
       | MsSqlConnectionConfig
+      | OracleDbConnectionConfig
       | Sqlite3ConnectionConfig
       | SocketConnectionConfig;
     pool?: PoolConfig;
@@ -1721,6 +1722,18 @@ declare namespace Knex {
     flags?: string;
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
+  }
+  
+  interface OracleDbConnectionConfig {
+    host: string;
+    user: string;
+    password?: string;
+    database?: string;
+    domain?: string;
+    instanceName?: string;
+    debug?: boolean;
+    requestTimeout?: number;
+    connectString?: string;
   }
 
   /** Used with SQLite3 adapter */
