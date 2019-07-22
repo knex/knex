@@ -81,7 +81,7 @@ module.exports = function(knex) {
 
     it('supports sum with an alias', function() {
       return knex('accounts')
-        .sum('logins', {as: 'login_sum'})
+        .sum('logins', { as: 'login_sum' })
         .testSql(function(tester) {
           tester(
             'mysql',
@@ -158,7 +158,7 @@ module.exports = function(knex) {
 
     it('supports sum through object containing multiple aliases', function() {
       return knex('accounts')
-        .sum({login_sum: 'logins', balance_sum: 'balance'})
+        .sum({ login_sum: 'logins', balance_sum: 'balance' })
         .testSql(function(tester) {
           tester(
             'mysql',
