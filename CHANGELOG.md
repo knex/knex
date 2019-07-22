@@ -1,5 +1,16 @@
 # Master (Unreleased)
 
+# 0.19.1 - 23 July, 2019
+
+### New features:
+
+- Minor enhancements around aliasing of aggregates #3354
+
+### Typings
+
+- Update configuration typings to allow for oracle db connectionstring #3361
+- Update Knex.raw type to be any by default because the actual type is dialect specific #3349
+
 # 0.19.0 - 11 July, 2019
 
 ### Changes:
