@@ -445,6 +445,15 @@ describe('knex', () => {
     expect(completed).to.be.true;
   });
 
+  it('returns false when calling isCompleted within a transaction handler', async () => {
+    const knex = Knex(sqliteConfig);
+    await knex.transaction((trx) => {
+      expect(trx.isCompleted()).to.be.false;
+
+      return trx.select(trx.raw('1 as result'));
+    });
+  });
+
   it('creating transaction copy with user params should throw an error', () => {
     if (!sqliteConfig) {
       return;
