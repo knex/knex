@@ -173,5 +173,23 @@ export default [
       const trx3 = await trxInitPromise;
       const trx3Promise = trx3.executionPromise;
     `
+  },
+  {
+    type: "text",
+    content: "You can check if a transaction has been committed or rolled back with the method `isCompleted`:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      const trx = await knex.transaction();
+      trx.isCompleted(); // false
+      await trx.commit();
+      trx.isCompleted(); // true
+
+      const trx2 = knex.transactionProvider();
+      await trx2.rollback();
+      trx2.isCompleted(); // true
+    `
   }
 ]
