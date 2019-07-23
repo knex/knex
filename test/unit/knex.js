@@ -1,4 +1,5 @@
 const Knex = require('../../lib/index');
+const QueryBuilder = require('../../lib/query/builder');
 const { expect } = require('chai');
 const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
@@ -506,6 +507,62 @@ describe('knex', () => {
           expect(err.stack.split('\n')[1]).to.match(/at createQueryBuilder \(/); // the index 1 might need adjustment if the code is refactored
           expect(typeof err.originalStack).to.equal('string');
         });
+    });
+  });
+
+  describe('extend query builder', () => {
+    let connection;
+    beforeEach(() => {
+      connection = new sqlite3.Database(':memory:');
+    });
+
+    afterEach(() => {
+      connection.close();
+      delete QueryBuilder.prototype.customSelect;
+    });
+
+    it('should extend default queryBuilder', (done) => {
+      Knex.QueryBuilder.extend('customSelect', function(value) {
+        return this.select(this.client.raw(`${value} as value`));
+      });
+
+      const knex = Knex({ client: 'sqlite3' });
+      knex
+        .connection(connection)
+        .customSelect(42)
+        .then((result) => {
+          expect(result[0].value).to.equal(42);
+          done();
+        });
+    });
+
+    it('should have custom method with transaction', async () => {
+      Knex.QueryBuilder.extend('customSelect', function(value) {
+        return this.select(this.client.raw(`${value} as value`));
+      });
+
+      const knex = Knex(sqliteConfig);
+      const trx = await knex.transaction();
+
+      const result = await trx.customSelect(42);
+      expect(result[0].value).to.equal(42);
+    });
+
+    it('should have custom method on knex with user params', async () => {
+      Knex.QueryBuilder.extend('customSelect', function(value) {
+        return this.select(this.client.raw(`${value} as value`));
+      });
+
+      const knex = Knex(sqliteConfig);
+      const knewWithParams = knex.withUserParams({ foo: 'bar' });
+      const result = await knewWithParams.customSelect(42);
+      expect(result[0].value).to.equal(42);
+    });
+
+    it('should throw exception when extending existing method', () => {
+      expect(() =>
+        Knex.QueryBuilder.extend('select', function(value) {})
+      ).to.throw(`Can't extend QueryBuilder with existing method ('select')`);
     });
   });
 });

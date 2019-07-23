@@ -1853,6 +1853,16 @@ declare namespace Knex {
     destroyRawConnection(connection: any): Promise<void>;
     validateConnection(connection: any): Promise<boolean>;
   }
+
+  class QueryBuilder {
+    public static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex<TRecord, TResult>,
+        ...args: any[]
+      ) => QueryBuilder<TRecord, TResult>
+    ): void;
+  }
 }
 
 export = Knex;
