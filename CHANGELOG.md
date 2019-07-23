@@ -4,6 +4,8 @@
 
 ### New features:
 
+- Allow to extend knex query builder #3334
+- Add .isCompleted() to transaction #3368
 - Minor enhancements around aliasing of aggregates #3354
 
 ### Typings
