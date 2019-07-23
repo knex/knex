@@ -2352,5 +2352,75 @@ export default [
         content: "Calling `queryContext` with no arguments will return any context configured for the query builder instance."
       }
     ]
-  }
+  },
+  {
+    type: "heading",
+    size: "md",
+    content: "Extending Query Builder",
+    href: "Builder-extending"
+  },
+  {
+    type: "text",
+    content: [
+      "**Important:** this feature is experimental and its API may change in the future.",
+      "It allows to add custom function the the Query Builder.",
+      "Example:"
+    ]
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      const Knex = require('knex');
+      Knex.QueryBuilder.extend('customSelect', function(value) {
+        return this.select(this.client.raw(\`\${value} as value\`));
+      });
+      
+      const meaningOfLife = await knex('accounts')
+        .customSelect(42);
+    `
+  },
+  {
+    type: "text",
+    content: [
+      "If using TypeScript, you can extend the QueryBuilder interface with your custom method.",
+      "1. Create a `knex.d.ts` file inside a `@types` folder (or any other folder).",
+    ]
+  },
+  {
+    type: "code",
+    language: "ts",
+    content: `
+      // knex.d.ts
+      
+      import * as Knex from 'knex';
+
+      declare module 'knex' {
+        interface QueryBuilder {
+        customSelect<TRecord, TResult>(value: number): QueryBuilder<TRecord, TResult>;
+      }
+    `
+  },
+  {
+    type: "text",
+    content: [
+      "2. Add the new `@types` folder to `typeRoots` in your `tsconfig.json`.",
+    ]
+  },
+  {
+    type: "code",
+    language: "ts",
+    content: `
+      // tsconfig.json
+      
+      {
+        "compilerOptions": {
+          "typeRoots": [
+            "node_modules/@types",
+            "@types"
+          ],
+        }
+      }
+    `
+  },
 ]
