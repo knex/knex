@@ -414,6 +414,46 @@ describe('knex', () => {
     await trx.executionPromise;
   });
 
+  it('returns false when calling isCompleted on a transaction that is not complete', async () => {
+    const knex = Knex(sqliteConfig);
+    const trxProvider = knex.transactionProvider();
+    const trx = await trxProvider();
+
+    const completed = trx.isCompleted();
+    expect(completed).to.be.false;
+  });
+
+  it('returns true when calling isCompleted on a transaction that is committed', async () => {
+    const knex = Knex(sqliteConfig);
+    const trxProvider = knex.transactionProvider();
+    const trx = await trxProvider();
+
+    await trx.commit();
+
+    const completed = trx.isCompleted();
+    expect(completed).to.be.true;
+  });
+
+  it('returns true when calling isCompleted on a transaction that is rolled back', async () => {
+    const knex = Knex(sqliteConfig);
+    const trxProvider = knex.transactionProvider();
+    const trx = await trxProvider();
+
+    await trx.rollback();
+
+    const completed = trx.isCompleted();
+    expect(completed).to.be.true;
+  });
+
+  it('returns false when calling isCompleted within a transaction handler', async () => {
+    const knex = Knex(sqliteConfig);
+    await knex.transaction((trx) => {
+      expect(trx.isCompleted()).to.be.false;
+
+      return trx.select(trx.raw('1 as result'));
+    });
+  });
+
   it('creating transaction copy with user params should throw an error', () => {
     if (!sqliteConfig) {
       return;
