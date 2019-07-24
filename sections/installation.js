@@ -220,7 +220,7 @@ export default [
     content: `
       var knex = require('knex')({
         // Params
-      };
+      });
       
       var knexWithParams = knex.withUserParams({customUserParam: 'table1'});
       var customUserParam = knexWithParams.userParams.customUserParam;
