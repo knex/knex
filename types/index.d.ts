@@ -1599,6 +1599,7 @@ declare namespace Knex {
       | MsSqlConnectionConfig
       | OracleDbConnectionConfig
       | PgConnectionConfig
+      | RedshiftConnectionConfig
       | Sqlite3ConnectionConfig
       | SocketConnectionConfig;
     pool?: PoolConfig;
