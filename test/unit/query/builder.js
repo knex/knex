@@ -8178,6 +8178,19 @@ describe('QueryBuilder', function() {
     );
   });
 
+  it('escapes null bytes properly', function() {
+    testquery(
+      qb()
+        .select('*')
+        .from('strings')
+        .where('value', 'a tricky\0 user string'),
+      {
+        pg:
+          'select * from "strings" where "value" = E\'a tricky\\x00 user string\'',
+      }
+    );
+  });
+
   it('allows join without operator and with value 0 #953', function() {
     testsql(
       qb()
