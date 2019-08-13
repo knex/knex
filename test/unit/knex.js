@@ -330,6 +330,15 @@ describe('knex', () => {
       });
   });
 
+  it('supports nested transaction for promise transactions', async () => {
+    const knex = Knex(sqliteConfig);
+    const trx = await knex.transaction();
+    const nestedTrx = await trx.transaction();
+    const nestedTrx2 = await nestedTrx.transaction();
+    expect(nestedTrx.name).to.equal('knex');
+    expect(nestedTrx2.name).to.equal('knex');
+  });
+
   it('supports accessing execution promise from standalone transaction', async () => {
     const knex = Knex(sqliteConfig);
 
