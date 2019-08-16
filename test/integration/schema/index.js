@@ -270,7 +270,28 @@ module.exports = function(knex) {
         afterEach(function() {
           return knex.schema
             .dropTableIfExists('native_enum_test')
-            .raw('DROP TYPE "foo_type"');
+            .raw('DROP TYPE "foo_type"')
+            .raw('DROP SCHEMA IF EXISTS "test" CASCADE');
+        });
+
+        it('uses native type with specified schema', async function() {
+          return knex.schema
+            .withSchema('test')
+            .createTable('native_enum_test', function(table) {
+              table
+                .enum('foo_column', ['a', 'b', 'c'], {
+                  useNative: true,
+                  enumName: 'foo_type',
+                })
+                .notNull();
+              table.uuid('id').notNull();
+            })
+            .testSql(function(tester) {
+              tester('pg', [
+                "create type \"test\".\"foo_type\" as enum ('a', 'b', 'c')",
+                'create table "native_enum_test" ("foo_column" "test"."foo_type" not null, "id" uuid not null)',
+              ]);
+            });
         });
 
         it('uses native type when useNative is specified', function() {
