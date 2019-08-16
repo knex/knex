@@ -1255,6 +1255,9 @@ module.exports = function(knex) {
       }
 
       const rowName = 'row for skipLocked() test #1';
+      await knex('test_default_table')
+        .delete()
+        .where({ string: rowName });
       await knex('test_default_table').insert([
         { string: rowName, tinyint: 1 },
         { string: rowName, tinyint: 2 },
@@ -1290,6 +1293,9 @@ module.exports = function(knex) {
       }
 
       const rowName = 'row for skipLocked() test #2';
+      await knex('test_default_table')
+        .delete()
+        .where({ string: rowName });
       await knex('test_default_table').insert([
         { string: rowName, tinyint: 1 },
         { string: rowName, tinyint: 2 },
@@ -1321,6 +1327,9 @@ module.exports = function(knex) {
       }
 
       const rowName = 'row for noWait() test';
+      await knex('test_default_table')
+        .delete()
+        .where({ string: rowName });
       await knex('test_default_table').insert([
         { string: rowName, tinyint: 1 },
         { string: rowName, tinyint: 2 },
