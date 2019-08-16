@@ -1550,7 +1550,7 @@ module.exports = function(knex) {
         });
       });
     });
-    it('supports named primary keys', function() {
+    it('supports named primary keys', async () => {
       const constraintName = 'pk-test';
       const tableName = 'namedpk';
       const expectedRes = [
@@ -1559,14 +1559,15 @@ module.exports = function(knex) {
           name: tableName,
           tbl_name: tableName,
           sql:
-            'CREATE TABLE "' +
+            'CREATE TABLE `' +
             tableName +
-            '" ("test" varchar(255), "test2" varchar(255), constraint "' +
+            '` (`test` varchar(255), `test2` varchar(255), constraint `' +
             constraintName +
-            '" primary key ("test"))',
+            '` primary key (`test`))',
         },
       ];
-      return knex.transaction(function(tr) {
+
+      await knex.transaction(function(tr) {
         return tr.schema
           .dropTableIfExists(tableName)
           .then(function() {
@@ -1650,11 +1651,11 @@ module.exports = function(knex) {
                   name: tableName,
                   tbl_name: tableName,
                   sql:
-                    'CREATE TABLE "' +
+                    'CREATE TABLE `' +
                     tableName +
-                    '" ("test" varchar(255), "test2" varchar(255), constraint "' +
+                    '` (`test` varchar(255), `test2` varchar(255), constraint `' +
                     constraintName +
-                    '" primary key ("test", "test2"))',
+                    '` primary key (`test`, `test2`))',
                 },
               ];
               tr.select('type', 'name', 'tbl_name', 'sql')
@@ -1704,11 +1705,11 @@ module.exports = function(knex) {
                   name: singleUniqueName,
                   tbl_name: tableName,
                   sql:
-                    'CREATE UNIQUE INDEX "' +
+                    'CREATE UNIQUE INDEX `' +
                     singleUniqueName +
-                    '" on "' +
+                    '` on `' +
                     tableName +
-                    '" ("test")',
+                    '` (`test`)',
                 },
               ];
               tr.select('type', 'name', 'tbl_name', 'sql')
@@ -1758,22 +1759,22 @@ module.exports = function(knex) {
                   name: singleUniqueName,
                   tbl_name: tableName,
                   sql:
-                    'CREATE UNIQUE INDEX "' +
+                    'CREATE UNIQUE INDEX `' +
                     singleUniqueName +
-                    '" on "' +
+                    '` on `' +
                     tableName +
-                    '" ("test")',
+                    '` (`test`)',
                 },
                 {
                   type: 'index',
                   name: multiUniqueName,
                   tbl_name: tableName,
                   sql:
-                    'CREATE UNIQUE INDEX "' +
+                    'CREATE UNIQUE INDEX `' +
                     multiUniqueName +
-                    '" on "' +
+                    '` on `' +
                     tableName +
-                    '" ("test", "test2")',
+                    '` (`test`, `test2`)',
                 },
               ];
               tr.select('type', 'name', 'tbl_name', 'sql')
@@ -1860,17 +1861,17 @@ module.exports = function(knex) {
                   name: joinTableName,
                   tbl_name: joinTableName,
                   sql:
-                    'CREATE TABLE "' +
+                    'CREATE TABLE `' +
                     joinTableName +
-                    '" ("user" char(36), "group" char(36), constraint "' +
+                    '` (`user` char(36), `group` char(36), constraint `' +
                     userConstraint +
-                    '" foreign key("user") references "' +
+                    '` foreign key(`user`) references `' +
                     userTableName +
-                    '"("id"), constraint "' +
+                    '`(`id`), constraint `' +
                     groupConstraint +
-                    '" foreign key("group") references "' +
+                    '` foreign key(`group`) references `' +
                     groupTableName +
-                    '"("id"), primary key ("user", "group"))',
+                    '`(`id`), primary key (`user`, `group`))',
                 },
               ];
               tr.select('type', 'name', 'tbl_name', 'sql')
