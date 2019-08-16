@@ -66,19 +66,29 @@ module.exports = function(dialect) {
       );
     });
 
-    if (dialect !== 'maria') {
-      it('adding json', function() {
-        tableSql = client
-          .schemaBuilder()
-          .table('user', function(t) {
-            t.json('preferences');
-          })
-          .toSQL();
-        expect(tableSql[0].sql).to.equal(
-          'alter table `user` add `preferences` json'
-        );
-      });
-    }
+    it('adding json', function() {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function(t) {
+          t.json('preferences');
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table `user` add `preferences` json'
+      );
+    });
+
+    it('adding jsonb', function() {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function(t) {
+          t.jsonb('preferences');
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table `user` add `preferences` json'
+      );
+    });
 
     it('test drop table', function() {
       tableSql = client
