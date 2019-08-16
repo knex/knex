@@ -7,7 +7,7 @@ const fs = require('fs');
 
 const Bluebird = require('bluebird');
 
-Bluebird.each(Object.keys(config), function(dialectName) {
+Object.keys(config).forEach((dialectName) => {
   return require('./suite')(logger(knex(config[dialectName])));
 });
 
