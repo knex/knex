@@ -31,7 +31,6 @@ export default [
           .then(function(ids) {
             books.forEach((book) => book.catalogue_id = ids[0]);
             return trx('books').insert(books);
-            });
           });
       })
       .then(function(inserts) {
@@ -67,7 +66,6 @@ export default [
           .then(function(ids) {
             books.forEach((book) => book.catalogue_id = ids[0]);
             return knex('books').insert(books).transacting(trx);
-            });
           })
           .then(trx.commit)
           .catch(trx.rollback);
