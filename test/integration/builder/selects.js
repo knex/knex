@@ -1318,7 +1318,7 @@ module.exports = function(knex) {
       expect(res).to.be.undefined;
     });
 
-    it('forUpdate().noWait() should throw immediately when a row is locked', async function() {
+    it('forUpdate().noWait() should throw an error immediately when a row is locked', async function() {
       if (
         knex.client.driverName !== 'pg' &&
         knex.client.driverName !== 'mysql'
@@ -1335,26 +1335,31 @@ module.exports = function(knex) {
         { string: rowName, tinyint: 2 },
       ]);
 
-      const promise = knex.transaction(async (trx) => {
-        // select and lock only the first row from this test
-        // note: MySQL may lock both rows depending on how the results are fetched
-        await trx('test_default_table')
-          .where({ string: rowName })
-          .orderBy('tinyint', 'asc')
-          .first()
-          .forUpdate();
+      try {
+        await knex.transaction(async (trx) => {
+          // select and lock the first row from this test
+          // note: MySQL may lock both rows depending on how the results are fetched
+          await trx('test_default_table')
+            .where({ string: rowName })
+            .orderBy('tinyint', 'asc')
+            .forUpdate()
+            .first();
 
-        // try to lock it again (and fail)
-        await trx('test_default_table')
-          .where({ string: rowName })
-          .orderBy('tinyint', 'asc')
-          .forUpdate()
-          .noWait()
-          .first();
-      });
+          // try to lock it again (it should fail here)
+          await knex('test_default_table')
+            .where({ string: rowName })
+            .orderBy('tinyint', 'asc')
+            .forUpdate()
+            .noWait()
+            .first();
+        });
 
-      // catch the expected errors
-      promise.catch((err) => {
+        // fail the test if the query finishes with no errors
+        throw new Error(
+          'The query should have been cancelled when trying to select a locked row with .noWait()'
+        );
+      } catch (err) {
+        // check if we got the correct error from each db
         switch (knex.client.driverName) {
           case 'pg':
             expect(err.message).to.contain('could not obtain lock on row');
@@ -1373,14 +1378,7 @@ module.exports = function(knex) {
             // unsupported database
             throw err;
         }
-      });
-
-      // fail the test if the transaction succeeds
-      promise.then(() => {
-        expect(
-          'The query should have been cancelled when trying to select a locked row with .noWait()'
-        ).to.be.false;
-      });
+      }
     });
   });
 };
