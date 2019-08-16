@@ -1268,10 +1268,10 @@ module.exports = function(knex) {
         await trx('test_default_table')
           .where({ string: rowName })
           .orderBy('tinyint', 'asc')
-          .first()
-          .forUpdate();
+          .forUpdate()
+          .first();
 
-        // try to lock the next available row
+        // try to lock the next available row from outside of the transaction
         return await knex('test_default_table')
           .where({ string: rowName })
           .orderBy('tinyint', 'asc')
@@ -1307,15 +1307,15 @@ module.exports = function(knex) {
           .where({ string: rowName })
           .forUpdate();
 
-        // try to aquire the lock on one more row (which isn't available)
+        // try to aquire the lock on one more row (which isn't available) from another transaction
         return await knex('test_default_table')
           .where({ string: rowName })
           .forUpdate()
           .skipLocked()
-          .limit(1);
+          .first();
       });
 
-      expect(res).to.be.empty;
+      expect(res).to.be.undefined;
     });
 
     it('forUpdate().noWait() should throw immediately when a row is locked', async function() {
