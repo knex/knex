@@ -1,5 +1,16 @@
 # Master (Unreleased)
 
+# 0.19.2 - 17 August, 2019
+
+### Changes
+
+- Make transaction rejection consistent across dialects #3399
+- More consistent handling of nested transactions #3393
+
+### New features:
+
+- Fallback to JSON when using JSONB in MySQL #3394 
+
 # 0.19.1 - 23 July, 2019
 
 ### New features:
