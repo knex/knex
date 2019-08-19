@@ -1405,6 +1405,7 @@ declare namespace Knex {
   interface Transaction<TRecord extends {} = any, TResult = any>
     extends Knex<TRecord, TResult> {
     executionPromise: Promise<TResult>;
+    isCompleted: () => boolean;
 
     query<TRecord extends {} = any, TResult = void>(
       conn: any,
@@ -1596,6 +1597,7 @@ declare namespace Knex {
       | MariaSqlConnectionConfig
       | MySqlConnectionConfig
       | MsSqlConnectionConfig
+      | OracleDbConnectionConfig
       | Sqlite3ConnectionConfig
       | SocketConnectionConfig;
     pool?: PoolConfig;
@@ -1722,6 +1724,18 @@ declare namespace Knex {
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
   }
+  
+  interface OracleDbConnectionConfig {
+    host: string;
+    user: string;
+    password?: string;
+    database?: string;
+    domain?: string;
+    instanceName?: string;
+    debug?: boolean;
+    requestTimeout?: number;
+    connectString?: string;
+  }
 
   /** Used with SQLite3 adapter */
   interface Sqlite3ConnectionConfig {
@@ -1838,6 +1852,16 @@ declare namespace Knex {
     acquireRawConnection(): Promise<any>;
     destroyRawConnection(connection: any): Promise<void>;
     validateConnection(connection: any): Promise<boolean>;
+  }
+
+  class QueryBuilder {
+    public static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex<TRecord, TResult>,
+        ...args: any[]
+      ) => QueryBuilder<TRecord, TResult>
+    ): void;
   }
 }
 
