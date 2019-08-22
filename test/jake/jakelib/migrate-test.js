@@ -543,6 +543,98 @@ test('migrate:down undos only the last run migration', (temp) => {
     });
 });
 
+test('list prints migrations both completed and pending', (temp) => {
+  const migrationFile1 = '001_create_books_table.js';
+  const migrationFile2 = '002_add_pages_column_to_books_table.js';
+
+  return assertExec(
+    `node ${KNEX} list \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${temp}/migrations`
+  )
+    .then(({ stdout }) => {
+      assert.include(stdout, `No Completed Migration files Found.`);
+      assert.include(stdout, `No Pending Migration files Found.`);
+
+      fs.writeFileSync(
+        `${temp}/migrations/${migrationFile1}`,
+        `
+          exports.up = (knex) => knex.schema
+            .createTable('books', (table) => {
+              table.string('title');
+            });
+    
+          exports.down = (knex) => knex.schema.dropTable('books');
+        `
+      );
+
+      fs.writeFileSync(
+        `${temp}/migrations/${migrationFile2}`,
+        `
+          exports.up = (knex) => knex.schema
+            .table('books', (table) => {
+              table.integer('pages');
+            });
+    
+          exports.down = (knex) => knex.schema
+            .table('books', (table) => {
+              table.dropColumn('pages');
+            });
+        `
+      );
+
+      return assertExec(
+        `node ${KNEX} migrate:up \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${temp}/migrations`,
+        'create_books_table'
+      );
+    })
+    .then(({ stdout }) => {
+      assert.include(
+        stdout,
+        `Batch 1 ran the following migrations:\n${migrationFile1}`
+      );
+
+      return assertExec(
+        `node ${KNEX} list \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${temp}/migrations`
+      );
+    })
+    .then(({ stdout }) => {
+      assert.include(stdout, `Found 1 Completed Migration file/files.`);
+      assert.include(stdout, `Found 1 Pending Migration file/files.`);
+
+      return assertExec(
+        `node ${KNEX} migrate:up \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${temp}/migrations`,
+        'update_books_table'
+      ).then(({ stdout }) => {
+        assert.include(
+          stdout,
+          `Batch 2 ran the following migrations:\n${migrationFile2}`
+        );
+
+        return assertExec(
+          `node ${KNEX} list \
+          --client=sqlite3 \
+          --connection=${temp}/db \
+          --migrations-directory=${temp}/migrations`
+        );
+      });
+    })
+    .then(({ stdout }) => {
+      assert.include(stdout, `Found 2 Completed Migration file/files.`);
+      assert.include(stdout, `No Pending Migration files Found.`);
+    });
+});
+
 module.exports = {
   taskList,
 };
