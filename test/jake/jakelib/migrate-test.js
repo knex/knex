@@ -561,11 +561,11 @@ test('list prints migrations both completed and pending', (temp) => {
         `${temp}/migrations/${migrationFile1}`,
         `
           exports.up = (knex) => knex.schema
-            .createTable('books', (table) => {
+            .createTable('animals', (table) => {
               table.string('title');
             });
     
-          exports.down = (knex) => knex.schema.dropTable('books');
+          exports.down = (knex) => knex.schema.dropTable('animals');
         `
       );
 
@@ -573,13 +573,13 @@ test('list prints migrations both completed and pending', (temp) => {
         `${temp}/migrations/${migrationFile2}`,
         `
           exports.up = (knex) => knex.schema
-            .table('books', (table) => {
-              table.integer('pages');
+            .table('animals', (table) => {
+              table.integer('age');
             });
     
           exports.down = (knex) => knex.schema
-            .table('books', (table) => {
-              table.dropColumn('pages');
+            .table('animals', (table) => {
+              table.dropColumn('age');
             });
         `
       );
