@@ -190,6 +190,17 @@ module.exports = function(knex) {
             ]);
           });
       });
+
+      it('should return the all columns when single properties as * are given to returning', () => {
+        return knex('accounts_foo')
+          .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
+          .returning('*')
+          .then((res) => {
+            expect(res).to.eql([
+              { balance_foo: 123, email_foo: 'foo@bar.com' },
+            ]);
+          });
+      });
     });
 
     it('should forward the .mapSeries() function from bluebird', function() {
