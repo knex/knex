@@ -193,11 +193,11 @@ module.exports = function(knex) {
 
       it('should return the all columns when single properties as * are given to returning', () => {
         return knex('accounts_foo')
-          .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
+          .insert({ balance_foo: 456, email_foo: 'fo456o@bar.com' })
           .returning('*')
           .then((res) => {
             expect(res).to.eql([
-              { balance_foo: 123, email_foo: 'foo@bar.com' },
+              { balance_foo: 456, email_foo: 'foo456@bar.com' },
             ]);
           });
       });
