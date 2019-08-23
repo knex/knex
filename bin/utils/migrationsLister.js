@@ -2,7 +2,7 @@ const color = require('colorette');
 
 const { success } = require('./cli-config-utils');
 
-function migrationsLister(completed, newMigrations) {
+function listMigrations(completed, newMigrations) {
   let message = '';
 
   if (completed.length === 0) {
@@ -34,4 +34,4 @@ function migrationsLister(completed, newMigrations) {
   success(message);
 }
 
-module.exports = { migrationsLister };
+module.exports = { listMigrations };

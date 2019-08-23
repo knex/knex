@@ -21,7 +21,7 @@ const {
   getStubPath,
 } = require('./utils/cli-config-utils');
 const { DEFAULT_EXT } = require('./utils/constants');
-const { migrationsLister } = require('./utils/migrationsLister');
+const { listMigrations } = require('./utils/migrationsLister');
 
 function initKnex(env, opts) {
   checkLocalModule(env);
@@ -276,7 +276,7 @@ function invoke(env) {
       pending = initKnex(env, commander.opts())
         .migrate.list()
         .then(([completed, newMigrations]) => {
-          migrationsLister(completed, newMigrations);
+          listMigrations(completed, newMigrations);
         })
         .catch(exit);
     });
