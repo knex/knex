@@ -547,7 +547,7 @@ test('list prints migrations both completed and pending', async (temp) => {
   const migrationFile1 = '001_create_animals_table.js';
   const migrationFile2 = '002_add_age_column_to_animals_table.js';
 
-  let { stdout } = await assertExec(
+  const { stdout } = await assertExec(
     `node ${KNEX} list \
     --client=sqlite3 \
     --connection=${temp}/db \
@@ -584,57 +584,63 @@ test('list prints migrations both completed and pending', async (temp) => {
         `
   );
 
-  let result = await assertExec(
+  const migrationUp1Result = await assertExec(
     `node ${KNEX} migrate:up \
         --client=sqlite3 \
         --connection=${temp}/db \
         --migrations-directory=${temp}/migrations`,
-    'create_books_table'
+    'create_animals_table'
   );
 
-  stdout = result.stdout;
-
   assert.include(
-    stdout,
+    migrationUp1Result.stdout,
     `Batch 1 ran the following migrations:\n${migrationFile1}`
   );
 
-  result = await assertExec(
+  const migrationsListResult = await assertExec(
     `node ${KNEX} list \
       --client=sqlite3 \
       --connection=${temp}/db \
       --migrations-directory=${temp}/migrations`
   );
 
-  stdout = result.stdout;
+  assert.include(
+    migrationsListResult.stdout,
+    `Found 1 Completed Migration file/files.`
+  );
+  assert.include(
+    migrationsListResult.stdout,
+    `Found 1 Pending Migration file/files.`
+  );
 
-  assert.include(stdout, `Found 1 Completed Migration file/files.`);
-  assert.include(stdout, `Found 1 Pending Migration file/files.`);
-
-  result = await assertExec(
+  const migrationUp2Result = await assertExec(
     `node ${KNEX} migrate:up \
         --client=sqlite3 \
         --connection=${temp}/db \
         --migrations-directory=${temp}/migrations`,
-    'update_books_table'
+    'update_animals_table'
   );
-  stdout = result.stdout;
 
   assert.include(
-    stdout,
+    migrationUp2Result.stdout,
     `Batch 2 ran the following migrations:\n${migrationFile2}`
   );
 
-  result = await assertExec(
+  const migrationsList2Result = await assertExec(
     `node ${KNEX} list \
           --client=sqlite3 \
           --connection=${temp}/db \
           --migrations-directory=${temp}/migrations`
   );
-  stdout = result.stdout;
 
-  assert.include(stdout, `Found 2 Completed Migration file/files.`);
-  assert.include(stdout, `No Pending Migration files Found.`);
+  assert.include(
+    migrationsList2Result.stdout,
+    `Found 2 Completed Migration file/files.`
+  );
+  assert.include(
+    migrationsList2Result.stdout,
+    `No Pending Migration files Found.`
+  );
 });
 
 module.exports = {
