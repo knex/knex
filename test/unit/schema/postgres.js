@@ -918,31 +918,6 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum with useNative and specified schema', function() {
-    const schema = 'test';
-    const enumName = 'foo_type1';
-
-    tableSql = client
-      .schemaBuilder()
-      .table('users', function(table) {
-        table
-          .enu('foo', ['bar', 'baz'], {
-            useNative: true,
-            enumName,
-            schema,
-          })
-          .notNullable();
-      })
-      .toSQL();
-    equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal(
-      `create type "${schema}"."${enumName}" as enum ('bar', 'baz')`
-    );
-    expect(tableSql[1].sql).to.equal(
-      `alter table "users" add column "foo" "${schema}"."${enumName}" not null`
-    );
-  });
-
   it('adding enum with useNative and existingType', function() {
     tableSql = client
       .schemaBuilder()

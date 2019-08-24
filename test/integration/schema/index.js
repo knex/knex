@@ -297,28 +297,6 @@ module.exports = function(knex) {
           });
         });
 
-        it('uses native type with specified schema', function() {
-          return knex.schema.createSchemaIfNotExists('test').then(() => {
-            return knex.schema
-              .createTable('native_enum_test', function(table) {
-                table
-                  .enum('foo_column', ['a', 'b', 'c'], {
-                    useNative: true,
-                    enumName: 'foo_type',
-                    schema: 'test',
-                  })
-                  .notNull();
-                table.uuid('id').notNull();
-              })
-              .testSql(function(tester) {
-                tester('pg', [
-                  "create type \"test\".\"foo_type\" as enum ('a', 'b', 'c')",
-                  'create table "native_enum_test" ("foo_column" "test"."foo_type" not null, "id" uuid not null)',
-                ]);
-              });
-          });
-        });
-
         it('uses native type when useNative is specified', function() {
           return knex.schema
             .createTable('native_enum_test', function(table) {
