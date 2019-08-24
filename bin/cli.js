@@ -21,6 +21,7 @@ const {
   getStubPath,
 } = require('./utils/cli-config-utils');
 const { DEFAULT_EXT } = require('./utils/constants');
+const { listMigrations } = require('./utils/migrationsLister');
 
 function initKnex(env, opts) {
   checkLocalModule(env);
@@ -263,6 +264,19 @@ function invoke(env) {
         .migrate.currentVersion()
         .then((version) => {
           success(color.green('Current Version: ') + color.blue(version));
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('migrate:list')
+    .alias('migrate:status')
+    .description('        List all migrations files with status.')
+    .action(() => {
+      pending = initKnex(env, commander.opts())
+        .migrate.list()
+        .then(([completed, newMigrations]) => {
+          listMigrations(completed, newMigrations);
         })
         .catch(exit);
     });
