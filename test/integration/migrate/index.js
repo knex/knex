@@ -72,6 +72,22 @@ module.exports = function(knex) {
       });
     }
 
+    if (knex.client.driverName === 'sqlite3') {
+      it('should not fail rename-and-drop-column with multiline sql from legacy db', () => {
+        return knex.migrate
+          .latest({
+            directory:
+              'test/integration/migrate/rename-and-drop-column-with-multiline-sql-from-legacy-db',
+          })
+          .then(() => {
+            return knex.migrate.rollback({
+              directory:
+                'test/integration/migrate/rename-and-drop-column-with-multiline-sql-from-legacy-db',
+            });
+          });
+      });
+    }
+
     it('should not fail drop-and-recreate-column operation when using async/await', () => {
       return knex.migrate
         .latest({
