@@ -12,16 +12,11 @@ Object.keys(config).forEach((dialectName) => {
   return require('./suite')(logger(knex(config[dialectName])));
 });
 
-before(function(done) {
+before(function() {
   if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {
-    fs.copyFile(
+    fs.copyFileSync(
       path.resolve(__dirname, '../sample.sqlite3'),
-      config.sqlite3.connection.filename,
-      function() {
-        done();
-      }
+      config.sqlite3.connection.filename
     );
-  } else {
-    done();
   }
 });
