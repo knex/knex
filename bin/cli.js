@@ -269,8 +269,8 @@ function invoke(env) {
     });
 
   commander
-    .command('list')
-    .alias('status')
+    .command('migrate:list')
+    .alias('migrate:status')
     .description('        List all migrations files with status.')
     .action(() => {
       pending = initKnex(env, commander.opts())

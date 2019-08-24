@@ -543,12 +543,12 @@ test('migrate:down undos only the last run migration', (temp) => {
     });
 });
 
-test('list prints migrations both completed and pending', async (temp) => {
+test('migrate:list prints migrations both completed and pending', async (temp) => {
   const migrationFile1 = '001_create_animals_table.js';
   const migrationFile2 = '002_add_age_column_to_animals_table.js';
 
   const { stdout } = await assertExec(
-    `node ${KNEX} list \
+    `node ${KNEX} migrate:list \
     --client=sqlite3 \
     --connection=${temp}/db \
     --migrations-directory=${temp}/migrations`
@@ -598,7 +598,7 @@ test('list prints migrations both completed and pending', async (temp) => {
   );
 
   const migrationsListResult = await assertExec(
-    `node ${KNEX} list \
+    `node ${KNEX} migrate:list \
       --client=sqlite3 \
       --connection=${temp}/db \
       --migrations-directory=${temp}/migrations`
@@ -627,7 +627,7 @@ test('list prints migrations both completed and pending', async (temp) => {
   );
 
   const migrationsList2Result = await assertExec(
-    `node ${KNEX} list \
+    `node ${KNEX} migrate:list \
           --client=sqlite3 \
           --connection=${temp}/db \
           --migrations-directory=${temp}/migrations`
