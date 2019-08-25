@@ -407,7 +407,15 @@ export default [
       type: 'code',
       language: 'js',
       content: `table.enu('column', null, { useNative: true, existingType: true, enumName: 'foo_type' })`
-    }]
+    }, {
+      type: 'text',
+      content: "If you want to use existing enums from a schema, different from the schema of your current table, specify 'schemaName' in the options:"
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `table.enu('column', null, { useNative: true, existingType: true, enumName: 'foo_type', schemaName: 'public' })`
+    }
+    ]
   },
   {
     type: "method",
@@ -427,7 +435,8 @@ export default [
           .where({id: 1})
           .update({json_data: JSON.stringify(mightBeAnArray)});
       `
-    }]
+    }
+    ]
   },
   {
     type: "method",
