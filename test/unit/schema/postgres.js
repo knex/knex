@@ -964,6 +964,58 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
+  it('adding enum with useNative, from manually defined schema and withSchema', function() {
+    const tableSchema = 'table_schema';
+    const tableName = 'table_name';
+    const typeSchema = 'type_schema';
+    const typeName = 'type_name';
+    const columnName = 'column_name';
+
+    tableSql = client
+      .schemaBuilder()
+      .withSchema(tableSchema)
+      .table(tableName, function(table) {
+        table.enu(columnName, ['foo', 'bar', 'baz'], {
+          useNative: true,
+          schemaName: typeSchema,
+          enumName: typeName,
+        });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      `create type "${typeSchema}"."${typeName}" as enum ('foo', 'bar', 'baz')`
+    );
+    expect(tableSql[1].sql).to.equal(
+      `alter table "${tableSchema}"."${tableName}" add column "${columnName}" "${typeSchema}"."${typeName}"`
+    );
+  });
+
+  it('adding enum with useNative and existingType, from manually defined schema and withSchema', function() {
+    const tableSchema = 'table_schema';
+    const tableName = 'table_name';
+    const typeSchema = 'type_schema';
+    const typeName = 'type_name';
+    const columnName = 'column_name';
+
+    tableSql = client
+      .schemaBuilder()
+      .withSchema(tableSchema)
+      .table(tableName, function(table) {
+        table.enu(columnName, null, {
+          useNative: true,
+          schemaName: typeSchema,
+          enumName: typeName,
+          existingType: true,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      `alter table "${tableSchema}"."${tableName}" add column "${columnName}" "${typeSchema}"."${typeName}"`
+    );
+  });
+
   it('adding date', function() {
     tableSql = client
       .schemaBuilder()
