@@ -1835,6 +1835,7 @@ declare namespace Knex {
   interface EnumOptions {
     useNative: boolean;
     existingType: boolean;
+    schemaName: string;
     enumName: string;
   }
 
