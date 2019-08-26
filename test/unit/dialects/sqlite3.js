@@ -16,7 +16,7 @@ it('[backwards compatible] can rename column with double quotes', function() {
 
   const newSql = ddl._doReplace(sql, '`about`', '`about_me`');
   newSql.should.eql(
-    'CREATE TABLE "accounts" ("id" varchar(24) not null primary key, "about_me" varchar(24))'
+    'CREATE TABLE "accounts" ("id" varchar(24) not null primary key, `about_me` varchar(24))'
   );
 });
 
@@ -48,7 +48,7 @@ it('[backwards compatible] can rename column with double quotes', function() {
 
   const newSql = ddl._doReplace(sql, '"about"', '`about_me`');
   newSql.should.eql(
-    'CREATE TABLE "accounts" ("id" varchar(24) not null primary key, "about_me" varchar(24))'
+    'CREATE TABLE "accounts" ("id" varchar(24) not null primary key, `about_me` varchar(24))'
   );
 });
 
