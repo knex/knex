@@ -1724,7 +1724,7 @@ declare namespace Knex {
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
   }
-  
+
   interface OracleDbConnectionConfig {
     host: string;
     user: string;
@@ -1834,7 +1834,8 @@ declare namespace Knex {
 
   interface EnumOptions {
     useNative: boolean;
-    existingType: boolean;
+    existingType?: boolean;
+    schemaName?: string;
     enumName: string;
   }
 
