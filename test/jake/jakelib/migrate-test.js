@@ -634,7 +634,7 @@ test('migrate:down <name> throw an error', (temp) => {
     --client=sqlite3 \
     --connection=${temp}/db \
     --migrations-directory=${migrationsPath}`,
-    'run_migration_001'
+    'undo_migration_001'
   ).catch((error) => {
     assert.include(
       error.toString(),
