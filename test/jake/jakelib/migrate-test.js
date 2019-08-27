@@ -458,6 +458,24 @@ test('migrate:up <name> runs only the defined unrun migration', (temp) => {
   });
 });
 
+test('migrate:up <name> throw an error', (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+
+  return assertExec(
+    `node ${KNEX} migrate:up ${migrationFile1} \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+    'run_migration_001'
+  ).catch((error) => {
+    assert.include(
+      error.toString(),
+      `Migration "${migrationFile1}" not found.`
+    );
+  });
+});
+
 test('migrate:down undos only the last run migration', (temp) => {
   const migrationFile1 = '001_create_address_table.js';
   const migrationFile2 = '002_add_zip_to_address_table.js';
@@ -604,6 +622,24 @@ test('migrate:down <name> undos only the defined run migration', (temp) => {
       );
       assert.notInclude(stdout, migrationFile2);
     });
+  });
+});
+
+test('migrate:down <name> throw an error', (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+
+  return assertExec(
+    `node ${KNEX} migrate:down ${migrationFile1} \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+    'run_migration_001'
+  ).catch((error) => {
+    assert.include(
+      error.toString(),
+      `Migration "${migrationFile1}" was not run.`
+    );
   });
 });
 

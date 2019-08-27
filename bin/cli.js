@@ -192,7 +192,7 @@ function invoke(env) {
   commander
     .command('migrate:up [<name>]')
     .description(
-      '        Run the next or the defined migration that has not yet been run.'
+      '        Run the next or the specified migration that has not yet been run.'
     )
     .action((name) => {
       pending = initKnex(env, commander.opts())
@@ -238,7 +238,9 @@ function invoke(env) {
 
   commander
     .command('migrate:down [<name>]')
-    .description('        Undo the last or the defined migration performed.')
+    .description(
+      '        Undo the last or the specified migration that was already run.'
+    )
     .action((name) => {
       pending = initKnex(env, commander.opts())
         .migrate.down(name)
