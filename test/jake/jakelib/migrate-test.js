@@ -9,7 +9,10 @@ const rimrafSync = require('rimraf').sync;
 const path = require('path');
 const sqlite3 = require('sqlite3');
 const { assert } = require('chai');
-const { assertExec } = require('../../jake-util/helpers/migration-test-helper');
+const {
+  assertExec,
+  assertExecError,
+} = require('../../jake-util/helpers/migration-test-helper');
 const knexfile = require('../../jake-util/knexfile/knexfile.js');
 
 const KNEX = path.normalize(__dirname + '/../../../bin/cli.js');
@@ -462,17 +465,14 @@ test('migrate:up <name> throw an error', (temp) => {
   const migrationsPath = `${temp}/migrations`;
   const migrationFile1 = '001_one.js';
 
-  return assertExec(
+  return assertExecError(
     `node ${KNEX} migrate:up ${migrationFile1} \
     --client=sqlite3 \
     --connection=${temp}/db \
     --migrations-directory=${migrationsPath}`,
     'run_migration_001'
-  ).catch((error) => {
-    assert.include(
-      error.toString(),
-      `Migration "${migrationFile1}" not found.`
-    );
+  ).catch(({ stderr }) => {
+    assert.include(stderr, `Migration "${migrationFile1}" not found.`);
   });
 });
 
@@ -629,17 +629,14 @@ test('migrate:down <name> throw an error', (temp) => {
   const migrationsPath = `${temp}/migrations`;
   const migrationFile1 = '001_one.js';
 
-  return assertExec(
+  return assertExecError(
     `node ${KNEX} migrate:down ${migrationFile1} \
     --client=sqlite3 \
     --connection=${temp}/db \
     --migrations-directory=${migrationsPath}`,
     'undo_migration_001'
-  ).catch((error) => {
-    assert.include(
-      error.toString(),
-      `Migration "${migrationFile1}" was not run.`
-    );
+  ).catch(({ stderr }) => {
+    assert.include(stderr, `Migration "${migrationFile1}" was not run.`);
   });
 });
 
