@@ -14,7 +14,12 @@
 
 ### Typings:
 
+- Include schemaName in EnumOptions #3415
 - Allow `ColumnBuilder.defaultTo()` to be `null` #3407
+
+### Changes:
+
+- migrate: Refactor _lockMigrations to avoid forUpdate - makes migrations compatible with CockroachDB #3395
 
 # 0.19.2 - 17 August, 2019
 
