@@ -8562,40 +8562,64 @@ describe('QueryBuilder', function() {
 
   it('Any undefined binding in a SELECT query should throw an error', function() {
     var qbuilders = [
-      qb()
-        .from('accounts')
-        .where({ Login: void 0 })
-        .select(),
-      qb()
-        .from('accounts')
-        .where('Login', void 0)
-        .select(),
-      qb()
-        .from('accounts')
-        .where('Login', '>=', void 0)
-        .select(),
-      qb()
-        .from('accounts')
-        .whereIn('Login', ['test', 'val', void 0])
-        .select(),
-      qb()
-        .from('accounts')
-        .where({ Login: ['1', '2', '3', void 0] }),
-      qb()
-        .from('accounts')
-        .where({ Login: { Test: '123', Value: void 0 } }),
-      qb()
-        .from('accounts')
-        .where({ Login: ['1', ['2', [void 0]]] }),
-      qb()
-        .from('accounts')
-        .update({ test: '1', test2: void 0 })
-        .where({ abc: 'test', cba: void 0 }),
+      {
+        builder: qb()
+          .from('accounts')
+          .where({ Login: void 0 })
+          .select(),
+        undefinedColumns: ['Login']
+      },
+      {
+        builder: qb()
+          .from('accounts')
+          .where('Login', void 0)
+          .select(),
+        undefinedColumns: ['Login']
+      },
+      {
+        builder: qb()
+          .from('accounts')
+          .where('Login', '>=', void 0)
+          .select(),
+        undefinedColumns: ['Login']
+      },
+      {
+        builder: qb()
+          .from('accounts')
+          .whereIn('Login', ['test', 'val', void 0])
+          .select(),
+        undefinedColumns: ['Login']
+      },
+      {
+        builder: qb()
+          .from('accounts')
+          .where({ Login: ['1', '2', '3', void 0] }),
+        undefinedColumns: ['Login']
+      },
+      {
+        builder: qb()
+          .from('accounts')
+          .where({ Login: { Test: '123', Value: void 0 } }),
+        undefinedColumns: ['Login']
+      },
+      {
+        builder: qb()
+          .from('accounts')
+          .where({ Login: ['1', ['2', [void 0]]] }),
+        undefinedColumns: ['Login']
+      },
+      {
+        builder: qb()
+          .from('accounts')
+          .update({ test: '1', test2: void 0 })
+          .where({ abc: 'test', cba: void 0 }),
+        undefinedColumns: ['cba']
+      }
     ];
-    qbuilders.forEach(function(qbuilder) {
+    qbuilders.forEach(function({ builder, undefinedColumns}) {
       try {
         //Must be present, but makes no difference since it throws.
-        testsql(qbuilder, {
+        testsql(builder, {
           mysql: {
             sql: '',
             bindings: [],
@@ -8624,31 +8648,31 @@ describe('QueryBuilder', function() {
       } catch (error) {
         expect(error.message).to.contain(
           'Undefined binding(s) detected when compiling ' +
-            qbuilder._method.toUpperCase() +
-            ' query:'
+            builder._method.toUpperCase() +
+            `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
         ); //This test is not for asserting correct queries
       }
     });
   });
 
   it('Any undefined binding in a RAW query should throw an error', function() {
-    var expectedErrorMessageContains =
-      'Undefined binding(s) detected when compiling RAW query:'; //This test is not for asserting correct queries
     var raws = [
-      raw('?', [undefined]),
-      raw(':col = :value', { col: 'test', value: void 0 }),
-      raw('? = ?', ['test', void 0]),
-      raw('? = ?', ['test', { test: void 0 }]),
-      raw('?', [['test', void 0]]),
+      { query: raw('?', [undefined]), undefinedIndices: [0] },
+      { query: raw(':col = :value', { col: 'test', value: void 0 }), undefinedIndices: ['value'] },
+      { query: raw('? = ?', ['test', void 0]), undefinedIndices: [1] },
+      { query: raw('? = ?', ['test', { test: void 0 }]), undefinedIndices: [1] },
+      { query: raw('?', [['test', void 0]]), undefinedIndices: [0] },
     ];
-    raws.forEach(function(raw) {
+    raws.forEach(function({ query, undefinedIndices }) {
       try {
-        raw = raw.toSQL();
+        query.toSQL();
         expect(true).to.equal(
           false,
           'Expected to throw error in compilation about undefined bindings.'
         );
       } catch (error) {
+      var expectedErrorMessageContains =
+        `Undefined binding(s) detected for keys [${undefinedIndices.join(', ')}] when compiling RAW query:`;
         expect(error.message).to.contain(expectedErrorMessageContains); //This test is not for asserting correct queries
       }
     });
