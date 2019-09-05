@@ -759,8 +759,6 @@ declare namespace Knex {
     delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
     truncate(): QueryBuilder<TRecord, void>;
-
-    clone(): QueryBuilder<TRecord, TResult>;
   }
 
   interface As<TRecord, TResult> {
@@ -1342,9 +1340,9 @@ declare namespace Knex {
   >
     extends QueryInterface<TRecord, TResult>,
       ChainableInterface<ResolveResult<TResult>> {
-    // [TODO] Doesn't seem to be available
-    // or: QueryBuilder;
 
+    or: QueryBuilder<TRecord, TResult>;
+    not: QueryBuilder<TRecord, TResult>;
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
@@ -1364,6 +1362,9 @@ declare namespace Knex {
     on(event: string, callback: Function): QueryBuilder<TRecord, TResult>;
 
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
+
+    clone(): QueryBuilder<TRecord, TResult>;
+    timeout(ms: number, options: {cancel?: boolean}): QueryBuilder<TRecord, TResult>;
   }
 
   interface Sql {

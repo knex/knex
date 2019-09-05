@@ -456,6 +456,17 @@ const main = async () => {
   // $ExpectType User[]
   await knex<User>('users').whereNot('age', '>', 100);
 
+  // ### Boolean operations
+
+  // $ExpectType User[]
+  await knex<User>('users').not.where('id', 10);
+
+  // $ExpectType User[]
+  await knex<User>('user').where('name', 'L').and.where('age', 20);
+
+  // $ExpectType User[]
+  await knex<User>('user').where('name', 'L').or.where('age', 20);
+
   // ## Aggregation:
 
   const u4: User[] = await knex('users')
