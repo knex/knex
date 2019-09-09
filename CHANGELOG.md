@@ -1,5 +1,16 @@
 # Master (Unreleased)
 
+# 0.19.4 - 09 September, 2019
+
+### New features:
+
+- Add undefined columns to undefined binding(s) error #3425
+
+### Typings:
+
+- Add `specific` to SeederConfig type #3429
+- Fix some issues with QueryBuilder types #3427
+
 # 0.19.3 - 25 August, 2019
 
 ### Bug fixes:
