@@ -399,6 +399,22 @@ module.exports = function(knex) {
       });
     });
 
+    it('should wait for sibling transactions to finish', function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return Promise.resolve();
+      }
+      return knex.transaction(function(trx) {
+        return Promise.all([
+          trx.transaction(function(trx2) {
+            return Bluebird.delay(100);
+          }),
+          trx.transaction(function(trx3) {
+            return Bluebird.delay(300);
+          }),
+        ]);
+      });
+    });
+
     it('#855 - Query Event should trigger on Transaction Client AND main Client', function() {
       let queryEventTriggered = false;
 
