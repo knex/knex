@@ -1364,7 +1364,7 @@ declare namespace Knex {
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
 
     clone(): QueryBuilder<TRecord, TResult>;
-    timeout(ms: number, options: {cancel?: boolean}): QueryBuilder<TRecord, TResult>;
+    timeout(ms: number, options?: {cancel?: boolean}): QueryBuilder<TRecord, TResult>;
   }
 
   interface Sql {
