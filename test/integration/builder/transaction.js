@@ -399,20 +399,22 @@ module.exports = function(knex) {
       });
     });
 
-    it('should wait for sibling transactions to finish', function() {
+    it('#2213 - should wait for sibling transactions to finish', function() {
       if (/redshift/i.test(knex.client.driverName)) {
         return Promise.resolve();
       }
       if (/mssql/i.test(knex.client.driverName)) {
         return Promise.resolve();
       }
+      const first = Bluebird.delay(50);
+      const second = first.then(() => Bluebird.delay(50));
       return knex.transaction(function(trx) {
         return Promise.all([
           trx.transaction(function(trx2) {
-            return Bluebird.delay(100);
+            return first;
           }),
           trx.transaction(function(trx3) {
-            return Bluebird.delay(300);
+            return second;
           }),
         ]);
       });
