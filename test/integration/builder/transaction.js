@@ -403,6 +403,9 @@ module.exports = function(knex) {
       if (/redshift/i.test(knex.client.driverName)) {
         return Promise.resolve();
       }
+      if (/mssql/i.test(knex.client.driverName)) {
+        return Promise.resolve();
+      }
       return knex.transaction(function(trx) {
         return Promise.all([
           trx.transaction(function(trx2) {
