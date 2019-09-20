@@ -1796,6 +1796,7 @@ declare namespace Knex {
     tableName?: string;
     schemaName?: string;
     disableTransactions?: boolean;
+    disableMigrationsListValidation?: boolean;
     sortDirsSeparately?: boolean;
     loadExtensions?: string[];
     migrationSource?: any;
