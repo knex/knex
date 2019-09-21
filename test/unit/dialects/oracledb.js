@@ -6,6 +6,7 @@ const expect = require('chai').expect;
 const knex = require('../../../knex');
 const config = require('../../knexfile');
 const sinon = require('sinon');
+const oracledb = require('oracledb');
 
 describe('OracleDb externalAuth', function() {
   const knexInstance = knex({
@@ -99,6 +100,59 @@ describe('OracleDb parameters', function() {
         .then(function(result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.not.be.a('string');
+        });
+    });
+
+    after(function() {
+      return knexClient.destroy();
+    });
+  });
+  describe('test stored procedures', function() {
+    let knexClient;
+
+    before(function() {
+      knexClient = knex(config.oracledb);
+      return knexClient;
+    });
+
+    it('create stored procedure', function() {
+      return knexClient
+        .raw(
+          `
+          CREATE OR REPLACE PROCEDURE SYSTEM.multiply (X IN NUMBER, Y IN NUMBER, OUTPUT OUT NUMBER)
+          IS
+            BEGIN
+              OUTPUT := X * Y;
+            END;`
+        )
+        .then(function(result) {
+          expect(result).to.be.an('array');
+        });
+    });
+
+    it('get outbound values from stored procedure', function() {
+      const bindVars = {
+        x: 6,
+        y: 7,
+        output: {
+          dir: oracledb.BIND_OUT,
+        },
+      };
+      return knexClient
+        .raw('BEGIN SYSTEM.MULTIPLY(:x, :y, :output); END;', bindVars)
+        .then(function(result) {
+          expect(result[0]).to.be.ok;
+          expect(result[0]).to.equal('42');
+        });
+    });
+
+    it('drop stored procedure', function() {
+      const bindVars = { x: 6, y: 7 };
+      return knexClient
+        .raw('drop procedure SYSTEM.MULTIPLY', bindVars)
+        .then(function(result) {
+          expect(result).to.be.ok;
+          expect(result).to.be.an('array');
         });
     });
 
