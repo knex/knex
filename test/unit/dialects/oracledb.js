@@ -6,7 +6,6 @@ const expect = require('chai').expect;
 const knex = require('../../../knex');
 const config = require('../../knexfile');
 const sinon = require('sinon');
-const oracledb = require('oracledb');
 
 describe('OracleDb externalAuth', function() {
   const knexInstance = knex({
