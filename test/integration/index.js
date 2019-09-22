@@ -5,8 +5,6 @@ const logger = require('./logger');
 const config = require('../knexfile');
 const fs = require('fs');
 
-const Bluebird = require('bluebird');
-
 Object.keys(config).forEach((dialectName) => {
   return require('./suite')(logger(knex(config[dialectName])));
 });

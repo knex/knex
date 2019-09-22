@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 'use strict';
 
 require('source-map-support').install();
