@@ -196,7 +196,7 @@ function invoke(env) {
     )
     .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.up(name)
+        .migrate.up({ name })
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -243,7 +243,7 @@ function invoke(env) {
     )
     .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.down(name)
+        .migrate.down({ name })
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));

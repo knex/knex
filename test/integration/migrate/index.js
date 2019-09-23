@@ -571,7 +571,7 @@ module.exports = function(knex) {
 
       it('should only run the first migration if no migrations have run', function() {
         return knex.migrate
-          .up(null, {
+          .up({
             directory: 'test/integration/migrate/test',
           })
           .then(() => {
@@ -588,12 +588,12 @@ module.exports = function(knex) {
 
       it('should only run the next migration that has not yet run if other migrations have already run', function() {
         return knex.migrate
-          .up(null, {
+          .up({
             directory: 'test/integration/migrate/test',
           })
           .then(() => {
             return knex.migrate
-              .up(null, {
+              .up({
                 directory: 'test/integration/migrate/test',
               })
               .then(() => {
@@ -619,7 +619,7 @@ module.exports = function(knex) {
           })
           .then(() => {
             return knex.migrate
-              .up(null, {
+              .up({
                 directory: 'test/integration/migrate/test',
               })
               .then((data) => {
@@ -645,7 +645,7 @@ module.exports = function(knex) {
 
       it('should only undo the last migration that was run if all migrations have run', function() {
         return knex.migrate
-          .down(null, {
+          .down({
             directory: ['test/integration/migrate/test'],
           })
           .then(() => {
@@ -662,12 +662,12 @@ module.exports = function(knex) {
 
       it('should only undo the last migration that was run if there are other migrations that have not yet run', function() {
         return knex.migrate
-          .down(null, {
+          .down({
             directory: ['test/integration/migrate/test'],
           })
           .then(() => {
             return knex.migrate
-              .down(null, {
+              .down({
                 directory: ['test/integration/migrate/test'],
               })
               .then(() => {
@@ -685,7 +685,7 @@ module.exports = function(knex) {
           .rollback({ directory: ['test/integration/migrate/test'] }, true)
           .then(() => {
             return knex.migrate
-              .down(null, {
+              .down({
                 directory: ['test/integration/migrate/test'],
               })
               .then((data) => {
