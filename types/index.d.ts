@@ -1826,6 +1826,7 @@ declare namespace Knex {
     rollback(config?: MigratorConfig, all?: boolean): Promise<any>;
     status(config?: MigratorConfig): Promise<number>;
     currentVersion(config?: MigratorConfig): Promise<string>;
+    list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfig): Promise<any>;
     down(config?: MigratorConfig): Promise<any>;
   }
