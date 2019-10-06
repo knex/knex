@@ -21,6 +21,7 @@ const {
   getStubPath,
 } = require('./utils/cli-config-utils');
 const { DEFAULT_EXT } = require('./utils/constants');
+const { listMigrations } = require('./utils/migrationsLister');
 
 function initKnex(env, opts) {
   checkLocalModule(env);
@@ -189,11 +190,13 @@ function invoke(env) {
     });
 
   commander
-    .command('migrate:up')
-    .description('        Run the next migration that has not yet been run.')
-    .action(() => {
+    .command('migrate:up [<name>]')
+    .description(
+      '        Run the next or the specified migration that has not yet been run.'
+    )
+    .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.up()
+        .migrate.up({ name })
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -234,11 +237,13 @@ function invoke(env) {
     });
 
   commander
-    .command('migrate:down')
-    .description('        Undo the last migration performed.')
-    .action(() => {
+    .command('migrate:down [<name>]')
+    .description(
+      '        Undo the last or the specified migration that was already run.'
+    )
+    .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.down()
+        .migrate.down({ name })
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
@@ -263,6 +268,19 @@ function invoke(env) {
         .migrate.currentVersion()
         .then((version) => {
           success(color.green('Current Version: ') + color.blue(version));
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('migrate:list')
+    .alias('migrate:status')
+    .description('        List all migrations files with status.')
+    .action(() => {
+      pending = initKnex(env, commander.opts())
+        .migrate.list()
+        .then(([completed, newMigrations]) => {
+          listMigrations(completed, newMigrations);
         })
         .catch(exit);
     });

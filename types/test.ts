@@ -456,6 +456,17 @@ const main = async () => {
   // $ExpectType User[]
   await knex<User>('users').whereNot('age', '>', 100);
 
+  // ### Boolean operations
+
+  // $ExpectType User[]
+  await knex<User>('users').not.where('id', 10);
+
+  // $ExpectType User[]
+  await knex<User>('user').where('name', 'L').and.where('age', 20);
+
+  // $ExpectType User[]
+  await knex<User>('user').where('name', 'L').or.where('age', 20);
+
   // ## Aggregation:
 
   const u4: User[] = await knex('users')
@@ -887,6 +898,9 @@ const main = async () => {
   // $ExpectType number[]
   await knex<User>('users').insert({ id: 10 }, 'id');
 
+  // $ExpectType User[]
+  await knex<User>('users').insert({ id: 10 }, '*');
+
   // $ExpectType number[]
   await knex.insert({ id: 10 }, 'id').into<User>('users');
 
@@ -899,6 +913,39 @@ const main = async () => {
   await knex<User>('users')
     .insert({ id: 10 }, 'id')
     .returning(['id', 'age']);
+
+  // $ExpectType any[]
+  await knex('users')
+    .insert({id: 10})
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .insert({id: 10})
+    .returning('*');
+
+  // $ExpectType any[]
+  await knex
+    .insert({id: 10})
+    .into('users')
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex
+    .insert({id: 10})
+    .into<User>('users')
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex
+    .insert({id: 10})
+    .returning('*')
+    .into<User>('users');
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .insert({id: 10}, 'id')
+    .returning('*');
 
   // $ExpectType Pick<User, "id" | "age">[]
   await knex
@@ -942,6 +989,32 @@ const main = async () => {
     .update({ active: true })
     .returning(['id', 'age']);
 
+  // $ExpectType any[]
+  await knex('users')
+    .where('id', 10)
+    .update({ active: true })
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .where('id', 10)
+    .update({ active: true })
+    .returning('*');
+
+  // $ExpectType any[]
+  await knex
+    .where('id', 10)
+    .update({ active: true })
+    .returning('*')
+    .from('users');
+
+  // $ExpectType User[]
+  await knex
+    .where('id', 10)
+    .update({ active: true })
+    .returning('*')
+    .from<User>('users');
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
     .where('id', 10)
@@ -980,6 +1053,44 @@ const main = async () => {
   await knex<User>('users')
     .where('id', 10)
     .delete('id');
+
+  // $ExpectType any[]
+  await knex('users')
+    .where('id', 10)
+    .del()
+    .returning('*');
+
+  // $ExpectType any[]
+  await knex('users')
+    .where('id', 10)
+    .delete()
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .where('id', 10)
+    .del()
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .where('id', 10)
+    .delete()
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex
+    .where('id', 10)
+    .del()
+    .returning('*')
+    .from<User>('users');
+
+  // $ExpectType User[]
+  await knex
+    .where('id', 10)
+    .delete()
+    .returning('*')
+    .from<User>('users');
 
   // $ExpectType number[]
   await knex
