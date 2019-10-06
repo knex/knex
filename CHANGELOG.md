@@ -1,5 +1,9 @@
 # Master (Unreleased)
 
+### Bug fixes:
+
+- MSSQL: Escape column ids correctly in all cases (reported by Snyk Security Research Team) 
+
 # 0.19.4 - 09 September, 2019
 
 ### New features:
