@@ -190,11 +190,13 @@ function invoke(env) {
     });
 
   commander
-    .command('migrate:up')
-    .description('        Run the next migration that has not yet been run.')
-    .action(() => {
+    .command('migrate:up [<name>]')
+    .description(
+      '        Run the next or the specified migration that has not yet been run.'
+    )
+    .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.up()
+        .migrate.up({ name })
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -235,11 +237,13 @@ function invoke(env) {
     });
 
   commander
-    .command('migrate:down')
-    .description('        Undo the last migration performed.')
-    .action(() => {
+    .command('migrate:down [<name>]')
+    .description(
+      '        Undo the last or the specified migration that was already run.'
+    )
+    .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.down()
+        .migrate.down({ name })
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));

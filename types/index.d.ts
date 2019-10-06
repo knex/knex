@@ -548,6 +548,10 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TRecord[K][]>;
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
+    insert(
+      data: MaybeArray<SafePartial<TRecord>>,
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -601,6 +605,10 @@ declare namespace Knex {
       ...args: any[]
     ): QueryBuilder<TRecord2, TResult2>;
 
+    update(
+      data: MaybeArray<SafePartial<TRecord>>,
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     update<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -685,6 +693,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;
 
+    returning(column: '*'): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     returning<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -708,6 +717,9 @@ declare namespace Knex {
       column: string | string[]
     ): QueryBuilder<TRecord, TResult2>;
 
+    del(
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     del<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -733,6 +745,9 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     del<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
+    delete(
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     delete<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -1340,7 +1355,6 @@ declare namespace Knex {
   >
     extends QueryInterface<TRecord, TResult>,
       ChainableInterface<ResolveResult<TResult>> {
-
     or: QueryBuilder<TRecord, TResult>;
     not: QueryBuilder<TRecord, TResult>;
     and: QueryBuilder<TRecord, TResult>;
@@ -1812,6 +1826,7 @@ declare namespace Knex {
     rollback(config?: MigratorConfig, all?: boolean): Promise<any>;
     status(config?: MigratorConfig): Promise<number>;
     currentVersion(config?: MigratorConfig): Promise<string>;
+    list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfig): Promise<any>;
     down(config?: MigratorConfig): Promise<any>;
   }
