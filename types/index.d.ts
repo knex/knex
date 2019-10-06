@@ -1873,7 +1873,7 @@ declare namespace Knex {
   }
 
   class QueryBuilder {
-    public static extend(
+    static extend(
       methodName: string,
       fn: <TRecord extends {} = any, TResult = unknown[]>(
         this: Knex<TRecord, TResult>,
