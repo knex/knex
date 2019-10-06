@@ -464,7 +464,7 @@ test('migrate:up <name> throw an error', async (temp) => {
   const migrationsPath = `${temp}/migrations`;
   const migrationFile1 = '001_one.js';
 
-  const { stderr } = await assertExecError(
+  const stderr = await assertExecError(
     `node ${KNEX} migrate:up ${migrationFile1} \
     --client=sqlite3 \
     --connection=${temp}/db \
@@ -624,7 +624,7 @@ test('migrate:down <name> throw an error', async (temp) => {
   const migrationsPath = `${temp}/migrations`;
   const migrationFile1 = '001_one.js';
 
-  const { stderr } = await assertExecError(
+  const stderr = await assertExecError(
     `node ${KNEX} migrate:down ${migrationFile1} \
     --client=sqlite3 \
     --connection=${temp}/db \
