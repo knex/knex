@@ -51,6 +51,29 @@ describe('Postgres Unit Tests', function() {
     });
   });
 
+  it('escape statements correctly', async () => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      version: '10.5',
+      connection: {
+        pool: {},
+      },
+    });
+    const sql = knexInstance('projects')
+      .where('id = 1 UNION SELECT 1, version();', 1)
+      .toSQL();
+    expect(sql.sql).to.equal(
+      'select * from "projects" where "id = 1 UNION SELECT 1, version();" = ?'
+    );
+
+    const sql2 = knexInstance('projects')
+      .where('id = 1" UNION SELECT 1, version();', 1)
+      .toSQL();
+    expect(sql2.sql).to.equal(
+      'select * from "projects" where "id = 1"" UNION SELECT 1, version();" = ?'
+    );
+  });
+
   it('resolve client version if not specified explicitly', (done) => {
     const knexInstance = knex({
       client: 'postgresql',
