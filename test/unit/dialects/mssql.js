@@ -19,7 +19,6 @@ describe('MSSQL unit tests', () => {
     const sql = knexInstance('projects')
       .where('id] = 1 UNION SELECT 1, @@version -- --', 1)
       .toSQL();
-    console.log(sql);
     expect(sql.sql).to.equal(
       'select * from [projects] where [id = 1 UNION SELECT 1, @@version -- --] = ?'
     );
@@ -29,7 +28,6 @@ describe('MSSQL unit tests', () => {
     const sql = knexInstance('projects')
       .where('id]" = 1 UNION SELECT 1, @@version -- --', 1)
       .toSQL();
-    console.log(sql);
     expect(sql.sql).to.equal(
       'select * from [projects] where [id" = 1 UNION SELECT 1, @@version -- --] = ?'
     );
