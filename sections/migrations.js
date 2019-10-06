@@ -160,12 +160,32 @@ export default [
   },
   {
     type: "text",
+    content: "To run the specified migration that has not yet been run"
+  },
+  {
+    type: "code",
+    content: `
+      $ knex migrate:up 001_migration_name.js
+    `
+  },
+  {
+    type: "text",
     content: "To undo the last migration that was run"
   },
   {
     type: "code",
     content: `
       $ knex migrate:down
+    `
+  },
+  {
+    type: "text",
+    content: "To undo the specified migration that was run"
+  },
+  {
+    type: "code",
+    content: `
+      $ knex migrate:down 001_migration_name.js
     `
   },
   {
@@ -452,16 +472,16 @@ export default [
   {
     type: "method",
     method: "up",
-    example: "knex.migrate.up([config])",
+    example: "knex.migrate.up([name], [config])",
     description:
-      "Runs the next chronological migration that has not yet be run",
+      "Runs the specified or the next chronological migration that has not yet be run",
     children: []
   },
   {
     type: "method",
     method: "down",
-    example: "knex.migrate.down([config])",
-    description: "Will undo the last migration that was run",
+    example: "knex.migrate.down([name], [config])",
+    description: "Will undo the specified or the last migration that was run",
     children: []
   },
   {
