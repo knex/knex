@@ -1,5 +1,28 @@
 # Master (Unreleased)
 
+# 0.19.5 - 06 October, 2019
+
+### New features:
+
+- CLI: Migrations up/down commands - filename parameter #3416
+- Oracle: Support stored procedures #3449
+
+### Bug fixes:
+
+- MSSQL: Escape column ids correctly in all cases (reported by Snyk Security Research Team) #3382
+- SQLite: Fix handling of multiline SQL in SQLite3 schema #3411
+- Fix concurrent child transactions failing #2213 #3440
+
+### Typings:
+
+- Add missing Migrator.list typing #3460
+- Fix Typescript type inference for to better support wildcard (*) calls #3444
+- Make options argument optional in timeout #3442
+
+### Test / internal changes:
+
+- Enable linting in CI #3450
+
 # 0.19.4 - 09 September, 2019
 
 ### New features:

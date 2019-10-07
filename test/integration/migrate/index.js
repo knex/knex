@@ -6,6 +6,10 @@ const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
 const Bluebird = require('bluebird');
+const knexLib = require('../../../knex');
+const logger = require('../logger');
+const config = require('../../knexfile');
+const _ = require('lodash');
 const testMemoryMigrations = require('./memory-migrations');
 
 module.exports = function(knex) {
@@ -69,6 +73,25 @@ module.exports = function(knex) {
                 'test/integration/migrate/drop-and-recreate-with-schema',
             });
           });
+      });
+    }
+
+    if (knex.client.driverName === 'sqlite3') {
+      it('should not fail rename-and-drop-column with multiline sql from legacy db', async () => {
+        const knexConfig = _.extend({}, config.sqlite3, {
+          connection: {
+            filename: __dirname + '/../../multilineCreateMaster.sqlite3',
+          },
+          migrations: {
+            directory:
+              'test/integration/migrate/rename-and-drop-column-with-multiline-sql-from-legacy-db',
+          },
+        });
+
+        const db = logger(knexLib(knexConfig));
+
+        await db.migrate.latest();
+        await db.migrate.rollback();
       });
     }
 

@@ -399,6 +399,27 @@ module.exports = function(knex) {
       });
     });
 
+    it('#2213 - should wait for sibling transactions to finish', function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return Promise.resolve();
+      }
+      if (/mssql/i.test(knex.client.driverName)) {
+        return Promise.resolve();
+      }
+      const first = Bluebird.delay(50);
+      const second = first.then(() => Bluebird.delay(50));
+      return knex.transaction(function(trx) {
+        return Promise.all([
+          trx.transaction(function(trx2) {
+            return first;
+          }),
+          trx.transaction(function(trx3) {
+            return second;
+          }),
+        ]);
+      });
+    });
+
     it('#855 - Query Event should trigger on Transaction Client AND main Client', function() {
       let queryEventTriggered = false;
 
