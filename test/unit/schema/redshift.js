@@ -1,4 +1,4 @@
-/*global describe, expect, it*/
+/*global expect*/
 /* eslint max-len:0 */
 
 'use strict';
@@ -689,7 +689,7 @@ describe('Redshift SchemaBuilder', function() {
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
-      'alter table "user" add column "preferences" varchar(max) not null {}'
+      'alter table "user" add column "preferences" varchar(max) not null default \'{}\''
     );
   });
 

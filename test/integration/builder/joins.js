@@ -1,4 +1,4 @@
-/*global describe, it, d*/
+/*global d*/
 
 'use strict';
 

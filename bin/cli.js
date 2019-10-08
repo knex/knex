@@ -1,124 +1,105 @@
 #!/usr/bin/env node
 /* eslint no-console:0, no-var:0 */
-var Liftoff = require('liftoff');
-var Promise = require('bluebird');
-var interpret = require('interpret');
-var path = require('path');
-var chalk = require('chalk');
-var tildify = require('tildify');
-var commander = require('commander');
-var argv = require('minimist')(process.argv.slice(2));
-var fs = Promise.promisifyAll(require('fs'));
-var cliPkg = require('../package');
-var { isObject } = require('lodash');
-
-function exit(text) {
-  if (text instanceof Error) {
-    console.error(chalk.red(text.stack));
-  } else {
-    console.error(chalk.red(text));
-  }
-  process.exit(1);
-}
-
-function success(text) {
-  console.log(text);
-  process.exit(0);
-}
-
-function checkLocalModule(env) {
-  if (!env.modulePath) {
-    console.log(
-      chalk.red('No local knex install found in:'),
-      chalk.magenta(tildify(env.cwd))
-    );
-    exit('Try running: npm install knex.');
-  }
-}
-
-function mkConfigObj(opts) {
-  let envName = opts.env || process.env.NODE_ENV || 'development';
-  let useNullAsDefault = opts.client === 'sqlite3';
-  return {
-    ext: 'js',
-    [envName]: {
-      useNullAsDefault,
-      client: opts.client,
-      connection: opts.connection,
-      migrations: {
-        directory: opts.migrationsDirectory,
-      },
-    },
-  };
-}
+const Liftoff = require('liftoff');
+const Bluebird = require('bluebird');
+const interpret = require('interpret');
+const path = require('path');
+const tildify = require('tildify');
+const commander = require('commander');
+const color = require('colorette');
+const argv = require('getopts')(process.argv.slice(2));
+const fs = Bluebird.promisifyAll(require('fs'));
+const cliPkg = require('../package');
+const {
+  mkConfigObj,
+  resolveKnexFilePath,
+  resolveEnvironmentConfig,
+  exit,
+  success,
+  checkLocalModule,
+  getMigrationExtension,
+  getStubPath,
+} = require('./utils/cli-config-utils');
+const { DEFAULT_EXT } = require('./utils/constants');
+const { listMigrations } = require('./utils/migrationsLister');
 
 function initKnex(env, opts) {
   checkLocalModule(env);
-
-  if (!env.configuration) {
-    if (opts.client) env.configuration = mkConfigObj(opts);
-    else
-      exit(
-        'No knexfile found in this directory. Specify a path with --knexfile'
-      );
-  }
-
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
     console.log(
       'Working directory changed to',
-      chalk.magenta(tildify(env.cwd))
+      color.magenta(tildify(env.cwd))
     );
   }
 
-  var environment = opts.env || process.env.NODE_ENV;
-  var defaultEnv = 'development';
-  var config = isObject(env.configuration)
-    ? env.configuration
-    : require(env.configuration);
+  if (!opts.knexfile) {
+    const configurationPath = resolveKnexFilePath();
+    const configuration = configurationPath
+      ? require(configurationPath.path)
+      : undefined;
 
-  if (!environment && typeof config[defaultEnv] === 'object') {
-    environment = defaultEnv;
+    env.configuration = configuration || mkConfigObj(opts);
+    if (!env.configuration.ext && configurationPath) {
+      env.configuration.ext = configurationPath.extension;
+    }
+  }
+  // If knexfile is specified
+  else {
+    const resolvedKnexfilePath = path.resolve(opts.knexfile);
+    const knexfileDir = path.dirname(resolvedKnexfilePath);
+    process.chdir(knexfileDir);
+    env.configuration = require(resolvedKnexfilePath);
+
+    if (!env.configuration) {
+      exit(
+        'Knexfile not found. Specify a path with --knexfile or pass --client and --connection params in commandline'
+      );
+    }
+
+    if (!env.configuration.ext) {
+      env.configuration.ext = path
+        .extname(resolvedKnexfilePath)
+        .replace('.', '');
+    }
   }
 
-  if (environment) {
-    console.log('Using environment:', chalk.magenta(environment));
-    config = config[environment] || config;
-  }
-
-  if (!config) {
-    console.log(chalk.red('Warning: unable to read knexfile config'));
-    process.exit(1);
-  }
-
-  if (argv.debug !== undefined) config.debug = argv.debug;
-  var knex = require(env.modulePath);
-  return knex(config);
+  const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
+  const knex = require(env.modulePath);
+  return knex(resolvedConfig);
 }
 
 function invoke(env) {
-  env.modulePath = env.modulePath || process.env.KNEX_PATH;
-  var filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
-  var pending = null;
+  env.modulePath = env.modulePath || env.knexpath || process.env.KNEX_PATH;
+
+  const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
+  let pending = null;
+
+  const cliVersion = [
+    color.blue('Knex CLI version:'),
+    color.green(cliPkg.version),
+  ].join(' ');
+
+  const localVersion = [
+    color.blue('Knex Local version:'),
+    color.green(env.modulePackage.version || 'None'),
+  ].join(' ');
 
   commander
-    .version(
-      chalk.blue('Knex CLI version: ', chalk.green(cliPkg.version)) +
-        '\n' +
-        chalk.blue(
-          'Local Knex version: ',
-          chalk.green(env.modulePackage.version)
-        ) +
-        '\n'
-    )
+    .version(`${cliVersion}\n${localVersion}`)
     .option('--debug', 'Run with debugging.')
     .option('--knexfile [path]', 'Specify the knexfile path.')
+    .option('--knexpath [path]', 'Specify the path to knex instance.')
     .option('--cwd [path]', 'Specify the working directory.')
     .option('--client [name]', 'Set DB client without a knexfile.')
     .option('--connection [address]', 'Set DB connection without a knexfile.')
     .option(
       '--migrations-directory [path]',
       'Set migrations directory without a knexfile.'
+    )
+    .option(
+      '--migrations-table-name [path]',
+      'Set migrations table name without a knexfile.'
     )
     .option(
       '--env [name]',
@@ -132,16 +113,16 @@ function invoke(env) {
       `-x [${filetypes.join('|')}]`,
       'Specify the knexfile extension (default js)'
     )
-    .action(function() {
-      var type = (argv.x || 'js').toLowerCase();
+    .action(() => {
+      const type = (argv.x || 'js').toLowerCase();
       if (filetypes.indexOf(type) === -1) {
         exit(`Invalid filetype specified: ${type}`);
       }
       if (env.configuration) {
-        exit(`Error: ${env.configuration} already exists`);
+        exit(`Error: ${env.knexfile} already exists`);
       }
       checkLocalModule(env);
-      var stubPath = `./knexfile.${type}`;
+      const stubPath = `./knexfile.${type}`;
       pending = fs
         .readFileAsync(
           path.dirname(env.modulePath) +
@@ -149,11 +130,11 @@ function invoke(env) {
             type +
             '.stub'
         )
-        .then(function(code) {
+        .then((code) => {
           return fs.writeFileAsync(stubPath, code);
         })
-        .then(function() {
-          success(chalk.green(`Created ${stubPath}`));
+        .then(() => {
+          success(color.green(`Created ${stubPath}`));
         })
         .catch(exit);
     });
@@ -165,17 +146,26 @@ function invoke(env) {
       `-x [${filetypes.join('|')}]`,
       'Specify the stub extension (default js)'
     )
-    .action(function(name) {
-      var instance = initKnex(env, commander.opts());
-      var ext = (
-        argv.x ||
-        env.configuration.ext ||
-        env.configuration.split('.').pop()
-      ).toLowerCase();
+    .option(
+      `--stub [<relative/path/from/knexfile>|<name>]`,
+      'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
+    )
+    .action((name) => {
+      const opts = commander.opts();
+      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
+      const instance = initKnex(env, opts);
+      const ext = getMigrationExtension(env, opts);
+      const configOverrides = { extension: ext };
+
+      const stub = getStubPath(env, opts);
+      if (stub) {
+        configOverrides.stub = stub;
+      }
+
       pending = instance.migrate
-        .make(name, { extension: ext })
-        .then(function(name) {
-          success(chalk.green(`Created Migration: ${name}`));
+        .make(name, configOverrides)
+        .then((name) => {
+          success(color.green(`Created Migration: ${name}`));
         })
         .catch(exit);
     });
@@ -183,16 +173,41 @@ function invoke(env) {
   commander
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
-    .action(function() {
+    .option('--verbose', 'verbose')
+    .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.latest()
-        .spread(function(batchNo, log) {
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
-            success(chalk.cyan('Already up to date'));
+            success(color.cyan('Already up to date'));
           }
           success(
-            chalk.green(`Batch ${batchNo} run: ${log.length} migrations \n`) +
-              chalk.cyan(log.join('\n'))
+            color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
+              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('migrate:up [<name>]')
+    .description(
+      '        Run the next or the specified migration that has not yet been run.'
+    )
+    .action((name) => {
+      pending = initKnex(env, commander.opts())
+        .migrate.up({ name })
+        .then(([batchNo, log]) => {
+          if (log.length === 0) {
+            success(color.cyan('Already up to date'));
+          }
+
+          success(
+            color.green(
+              `Batch ${batchNo} ran the following migrations:\n${log.join(
+                '\n'
+              )}`
+            )
           );
         })
         .catch(exit);
@@ -200,18 +215,46 @@ function invoke(env) {
 
   commander
     .command('migrate:rollback')
-    .description('        Rollback the last set of migrations performed.')
-    .action(function() {
+    .description('        Rollback the last batch of migrations performed.')
+    .option('--all', 'rollback all completed migrations')
+    .option('--verbose', 'verbose')
+    .action((cmd) => {
+      const { all } = cmd;
+
       pending = initKnex(env, commander.opts())
-        .migrate.rollback()
-        .spread(function(batchNo, log) {
+        .migrate.rollback(null, all)
+        .then(([batchNo, log]) => {
           if (log.length === 0) {
-            success(chalk.cyan('Already at the base migration'));
+            success(color.cyan('Already at the base migration'));
           }
           success(
-            chalk.green(
-              `Batch ${batchNo} rolled back: ${log.length} migrations \n`
-            ) + chalk.cyan(log.join('\n'))
+            color.green(
+              `Batch ${batchNo} rolled back: ${log.length} migrations`
+            ) + (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('migrate:down [<name>]')
+    .description(
+      '        Undo the last or the specified migration that was already run.'
+    )
+    .action((name) => {
+      pending = initKnex(env, commander.opts())
+        .migrate.down({ name })
+        .then(([batchNo, log]) => {
+          if (log.length === 0) {
+            success(color.cyan('Already at the base migration'));
+          }
+
+          success(
+            color.green(
+              `Batch ${batchNo} rolled back the following migrations:\n${log.join(
+                '\n'
+              )}`
+            )
           );
         })
         .catch(exit);
@@ -220,11 +263,24 @@ function invoke(env) {
   commander
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
-    .action(function() {
+    .action(() => {
       pending = initKnex(env, commander.opts())
         .migrate.currentVersion()
-        .then(function(version) {
-          success(chalk.green('Current Version: ') + chalk.blue(version));
+        .then((version) => {
+          success(color.green('Current Version: ') + color.blue(version));
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('migrate:list')
+    .alias('migrate:status')
+    .description('        List all migrations files with status.')
+    .action(() => {
+      pending = initKnex(env, commander.opts())
+        .migrate.list()
+        .then(([completed, newMigrations]) => {
+          listMigrations(completed, newMigrations);
         })
         .catch(exit);
     });
@@ -236,13 +292,19 @@ function invoke(env) {
       `-x [${filetypes.join('|')}]`,
       'Specify the stub extension (default js)'
     )
-    .action(function(name) {
-      var instance = initKnex(env, commander.opts());
-      var ext = (argv.x || env.configuration.split('.').pop()).toLowerCase();
+    .action((name) => {
+      const opts = commander.opts();
+      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
+      const instance = initKnex(env, opts);
+      const ext = (
+        argv.x ||
+        env.configuration.ext ||
+        DEFAULT_EXT
+      ).toLowerCase();
       pending = instance.seed
         .make(name, { extension: ext })
-        .then(function(name) {
-          success(chalk.green(`Created seed file: ${name}`));
+        .then((name) => {
+          success(color.green(`Created seed file: ${name}`));
         })
         .catch(exit);
     });
@@ -250,17 +312,18 @@ function invoke(env) {
   commander
     .command('seed:run')
     .description('        Run seed files.')
-    .action(function() {
+    .option('--verbose', 'verbose')
+    .option('--specific', 'run specific seed file')
+    .action(() => {
       pending = initKnex(env, commander.opts())
-        .seed.run()
-        .spread(function(log) {
+        .seed.run({ specific: argv.specific })
+        .then(([log]) => {
           if (log.length === 0) {
-            success(chalk.cyan('No seed files exist'));
+            success(color.cyan('No seed files exist'));
           }
           success(
-            chalk.green(
-              `Ran ${log.length} seed files \n${chalk.cyan(log.join('\n'))}`
-            )
+            color.green(`Ran ${log.length} seed files`) +
+              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
           );
         })
         .catch(exit);
@@ -268,30 +331,31 @@ function invoke(env) {
 
   commander.parse(process.argv);
 
-  Promise.resolve(pending).then(function() {
+  Bluebird.resolve(pending).then(() => {
     commander.outputHelp();
     exit('Unknown command-line options, exiting');
   });
 }
 
-var cli = new Liftoff({
+const cli = new Liftoff({
   name: 'knex',
   extensions: interpret.jsVariants,
   v8flags: require('v8flags'),
 });
 
 cli.on('require', function(name) {
-  console.log('Requiring external module', chalk.magenta(name));
+  console.log('Requiring external module', color.magenta(name));
 });
 
 cli.on('requireFail', function(name) {
-  console.log(chalk.red('Failed to load external module'), chalk.magenta(name));
+  console.log(color.red('Failed to load external module'), color.magenta(name));
 });
 
 cli.launch(
   {
     cwd: argv.cwd,
-    configuration: argv.knexfile,
+    knexfile: argv.knexfile,
+    knexpath: argv.knexpath,
     require: argv.require,
     completion: argv.completion,
   },

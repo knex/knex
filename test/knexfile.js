@@ -1,27 +1,37 @@
 'use strict';
 /* eslint no-var: 0 */
 
-var assert = require('assert');
-var testConfig =
+const assert = require('assert');
+const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
-var _ = require('lodash');
-var Promise = require('bluebird');
+const _ = require('lodash');
+const Bluebird = require('bluebird');
 
 // excluding redshift, oracle, and mssql dialects from default integrations test
-var testIntegrationDialects = (
-  process.env.DB || 'mysql mysql2 postgres sqlite3'
+const testIntegrationDialects = (
+  process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
 ).match(/\w+/g);
 
-var pool = {
+const pool = {
   afterCreate: function(connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
     callback(null, connection);
   },
 };
 
-var mysqlPool = _.extend({}, pool, {
+const poolSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
   afterCreate: function(connection, callback) {
-    Promise.promisify(connection.query, { context: connection })(
+    assert.ok(typeof connection.__knexUid !== 'undefined');
+    callback(null, connection);
+  },
+};
+
+const mysqlPool = _.extend({}, pool, {
+  afterCreate: function(connection, callback) {
+    Bluebird.promisify(connection.query, { context: connection })(
       "SET sql_mode='TRADITIONAL';",
       []
     ).then(function() {
@@ -30,62 +40,71 @@ var mysqlPool = _.extend({}, pool, {
   },
 });
 
-var migrations = {
+const migrations = {
   directory: 'test/integration/migrate/migration',
 };
 
-var seeds = {
+const seeds = {
   directory: 'test/integration/seed/seeds',
 };
 
-var testConfigs = {
+const testConfigs = {
   mysql: {
     client: 'mysql',
     connection: testConfig.mysql || {
+      port: 23306,
       database: 'knex_test',
-      user: 'root',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
       charset: 'utf8',
     },
     pool: mysqlPool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 
   mysql2: {
     client: 'mysql2',
     connection: testConfig.mysql || {
+      port: 23306,
       database: 'knex_test',
-      user: 'root',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
       charset: 'utf8',
     },
     pool: mysqlPool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 
   oracledb: {
     client: 'oracledb',
     connection: testConfig.oracledb || {
-      user: 'travis',
-      password: 'travis',
-      connectString: 'localhost/XE',
+      user: 'system',
+      password: 'Oracle18',
+      connectString: 'localhost:21521/XE',
       // https://github.com/oracle/node-oracledb/issues/525
       stmtCacheSize: 0,
     },
-    pool: pool,
-    migrations: migrations,
+    pool,
+    migrations,
   },
 
   postgres: {
     client: 'postgres',
     connection: testConfig.postgres || {
       adapter: 'postgresql',
+      port: 25432,
+      host: 'localhost',
       database: 'knex_test',
-      user: 'postgres',
+      user: 'testuser',
+      password: 'knextest',
     },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds,
+    pool,
+    migrations,
+    seeds,
   },
 
   redshift: {
@@ -98,9 +117,9 @@ var testConfigs = {
       port: '5439',
       host: process.env.REDSHIFT_HOST || '127.0.0.1',
     },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds,
+    pool,
+    migrations,
+    seeds,
   },
 
   sqlite3: {
@@ -108,9 +127,9 @@ var testConfigs = {
     connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3',
     },
-    pool,
-    migrations: migrations,
-    seeds: seeds,
+    pool: poolSqlite,
+    migrations,
+    seeds,
   },
 
   mssql: {
@@ -119,11 +138,12 @@ var testConfigs = {
       user: 'sa',
       password: 'S0meVeryHardPassword',
       server: 'localhost',
+      port: 21433,
       database: 'knex_test',
     },
     pool: pool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 };
 

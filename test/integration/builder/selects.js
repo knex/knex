@@ -1,9 +1,8 @@
-/*global describe, expect, it, testPromise, d*/
+/*global expect, d*/
 'use strict';
 
 const _ = require('lodash');
 const assert = require('assert');
-const Promise = testPromise;
 const Runner = require('../../../lib/runner');
 
 module.exports = function(knex) {
@@ -824,10 +823,7 @@ module.exports = function(knex) {
     });
 
     it('handles multi-column "where in" cases', function() {
-      if (
-        knex.client.driverName !== 'sqlite3' &&
-        knex.client.driverName !== 'mssql'
-      ) {
+      if (knex.client.driverName !== 'mssql') {
         return knex('composite_key_test')
           .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
           .orderBy('status', 'desc')
@@ -893,6 +889,25 @@ module.exports = function(knex) {
             tester(
               'oracledb',
               'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
+              [1, 1, 1, 2],
+              [
+                {
+                  column_a: 1,
+                  column_b: 1,
+                  details: 'One, One, One',
+                  status: 1,
+                },
+                {
+                  column_a: 1,
+                  column_b: 2,
+                  details: 'One, Two, Zero',
+                  status: 0,
+                },
+              ]
+            );
+            tester(
+              'sqlite3',
+              'select * from `composite_key_test` where (`column_a`, `column_b`) in ( values (?, ?), (?, ?)) order by `status` desc',
               [1, 1, 1, 2],
               [
                 {
@@ -1102,6 +1117,13 @@ module.exports = function(knex) {
         });
     });
 
+    it.skip('select forUpdate().first() bug in oracle (--------- TODO: FIX)', function() {
+      return knex('accounts')
+        .where('id', 1)
+        .forUpdate()
+        .first();
+    });
+
     it('select for update locks selected row', function() {
       if (knex.client.driverName === 'sqlite3') {
         return;
@@ -1224,6 +1246,139 @@ module.exports = function(knex) {
               }
             });
         });
+    });
+
+    it('forUpdate().skipLocked() with order by should return the first non-locked row', async function() {
+      // Note: this test doesn't work properly on MySQL - see https://bugs.mysql.com/bug.php?id=67745
+      if (knex.client.driverName !== 'pg') {
+        return;
+      }
+
+      const rowName = 'row for skipLocked() test #1';
+      await knex('test_default_table')
+        .delete()
+        .where({ string: rowName });
+      await knex('test_default_table').insert([
+        { string: rowName, tinyint: 1 },
+        { string: rowName, tinyint: 2 },
+      ]);
+
+      const res = await knex.transaction(async (trx) => {
+        // lock the first row in the test
+        await trx('test_default_table')
+          .where({ string: rowName })
+          .orderBy('tinyint', 'asc')
+          .forUpdate()
+          .first();
+
+        // try to lock the next available row from outside of the transaction
+        return await knex('test_default_table')
+          .where({ string: rowName })
+          .orderBy('tinyint', 'asc')
+          .forUpdate()
+          .skipLocked()
+          .first();
+      });
+
+      // assert that we got the second row because the first one was locked
+      expect(res.tinyint).to.equal(2);
+    });
+
+    it('forUpdate().skipLocked() should return an empty set when all rows are locked', async function() {
+      if (
+        knex.client.driverName !== 'pg' &&
+        knex.client.driverName !== 'mysql'
+      ) {
+        return;
+      }
+
+      const rowName = 'row for skipLocked() test #2';
+      await knex('test_default_table')
+        .delete()
+        .where({ string: rowName });
+      await knex('test_default_table').insert([
+        { string: rowName, tinyint: 1 },
+        { string: rowName, tinyint: 2 },
+      ]);
+
+      const res = await knex.transaction(async (trx) => {
+        // lock all of the test rows
+        await trx('test_default_table')
+          .where({ string: rowName })
+          .forUpdate();
+
+        // try to aquire the lock on one more row (which isn't available) from another transaction
+        return await knex('test_default_table')
+          .where({ string: rowName })
+          .forUpdate()
+          .skipLocked()
+          .first();
+      });
+
+      expect(res).to.be.undefined;
+    });
+
+    it('forUpdate().noWait() should throw an error immediately when a row is locked', async function() {
+      if (
+        knex.client.driverName !== 'pg' &&
+        knex.client.driverName !== 'mysql'
+      ) {
+        return;
+      }
+
+      const rowName = 'row for noWait() test';
+      await knex('test_default_table')
+        .delete()
+        .where({ string: rowName });
+      await knex('test_default_table').insert([
+        { string: rowName, tinyint: 1 },
+        { string: rowName, tinyint: 2 },
+      ]);
+
+      try {
+        await knex.transaction(async (trx) => {
+          // select and lock the first row from this test
+          // note: MySQL may lock both rows depending on how the results are fetched
+          await trx('test_default_table')
+            .where({ string: rowName })
+            .orderBy('tinyint', 'asc')
+            .forUpdate()
+            .first();
+
+          // try to lock it again (it should fail here)
+          await knex('test_default_table')
+            .where({ string: rowName })
+            .orderBy('tinyint', 'asc')
+            .forUpdate()
+            .noWait()
+            .first();
+        });
+
+        // fail the test if the query finishes with no errors
+        throw new Error(
+          'The query should have been cancelled when trying to select a locked row with .noWait()'
+        );
+      } catch (err) {
+        // check if we got the correct error from each db
+        switch (knex.client.driverName) {
+          case 'pg':
+            expect(err.message).to.contain('could not obtain lock on row');
+            break;
+          case 'mysql':
+          case 'mysql2':
+            // mysql
+            expect(err.message).to.contain(
+              'lock(s) could not be acquired immediately'
+            );
+            // mariadb
+            // TODO: detect if test is being run on mysql or mariadb to check for the correct error message
+            // expect(err.message).to.contain('Lock wait timeout exceeded');
+            break;
+          default:
+            // unsupported database
+            throw err;
+        }
+      }
     });
   });
 };

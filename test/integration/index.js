@@ -1,5 +1,3 @@
-/*global after*/
-
 'use strict';
 
 const knex = require('../../knex');
@@ -7,18 +5,22 @@ const logger = require('./logger');
 const config = require('../knexfile');
 const fs = require('fs');
 
-const Promise = require('bluebird');
-
-Promise.each(Object.keys(config), function(dialectName) {
+Object.keys(config).forEach((dialectName) => {
   return require('./suite')(logger(knex(config[dialectName])));
 });
 
-after(function(done) {
+before(function() {
   if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {
-    fs.unlink(config.sqlite3.connection.filename, function() {
-      done();
-    });
-  } else {
-    done();
+    fs.copyFileSync(
+      __dirname + '/../multilineCreateMasterSample.sqlite3',
+      __dirname + '/../multilineCreateMaster.sqlite3'
+    );
+  }
+});
+
+after(function() {
+  if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {
+    fs.unlinkSync(config.sqlite3.connection.filename);
+    fs.unlinkSync(__dirname + '/../multilineCreateMaster.sqlite3');
   }
 });

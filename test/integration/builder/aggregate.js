@@ -1,5 +1,3 @@
-/*global describe, it*/
-
 'use strict';
 
 module.exports = function(knex) {
@@ -75,6 +73,167 @@ module.exports = function(knex) {
             [
               {
                 '': 10,
+              },
+            ]
+          );
+        });
+    });
+
+    it('supports sum with an alias', function() {
+      return knex('accounts')
+        .sum('logins', { as: 'login_sum' })
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'select sum(`logins`) as `login_sum` from `accounts`',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mysql2',
+            'select sum(`logins`) as `login_sum` from `accounts`',
+            [],
+            [
+              {
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg',
+            'select sum("logins") as "login_sum" from "accounts"',
+            [],
+            [
+              {
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg-redshift',
+            'select sum("logins") as "login_sum" from "accounts"',
+            [],
+            [
+              {
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'sqlite3',
+            'select sum(`logins`) as `login_sum` from `accounts`',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'oracledb',
+            'select sum("logins") "login_sum" from "accounts"',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mssql',
+            'select sum([logins]) as [login_sum] from [accounts]',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+        });
+    });
+
+    it('supports sum through object containing multiple aliases', function() {
+      return knex('accounts')
+        .sum({ login_sum: 'logins', balance_sum: 'balance' })
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'select sum(`logins`) as `login_sum`, sum(`balance`) as `balance_sum` from `accounts`',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mysql2',
+            'select sum(`logins`) as `login_sum`, sum(`balance`) as `balance_sum` from `accounts`',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg',
+            'select sum("logins") as "login_sum", sum("balance") as "balance_sum" from "accounts"',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg-redshift',
+            'select sum("logins") as "login_sum", sum("balance") as "balance_sum" from "accounts"',
+            [],
+            [
+              {
+                balance_sum: '0',
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'sqlite3',
+            'select sum(`logins`) as `login_sum`, sum(`balance`) as `balance_sum` from `accounts`',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'oracledb',
+            'select sum("logins") "login_sum", sum("balance") "balance_sum" from "accounts"',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mssql',
+            'select sum([logins]) as [login_sum], sum([balance]) as [balance_sum] from [accounts]',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
               },
             ]
           );

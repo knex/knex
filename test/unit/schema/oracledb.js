@@ -1,4 +1,4 @@
-/*global it, describe, expect*/
+/*global expect*/
 
 'use strict';
 
@@ -669,6 +669,16 @@ describe('OracleDb SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add "foo" timestamp with local time zone'
     );
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function() {
+        this.dateTime('foo', { useTz: true });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add "foo" timestamp with local time zone'
+    );
   });
 
   it('test adding date time without time zone', function() {
@@ -679,6 +689,14 @@ describe('OracleDb SchemaBuilder', function() {
       })
       .toSQL();
 
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function() {
+        this.dateTime('foo', { useTz: false });
+      })
+      .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
   });

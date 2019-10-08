@@ -1,7 +1,6 @@
-/*global describe, expect, it*/
-
 'use strict';
 
+const expect = require('chai').expect;
 const sinon = require('sinon');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
 const client = new MSSQL_Client({ client: 'mssql' });

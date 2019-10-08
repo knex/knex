@@ -1,6 +1,6 @@
 'use strict';
 const tape = require('tape');
-const Promise = require('bluebird');
+const Bluebird = require('bluebird');
 const debug = require('debug')('knex:tests');
 
 module.exports = function(tableName, knex) {
@@ -18,13 +18,13 @@ module.exports = function(tableName, knex) {
     }
 
     return tape(name, function(t) {
-      const disposable = Promise.resolve(true).disposer(function() {
+      const disposable = Bluebird.resolve(true).disposer(function() {
         return knex.truncate(tableName).finally(function() {
           t.end();
         });
       });
 
-      Promise.using(disposable, function() {
+      Bluebird.using(disposable, function() {
         const val = cb(t);
         if (val && typeof val.then === 'function') {
           return val.catch(function(err) {
