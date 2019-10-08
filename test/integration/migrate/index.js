@@ -410,21 +410,23 @@ module.exports = function(knex) {
         // Map the table names to promises that evaluate chai expectations to
         // confirm that the table exists and the 'id' and 'name' columns exist
         // within the table
-        return Bluebird.map(tables, function(table) {
-          return knex.schema.hasTable(table).then(function(exists) {
-            expect(exists).to.equal(true);
-            if (exists) {
-              return Promise.all([
-                knex.schema.hasColumn(table, 'id').then(function(exists) {
-                  expect(exists).to.equal(true);
-                }),
-                knex.schema.hasColumn(table, 'name').then(function(exists) {
-                  expect(exists).to.equal(true);
-                }),
-              ]);
-            }
-          });
-        });
+        return Promise.all(
+          tables.map(function(table) {
+            return knex.schema.hasTable(table).then(function(exists) {
+              expect(exists).to.equal(true);
+              if (exists) {
+                return Promise.all([
+                  knex.schema.hasColumn(table, 'id').then(function(exists) {
+                    expect(exists).to.equal(true);
+                  }),
+                  knex.schema.hasColumn(table, 'name').then(function(exists) {
+                    expect(exists).to.equal(true);
+                  }),
+                ]);
+              }
+            });
+          })
+        );
       });
     });
 
@@ -459,11 +461,13 @@ module.exports = function(knex) {
           'migration_test_4_1',
         ];
 
-        return Bluebird.map(expectedTables, function(table) {
-          return knex.schema.hasTable(table).then(function(exists) {
-            expect(exists).to.equal(true);
-          });
-        });
+        return Promise.all(
+          expectedTables.map(function(table) {
+            return knex.schema.hasTable(table).then(function(exists) {
+              expect(exists).to.equal(true);
+            });
+          })
+        );
       });
     });
 
@@ -484,11 +488,13 @@ module.exports = function(knex) {
       });
 
       it('should drop tables as specified in the batch', function() {
-        return Bluebird.map(tables, function(table) {
-          return knex.schema.hasTable(table).then(function(exists) {
-            expect(!!exists).to.equal(false);
-          });
-        });
+        return Promise.all(
+          tables.map(function(table) {
+            return knex.schema.hasTable(table).then(function(exists) {
+              expect(!!exists).to.equal(false);
+            });
+          })
+        );
       });
     });
 
@@ -531,11 +537,13 @@ module.exports = function(knex) {
       });
 
       it('should drop tables as specified in the batch', () => {
-        return Bluebird.map(tables, function(table) {
-          return knex.schema.hasTable(table).then(function(exists) {
-            expect(!!exists).to.equal(false);
-          });
-        });
+        return Promise.all(
+          tables.map(function(table) {
+            return knex.schema.hasTable(table).then(function(exists) {
+              expect(!!exists).to.equal(false);
+            });
+          })
+        );
       });
     });
 
@@ -576,11 +584,13 @@ module.exports = function(knex) {
       });
 
       it('should drop tables as specified in the batch', () => {
-        return Bluebird.map(tables, function(table) {
-          return knex.schema.hasTable(table).then(function(exists) {
-            expect(!!exists).to.equal(false);
-          });
-        });
+        return Promise.all(
+          tables.map(function(table) {
+            return knex.schema.hasTable(table).then(function(exists) {
+              expect(!!exists).to.equal(false);
+            });
+          })
+        );
       });
     });
 
@@ -746,28 +756,27 @@ module.exports = function(knex) {
     }
 
     it('is not able to run two migrations in parallel when transactions are disabled', function() {
-      return Bluebird.map(
-        [
-          knex.migrate
-            .latest({
-              directory: 'test/integration/migrate/test',
-              disableTransactions: true,
-            })
-            .catch(function(err) {
-              return err;
-            }),
-          knex.migrate
-            .latest({
-              directory: 'test/integration/migrate/test',
-              disableTransactions: true,
-            })
-            .catch(function(err) {
-              return err;
-            }),
-        ],
-        function(res) {
-          return res && res.name;
-        }
+      const migrations = [
+        knex.migrate
+          .latest({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: true,
+          })
+          .catch(function(err) {
+            return err;
+          }),
+        knex.migrate
+          .latest({
+            directory: 'test/integration/migrate/test',
+            disableTransactions: true,
+          })
+          .catch(function(err) {
+            return err;
+          }),
+      ];
+
+      return Promise.all(
+        migrations.map((migration) => migration.then((res) => res && res.name))
       ).then(function(res) {
         // One should fail:
         const hasLockError =
@@ -993,21 +1002,23 @@ module.exports = function(knex) {
         'migration_test_2',
         'migration_test_2_1a',
       ];
-      return Bluebird.map(tables, function(table) {
-        return knex.schema.hasTable(table).then(function(exists) {
-          expect(exists).to.equal(true);
-          if (exists) {
-            return Promise.all([
-              knex.schema.hasColumn(table, 'id').then(function(exists) {
-                expect(exists).to.equal(true);
-              }),
-              knex.schema.hasColumn(table, 'name').then(function(exists) {
-                expect(exists).to.equal(true);
-              }),
-            ]);
-          }
-        });
-      });
+      return Promise.all(
+        tables.map(function(table) {
+          return knex.schema.hasTable(table).then(function(exists) {
+            expect(exists).to.equal(true);
+            if (exists) {
+              return Promise.all([
+                knex.schema.hasColumn(table, 'id').then(function(exists) {
+                  expect(exists).to.equal(true);
+                }),
+                knex.schema.hasColumn(table, 'name').then(function(exists) {
+                  expect(exists).to.equal(true);
+                }),
+              ]);
+            }
+          });
+        })
+      );
     });
 
     it('should not create unexpected tables', function() {
