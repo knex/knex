@@ -3894,6 +3894,39 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('limits and offsets with raw', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .offset(raw('5'))
+        .limit(raw('10')),
+      {
+        mysql: {
+          sql: 'select * from `users` limit ? offset 5',
+          bindings: [10],
+        },
+        mssql: {
+          sql: 'select * from [users] offset 5 rows fetch next ? rows only',
+          bindings: [10],
+        },
+        oracledb: {
+          sql:
+            'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > 5',
+          bindings: [15],
+        },
+        pg: {
+          sql: 'select * from "users" limit ? offset 5',
+          bindings: [10],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" limit ? offset 5',
+          bindings: [10],
+        },
+      }
+    );
+  });
+
   it('limits and raw selects', () => {
     testsql(
       qb()
