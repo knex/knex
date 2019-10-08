@@ -7269,13 +7269,40 @@ describe('QueryBuilder', () => {
     }
   });
 
-  it('should throw warning with null call in offset', function() {
+  it('should do nothing with offset when passing null', () => {
+    testsql(
+      qb()
+        .from('test')
+        .limit(10)
+        .offset(null),
+      {
+        mysql: {
+          sql: 'select * from `test` limit ?',
+          bindings: [10],
+        },
+        mssql: {
+          sql: 'select top (?) * from [test]',
+          bindings: [10],
+        },
+        pg: {
+          sql: 'select * from "test" limit ?',
+          bindings: [10],
+        },
+        'pg-redshift': {
+          sql: 'select * from "test" limit ?',
+          bindings: [10],
+        },
+      }
+    );
+  });
+
+  it('should throw warning with wrong value call in offset', function() {
     try {
       testsql(
         qb()
           .from('test')
           .limit(10)
-          .offset(null),
+          .offset('$10'),
         {
           mysql: {
             sql: 'select * from `test` limit ?',
