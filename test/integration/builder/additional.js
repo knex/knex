@@ -515,6 +515,52 @@ module.exports = function(knex) {
         });
     });
 
+    if (knex.client.driverName === 'oracledb') {
+      const oracledb = require('oracledb');
+      describe('test oracle stored procedures', function() {
+        it('create stored procedure', function() {
+          return knex
+            .raw(
+              `
+            CREATE OR REPLACE PROCEDURE SYSTEM.multiply (X IN NUMBER, Y IN NUMBER, OUTPUT OUT NUMBER)
+              IS
+              BEGIN
+                OUTPUT := X * Y;
+              END;`
+            )
+            .then(function(result) {
+              expect(result).to.be.an('array');
+            });
+        });
+
+        it('get outbound values from stored procedure', function() {
+          const bindVars = {
+            x: 6,
+            y: 7,
+            output: {
+              dir: oracledb.BIND_OUT,
+            },
+          };
+          return knex
+            .raw('BEGIN SYSTEM.MULTIPLY(:x, :y, :output); END;', bindVars)
+            .then(function(result) {
+              expect(result[0]).to.be.ok;
+              expect(result[0]).to.equal('42');
+            });
+        });
+
+        it('drop stored procedure', function() {
+          const bindVars = { x: 6, y: 7 };
+          return knex
+            .raw('drop procedure SYSTEM.MULTIPLY', bindVars)
+            .then(function(result) {
+              expect(result).to.be.ok;
+              expect(result).to.be.an('array');
+            });
+        });
+      });
+    }
+
     it('should allow renaming a column', function() {
       let countColumn;
       switch (knex.client.driverName) {

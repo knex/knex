@@ -596,4 +596,65 @@ module.exports = function(knex) {
       }
     );
   }
+
+  test('transaction savepoint do not rollback when instructed', function(t) {
+    let trx1QueryCount = 0;
+    let trx2QueryCount = 0;
+    let trx2Rejected;
+
+    return knex
+      .transaction(function(trx1) {
+        return trx1
+          .insert({ id: 1, name: 'A' })
+          .into('test_table')
+          .then(function() {
+            // Nested transaction (savepoint)
+            return trx1
+              .transaction(
+                function(trx2) {
+                  return trx2.rollback();
+                },
+                { doNotRejectOnRollback: true }
+              )
+              .on('query', function() {
+                ++trx2QueryCount;
+              });
+          })
+          .then(function() {
+            trx2Rejected = true;
+          });
+      })
+      .on('query', function() {
+        ++trx1QueryCount;
+      })
+      .finally(function() {
+        // trx1: BEGIN, INSERT, ROLLBACK
+        // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
+        // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+        let expectedTrx1QueryCount =
+          knex.client.driverName === 'oracledb' ||
+          knex.client.driverName === 'mssql'
+            ? 1
+            : 3;
+        const expectedTrx2QueryCount = 2;
+        expectedTrx1QueryCount += expectedTrx2QueryCount;
+        t.equal(
+          trx1QueryCount,
+          expectedTrx1QueryCount,
+          'Expected number of parent transaction SQL queries executed'
+        );
+        t.equal(
+          trx2QueryCount,
+          expectedTrx2QueryCount,
+          'Expected number of nested transaction SQL queries executed'
+        );
+        t.equal(trx2Rejected, true, 'Nested transaction promise rejected');
+        return knex
+          .select('*')
+          .from('test_table')
+          .then(function(results) {
+            t.equal(results.length, 1, 'One row inserted');
+          });
+      });
+  });
 };

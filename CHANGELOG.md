@@ -1,5 +1,71 @@
 # Master (Unreleased)
 
+# 0.19.5 - 06 October, 2019
+
+### New features:
+
+- CLI: Migrations up/down commands - filename parameter #3416
+- Oracle: Support stored procedures #3449
+
+### Bug fixes:
+
+- MSSQL: Escape column ids correctly in all cases (reported by Snyk Security Research Team) #3382
+- SQLite: Fix handling of multiline SQL in SQLite3 schema #3411
+- Fix concurrent child transactions failing #2213 #3440
+
+### Typings:
+
+- Add missing Migrator.list typing #3460
+- Fix Typescript type inference for to better support wildcard (*) calls #3444
+- Make options argument optional in timeout #3442
+
+### Test / internal changes:
+
+- Enable linting in CI #3450
+
+# 0.19.4 - 09 September, 2019
+
+### New features:
+
+- Add undefined columns to undefined binding(s) error #3425
+
+### Typings:
+
+- Add `specific` to SeederConfig type #3429
+- Fix some issues with QueryBuilder types #3427
+
+# 0.19.3 - 25 August, 2019
+
+### Bug fixes:
+
+- Fix migrations for native enums to use table schema #3307
+
+### New features:
+
+- Add ability to manually define schema for native enums #3307
+- Add SSL/TLS support for Postgres connection string #3410
+- CLI: new command that lists all migrations with status #3390
+
+### Typings:
+
+- Include schemaName in EnumOptions #3415
+- Allow `ColumnBuilder.defaultTo()` to be `null` #3407
+
+### Changes:
+
+- migrate: Refactor _lockMigrations to avoid forUpdate - makes migrations compatible with CockroachDB #3395
+
+# 0.19.2 - 17 August, 2019
+
+### Changes:
+
+- Make transaction rejection consistent across dialects #3399
+- More consistent handling of nested transactions #3393
+
+### New features:
+
+- Fallback to JSON when using JSONB in MySQL #3394 
+
 # 0.19.1 - 23 July, 2019
 
 ### New features:
@@ -8,7 +74,7 @@
 - Add .isCompleted() to transaction #3368
 - Minor enhancements around aliasing of aggregates #3354
 
-### Typings
+### Typings:
 
 - Update configuration typings to allow for oracle db connectionstring #3361
 - Update Knex.raw type to be any by default because the actual type is dialect specific #3349
@@ -82,7 +148,7 @@
 - Remove Bluebird #3290 #3287 #3285 #3267 #3266 #3263
 - Fix comments that were modified by find & replace #3308
 
-### Typings
+### Typings:
 
 - Add workarounds for degraded inference when strictNullChecks is set to false #3275
 - Add stub type definition for Migrator config #3279
@@ -92,13 +158,13 @@
 
 # 0.17.5 - 8 June, 2019
 
-### Typings
+### Typings:
 
 - Include result.d.ts in published package #3271
 
 # 0.17.4 - 8 June, 2019
 
-### Typings
+### Typings:
 
 - Fix some cases of left-to-right inference causing type mismatch #3265
 - Improve count typings #3249
@@ -109,7 +175,7 @@
 
 # 0.17.3 - 2 June, 2019
 
-### Typings
+### Typings:
 
 - Improve typings for aggregations #3245
 - Add decimalNumbers to MySqlConnectionConfig interface #3244
@@ -130,7 +196,7 @@
 
 - Add migrate:down functionality #3228
 
-### Typings
+### Typings:
 
 - Update type of aggregation results to not be arrays when first has been invoked before #3237
 - Include undefined in type of single row results #3231
@@ -150,7 +216,7 @@
 - Unify object options handling for datetime/timestamp across dialects #3181
 - Add "up" command for migrations #3205
 
-### Typings
+### Typings:
 
 - Add default values for generic types (fixes backwards compatibility broken by 0.16.6) #3189
 - Make function types generic in type definitions #3168
@@ -283,7 +349,7 @@
 - Knex client knexfile resolution fix #2923
 - Add queryContext to type declarations #2931
 
-### Test / internal changes
+### Test / internal changes:
 
 - Add tests for multiple union arguments with callbacks and builders #2749
 - Update dependencies #2772 #2810 #2842 #2848 #2893 #2904
@@ -351,7 +417,7 @@
 - Add support for native enums on Postgres #2632
 - Allow overwriting log functions #2625
 
-### Test / internal changes
+### Test / internal changes:
 
 - chore: cache node_modules #2595
 - Remove babel-plugin-lodash #2634
@@ -381,7 +447,7 @@
 - Checks for an empty, undefined or null object on transacting #2494
 - countDistinct with multiple columns #2449
 
-### Test / internal changes
+### Test / internal changes:
 
 - Added npm run test:oracledb command that runs oracledb tests in docker #2491
 - Runnin mssql tests in docker #2496
@@ -401,7 +467,7 @@
 - Allow calling lock procedures (such as forUpdate) outside of transaction. Fixes #2403. (#2475)
 - Added test and documentation for Event 'start' (#2488)
 
-### Test / internal changes
+### Test / internal changes:
 
 - Added stress test, which uses TCP proxy to simulate flaky connection #2460
 - Removed old docker tests, new stress test setup (#2474)
@@ -429,7 +495,7 @@
 - Added redshift dialect #2233
 - Added warning when one uses .createTableIfNotExist and deprecated it from docs #2458
 
-### Test / internal changes
+### Test / internal changes:
 
 - Update dependencies and fix ESLint warnings accordingly #2433
 - Disable oracledb tests from non LTS nodes #2407
@@ -492,7 +558,7 @@
 - Fix mssql wrong binding order of queries that combine a limit with select raw or update #2066
 - Fixed mysql alter table attributes order #2062
 
-### Test / internal changes
+### Test / internal changes:
 
 - Update each out-of-date dependency according to david-dm.org #2297
 - Update v8flags to version 3.0.0 #2288
@@ -817,17 +883,17 @@
 
 # 0.7.0 - Oct 1, 2014
 
-### New Features
+### New Features:
 
 - Oracle support, #419
 - Database seed file support, #391
 - Improved support for sub-raw queries within raw statements
 
-### Breaking Changes
+### Breaking Changes:
 
 - "collate nocase" no longer used by default in sqlite3 #396
 
-### Other Changes
+### Other Changes:
 
 - Bumping Bluebird to ^2.x
 - Transactions in websql are now a no-op (unsupported) #375
