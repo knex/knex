@@ -1765,6 +1765,8 @@ declare namespace Knex {
     keepAlive?: boolean;
     stream?: stream.Duplex;
     statement_timeout?: false | number;
+    connectionTimeoutMillis?: number;
+    keepAliveInitialDelayMillis?: number;
   }
 
   type RedshiftConnectionConfig = PgConnectionConfig;
