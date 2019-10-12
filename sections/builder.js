@@ -1682,13 +1682,10 @@ export default [
       {
         type: "runnable",
         content: `
-          // Returns [2] in \"mysql\", \"sqlite\"; [2, 3] in \"postgresql\"
+          // Returns [ { id: 42, title: "The Hitchhiker's Guide to the Galaxy" } ]
           knex('books')
             .where({ id: 42 })
-            .update({ title: 'The Hitchhiker\'s Guide to the Galaxy' }, ['id', 'title'])
-            .then((updatedRows) => {
-              // updatedRows === [{id: 42, title: 'The Hitchhiker\'s Guide to the Galaxy'}]
-            })
+            .update({ title: "The Hitchhiker's Guide to the Galaxy" }, ['id', 'title'])
         `
       }
     ]
