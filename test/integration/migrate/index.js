@@ -1036,4 +1036,25 @@ module.exports = function(knex) {
         });
     });
   });
+
+  describe('knex.migrate.latest with disableValidateMigrationList', function() {
+    it('should not fail if there is a missing migration', () => {
+      return knex.migrate
+        .latest({
+          directory: 'test/integration/migrate/test',
+        })
+        .then(() => {
+          return knex.migrate.latest({
+            directory:
+              'test/integration/migrate/test_with_missing_first_migration',
+            disableMigrationsListValidation: true,
+          });
+        })
+        .finally(() => {
+          return knex.migrate.rollback({
+            directory: 'test/integration/migrate/test',
+          });
+        });
+    });
+  });
 };
