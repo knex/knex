@@ -473,16 +473,16 @@ export default [
   {
     type: "method",
     method: "up",
-    example: "knex.migrate.up([name], [config])",
+    example: "knex.migrate.up([config])",
     description:
-      "Runs the specified or the next chronological migration that has not yet be run",
+      "Runs the specified (by `config.name` parameter) or the next chronological migration that has not yet be run.",
     children: []
   },
   {
     type: "method",
     method: "down",
-    example: "knex.migrate.down([name], [config])",
-    description: "Will undo the specified or the last migration that was run",
+    example: "knex.migrate.down([config])",
+    description: "Will undo the specified (by `config.name` parameter) or the last migration that was run.",
     children: []
   },
   {
