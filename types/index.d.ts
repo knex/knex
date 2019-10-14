@@ -1842,7 +1842,7 @@ declare namespace Knex {
   class Seeder {
     constructor(knex: Knex);
     setConfig(config: SeederConfig): SeederConfig;
-    run(config?: SeederConfig): Promise<string[]>;
+    run(config?: SeederConfig): Promise<[string[]]>;
     make(name: string, config?: SeederConfig): Promise<string>;
   }
 

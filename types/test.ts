@@ -1303,10 +1303,10 @@ const main = async () => {
       directory: 'lib/seeds'
   });
 
-  // $ExpectType string[]
+  // $ExpectType [string[]]
   await knex.seed.run();
 
-  // $ExpectType string[]
+  // $ExpectType [string[]]
   await knex.seed.run({
       extension: 'ts',
       directory: 'lib/seeds'
