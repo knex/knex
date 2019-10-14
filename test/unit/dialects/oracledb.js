@@ -71,6 +71,15 @@ describe('OracleDb parameters', function() {
         });
     });
 
+    it('on clob', function() {
+      return knexClient
+        .raw('select TO_CLOB(\'LONG CONTENT\') as "field" from dual')
+        .then(function(result) {
+          expect(result[0]).to.be.ok;
+          expect(result[0].field).to.be.equal('LONG CONTENT');
+        });
+    });
+
     after(function() {
       return knexClient.destroy();
     });
