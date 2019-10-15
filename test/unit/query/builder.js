@@ -40,14 +40,14 @@ const clientsWithNullAsDefault = {
   ),
 };
 
-var customLoggerConfig = {
+const customLoggerConfig = {
   log: {
     warn: function(message) {
       throw new Error(message);
     },
   },
 };
-var clientsWithCustomLoggerForTestWarnings = {
+const clientsWithCustomLoggerForTestWarnings = {
   mysql: new MySQL_Client(
     Object.assign({ client: 'mysql' }, customLoggerConfig)
   ),
@@ -58,9 +58,9 @@ var clientsWithCustomLoggerForTestWarnings = {
   oracledb: new Oracledb_Client(
     Object.assign({ client: 'oracledb' }, customLoggerConfig)
   ),
-  // sqlite3: new SQLite3_Client(
-  //   Object.assign({ client: 'sqlite3' }, customLoggerConfig)
-  // ),
+  sqlite3: new SQLite3_Client(
+    Object.assign({ client: 'sqlite3' }, customLoggerConfig)
+  ),
   mssql: new MSSQL_Client(
     Object.assign({ client: 'mssql' }, customLoggerConfig)
   ),
