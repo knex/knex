@@ -25,12 +25,12 @@ describe('OracleDb externalAuth', function() {
     spy = sinon.spy(knexInstance.client.driver, 'getConnection');
   });
 
-  it('externalAuth and connectString should be sent to the getConnection', function() {
+  it('externalAuth and connectString should be sent to the getConnection', async function() {
     const connectionWithExternalAuth = {
       connectString: 'connect-string',
       externalAuth: true,
     };
-    knexInstance.client
+    await knexInstance.client
       .acquireRawConnection()
       .then(function(resolve) {}, function(reject) {});
     expect(spy).to.have.callCount(1);
