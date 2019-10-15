@@ -548,6 +548,10 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TRecord[K][]>;
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
+    insert(
+      data: MaybeArray<SafePartial<TRecord>>,
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -601,6 +605,10 @@ declare namespace Knex {
       ...args: any[]
     ): QueryBuilder<TRecord2, TResult2>;
 
+    update(
+      data: MaybeArray<SafePartial<TRecord>>,
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     update<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -685,6 +693,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;
 
+    returning(column: '*'): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     returning<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -708,6 +717,9 @@ declare namespace Knex {
       column: string | string[]
     ): QueryBuilder<TRecord, TResult2>;
 
+    del(
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     del<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -733,6 +745,9 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     del<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
+    delete(
+      returning: '*'
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     delete<
       TKey extends StrKey<TRecord>,
       TResult2 = DeferredIndex.Augment<
@@ -759,8 +774,6 @@ declare namespace Knex {
     delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
     truncate(): QueryBuilder<TRecord, void>;
-
-    clone(): QueryBuilder<TRecord, TResult>;
   }
 
   interface As<TRecord, TResult> {
@@ -1342,9 +1355,8 @@ declare namespace Knex {
   >
     extends QueryInterface<TRecord, TResult>,
       ChainableInterface<ResolveResult<TResult>> {
-    // [TODO] Doesn't seem to be available
-    // or: QueryBuilder;
-
+    or: QueryBuilder<TRecord, TResult>;
+    not: QueryBuilder<TRecord, TResult>;
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
@@ -1364,6 +1376,9 @@ declare namespace Knex {
     on(event: string, callback: Function): QueryBuilder<TRecord, TResult>;
 
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
+
+    clone(): QueryBuilder<TRecord, TResult>;
+    timeout(ms: number, options?: {cancel?: boolean}): QueryBuilder<TRecord, TResult>;
   }
 
   interface Sql {
@@ -1724,7 +1739,7 @@ declare namespace Knex {
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
   }
-  
+
   interface OracleDbConnectionConfig {
     host: string;
     user: string;
@@ -1795,6 +1810,7 @@ declare namespace Knex {
     tableName?: string;
     schemaName?: string;
     disableTransactions?: boolean;
+    disableMigrationsListValidation?: boolean;
     sortDirsSeparately?: boolean;
     loadExtensions?: string[];
     migrationSource?: any;
@@ -1811,6 +1827,7 @@ declare namespace Knex {
     rollback(config?: MigratorConfig, all?: boolean): Promise<any>;
     status(config?: MigratorConfig): Promise<number>;
     currentVersion(config?: MigratorConfig): Promise<string>;
+    list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfig): Promise<any>;
     down(config?: MigratorConfig): Promise<any>;
   }
@@ -1819,12 +1836,13 @@ declare namespace Knex {
     extension?: string;
     directory?: string;
     loadExtensions?: string[];
+    specific?: string;
   }
 
   class Seeder {
     constructor(knex: Knex);
     setConfig(config: SeederConfig): SeederConfig;
-    run(config?: SeederConfig): Promise<string[]>;
+    run(config?: SeederConfig): Promise<[string[]]>;
     make(name: string, config?: SeederConfig): Promise<string>;
   }
 
@@ -1834,7 +1852,8 @@ declare namespace Knex {
 
   interface EnumOptions {
     useNative: boolean;
-    existingType: boolean;
+    existingType?: boolean;
+    schemaName?: string;
     enumName: string;
   }
 
@@ -1855,7 +1874,7 @@ declare namespace Knex {
   }
 
   class QueryBuilder {
-    public static extend(
+    static extend(
       methodName: string,
       fn: <TRecord extends {} = any, TResult = unknown[]>(
         this: Knex<TRecord, TResult>,

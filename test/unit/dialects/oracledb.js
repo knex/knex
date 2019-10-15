@@ -1,4 +1,4 @@
-// global it, describe, expect
+// global it, describe
 
 'use strict';
 const _ = require('lodash');
@@ -68,6 +68,15 @@ describe('OracleDb parameters', function() {
         .then(function(result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.be.a('string');
+        });
+    });
+
+    it('on clob', function() {
+      return knexClient
+        .raw('select TO_CLOB(\'LONG CONTENT\') as "field" from dual')
+        .then(function(result) {
+          expect(result[0]).to.be.ok;
+          expect(result[0].field).to.be.equal('LONG CONTENT');
         });
     });
 

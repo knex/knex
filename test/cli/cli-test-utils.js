@@ -29,15 +29,40 @@ function migrationStubOptionSetup(fileHelper) {
   return { migrationGlobPath };
 }
 
-function expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper) {
+function seedStubOptionSetup(fileHelper) {
+  const seedGlobPath = 'test/jake-util/knexfile_seeds/*.js';
+
+  fileHelper.registerGlobForCleanup(seedGlobPath);
+  fileHelper.createFile(
+    process.cwd() + '/knexfile.js',
+    `
+      module.exports = {
+        development: {
+          client: 'sqlite3',
+          connection: {
+            filename: __dirname + '/test/jake-util/test.sqlite3',
+          },
+          seeds: {
+            directory: __dirname + '/test/jake-util/knexfile_seeds',
+          },
+        }
+      };
+      `,
+    { isPathAbsolute: true }
+  );
+
+  return { seedGlobPath };
+}
+
+function expectContentMatchesStub(stubPath, globPath, fileHelper) {
   // accepts full or relative stub path
   const relativeStubPath = stubPath.replace('test/jake-util/', '');
   const stubContent = fileHelper.getFileTextContent(relativeStubPath);
-  const [migrationContent] = fileHelper.getFileGlobTextContent(
-    migrationGlobPath
+  const [content] = fileHelper.getFileGlobTextContent(
+    globPath
   );
 
-  expect(migrationContent).equals(stubContent);
+  expect(content).equals(stubContent);
 }
 
 function setupFileHelper() {
@@ -51,7 +76,8 @@ function setupFileHelper() {
 }
 
 module.exports = {
-  expectMigrationMatchesStub,
+  expectContentMatchesStub,
   migrationStubOptionSetup,
+  seedStubOptionSetup,
   setupFileHelper,
 };
