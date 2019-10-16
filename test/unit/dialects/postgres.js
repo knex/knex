@@ -153,12 +153,15 @@ describe('Postgres Unit Tests', function() {
     const knexInstance = knex({
       client: 'pg',
       connection: async function() {
-        return {};
+        return {
+          host: 'localhost',
+        };
       },
     });
-    knexInstance.raw('select 1 as 1').then((result) => {
-      expect(checkVersionStub.calledOnce).to.equal(true);
-      knexInstance.destroy();
+    await knexInstance.raw('select 1 as 1');
+    expect(knexInstance.client.connectionSettings).to.deep.equal({
+      host: 'localhost',
     });
+    knexInstance.destroy();
   });
 });
