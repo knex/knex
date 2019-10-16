@@ -144,6 +144,22 @@ const testConfigs = {
     migrations,
     seeds,
   },
+  asyncConfig: {
+    client: 'postgres',
+    connection: async function() {
+      return {
+        adapter: 'postgresql',
+        port: 25432,
+        host: 'localhost',
+        database: 'knex_test',
+        user: 'testuser',
+        password: 'knextest',
+      };
+    },
+    pool,
+    migrations,
+    seeds,
+  },
 };
 
 // export only copy the specified dialects

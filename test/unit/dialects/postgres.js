@@ -148,4 +148,18 @@ describe('Postgres Unit Tests', function() {
       done();
     });
   });
+
+  it('should configure knex connection as async function', (done) => {
+    const knexInstance = knex({
+      client: 'pg',
+      connection: async function() {
+        return {};
+      },
+    });
+    knexInstance.raw('select 1 as 1').then((result) => {
+      expect(checkVersionStub.calledOnce).to.equal(true);
+      knexInstance.destroy();
+      done();
+    });
+  });
 });
