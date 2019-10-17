@@ -1515,7 +1515,7 @@ declare namespace Knex {
     specificType(columnName: string, type: string): ColumnBuilder;
     primary(columnNames: string[], constraintName?: string): TableBuilder;
     index(
-      columnNames: (string | Raw)[],
+      columnNames: string | (string | Raw)[],
       indexName?: string,
       indexType?: string
     ): TableBuilder;
@@ -1528,7 +1528,7 @@ declare namespace Knex {
     dropForeign(columnNames: string[], foreignKeyName?: string): TableBuilder;
     dropUnique(columnNames: (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
-    dropIndex(columnNames: (string | Raw)[], indexName?: string): TableBuilder;
+    dropIndex(columnNames: string | (string | Raw)[], indexName?: string): TableBuilder;
     dropTimestamps(): ColumnBuilder;
     queryContext(context: any): TableBuilder;
   }
