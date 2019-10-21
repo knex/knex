@@ -1828,7 +1828,6 @@ declare namespace Knex {
     currentVersion(config?: MigratorConfig): Promise<string>;
     up(config?: MigratorConfig): Promise<any>;
     down(config?: MigratorConfig): Promise<any>;
-    list(config?: MigratorConfig): Promise<any>;
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
