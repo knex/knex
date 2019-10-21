@@ -1830,6 +1830,7 @@ declare namespace Knex {
     list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfig): Promise<any>;
     down(config?: MigratorConfig): Promise<any>;
+    forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
   interface SeederConfig {
