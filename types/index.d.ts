@@ -1197,6 +1197,9 @@ declare namespace Knex {
     (
       columnDefs: Array<string | { column: string; order?: string }>
     ): QueryBuilder<TRecord, TResult>;
+    <TRecordInner, TResultInner>(
+      subQueryBuilder: QueryBuilder<TRecordInner, TResultInner>
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface Intersect<TRecord = any, TResult = unknown[]> {

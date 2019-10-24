@@ -3176,6 +3176,43 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('order by accepts query builder', () => {
+    testsql(
+      qb()
+        .select()
+        .from('persons')
+        .orderBy(
+          qb()
+            .select()
+            .from('persons as p')
+            .whereColumn('persons.id', 'p.id')
+            .select('p.id')
+        ),
+      {
+        mysql: {
+          sql:
+            'select * from `persons` order by (select `p`.`id` from `persons` as `p` where `persons`.`id` = `p`.`id`) asc',
+          bindings: [],
+        },
+        mssql: {
+          sql:
+            'select * from [persons] order by (select [p].[id] from [persons] as [p] where [persons].[id] = [p].[id]) asc',
+          bindings: [],
+        },
+        pg: {
+          sql:
+            'select * from "persons" order by (select "p"."id" from "persons" as "p" where "persons"."id" = "p"."id") asc',
+          bindings: [],
+        },
+        sqlite3: {
+          sql:
+            'select * from `persons` order by (select `p`.`id` from `persons` as `p` where `persons`.`id` = `p`.`id`) asc',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('raw group bys', () => {
     testsql(
       qb()
