@@ -8179,6 +8179,37 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should always wrap subquery with parenthesis', () => {
+    const subquery = qb().select(raw('?', ['inner raw select']), 'bar');
+    testsql(
+      qb()
+        .select(raw('?', ['outer raw select']))
+        .from(subquery),
+      {
+        mysql: {
+          sql: 'select ? from (select ?, `bar`)',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        mssql: {
+          sql: 'select ? from (select ?, [bar])',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        oracledb: {
+          sql: 'select ? from (select ?, "bar")',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        pg: {
+          sql: 'select ? from (select ?, "bar")',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        'pg-redshift': {
+          sql: 'select ? from (select ?, "bar")',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+      }
+    );
+  });
+
   it('correctly orders parameters when selecting from subqueries, #704', () => {
     const subquery = qb()
       .select(raw('? as f', ['inner raw select']))
