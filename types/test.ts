@@ -492,6 +492,17 @@ const main = async () => {
     .orderBy('name', 'desc')
     .havingRaw('age > ?', [10]);
 
+  // $ExpectType User[]
+  await knex<User>('users')
+    .select()
+    .from('persons')
+    .orderBy(
+      knex<User>('users')
+        .select('u.id')
+        .from('users as u')
+        .where('users.id', 'u.id')
+    );
+
   // $ExpectType Dict<string | number>[]
   await knex<User>('users').count();
 
