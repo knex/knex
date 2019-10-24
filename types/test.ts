@@ -495,7 +495,6 @@ const main = async () => {
   // $ExpectType User[]
   await knex<User>('users')
     .select()
-    .from('persons')
     .orderBy(
       knex<User>('users')
         .select('u.id')
