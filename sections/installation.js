@@ -29,7 +29,7 @@ export default [
       $ npm install sqlite3
       $ npm install mysql
       $ npm install mysql2
-      $ npm install oracle
+      $ npm install oracledb
       $ npm install mssql
     `
   },
