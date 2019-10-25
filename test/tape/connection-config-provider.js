@@ -14,11 +14,22 @@ test('static config works without a provider', async function(t) {
   t.end();
 });
 
-test('by default, the same resolved config is used for all connections', async function(t) {
+test('by default, the same async-resolved config is used for all connections', async function(t) {
   let providerCallCount = 0;
   const connectionConfig = () => {
     ++providerCallCount;
     return Promise.resolve(originalConnection);
+  };
+  await runTwoConcurrentTransactions(connectionConfig);
+  t.equal(providerCallCount, 1);
+  t.end();
+});
+
+test('by default, the same sync-resolved config is used for all connections', async function(t) {
+  let providerCallCount = 0;
+  const connectionConfig = () => {
+    ++providerCallCount;
+    return originalConnection;
   };
   await runTwoConcurrentTransactions(connectionConfig);
   t.equal(providerCallCount, 1);
@@ -30,7 +41,7 @@ test('when not yet expired, a resolved config is reused', async function(t) {
   const connectionConfig = () => {
     ++providerCallCount;
     return Promise.resolve(
-      Object.assign(originalConnection, { expired: () => false })
+      Object.assign(_.cloneDeep(originalConnection), { expired: () => false })
     );
   };
   await runTwoConcurrentTransactions(connectionConfig);
@@ -43,7 +54,7 @@ test('when expired, a resolved config is replaced', async function(t) {
   const connectionConfig = () => {
     ++providerCallCount;
     return Promise.resolve(
-      Object.assign(originalConnection, { expired: () => true })
+      Object.assign(_.cloneDeep(originalConnection), { expired: () => true })
     );
   };
   await runTwoConcurrentTransactions(connectionConfig);
