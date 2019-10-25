@@ -13,6 +13,7 @@ require('./migrate');
 require('./pool');
 require('./knex');
 require('./invalid-db-setup')(knexfile);
+require('./connection-config-provider');
 
 Object.keys(knexfile).forEach(function(key) {
   var knex = makeKnex(knexfile[key]);
