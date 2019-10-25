@@ -1383,7 +1383,7 @@ module.exports = function(knex) {
           }
         });
 
-        context('when table is created using raw create table', function () {
+        context('when table is created using raw create table', function() {
           beforeEach(async function() {
             await knex.schema.raw(`create table TEST(
               "i0" integer,
@@ -1403,17 +1403,17 @@ module.exports = function(knex) {
             return knex.schema.dropTable('TEST');
           });
 
-          const getCreateTableExpr = async () => (
-            await knex.schema.raw('select name, sql from sqlite_master where type = "table" and name = "TEST"')
-          )[0].sql;
+          const getCreateTableExpr = async () =>
+            (await knex.schema.raw(
+              'select name, sql from sqlite_master where type = "table" and name = "TEST"'
+            ))[0].sql;
 
           const dropCol = (colName) =>
             knex.schema.alterTable('TEST', function(tbl) {
               return tbl.dropColumn(colName);
             });
 
-          const hasCol = (colName) =>
-            knex.schema.hasColumn('TEST', colName);
+          const hasCol = (colName) => knex.schema.hasColumn('TEST', colName);
 
           it('drops the column', async function() {
             await dropCol('i0');
@@ -1430,13 +1430,13 @@ module.exports = function(knex) {
             // Foreign key on i1 should also be dropped:
             expect(await getCreateTableExpr()).to.equal(
               'CREATE TABLE TEST([i2] integer, `i3` integer, i4 integer, I5 integer, ' +
-              'unique(i4, i5), constraint i0 primary key([i3], "i4"), unique([i2]))'
+                'unique(i4, i5), constraint i0 primary key([i3], "i4"), unique([i2]))'
             );
             await dropCol('i2');
             expect(await hasCol('i2')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
               'CREATE TABLE TEST(`i3` integer, i4 integer, I5 integer, ' +
-              'unique(i4, i5), constraint i0 primary key([i3], "i4"))'
+                'unique(i4, i5), constraint i0 primary key([i3], "i4"))'
             );
             await dropCol('i3');
             expect(await hasCol('i3')).to.equal(false);
@@ -1449,12 +1449,16 @@ module.exports = function(knex) {
               'CREATE TABLE TEST(I5 integer)'
             );
             let lastColDeletionError;
-            await knex.schema.alterTable('TEST', function(tbl) {
-              return tbl.dropColumn('i5');
-            }).catch(e => {
-              lastColDeletionError = e;
-            })
-            expect(lastColDeletionError.message).to.eql('Unable to drop last column from table');
+            await knex.schema
+              .alterTable('TEST', function(tbl) {
+                return tbl.dropColumn('i5');
+              })
+              .catch((e) => {
+                lastColDeletionError = e;
+              });
+            expect(lastColDeletionError.message).to.eql(
+              'Unable to drop last column from table'
+            );
           });
         });
       }

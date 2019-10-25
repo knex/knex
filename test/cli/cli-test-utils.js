@@ -58,9 +58,7 @@ function expectContentMatchesStub(stubPath, globPath, fileHelper) {
   // accepts full or relative stub path
   const relativeStubPath = stubPath.replace('test/jake-util/', '');
   const stubContent = fileHelper.getFileTextContent(relativeStubPath);
-  const [content] = fileHelper.getFileGlobTextContent(
-    globPath
-  );
+  const [content] = fileHelper.getFileGlobTextContent(globPath);
 
   expect(content).equals(stubContent);
 }
