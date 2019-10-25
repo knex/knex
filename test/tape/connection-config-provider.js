@@ -41,7 +41,9 @@ test('when not yet expired, a resolved config is reused', async function(t) {
   const connectionConfig = () => {
     ++providerCallCount;
     return Promise.resolve(
-      Object.assign(_.cloneDeep(originalConnection), { expired: () => false })
+      Object.assign(_.cloneDeep(originalConnection), {
+        expirationChecker: () => false,
+      })
     );
   };
   await runTwoConcurrentTransactions(connectionConfig);
@@ -54,7 +56,9 @@ test('when expired, a resolved config is replaced', async function(t) {
   const connectionConfig = () => {
     ++providerCallCount;
     return Promise.resolve(
-      Object.assign(_.cloneDeep(originalConnection), { expired: () => true })
+      Object.assign(_.cloneDeep(originalConnection), {
+        expirationChecker: () => true,
+      })
     );
   };
   await runTwoConcurrentTransactions(connectionConfig);
