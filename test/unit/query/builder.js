@@ -40,6 +40,35 @@ const clientsWithNullAsDefault = {
   ),
 };
 
+const customLoggerConfig = {
+  log: {
+    warn: function(message) {
+      throw new Error(message);
+    },
+  },
+};
+const clientsWithCustomLoggerForTestWarnings = {
+  mysql: new MySQL_Client(
+    Object.assign({ client: 'mysql' }, customLoggerConfig)
+  ),
+  pg: new PG_Client(Object.assign({ client: 'pg' }, customLoggerConfig)),
+  'pg-redshift': new Redshift_Client(
+    Object.assign({ client: 'redshift' }, customLoggerConfig)
+  ),
+  oracledb: new Oracledb_Client(
+    Object.assign({ client: 'oracledb' }, customLoggerConfig)
+  ),
+  sqlite3: new SQLite3_Client(
+    Object.assign(
+      { client: 'sqlite3' },
+      { ...customLoggerConfig, ...useNullAsDefaultConfig }
+    )
+  ),
+  mssql: new MSSQL_Client(
+    Object.assign({ client: 'mssql' }, customLoggerConfig)
+  ),
+};
+
 // note: as a workaround, we are using postgres here, since that's using the default " field wrapping
 // otherwise subquery cloning would need to be fixed. See: https://github.com/tgriesser/knex/pull/2063
 function qb() {
@@ -3147,6 +3176,43 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('order by accepts query builder', () => {
+    testsql(
+      qb()
+        .select()
+        .from('persons')
+        .orderBy(
+          qb()
+            .select()
+            .from('persons as p')
+            .whereColumn('persons.id', 'p.id')
+            .select('p.id')
+        ),
+      {
+        mysql: {
+          sql:
+            'select * from `persons` order by (select `p`.`id` from `persons` as `p` where `persons`.`id` = `p`.`id`) asc',
+          bindings: [],
+        },
+        mssql: {
+          sql:
+            'select * from [persons] order by (select [p].[id] from [persons] as [p] where [persons].[id] = [p].[id]) asc',
+          bindings: [],
+        },
+        pg: {
+          sql:
+            'select * from "persons" order by (select "p"."id" from "persons" as "p" where "persons"."id" = "p"."id") asc',
+          bindings: [],
+        },
+        sqlite3: {
+          sql:
+            'select * from `persons` order by (select `p`.`id` from `persons` as `p` where `persons`.`id` = `p`.`id`) asc',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('raw group bys', () => {
     testsql(
       qb()
@@ -3863,6 +3929,39 @@ describe('QueryBuilder', () => {
         'pg-redshift': {
           sql: 'select * from "users" limit ? offset ?',
           bindings: [10, 5],
+        },
+      }
+    );
+  });
+
+  it('limits and offsets with raw', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .offset(raw('5'))
+        .limit(raw('10')),
+      {
+        mysql: {
+          sql: 'select * from `users` limit ? offset 5',
+          bindings: [10],
+        },
+        mssql: {
+          sql: 'select * from [users] offset 5 rows fetch next ? rows only',
+          bindings: [10],
+        },
+        oracledb: {
+          sql:
+            'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > 5',
+          bindings: [15],
+        },
+        pg: {
+          sql: 'select * from "users" limit ? offset 5',
+          bindings: [10],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" limit ? offset 5',
+          bindings: [10],
         },
       }
     );
@@ -7175,6 +7274,100 @@ describe('QueryBuilder', () => {
         },
       }
     );
+  });
+
+  it('should throw warning with null call in limit', function() {
+    try {
+      testsql(
+        qb()
+          .from('test')
+          .limit(null),
+        {
+          mysql: {
+            sql: 'select * from `test`',
+            bindings: [],
+          },
+          mssql: {
+            sql: 'select * from [test]',
+            bindings: [],
+          },
+          pg: {
+            sql: 'select * from "test"',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: 'select * from "test"',
+            bindings: [],
+          },
+        },
+        clientsWithCustomLoggerForTestWarnings
+      );
+    } catch (error) {
+      expect(error.message).to.equal(
+        'A valid integer must be provided to limit'
+      );
+    }
+  });
+
+  it('should do nothing with offset when passing null', () => {
+    testsql(
+      qb()
+        .from('test')
+        .limit(10)
+        .offset(null),
+      {
+        mysql: {
+          sql: 'select * from `test` limit ?',
+          bindings: [10],
+        },
+        mssql: {
+          sql: 'select top (?) * from [test]',
+          bindings: [10],
+        },
+        pg: {
+          sql: 'select * from "test" limit ?',
+          bindings: [10],
+        },
+        'pg-redshift': {
+          sql: 'select * from "test" limit ?',
+          bindings: [10],
+        },
+      }
+    );
+  });
+
+  it('should throw warning with wrong value call in offset', function() {
+    try {
+      testsql(
+        qb()
+          .from('test')
+          .limit(10)
+          .offset('$10'),
+        {
+          mysql: {
+            sql: 'select * from `test` limit ?',
+            bindings: [10],
+          },
+          mssql: {
+            sql: 'select top (?) * from [test]',
+            bindings: [10],
+          },
+          pg: {
+            sql: 'select * from "test" limit ?',
+            bindings: [10],
+          },
+          'pg-redshift': {
+            sql: 'select * from "test" limit ?',
+            bindings: [10],
+          },
+        },
+        clientsWithCustomLoggerForTestWarnings
+      );
+    } catch (error) {
+      expect(error.message).to.equal(
+        'A valid integer must be provided to offset'
+      );
+    }
   });
 
   it('should clear offset when passing null', () => {

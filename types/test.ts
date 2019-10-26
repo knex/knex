@@ -492,6 +492,16 @@ const main = async () => {
     .orderBy('name', 'desc')
     .havingRaw('age > ?', [10]);
 
+  // $ExpectType User[]
+  await knex<User>('users')
+    .select()
+    .orderBy(
+      knex<User>('users')
+        .select('u.id')
+        .from('users as u')
+        .where('users.id', 'u.id')
+    );
+
   // $ExpectType Dict<string | number>[]
   await knex<User>('users').count();
 
@@ -1303,10 +1313,10 @@ const main = async () => {
       directory: 'lib/seeds'
   });
 
-  // $ExpectType string[]
+  // $ExpectType [string[]]
   await knex.seed.run();
 
-  // $ExpectType string[]
+  // $ExpectType [string[]]
   await knex.seed.run({
       extension: 'ts',
       directory: 'lib/seeds'

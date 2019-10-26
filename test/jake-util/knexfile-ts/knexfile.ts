@@ -6,4 +6,7 @@ module.exports = {
   migrations: {
     directory: __dirname + '/../knexfile_migrations',
   },
+  seeds: {
+    directory: __dirname + '/../knexfile_seeds',
+  },
 };

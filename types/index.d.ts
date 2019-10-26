@@ -1197,6 +1197,9 @@ declare namespace Knex {
     (
       columnDefs: Array<string | { column: string; order?: string }>
     ): QueryBuilder<TRecord, TResult>;
+    <TRecordInner, TResultInner>(
+      subQueryBuilder: QueryBuilder<TRecordInner, TResultInner>
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface Intersect<TRecord = any, TResult = unknown[]> {
@@ -1515,7 +1518,7 @@ declare namespace Knex {
     specificType(columnName: string, type: string): ColumnBuilder;
     primary(columnNames: string[], constraintName?: string): TableBuilder;
     index(
-      columnNames: (string | Raw)[],
+      columnNames: string | (string | Raw)[],
       indexName?: string,
       indexType?: string
     ): TableBuilder;
@@ -1528,7 +1531,7 @@ declare namespace Knex {
     dropForeign(columnNames: string[], foreignKeyName?: string): TableBuilder;
     dropUnique(columnNames: (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
-    dropIndex(columnNames: (string | Raw)[], indexName?: string): TableBuilder;
+    dropIndex(columnNames: string | (string | Raw)[], indexName?: string): TableBuilder;
     dropTimestamps(): ColumnBuilder;
     queryContext(context: any): TableBuilder;
   }
@@ -1829,6 +1832,7 @@ declare namespace Knex {
     tableName?: string;
     schemaName?: string;
     disableTransactions?: boolean;
+    disableMigrationsListValidation?: boolean;
     sortDirsSeparately?: boolean;
     loadExtensions?: string[];
     migrationSource?: any;
@@ -1848,6 +1852,7 @@ declare namespace Knex {
     list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfig): Promise<any>;
     down(config?: MigratorConfig): Promise<any>;
+    forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
   interface SeederConfig {
@@ -1860,7 +1865,7 @@ declare namespace Knex {
   class Seeder {
     constructor(knex: Knex);
     setConfig(config: SeederConfig): SeederConfig;
-    run(config?: SeederConfig): Promise<string[]>;
+    run(config?: SeederConfig): Promise<[string[]]>;
     make(name: string, config?: SeederConfig): Promise<string>;
   }
 

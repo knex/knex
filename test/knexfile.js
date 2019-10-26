@@ -2,10 +2,10 @@
 /* eslint no-var: 0 */
 
 const assert = require('assert');
+const { promisify } = require('util');
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
 const _ = require('lodash');
-const Bluebird = require('bluebird');
 
 // excluding redshift, oracle, and mssql dialects from default integrations test
 const testIntegrationDialects = (
@@ -31,12 +31,11 @@ const poolSqlite = {
 
 const mysqlPool = _.extend({}, pool, {
   afterCreate: function(connection, callback) {
-    Bluebird.promisify(connection.query, { context: connection })(
-      "SET sql_mode='TRADITIONAL';",
-      []
-    ).then(function() {
-      callback(null, connection);
-    });
+    promisify(connection.query)
+      .call(connection, "SET sql_mode='TRADITIONAL';", [])
+      .then(function() {
+        callback(null, connection);
+      });
   },
 });
 

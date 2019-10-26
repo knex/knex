@@ -7,7 +7,7 @@ const { expect } = require('chai');
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 const {
   migrationStubOptionSetup,
-  expectMigrationMatchesStub,
+  expectContentMatchesStub,
   setupFileHelper,
 } = require('./cli-test-utils');
 
@@ -252,7 +252,7 @@ development: {
         'test/jake-util/knexfile_migrations/*_somename.js'
       );
       expect(fileCount).to.equal(1);
-      expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper);
+      expectContentMatchesStub(stubPath, migrationGlobPath, fileHelper);
     });
 
     it('Create a new migration with stub parameter in knexfile', async () => {
@@ -273,7 +273,7 @@ development: {
       const stubName = 'table.stub';
       const stubPath = `test/jake-util/knexfile-stubs/${stubName}`;
       expect(fileCount).to.equal(1);
-      expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper);
+      expectContentMatchesStub(stubPath, migrationGlobPath, fileHelper);
     });
 
     it('Create a new migration with --stub <name> in config.migrations.directory', async () => {
@@ -293,7 +293,7 @@ development: {
         'test/jake-util/knexfile_migrations/*_somename.js'
       );
       expect(fileCount).to.equal(1);
-      expectMigrationMatchesStub(stubPath, migrationGlobPath, fileHelper);
+      expectContentMatchesStub(stubPath, migrationGlobPath, fileHelper);
     });
 
     it('Create a new migration with --stub <name> when file does not exist', async () => {
