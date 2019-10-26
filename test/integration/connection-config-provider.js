@@ -62,10 +62,7 @@ module.exports = function(config) {
     async function runTwoConcurrentTransactions(expectedInvocationCount) {
       const knex = makeKnex(configWorkingCopy);
       await knex.transaction(async (trx) => {
-        await trx.select(1);
-        await knex.transaction(async (trx2) => {
-          await trx2.select(2);
-        });
+        await knex.transaction(async (trx2) => {});
       });
       await knex.destroy();
       expect(providerInvocationCount).equals(expectedInvocationCount);
