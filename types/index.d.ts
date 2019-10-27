@@ -1609,15 +1609,7 @@ declare namespace Knex {
     client?: string | typeof Client;
     dialect?: string;
     version?: string;
-    connection?:
-      | string
-      | ConnectionConfig
-      | MariaSqlConnectionConfig
-      | MySqlConnectionConfig
-      | MsSqlConnectionConfig
-      | OracleDbConnectionConfig
-      | Sqlite3ConnectionConfig
-      | SocketConnectionConfig;
+    connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
@@ -1634,6 +1626,18 @@ declare namespace Knex {
     log?: Logger;
   }
 
+  type StaticConnectionConfig = ConnectionConfig
+    | MariaSqlConnectionConfig
+    | MySqlConnectionConfig
+    | MsSqlConnectionConfig
+    | OracleDbConnectionConfig
+    | Sqlite3ConnectionConfig
+    | SocketConnectionConfig;
+
+  type ConnectionConfigProvider  = SyncConnectionConfigProvider | AsyncConnectionConfigProvider;
+  type SyncConnectionConfigProvider  = () => StaticConnectionConfig;
+  type AsyncConnectionConfigProvider  = () => Promise<StaticConnectionConfig>;
+
   interface ConnectionConfig {
     host: string;
     user: string;
@@ -1643,7 +1647,6 @@ declare namespace Knex {
     instanceName?: string;
     debug?: boolean;
     requestTimeout?: number;
-    expirationChecker?(): boolean;
   }
 
   // Config object for mssql: see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mssql/index.d.ts
