@@ -1609,17 +1609,7 @@ declare namespace Knex {
     client?: string | typeof Client;
     dialect?: string;
     version?: string;
-    connection?:
-      | string
-      | ConnectionConfig
-      | MariaSqlConnectionConfig
-      | MySqlConnectionConfig
-      | MsSqlConnectionConfig
-      | OracleDbConnectionConfig
-      | PgConnectionConfig
-      | RedshiftConnectionConfig
-      | Sqlite3ConnectionConfig
-      | SocketConnectionConfig;
+    connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
@@ -1635,6 +1625,21 @@ declare namespace Knex {
     asyncStackTraces?: boolean;
     log?: Logger;
   }
+
+  type StaticConnectionConfig =
+    | ConnectionConfig
+    | MariaSqlConnectionConfig
+    | MySqlConnectionConfig
+    | MsSqlConnectionConfig
+    | OracleDbConnectionConfig
+    | PgConnectionConfig
+    | RedshiftConnectionConfig
+    | Sqlite3ConnectionConfig
+    | SocketConnectionConfig;
+
+  type ConnectionConfigProvider  = SyncConnectionConfigProvider | AsyncConnectionConfigProvider;
+  type SyncConnectionConfigProvider  = () => StaticConnectionConfig;
+  type AsyncConnectionConfigProvider  = () => Promise<StaticConnectionConfig>;
 
   interface ConnectionConfig {
     host: string;
@@ -1660,6 +1665,7 @@ declare namespace Knex {
     requestTimeout?: number;
     stream?: boolean;
     parseJSON?: boolean;
+    expirationChecker?(): boolean;
     options?: {
       encrypt?: boolean;
       instanceName?: string;
@@ -1707,6 +1713,7 @@ declare namespace Knex {
     read_default_group?: string;
     charset?: string;
     streamHWM?: number;
+    expirationChecker?(): boolean;
   }
 
   interface MariaSslConfiguration {
@@ -1716,6 +1723,7 @@ declare namespace Knex {
     capath?: string;
     cipher?: string;
     rejectUnauthorized?: boolean;
+    expirationChecker?(): boolean;
   }
 
   // Config object for mysql: https://github.com/mysqljs/mysql#connection-options
@@ -1743,6 +1751,7 @@ declare namespace Knex {
     flags?: string;
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface OracleDbConnectionConfig {
@@ -1755,6 +1764,7 @@ declare namespace Knex {
     debug?: boolean;
     requestTimeout?: number;
     connectString?: string;
+    expirationChecker?(): boolean;
   }
 
   // Config object for pg: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pg/index.d.ts
@@ -1778,6 +1788,7 @@ declare namespace Knex {
   interface Sqlite3ConnectionConfig {
     filename: string;
     debug?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface SocketConnectionConfig {
@@ -1786,6 +1797,7 @@ declare namespace Knex {
     password: string;
     database: string;
     debug?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface PoolConfig {
