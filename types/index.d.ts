@@ -1627,7 +1627,6 @@ declare namespace Knex {
   }
 
   type StaticConnectionConfig =
-    | string
     | ConnectionConfig
     | MariaSqlConnectionConfig
     | MySqlConnectionConfig
