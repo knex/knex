@@ -8,5 +8,5 @@ module.exports = {
   },
   seeds: {
     directory: __dirname + '/../knexfile_seeds',
-  }
+  },
 };

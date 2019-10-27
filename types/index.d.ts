@@ -1626,11 +1626,15 @@ declare namespace Knex {
     log?: Logger;
   }
 
-  type StaticConnectionConfig = ConnectionConfig
+  type StaticConnectionConfig =
+    | string
+    | ConnectionConfig
     | MariaSqlConnectionConfig
     | MySqlConnectionConfig
     | MsSqlConnectionConfig
     | OracleDbConnectionConfig
+    | PgConnectionConfig
+    | RedshiftConnectionConfig
     | Sqlite3ConnectionConfig
     | SocketConnectionConfig;
 
@@ -1763,6 +1767,23 @@ declare namespace Knex {
     connectString?: string;
     expirationChecker?(): boolean;
   }
+
+  // Config object for pg: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pg/index.d.ts
+  interface PgConnectionConfig {
+    user?: string;
+    database?: string;
+    password?: string;
+    port?: number;
+    host?: string;
+    connectionString?: string;
+    keepAlive?: boolean;
+    stream?: stream.Duplex;
+    statement_timeout?: false | number;
+    connectionTimeoutMillis?: number;
+    keepAliveInitialDelayMillis?: number;
+  }
+
+  type RedshiftConnectionConfig = PgConnectionConfig;
 
   /** Used with SQLite3 adapter */
   interface Sqlite3ConnectionConfig {

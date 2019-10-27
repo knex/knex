@@ -1,5 +1,36 @@
 # Master (Unreleased)
 
+# 0.20.0 - 25 October, 2019
+
+### New features:
+
+- orderBy accepts QueryBuilder #3491
+- Add validation in `.offset()` #2908
+- disable_migrations_list_validation feature #3448
+
+### Bug fixes:
+
+- Fix oracledb driver v4 support #3480
+- Fix some issues around seed and migration generation #3479
+- Fix bugs in replacement logic used when dropping columns in SQLite #3476
+
+### Typings:
+
+- Add types to the Migrator interface #3459
+- Fix typings of index and dropIndex TableBuilder methods #3486
+- Fixes types for Seeder#run #3438
+
+### Test / internal changes:
+
+- Execute CI on Node.js 13
+- Bluebird: remove usage of `return`, `reflect`, `fromCallback` methods #3483
+- Bluebird: remove Bluebird.bind #3477
+- Bluebird: use util.promisify instead of Bluebird.promisify #3470
+- Bluebird: remove Bluebird.each #3471
+- Bluebird: remove Bluebird.map and Bluebird.mapSeries #3474
+- Bluebird: replace Bluebird.map with Promise.all #3469
+- Update badges #3482
+
 # 0.19.5 - 06 October, 2019
 
 ### New features:

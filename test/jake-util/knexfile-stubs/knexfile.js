@@ -9,6 +9,6 @@ module.exports = {
   },
   seeds: {
     directory: __dirname + '/../knexfile-stubs',
-    stub: 'seed.stub'
+    stub: 'seed.stub',
   },
 };
