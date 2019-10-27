@@ -74,7 +74,7 @@ export default [
   },
   {
     type: "text",
-    content: "The connection options are passed directly to the appropriate database client to create the connection, and may be either an object, or a connection string:"
+    content: "The connection options are passed directly to the appropriate database client to create the connection, and may be either an object, a connection string, or a function returning an object:"
   },
   {
     type: "info",
@@ -139,6 +139,47 @@ export default [
           user : 'your_database_user',
           password : 'your_database_password',
           database : 'myapp_test'
+        }
+      });
+    `
+  },
+  {
+    type: "text",
+    content: "A function can be used to determine the connection configuration dynamically. This function receives no parameters, and returns either a configuration object or a promise for a configuration object."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      var knex = require('knex')({
+        client: 'sqlite3',
+        connection: () => ({
+          filename: process.env.SQLITE_FILENAME
+        })
+      });
+    `
+  },
+  {
+    type: "text",
+    content: "By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object. The `expirationChecker` is consulted before trying to create new connections, and in case it returns `true`, a new configuration object is retrieved. For example, to work with an authentication token that has a limited lifespan:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      var knex = require('knex')({
+        client: 'postgres',
+        connection: async () => {
+          const { token, tokenExpiration } = await someCallToGetTheToken();
+          return {
+            host : 'your_host',
+            user : 'your_database_user',
+            password : token,
+            database : 'myapp_test',
+            expirationChecker: () => {
+              return tokenExpiration <= Date.now();
+            }
+          };
         }
       });
     `
