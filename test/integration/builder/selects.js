@@ -1380,5 +1380,38 @@ module.exports = function(knex) {
         }
       }
     });
+
+    it('select from subquery', async function() {
+      const subquery = knex.from('accounts').whereBetween('id', [3, 5]);
+      return knex
+        .pluck('id')
+        .orderBy('id')
+        .from(subquery)
+        .then(
+          (rows) => {
+            expect(rows).to.deep.equal([3, 4, 5]);
+            expect(knex.client.driverName).to.oneOf(['sqlite3', 'oracledb']);
+          },
+          (e) => {
+            switch (knex.client.driverName) {
+              case 'mysql':
+              case 'mysql2':
+                expect(e.errno).to.equal(1248);
+                break;
+              case 'pg':
+                expect(e.message).to.contain('must have an alias');
+                break;
+
+              case 'mssql':
+                expect(e.message).to.contain(
+                  "Incorrect syntax near the keyword 'order'"
+                );
+                break;
+              default:
+                throw e;
+            }
+          }
+        );
+    });
   });
 };
