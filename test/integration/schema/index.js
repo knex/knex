@@ -82,7 +82,8 @@ module.exports = function(knex) {
             .dropTableIfExists('invalid_inTable_param_test')
             .dropTableIfExists('primarytest')
             .dropTableIfExists('increments_columns_1_test')
-            .dropTableIfExists('increments_columns_2_test'),
+            .dropTableIfExists('increments_columns_2_test')
+            .dropTableIfExists('defaultTo_test_table'),
         ]);
       });
     });
@@ -847,6 +848,26 @@ module.exports = function(knex) {
               'create index "10_test_table_logins_index" on "10_test_table" ("logins")',
             ]);
           });
+      });
+
+      it('#3499 - prevent SQL injection from defaultTo', async function() {
+        // create table
+        await knex.schema.createTable('defaultTo_test_table', function(table) {
+          table
+            .string('id_col')
+            .notNullable()
+            .defaultTo("hello'); SELECT * FROM pg_database; -- ");
+          table.string('string_col').notNullable();
+        });
+        // insert row
+        await knex.table('defaultTo_test_table').insert({
+          string_col: 'abc',
+        });
+        const [realColVal] = await knex
+          .from('defaultTo_test_table')
+          .pluck('id_col')
+          .where('string_col', 'abc');
+        expect(realColVal).to.equal("hello'); SELECT * FROM pg_database; -- ");
       });
     });
 

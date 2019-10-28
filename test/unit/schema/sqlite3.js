@@ -706,6 +706,22 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
+  it('#3499 - prevent SQL injection from defaultTo', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('tableName', (table) => {
+        table
+          .string('id_col')
+          .notNullable()
+          .defaultTo("hello'); SELECT * FROM pg_database; -- ");
+        table.string('string_col').notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      "create table `tableName` (`id_col` varchar(255) not null default 'hello''); SELECT * FROM pg_database; -- ', `string_col` varchar(255) not null)"
+    );
+  });
+
   describe('SQLite3_DDL.prototype._doReplace', function() {
     it('should not change a query that has no matches', function() {
       return client

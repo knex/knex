@@ -920,6 +920,22 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
+  it('#3499 - prevent SQL injection from defaultTo', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('tableName', (table) => {
+        table
+          .string('id_col')
+          .notNullable()
+          .defaultTo("hello'); SELECT * FROM pg_database; -- ");
+        table.string('string_col').notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      "CREATE TABLE [tableName] ([id_col] nvarchar(255) not null default 'hello''); SELECT * FROM pg_database; -- ', [string_col] nvarchar(255) not null)"
+    );
+  });
+
   describe('queryContext', function() {
     let spy;
     let originalWrapIdentifier;

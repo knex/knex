@@ -894,6 +894,22 @@ describe('OracleDb SchemaBuilder', function() {
     );
   });
 
+  it('#3499 - prevent SQL injection from defaultTo', function() {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('tableName', (table) => {
+        table
+          .string('id_col')
+          .notNullable()
+          .defaultTo("hello'); SELECT * FROM pg_database; -- ");
+        table.string('string_col').notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      `create table "tableName" ("id_col" varchar2(255) default 'hello''); SELECT * FROM pg_database; -- ' not null, "string_col" varchar2(255) not null)`
+    );
+  });
+
   describe('queryContext', function() {
     let spy;
     let originalWrapIdentifier;
