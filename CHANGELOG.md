@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.20.1 - 29 October, 2019
+
+### New features:
+
+- Declare drivers as optional peerDependencies #3081
+- Dynamic connection configuration resolution #3497
+
+### Bug fixes:
+
+- Wrap subQuery with parenthesis when it appears as table name #3496
+- Fix Oracle error codes #3498
+
+### Typings:
+
+- Add interface for PG Connection object #3372
+- Gracefully handle global promise pollution #3502
+
 # 0.20.0 - 25 October, 2019
 
 ### New features:
