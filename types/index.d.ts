@@ -1401,7 +1401,7 @@ declare namespace Knex {
   // Chainable interface
   //
 
-  interface ChainableInterface<T = any> extends Promise<T> {
+  interface ChainableInterface<T = any> extends Pick<Promise<T>, "then" | "catch" | "finally"> {
     toQuery(): string;
     options(options: { [key: string]: any }): this;
     connection(connection: any): this;
