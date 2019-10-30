@@ -149,13 +149,15 @@ module.exports = function(knex) {
       .finally(function() {
         // trx1: BEGIN, INSERT, ROLLBACK
         // trx2: SAVEPOINT, INSERT, SELECT, ROLLBACK TO SAVEPOINT
-        // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+        // oracle: BEGIN & ROLLBACK not reported as queries
+        // mssql: BEGIN, ROLLBACK, ROLLBACK TO SAVEPOINT not reported as queries
         let expectedTrx1QueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 1
             : 3;
-        const expectedTrx2QueryCount = 4;
+        const expectedTrx2QueryCount =
+          knex.client.driverName === 'mssql' ? 2 : 4;
         expectedTrx1QueryCount += expectedTrx2QueryCount;
         t.equal(
           trx1QueryCount,
@@ -210,13 +212,15 @@ module.exports = function(knex) {
       .finally(function() {
         // trx1: BEGIN, INSERT, ROLLBACK
         // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
-        // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+        // oracle: BEGIN & ROLLBACK not reported as queries
+        // mssql: BEGIN, ROLLBACK, ROLLBACK TO SAVEPOINT not reported as queries
         let expectedTrx1QueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 1
             : 3;
-        const expectedTrx2QueryCount = 2;
+        const expectedTrx2QueryCount =
+          knex.client.driverName === 'mssql' ? 0 : 2;
         expectedTrx1QueryCount += expectedTrx2QueryCount;
         t.equal(
           trx1QueryCount,
@@ -633,12 +637,14 @@ module.exports = function(knex) {
         // trx1: BEGIN, INSERT, ROLLBACK
         // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
         // oracle & mssql: BEGIN & ROLLBACK not reported as queries
+        // mssql: BEGIN, ROLLBACK, SAVEPOINT, ROLLBACK TO SAVEPOINT not reported as queries
         let expectedTrx1QueryCount =
           knex.client.driverName === 'oracledb' ||
           knex.client.driverName === 'mssql'
             ? 1
             : 3;
-        const expectedTrx2QueryCount = 2;
+        const expectedTrx2QueryCount =
+          knex.client.driverName === 'mssql' ? 0 : 2;
         expectedTrx1QueryCount += expectedTrx2QueryCount;
         t.equal(
           trx1QueryCount,

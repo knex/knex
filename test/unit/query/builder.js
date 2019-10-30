@@ -6203,8 +6203,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar', 1],
         },
         mssql: {
-          sql:
-            'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
           bindings: ['foo', 'bar', 1],
         },
         pg: {
@@ -6269,8 +6268,7 @@ describe('QueryBuilder', () => {
           bindings: [null, 'bar', 1],
         },
         mssql: {
-          sql:
-            'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
           bindings: [null, 'bar', 1],
         },
         pg: {
@@ -6302,7 +6300,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
+            'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc',
           bindings: [5, 'foo', 'bar', 1],
         },
         pg: {
@@ -6332,7 +6330,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
+            'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?',
           bindings: ['foo', 'bar', 1],
         },
         pg: {
@@ -6365,7 +6363,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
+            'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?',
           bindings: [1, 'foo', 'bar', 1],
         },
         pg: {
@@ -6394,8 +6392,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar', 1],
         },
         mssql: {
-          sql:
-            'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
           bindings: ['foo', 'bar', 1],
         },
         pg: {
@@ -6453,8 +6450,7 @@ describe('QueryBuilder', () => {
           bindings: ['bar', 1],
         },
         mssql: {
-          sql:
-            'update [users] set [email] = foo, [name] = ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [email] = foo, [name] = ? where [id] = ?',
           bindings: ['bar', 1],
         },
         pg: {
@@ -6481,8 +6477,7 @@ describe('QueryBuilder', () => {
           bindings: [10, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
           bindings: [10, 1],
         },
         pg: {
@@ -6514,8 +6509,7 @@ describe('QueryBuilder', () => {
           bindings: [20, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
           bindings: [20, 1],
         },
         'pg-redshift': {
@@ -6543,8 +6537,7 @@ describe('QueryBuilder', () => {
           bindings: [90, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
           bindings: [90, 1],
         },
         'pg-redshift': {
@@ -6572,8 +6565,7 @@ describe('QueryBuilder', () => {
           bindings: [20, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
           bindings: [20, 1],
         },
         'pg-redshift': {
@@ -6601,8 +6593,7 @@ describe('QueryBuilder', () => {
           bindings: [90, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
           bindings: [90, 1],
         },
         'pg-redshift': {
@@ -6636,7 +6627,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update [users] set [email] = ?, [balance] = [balance] + ?, [subbalance] = [subbalance] - ? where [id] = ?;select @@rowcount',
+            'update [users] set [email] = ?, [balance] = [balance] + ?, [subbalance] = [subbalance] - ? where [id] = ?',
           bindings: ['foo@bar.com', 10, 100, 1],
         },
         'pg-redshift': {
@@ -6668,8 +6659,7 @@ describe('QueryBuilder', () => {
           bindings: [500, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = ? where [id] = ?',
           bindings: [500, 1],
         },
         'pg-redshift': {
@@ -6706,7 +6696,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update [users] set [balance] = [balance] + ?, [times] = [times] + ?, [value] = [value] - ?, [subvalue] = [subvalue] - ? where [id] = ?;select @@rowcount',
+            'update [users] set [balance] = [balance] + ?, [times] = [times] + ?, [value] = [value] - ?, [subvalue] = [subvalue] - ? where [id] = ?',
           bindings: [10, 1, 50, 30, 1],
         },
         'pg-redshift': {
@@ -6741,8 +6731,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo@bar.com', 1],
         },
         mssql: {
-          sql:
-            'update [users] set [email] = ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [email] = ? where [id] = ?',
           bindings: ['foo@bar.com', 1],
         },
         'pg-redshift': {
@@ -6765,8 +6754,7 @@ describe('QueryBuilder', () => {
           bindings: [1.23, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
           bindings: [1.23, 1],
         },
         pg: {
@@ -6793,8 +6781,7 @@ describe('QueryBuilder', () => {
           bindings: [10, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
           bindings: [10, 1],
         },
         pg: {
@@ -6821,8 +6808,7 @@ describe('QueryBuilder', () => {
           bindings: [1.23, 1],
         },
         mssql: {
-          sql:
-            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
           bindings: [1.23, 1],
         },
         pg: {
@@ -6849,7 +6835,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo'],
         },
         mssql: {
-          sql: 'delete from [users] where [email] = ?;select @@rowcount',
+          sql: 'delete from [users] where [email] = ?',
           bindings: ['foo'],
         },
         pg: {
@@ -7422,7 +7408,7 @@ describe('QueryBuilder', () => {
       },
       mssql: {
         sql:
-          'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?));select @@rowcount',
+          'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?))',
         bindings: [1],
       },
       pg: {
@@ -7445,7 +7431,7 @@ describe('QueryBuilder', () => {
       },
       mssql: {
         sql:
-          'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?);select @@rowcount',
+          'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?)',
         bindings: [1],
       },
       pg: {
@@ -7466,7 +7452,7 @@ describe('QueryBuilder', () => {
         bindings: [1],
       },
       mssql: {
-        sql: 'delete from [chapter] where [book] = ?;select @@rowcount',
+        sql: 'delete from [chapter] where [book] = ?',
         bindings: [1],
       },
       pg: {
@@ -7542,7 +7528,7 @@ describe('QueryBuilder', () => {
       },
       mssql: {
         sql:
-          'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
+          'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?',
         bindings: ['Boonesville', 1, 5],
       },
       pg: {
@@ -9087,7 +9073,7 @@ describe('QueryBuilder', () => {
         .from('users'),
       {
         mssql:
-          'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
+          'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?',
         sqlite3:
           'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
         pg:
@@ -9107,7 +9093,7 @@ describe('QueryBuilder', () => {
         .from('users'),
       {
         mssql:
-          'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?;select @@rowcount',
+          'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?',
         sqlite3:
           'with `withClause` as (select `email` from `users`) delete from `users` where `foo` = ?',
         pg:
