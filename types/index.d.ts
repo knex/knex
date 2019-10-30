@@ -1813,7 +1813,7 @@ declare namespace Knex {
     returnToHead?: boolean;
     priorityRange?: number;
     validate?: Function;
-    log?: boolean;
+    log?: (message: string, logLevel: string) => void;
 
     // generic-pool v3 configs
     maxWaitingClients?: number;
