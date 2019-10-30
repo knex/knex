@@ -1802,9 +1802,7 @@ declare namespace Knex {
 
   interface PoolConfig {
     name?: string;
-    create?: Function;
     afterCreate?: Function;
-    destroy?: Function;
     min?: number;
     max?: number;
     refreshIdle?: boolean;
@@ -1812,7 +1810,6 @@ declare namespace Knex {
     reapIntervalMillis?: number;
     returnToHead?: boolean;
     priorityRange?: number;
-    validate?: Function;
     log?: (message: string, logLevel: string) => void;
 
     // generic-pool v3 configs
