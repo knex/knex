@@ -1,153 +1,157 @@
 'use strict';
 /* eslint no-var: 0 */
 
-var assert     = require('assert')
-var testConfig = process.env.KNEX_TEST && require(process.env.KNEX_TEST) || {};
-var _          = require('lodash');
-var Promise    = require('bluebird');
+const assert = require('assert');
+const { promisify } = require('util');
+const testConfig =
+  (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
+const _ = require('lodash');
 
 // excluding redshift, oracle, and mssql dialects from default integrations test
-var testIntegrationDialects = (process.env.DB || "maria mysql mysql2 postgres sqlite3").match(/\w+/g);
+const testIntegrationDialects = (
+  process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
+).match(/\w+/g);
 
-var pool = {
+const pool = {
   afterCreate: function(connection, callback) {
-    assert.ok(typeof connection.__knexUid !== 'undefined')
+    assert.ok(typeof connection.__knexUid !== 'undefined');
     callback(null, connection);
-  }
-};
-
-var mysqlPool = _.extend({}, pool, {
-  afterCreate: function(connection, callback) {
-    Promise.promisify(connection.query, {context: connection})("SET sql_mode='TRADITIONAL';", []).then(function() {
-      callback(null, connection);
-    });
-  }
-});
-
-var mariaPool = _.extend({}, pool, {
-  afterCreate: function(connection, callback) {
-    var query = connection.query("SET sql_mode='TRADITIONAL';", [])
-    query.on('result', function(result) {
-      result.on('end', function() {
-        callback(null, connection)
-      })
-    })
-  }
-});
-
-var migrations = {
-  directory: 'test/integration/migrate/migration'
-};
-
-var seeds = {
-  directory: 'test/integration/seed/seeds'
-};
-
-var testConfigs = {
-
-  maria: {
-    dialect: 'maria',
-    connection: testConfig.maria || {
-      db: "knex_test",
-      user: "root",
-      charset: 'utf8',
-      host: '127.0.0.1'
-    },
-    pool: mariaPool,
-    migrations: migrations,
-    seeds: seeds
   },
+};
 
+const poolSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function(connection, callback) {
+    assert.ok(typeof connection.__knexUid !== 'undefined');
+    callback(null, connection);
+  },
+};
+
+const mysqlPool = _.extend({}, pool, {
+  afterCreate: function(connection, callback) {
+    promisify(connection.query)
+      .call(connection, "SET sql_mode='TRADITIONAL';", [])
+      .then(function() {
+        callback(null, connection);
+      });
+  },
+});
+
+const migrations = {
+  directory: 'test/integration/migrate/migration',
+};
+
+const seeds = {
+  directory: 'test/integration/seed/seeds',
+};
+
+const testConfigs = {
   mysql: {
-    dialect: 'mysql',
+    client: 'mysql',
     connection: testConfig.mysql || {
-      database: "knex_test",
-      user: "root",
-      charset: 'utf8'
+      port: 23306,
+      database: 'knex_test',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
+      charset: 'utf8',
     },
     pool: mysqlPool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 
   mysql2: {
-    dialect: 'mysql2',
+    client: 'mysql2',
     connection: testConfig.mysql || {
-      database: "knex_test",
-      user: "root",
-      charset: 'utf8'
+      port: 23306,
+      database: 'knex_test',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
+      charset: 'utf8',
     },
     pool: mysqlPool,
-    migrations: migrations,
-    seeds: seeds,
+    migrations,
+    seeds,
   },
 
   oracledb: {
     client: 'oracledb',
     connection: testConfig.oracledb || {
-      user          : "travis",
-      password      : "travis",
-      connectString : "localhost/XE",
+      user: 'system',
+      password: 'Oracle18',
+      connectString: 'localhost:21521/XE',
       // https://github.com/oracle/node-oracledb/issues/525
-      stmtCacheSize : 0
+      stmtCacheSize: 0,
     },
-    pool: pool,
-    migrations: migrations
+    pool,
+    migrations,
   },
 
   postgres: {
-    dialect: 'postgres',
+    client: 'postgres',
     connection: testConfig.postgres || {
-      adapter:  "postgresql",
-      database: "knex_test",
-      user:     "postgres"
+      adapter: 'postgresql',
+      port: 25432,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
     },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds,
+    pool,
+    migrations,
+    seeds,
   },
 
   redshift: {
-    dialect: 'redshift',
+    client: 'redshift',
     connection: testConfig.redshift || {
-      adapter:  'postgresql',
+      adapter: 'postgresql',
       database: 'knex_test',
-      user:     process.env.REDSHIFT_USER || 'postgres',
+      user: process.env.REDSHIFT_USER || 'postgres',
       password: process.env.REDSHIFT_PASSWORD || '',
-      port:     '5439',
-      host:     process.env.REDSHIFT_HOST || '127.0.0.1',
+      port: '5439',
+      host: process.env.REDSHIFT_HOST || '127.0.0.1',
     },
-    pool: pool,
-    migrations: migrations,
-    seeds: seeds
+    pool,
+    migrations,
+    seeds,
   },
 
   sqlite3: {
-    dialect: 'sqlite3',
+    client: 'sqlite3',
     connection: testConfig.sqlite3 || {
-      filename: __dirname + '/test.sqlite3'
+      filename: __dirname + '/test.sqlite3',
     },
-    pool,
-    migrations: migrations,
-    seeds: seeds
+    pool: poolSqlite,
+    migrations,
+    seeds,
   },
 
   mssql: {
-    dialect: 'mssql',
+    client: 'mssql',
     connection: testConfig.mssql || {
-      user: "sa",
-      password: "S0meVeryHardPassword",
-      server: "localhost",
-      database: "knex_test",
+      user: 'sa',
+      password: 'S0meVeryHardPassword',
+      server: 'localhost',
+      port: 21433,
+      database: 'knex_test',
     },
     pool: pool,
-    migrations: migrations,
-    seeds: seeds
-  }
+    migrations,
+    seeds,
+  },
 };
 
 // export only copy the specified dialects
-module.exports  = _.reduce(testIntegrationDialects, function (res, dialectName) {
-  res[dialectName] = testConfigs[dialectName];
-  return res;
-}, {});
+module.exports = _.reduce(
+  testIntegrationDialects,
+  function(res, dialectName) {
+    res[dialectName] = testConfigs[dialectName];
+    return res;
+  },
+  {}
+);

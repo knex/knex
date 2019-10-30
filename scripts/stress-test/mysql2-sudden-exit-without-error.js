@@ -12,38 +12,37 @@ const rp = require('request-promise-native');
 async function recreateProxy(serviceName, listenPort, proxyToPort) {
   try {
     await rp.delete({
-      url: `${toxicli.host}/proxies/${serviceName}`
-    });  
-  } catch(err) {
+      url: `${toxicli.host}/proxies/${serviceName}`,
+    });
+  } catch (err) {
     // there was no proxy by that name... its ok
   }
 
   const proxy = await toxicli.createProxy({
     name: serviceName,
     listen: `0.0.0.0:${listenPort}`,
-    upstream: `${serviceName}:${proxyToPort}`
+    upstream: `${serviceName}:${proxyToPort}`,
   });
 }
 
 async function insanelyParanoidQuery(con) {
   console.log('sending query');
-  const res = await new Promise((resolve,reject) => {
+  const res = await new Promise((resolve, reject) => {
     try {
-      con.query('select 1', [],  function(err, rows, fields) {
+      con.query('select 1', [], function(err, rows, fields) {
         if (err) {
           reject(err);
         } else {
           resolve(rows);
         }
       });
-    } catch(err) {
+    } catch (err) {
       console.log('Huh synchronous exception?! (shouldnt be possible)');
       reject(err);
     }
   });
   console.log(res);
 }
-
 
 async function main() {
   // create proxy from localhost:23306 -> mysqldocker:3306
@@ -55,13 +54,13 @@ async function main() {
     host: 'localhost',
     user: 'root',
     password: 'mysqlrootpassword',
-    port: 23306
+    port: 23306,
   });
 
   mysql2Con.on('error', function(err) {
     console.log("I'm dead", err);
-  })
-  
+  });
+
   console.log('Going to cut connections');
 
   // cut connection during recreate
@@ -70,7 +69,7 @@ async function main() {
   console.log('Proxy recreated... start waiting');
 
   // wait forever
-  while(true) {
+  while (true) {
     await Bluebird.delay(1000);
     try {
       await insanelyParanoidQuery(mysql2Con);
@@ -83,16 +82,19 @@ async function main() {
 
 main()
   .then(() => console.log('Process stopped normally'))
-  .catch(err => {
+  .catch((err) => {
     console.log('Process stopped to failure', err);
-  })
+  });
 
 console.log('Waiting for eventloop to stop...');
 
-process.on('uncaughtException', function (err) {
+process.on('uncaughtException', function(err) {
   console.log('uncaughtException', err);
 });
 
-process.on('exit', function () {
-  console.log('Did someone call process.exit() or wat? exitCode:', process.exitCode);
+process.on('exit', function() {
+  console.log(
+    'Did someone call process.exit() or wat? exitCode:',
+    process.exitCode
+  );
 });

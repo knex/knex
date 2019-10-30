@@ -1,48 +1,44 @@
-# .travis.yml
 language: node_js
-dist: trusty
 sudo: required
 
 cache:
   directories:
-  - "node_modules"
+    - 'node_modules'
 
 matrix:
+  fast_finish: true
   include:
-  - node_js: "8"
-    env: TEST_ORACLEDB=true DB="maria mysql mysql2 postgres sqlite3 oracledb" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
-  - node_js: "6"
-    env: TEST_ORACLEDB=true DB="maria mysql mysql2 postgres sqlite3 oracledb" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000 ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe ORACLE_SID=XE OCI_LIB_DIR=/u01/app/oracle/product/11.2.0/xe/lib LD_LIBRARY_PATH=/u01/app/oracle/product/11.2.0/xe/lib
-  - node_js: "7"
-    env: DB="maria mysql mysql2 postgres sqlite3" CXX=g++-4.8 KNEX_TEST_TIMEOUT=60000
-
-before_install:
-  - if [ ! -z $TEST_ORACLEDB ]; then wget -q https://raw.githubusercontent.com/Vincit/travis-oracledb-xe/master/accept_the_license_agreement_for_oracledb_xe_11g_and_install.sh; fi
-  - if [ ! -z $TEST_ORACLEDB ]; then bash ./accept_the_license_agreement_for_oracledb_xe_11g_and_install.sh; fi
-  - if [ ! -z $TEST_ORACLEDB ]; then npm install oracledb; fi
+    - node_js: '13'
+      env: DB="mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+    - node_js: '12'
+      env: DB="mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+    - node_js: '10'
+      env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+    - node_js: '8'
+      env: TESTSCRIPT=test:everything DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+install:
+  - npm i
+  - (echo $DB | grep oracledb) && npm install oracledb || true
 
 before_script:
-  - psql -c 'create database knex_test;' -U postgres
-  - mysql -e 'create database knex_test;'
+  - npm run db:start
+  - echo "Install oracle client libs to db container and copy to hosts ~/lib for node oracledb driver..."
+  - docker-compose -f scripts/docker-compose.yml exec oracledbxe curl http://yum.oracle.com/public-yum-ol7.repo -o /etc/yum.repos.d/public-yum-ol7.repo
+  - docker-compose -f scripts/docker-compose.yml exec oracledbxe yum install -y yum-utils
+  - docker-compose -f scripts/docker-compose.yml exec oracledbxe yum-config-manager --enable ol7_oracle_instantclient
+  - docker-compose -f scripts/docker-compose.yml exec oracledbxe yum install -y oracle-instantclient18.3-basiclite
+  - docker cp oracledbxe_container:/usr/lib/oracle/18.3/client64/lib/ ~/
+  - sudo sh -c "echo $HOME/lib > /etc/ld.so.conf.d/oracle-instantclient.conf"
+  - sudo ldconfig
 
-after_script:
-  - npm run-script coveralls
+script:
+  - npm run ${TESTSCRIPT:-test}
+
+after_success:
+  - npm run coveralls
 
 notifications:
   email: false
 
 services:
-  - mysql
-addons:
-  postgresql: '9.6'
-  apt:
-    sources:
-      - mysql-5.7-trusty
-    packages:
-      - g++-4.8
-      - gcc-4.8
-      - libmysqlclient-dev
-      - libmysqlclient20
-      - mysql-community-client
-      - mysql-common
-      - mysql-community-server
+  - docker

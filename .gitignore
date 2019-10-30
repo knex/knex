@@ -1,4 +1,5 @@
 yarn.lock
+package-lock.json
 raw
 *.sw?
 .idea
@@ -7,11 +8,9 @@ raw
 *.sublime-project
 *.sublime-workspace
 node_modules
-package-lock.json
 test.sqlite3
 npm-debug.log
 tmp
-lib
 
 # Testing for the knex cli:
 bin/migrations-folder
@@ -20,6 +19,7 @@ bin/db.sqlite3
 # Bench stuff
 test/bench/temp
 test/coverage/*
+.nyc_output
 
 #VsCode workspace
 .vscode

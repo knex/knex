@@ -3,7 +3,7 @@ const Knex = require('knex');
 
 const knexSqlite = Knex({
   client: 'sqlite',
-  connection: ':memory:'
+  connection: ':memory:',
 });
 
 const knexMysql = Knex({
@@ -11,22 +11,24 @@ const knexMysql = Knex({
 });
 
 const knexPg = Knex({
-  client: 'pg'
+  client: 'pg',
 });
 
-await knexSqlite.schema.createTable('test', t => {
-  t.increments('id').primary();
-  t.string('data');
-});
+(async function run() {
+  await knexSqlite.schema.createTable('test', (t) => {
+    t.increments('id').primary();
+    t.string('data');
+  });
 
-await knexSqlite('test').insert([{ data: 'foo' }, { data: 'bar' }]);
+  await knexSqlite('test').insert([{ data: 'foo' }, { data: 'bar' }]);
 
-console.log('test table data:', await knexSqlite('test'));
+  console.log('test table data:', await knexSqlite('test'));
 
-console.log(
-  knexPg({ f: 'foo', b: 'bar' })
-  .select('foo.*')
-  .where('f.name', knexPg.raw('??', ['b.name']))
-  .whereIn('something', knexPg('bar').select('id'))
-  .toSQL().sql
-);
+  console.log(
+    knexPg({ f: 'foo', b: 'bar' })
+      .select('foo.*')
+      .where('f.name', knexPg.raw('??', ['b.name']))
+      .whereIn('something', knexPg('bar').select('id'))
+      .toSQL().sql
+  );
+})();
