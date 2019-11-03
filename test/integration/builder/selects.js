@@ -782,6 +782,57 @@ module.exports = function(knex) {
       ]);
     });
 
+    it('supports "distinct on"', async function() {
+      const builder = knex('accounts')
+        .select('email', 'logins')
+        .distinctOn('id')
+        .orderBy('id');
+      if (knex.client.driverName !== 'pg') {
+        let error;
+        try {
+          await builder;
+        } catch (e) {
+          error = e;
+        }
+        expect(error.message).to.eql('.distinctOn() is currently only supported on PostgreSQL');
+        return;
+      } 
+      return builder
+        .testSql(function(tester) {
+          tester(
+            'pg',
+            'select distinct on ("id") "email", "logins" from "accounts" order by "id" asc',
+            [],
+            [
+              {
+                email: 'test@example.com',
+                logins: 1,
+              },
+              {
+                email: 'test2@example.com',
+                logins: 1,
+              },
+              {
+                email: 'test3@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test4@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test5@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test6@example.com',
+                logins: 2,
+              },
+            ]
+          );
+        });
+    });
+
     it('does "orWhere" cases', function() {
       return knex('accounts')
         .where('id', 1)
