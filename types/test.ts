@@ -77,6 +77,7 @@ type _T7 = ExtendsWitness<
 >;
 type _T8 = ExtendsWitness<Knex.QueryBuilder<User, number[]>, Knex.QueryBuilder>;
 type _T9 = ExtendsWitness<Knex.QueryBuilder<any, any[]>, Knex.QueryBuilder>;
+type _T10 = ExtendsWitness<Knex.QueryBuilder<User, number>, Knex.QueryBuilder>;
 
 const main = async () => {
   // # Select:
@@ -85,7 +86,7 @@ const main = async () => {
   await knex('users');
 
   // $ExpectType number[]
-  const x = await knex('users').customSelect<any, number[]>(42);
+  await knex('users').customSelect<any, number[]>(42);
 
   // This test (others similar to it) may seem useless but they are needed
   // to test for left-to-right inference issues eg: #3260
