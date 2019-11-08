@@ -1978,7 +1978,7 @@ declare namespace Knex {
     static extend(
       methodName: string,
       fn: <TRecord extends {} = any, TResult = unknown[]>(
-        this: Knex<TRecord, TResult>,
+        this: QueryBuilder<TRecord, TResult>,
         ...args: any[]
       ) => QueryBuilder<TRecord, TResult>
     ): void;
