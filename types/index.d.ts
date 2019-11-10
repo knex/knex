@@ -1622,7 +1622,7 @@ declare namespace Knex {
     nullable: boolean;
   }
 
-  interface Config<SV extends object = object> {
+  interface Config<SV extends {} = any> {
     debug?: boolean;
     client?: string | typeof Client;
     dialect?: string;
@@ -1868,7 +1868,7 @@ declare namespace Knex {
     migrationSource?: any;
   }
 
-  interface SeedsConfig<V extends object = object> {
+  interface SeedsConfig<V extends {} = any> {
     directory?: string;
     extension?: string;
     loadExtensions?: string[];
