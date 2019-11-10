@@ -401,7 +401,7 @@ declare namespace Knex {
   // QueryInterface
   //
 
-  interface QueryInterface<TRecord extends {} = any, TResult = any[]> {
+  interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
@@ -1204,11 +1204,11 @@ declare namespace Knex {
 
   interface Intersect<TRecord = any, TResult = unknown[]> {
     (
-      callback: MaybeArray<QueryCallback | QueryBuilder<TRecord, any> | Raw>,
+      callback: MaybeArray<QueryCallback | QueryBuilder<TRecord> | Raw>,
       wrap?: boolean
     ): QueryBuilder<TRecord, TResult>;
     (
-      ...callbacks: (QueryCallback | Raw | QueryBuilder<TRecord, any>)[]
+      ...callbacks: (QueryCallback | Raw | QueryBuilder<TRecord>)[]
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -1295,7 +1295,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
-  type RawBinding = Value | QueryBuilder<any, any>;
+  type RawBinding = Value | QueryBuilder;
 
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
     <TResult2 = TResult>(
@@ -1354,7 +1354,7 @@ declare namespace Knex {
 
   interface QueryBuilder<
     TRecord extends {} = any,
-    TResult = SafePartial<TRecord>[]
+    TResult = any
   >
     extends QueryInterface<TRecord, TResult>,
       ChainableInterface<ResolveResult<TResult>> {
