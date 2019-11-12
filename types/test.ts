@@ -27,6 +27,9 @@ const knex2 = Knex({
     ...clientConfig,
     log: {
         debug(msg: string) {}
+    },
+    pool: {
+      log: (msg: string, level: string) => {}
     }
 });
 
