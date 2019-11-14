@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.20.2 - 14 November, 2019
+
+### New features:
+
+- Add support for distinct on for postgres #3513
+
+### Bug fixes:
+
+- Make sqlite3 hasColumn case insensitive #3435
+
+### Typings:
+
+- Fix PoolConfig typing #3505
+- Expand SeedsConfig types #3531
+- Make the default type parameters of QueryBuilder less strict #3520
+- Fix regression in older version of node when Promise#finally was not available #3507
+
 # 0.20.1 - 29 October, 2019
 
 ### New features:
