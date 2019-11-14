@@ -1058,12 +1058,13 @@ module.exports = function(knex) {
             return Promise.resolve();
           }
 
-          it('checks whether a column exists without being case sensitive, resolving with a boolean', function() {
-            return knex.schema
-              .hasColumn('accounts', 'FIRST_NAME')
-              .then(function(exists) {
-                expect(exists).to.equal(true);
-              });
+          it('checks whether a column exists without being case sensitive, resolving with a boolean', async () => {
+            const exists = await knex.schema.hasColumn(
+              'accounts',
+              'FIRST_NAME'
+            );
+
+            expect(exists).to.equal(true);
           });
         });
       });
