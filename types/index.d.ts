@@ -1622,7 +1622,7 @@ declare namespace Knex {
     nullable: boolean;
   }
 
-  interface Config {
+  interface Config<SV extends {} = any> {
     debug?: boolean;
     client?: string | typeof Client;
     dialect?: string;
@@ -1636,7 +1636,7 @@ declare namespace Knex {
       origImpl: (value: string) => string,
       queryContext: any
     ) => string;
-    seeds?: SeedsConfig;
+    seeds?: SeedsConfig<SV>;
     acquireConnectionTimeout?: number;
     useNullAsDefault?: boolean;
     searchPath?: string | string[];
@@ -1865,9 +1865,12 @@ declare namespace Knex {
     migrationSource?: any;
   }
 
-  interface SeedsConfig {
+  interface SeedsConfig<V extends {} = any> {
     directory?: string;
+    extension?: string;
+    loadExtensions?: string[];
     stub?: string;
+    variables?: V;
   }
 
   interface Migrator {
