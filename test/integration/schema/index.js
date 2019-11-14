@@ -1048,6 +1048,25 @@ module.exports = function(knex) {
               expect(exists).to.equal(true);
             });
         });
+
+        describe('sqlite only', function() {
+          if (
+            !knex ||
+            !knex.client ||
+            !/sqlite3/i.test(knex.client.driverName)
+          ) {
+            return Promise.resolve();
+          }
+
+          it('checks whether a column exists without being case sensitive, resolving with a boolean', async () => {
+            const exists = await knex.schema.hasColumn(
+              'accounts',
+              'FIRST_NAME'
+            );
+
+            expect(exists).to.equal(true);
+          });
+        });
       });
 
       describe('using processorss', function() {
