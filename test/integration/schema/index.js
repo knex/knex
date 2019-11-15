@@ -443,7 +443,13 @@ module.exports = function(knex) {
             }
             table.increments();
             table.integer('account_id');
-            table.text('details');
+            if (knex.client.driverName === 'oracledb') {
+              // use string instead to force varchar2 to avoid later problems with join and union
+              // e.g. where email (varchar2) = details (clob) does not work
+              table.string('details', 4000);
+            } else {
+              table.text('details');
+            }
             table.tinyint('status');
           })
           .testSql(function(tester) {
