@@ -1358,6 +1358,7 @@ declare namespace Knex {
   >
     extends QueryInterface<TRecord, TResult>,
       ChainableInterface<ResolveResult<TResult>> {
+    client: Client;
     or: QueryBuilder<TRecord, TResult>;
     not: QueryBuilder<TRecord, TResult>;
     and: QueryBuilder<TRecord, TResult>;
