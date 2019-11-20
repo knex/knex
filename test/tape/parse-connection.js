@@ -44,7 +44,7 @@ test('mysql connection protocol with query string params', function(t) {
       client: 'mysql',
       connection: {
         user: 'user',
-        user: 'pass',
+        password: 'pass',
         host: 'path.to.some-url',
         port: '3306',
         database: 'testdb',
