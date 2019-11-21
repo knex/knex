@@ -111,6 +111,19 @@ describe('OracleDb parameters', function() {
         });
     });
 
+    it('on blob', function() {
+      return knexClient
+        .raw(
+          'select TO_BLOB(\'67c1a1acaaca11a1b36fa6636166709b\') as "field" from dual'
+        )
+        .then(function(result) {
+          expect(result[0]).to.be.ok;
+          expect(result[0].field.toString('hex')).to.be.equal(
+            '67c1a1acaaca11a1b36fa6636166709b'
+          );
+        });
+    });
+
     after(function() {
       return knexClient.destroy();
     });
