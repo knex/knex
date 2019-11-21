@@ -1555,23 +1555,14 @@ declare namespace Knex {
     queryContext(context: any): TableBuilder;
   }
 
-  interface CreateTableBuilder extends TableBuilder {}
-
-  interface MySqlTableBuilder extends CreateTableBuilder {
+  interface CreateTableBuilder extends TableBuilder {
     engine(val: string): CreateTableBuilder;
     charset(val: string): CreateTableBuilder;
     collate(val: string): CreateTableBuilder;
-  }
-
-  interface PostgreSqlTableBuilder extends CreateTableBuilder {
     inherits(val: string): CreateTableBuilder;
   }
 
   interface AlterTableBuilder extends TableBuilder {}
-
-  interface MySqlAlterTableBuilder extends AlterTableBuilder {}
-
-  interface PostgreSqlAlterTableBuilder extends AlterTableBuilder {}
 
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;

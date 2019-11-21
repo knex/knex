@@ -364,7 +364,7 @@ module.exports = function(knex) {
       it('accepts the table name, and a "container" function', function() {
         return knex.schema
           .createTable('test_table_one', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) table.engine('InnoDB');
             table.comment('A table comment.');
             table.bigIncrements('id');
             table.string('first_name').index();
@@ -438,7 +438,9 @@ module.exports = function(knex) {
       it('is possible to set the db engine with the table.engine', function() {
         return knex.schema
           .createTable('test_table_two', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.engine('InnoDB');
+            }
             table.increments();
             table.integer('account_id');
             if (knex.client.driverName === 'oracledb') {
@@ -454,9 +456,6 @@ module.exports = function(knex) {
             tester('mysql', [
               'create table `test_table_two` (`id` int unsigned not null auto_increment primary key, `account_id` int, `details` text, `status` tinyint) default character set utf8 engine = InnoDB',
             ]);
-            tester('mssql', [
-              'CREATE TABLE [test_table_two] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)',
-            ]);
           });
       });
 
@@ -465,7 +464,9 @@ module.exports = function(knex) {
         const defaultDetails = { b: { d: 20 } };
         return knex.schema
           .createTable('test_table_three', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.engine('InnoDB');
+            }
             table
               .integer('main')
               .notNullable()
@@ -533,7 +534,9 @@ module.exports = function(knex) {
       it('handles numeric length correctly', function() {
         return knex.schema
           .createTable('test_table_numerics', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.engine('InnoDB');
+            }
             table.integer('integer_column', 5);
             table.tinyint('tinyint_column', 5);
             table.smallint('smallint_column', 5);
@@ -737,9 +740,11 @@ module.exports = function(knex) {
       it('is possible to set the table collation with table.charset and table.collate', function() {
         return knex.schema
           .createTable('charset_collate_test', function(table) {
-            table.charset('latin1');
-            table.collate('latin1_general_ci');
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.charset('latin1');
+              table.collate('latin1_general_ci');
+              table.engine('InnoDB');
+            }
             table.increments();
             table.integer('account_id');
             table.text('details');

@@ -739,30 +739,28 @@ describe('Redshift SchemaBuilder', function() {
     expect(sql[0].sql).to.equal('drop extension if exists "test"');
   });
 
-  it('table inherits another table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .createTable('inheriteeTable', function(t) {
-        t.string('username');
-        t.inherits('inheritedTable');
-      })
-      .toSQL();
-    expect(tableSql[0].sql).to.equal(
-      'create table "inheriteeTable" ("username" varchar(255)) like ("inheritedTable")'
-    );
+  it('does not support table inheritance', function() {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .createTable('inheriteeTable', function(t) {
+          t.string('username');
+          t.inherits('inheritedTable');
+        })
+        .toSQL();
+    }).to.throw('Knex only supports inherits statement with postgresql');
   });
 
-  it('should warn on disallowed method', function() {
-    tableSql = client
-      .schemaBuilder()
-      .createTable('users', function(t) {
-        t.string('username');
-        t.engine('myISAM');
-      })
-      .toSQL();
-    expect(tableSql[0].sql).to.equal(
-      'create table "users" ("username" varchar(255))'
-    );
+  it('should throw on usage of disallowed method', function() {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .createTable('users', function(t) {
+          t.string('username');
+          t.engine('myISAM');
+        })
+        .toSQL();
+    }).to.throw('Knex only supports engine statement with mysql');
   });
 
   it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
