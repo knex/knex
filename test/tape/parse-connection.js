@@ -36,6 +36,24 @@ test('parses standard connections without password', function(t) {
   );
 });
 
+test('mysql connection protocol with query string params', function(t) {
+  t.plan(1);
+  t.deepEqual(
+    parseConnection('mysql://user:pass@path.to.some-url:3306/testdb?foo=bar'),
+    {
+      client: 'mysql',
+      connection: {
+        user: 'user',
+        password: 'pass',
+        host: 'path.to.some-url',
+        port: '3306',
+        database: 'testdb',
+        foo: 'bar',
+      },
+    }
+  );
+});
+
 test('parses mssql connections, aliasing host to server', function(t) {
   t.plan(1);
   const mssql = {
@@ -50,6 +68,27 @@ test('parses mssql connections, aliasing host to server', function(t) {
   };
   t.deepEqual(
     parseConnection('mssql://username:pass@path.to.some-url:6000/testdb'),
+    mssql
+  );
+});
+
+test('parses mssql connections, aliasing host to server and adding extra params', function(t) {
+  t.plan(1);
+  const mssql = {
+    client: 'mssql',
+    connection: {
+      user: 'user',
+      password: 'pass',
+      server: 'path.to.some-url',
+      port: '6000',
+      database: 'testdb',
+      param: 'value',
+    },
+  };
+  t.deepEqual(
+    parseConnection(
+      'mssql://user:pass@path.to.some-url:6000/testdb?param=value'
+    ),
     mssql
   );
 });
