@@ -1325,4 +1325,12 @@ const main = async () => {
       extension: 'ts',
       directory: 'lib/seeds'
   });
+
+  // $ExpectType any[]
+  await knex('users', { only: true });
+
+  // $ExpectType any[]
+  await knex
+    .select('*')
+    .from('users', { only: true });
 };

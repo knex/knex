@@ -313,10 +313,17 @@ type Dict<T = any> = { [k: string]: T; };
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
+type TableOptions = PgTableOptions;
+
+interface PgTableOptions {
+  only?: boolean;
+}
+
 interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
-    tableName?: Knex.TableDescriptor | Knex.AliasDict
+    tableName?: Knex.TableDescriptor | Knex.AliasDict,
+    options?: TableOptions
   ): Knex.QueryBuilder<TRecord2, TResult2>;
   VERSION: string;
   __knex__: string;
@@ -863,19 +870,22 @@ declare namespace Knex {
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableDescriptor | AliasDict
+      tableName: TableDescriptor | AliasDict,
+      options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      callback: Function
+      callback: Function,
+      options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      raw: Raw
+      raw: Raw,
+      options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
   }
 
