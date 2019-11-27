@@ -1,5 +1,23 @@
 # Master (Unreleased)
 
+# 0.20.3 - 27 November, 2019
+
+### New features:
+
+- MSSQL, MySQL: Add connection string qs to connection params #3547
+
+### Bug fixes:
+
+- Oracle: Fix issue retrieving BLOB from database #3545
+- PostgreSQL: Timeout for postgresql use cancel instead of terminate #3518
+- Make sure CLI works for namespaced knex packages #2539
+
+### Typings:
+
+- Lift up dialect specific methods in the CreateTableBuilder #3532
+- Add client property to QueryBuilder type #3541
+- Support 'only' option #3551
+
 # 0.20.2 - 14 November, 2019
 
 ### New features:
