@@ -1330,6 +1330,7 @@ declare namespace Knex {
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
+    queryContext(): any;
   }
 
   interface RawBuilder<TRecord extends {} = any, TResult = any> {
@@ -1390,6 +1391,7 @@ declare namespace Knex {
     on(event: string, callback: Function): QueryBuilder<TRecord, TResult>;
 
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
+    queryContext(): any;
 
     clone(): QueryBuilder<TRecord, TResult>;
     timeout(ms: number, options?: {cancel?: boolean}): QueryBuilder<TRecord, TResult>;
