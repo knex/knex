@@ -1333,4 +1333,7 @@ const main = async () => {
   await knex
     .select('*')
     .from('users', { only: true });
+
+  // $ExpectType any
+  knex.queryBuilder().queryContext();
 };
