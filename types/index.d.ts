@@ -8,6 +8,7 @@
 
 /// <reference types="node" />
 
+import tarn = require('tarn');
 import events = require('events');
 import stream = require('stream');
 import ResultTypes = require('./result');
@@ -1928,6 +1929,49 @@ declare namespace Knex {
     acquireRawConnection(): Promise<any>;
     destroyRawConnection(connection: any): Promise<void>;
     validateConnection(connection: any): Promise<boolean>;
+    logger: Logger;
+    version?: string;
+    connectionConfigProvider: any;
+    connectionConfigExpirationChecker: null | (() => boolean);
+    valueForUndefined: any;
+    formatter(builder: any): any;
+    queryBuilder(): QueryBuilder;
+    queryCompiler(builder: any): any;
+    schemaBuilder(): SchemaBuilder;
+    schemaCompiler(builder: SchemaBuilder): any;
+    tableBuilder(type: any, tableName: any, fn: any): TableBuilder;
+    tableCompiler(tableBuilder: any): any;
+    columnBuilder(tableBuilder: any, type: any, args: any): ColumnBuilder;
+    columnCompiler(tableBuilder: any, columnBuilder: any): any;
+    runner(builder: any): any;
+    transaction(container: any, config: any, outerTx: any): Transaction;
+    raw(...args: any[]): any;
+    ref(...args: any[]): Ref<any, any>;
+    query(connection: any, obj: any): any;
+    stream(connection: any, obj: any, stream: any, options: any): any;
+    prepBindings(bindings: any): any;
+    positionBindings(sql: any): any;
+    postProcessResponse(resp: any, queryContext: any): any;
+    wrapIdentifier(value: any, queryContext: any): any;
+    customWrapIdentifier(value: any, origImpl: any, queryContext: any): any;
+    wrapIdentifierImpl(value: any): string;
+    initializeDriver(): void;
+    driver: any;
+    poolDefaults(): {
+        min: number;
+        max: number;
+        propagateCreateError: boolean;
+    };
+    getPoolSettings(poolConfig: any): any;
+    initializePool(config?: {}): void;
+    pool: tarn.Pool<any> | undefined;
+    acquireConnection(): any;
+    releaseConnection(connection: any): any;
+    destroy(callback: any): any;
+    database(): any;
+    canCancelQuery: boolean;
+    assertCanCancelQuery(): void;
+    cancelQuery(): void;
   }
 
   class QueryBuilder {
