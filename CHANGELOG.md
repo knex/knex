@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.20.4 - 08 December, 2019
+
+### Bug fixes:
+
+- Fix debug logger messing up queries with % #3566
+- Make logger methods mutually consistent #3567
+
+### Typings:
+
+- Add missing methods to client type #3565
+- Fix queryContext function defintion #3562
+- Fix QueryBuilder.extend this type #3526 #3528
+
+### Test / internal changes:
+
+- Remove bluebird.using #3552
+
 # 0.20.3 - 27 November, 2019
 
 ### New features:
