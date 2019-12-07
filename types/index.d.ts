@@ -1847,12 +1847,13 @@ declare namespace Knex {
     Promise?: any;
   }
 
-  type LogFn = (message: string) => void;
+  type LogFn = (message: any) => void;
 
   interface Logger {
     warn?: LogFn;
     error?: LogFn;
     debug?: LogFn;
+    inspectionDepth?: number;
     deprecate?: (method: string, alternative: string) => void;
   }
 
