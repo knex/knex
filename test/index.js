@@ -40,6 +40,11 @@ process.on('exit', (code) => {
   console.log('No unhandled exceptions');
 });
 
+describe('Util Tests', function() {
+  // Unit Tests for utilities.
+  require('./unit/query/string');
+});
+
 describe('Query Building Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
 
