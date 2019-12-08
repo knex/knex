@@ -1,6 +1,6 @@
 'use strict';
 
-const chai = require('chai');
+const { expect } = require('chai');
 const { escapeObject, arrayToList } = require('../../../lib/query/string');
 
 describe('String utility functions', () => {
