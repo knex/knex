@@ -1,7 +1,7 @@
 'use strict';
 
 const chai = require('chai');
-const { arrayToList } = require('../../../lib/query/string');
+const { escapeObject, arrayToList } = require('../../../lib/query/string');
 
 describe('String utility functions', () => {
   describe('arrayToList', () => {
@@ -31,7 +31,7 @@ describe('String utility functions', () => {
       expect(arrayToList(input, escapeQuotedFunc), output2);
     });
 
-    it('should convert a nested array to a string', () => {
+    it('should convert a nested array to string', () => {
       const input = [0, [1, 2], [3, 4], 5];
       const output1 = '0, (1, 2), (3, 4), 5';
       const output2 = "'0', ('1', '2'), ('3', '4'), '5'";
@@ -59,6 +59,33 @@ describe('String utility functions', () => {
       const output = '0, (1, 2, (3, 4, (5, 6, (7)))), 8';
 
       expect(arrayToList(input, escapeFunc), output);
+    });
+  });
+
+  describe('escapeObject', () => {
+    it("should use the `toSQL()` method on an object if it has it as it's member", () => {
+      const obj = {
+        value: 'foo',
+        toSQL: (ctx) => {
+          return this.value + ctx;
+        },
+      };
+      expect(escapeObject(obj, 'bar'), 'foobar');
+    });
+
+    it('should give a stringified (json friendly) value if any scalar value is provided', () => {
+      expect(escapeObject('foo'), '"foo"');
+      expect(escapeObject('"foobar"'), '"\\"foobar\\""');
+      expect(escapeObject("'foobar'"), `"'foobar'"`);
+      expect(escapeObject(0), '0');
+      expect(escapeObject(-5), '-5');
+      expect(escapeObject(null), 'null');
+      expect(escapeObject(true), 'true');
+      expect(escapeObject(false), 'false');
+    });
+
+    it('should return undefined if undefined is provided as an input', () => {
+      expect(escapeObject(undefined), undefined);
     });
   });
 });
