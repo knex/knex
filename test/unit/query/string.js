@@ -63,7 +63,7 @@ describe('String utility functions', () => {
   });
 
   describe('escapeObject', () => {
-    it("should use the `toSQL()` method on an object if it has it as it's member", () => {
+    it('should use the `toSQL()` method on an object if it has it as a member', () => {
       const obj = {
         value: 'foo',
         toSQL: (ctx) => {
