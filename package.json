@@ -117,7 +117,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tgriesser/knex.git"
+    "url": "git://github.com/knex/knex.git"
   },
   "homepage": "https://knexjs.org",
   "keywords": [

@@ -17,14 +17,14 @@ Node.js, featuring:
 - [connection pooling](http://knexjs.org/#Installation-pooling)
 - [streaming queries](http://knexjs.org/#Interfaces-Streams)
 - both a [promise](http://knexjs.org/#Interfaces-Promises) and [callback](http://knexjs.org/#Interfaces-Callbacks) API
-- a [thorough test suite](https://travis-ci.org/tgriesser/knex)
+- a [thorough test suite](https://travis-ci.org/knex/knex)
 - the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
 
 Node.js versions 8+ are supported.
 
 [Read the full documentation to get started!](http://knexjs.org)  
-[Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/tgriesser/knex/wiki/Recipes)  
-If upgrading from older version, see [Upgrading instructions](https://github.com/tgriesser/knex/blob/master/UPGRADING.md)
+[Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/knex/knex/wiki/Recipes)  
+If upgrading from older version, see [Upgrading instructions](https://github.com/knex/knex/blob/master/UPGRADING.md)
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
 
