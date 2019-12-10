@@ -763,7 +763,7 @@ module.exports = function(knex) {
         })
         .then(
           function() {
-            // No errors happen in sqlite3 or mysql, which dont have native support
+            // No errors happen in sqlite3 or mysql, which don't have native support
             // for the uuid type.
             if (
               knex.client.driverName === 'pg' ||

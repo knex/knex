@@ -26,7 +26,7 @@ Documentation pull requests should not be merged before knex version which has t
 
 Currently there are already way too many dialects supported in `knex` and instead of adding new dialect to central codebase, all the dialects should be moved to separate npm packages out from `knex` core library with their respective maintainers and test suites.
 
-So if you like to write your own dialect, you can just inherit own dialect from knex base classes and use it by passing dilaect to knex in knex configuration (https://runkit.com/embed/90b3cpyr4jh2):
+So if you like to write your own dialect, you can just inherit own dialect from knex base classes and use it by passing dialect to knex in knex configuration (https://runkit.com/embed/90b3cpyr4jh2):
 
 ```js
 // simple dialect overriding sqlite3 dialect to use sqlite3-offline driver
@@ -152,7 +152,7 @@ $ KNEX_TEST='./path/to/my/config.js' npm test
 
 ### Creating Postgres User
 
-If you are running tests agains own local database one might need to setup test user and databse for knex to connect.
+If you are running tests against own local database one might need to setup test user and database for knex to connect.
 
 To create a new user, login to Postgres and use the following queries to add the user. This assumes you've already created the `knex_test` database.
 

@@ -49,7 +49,7 @@ type UnionToIntersection<U> = (U extends any
   ? I
   : never;
 
-type ComparisionOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
+type ComparisonOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
 
 // If T is an array, get the type of member, else fall back to never
 type ArrayMember<T> = T extends (infer M)[] ? M : never;
@@ -97,7 +97,7 @@ type DeferredKeySelection<
   TKeys extends string,
   // Changes how the resolution should behave if TKeys is never.
   // If true, then we assume that some keys were selected, and if TKeys is never, we will fall back to any.
-  // If false, and TKeys is never, then we select TBase in its entirity
+  // If false, and TKeys is never, then we select TBase in its entirety
   THasSelect extends true | false = false,
   // Mapping of aliases <key in result> -> <key in TBase>
   TAliasMapping extends {} = {},
@@ -521,8 +521,8 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
-    countDistinct: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    count: AsymmetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    countDistinct: AsymmetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
     sum: TypePreservingAggregation<TRecord, TResult>;
@@ -1057,7 +1057,7 @@ declare namespace Knex {
 
     <T extends keyof TRecord>(
       columnName: T,
-      operator: ComparisionOperator,
+      operator: ComparisonOperator,
       value: TRecord[T] | null
     ): QueryBuilder<TRecord, TResult>;
     (columnName: string, operator: string, value: Value | null): QueryBuilder<
@@ -1067,7 +1067,7 @@ declare namespace Knex {
 
     <T extends keyof TRecord, TRecordInner, TResultInner>(
       columnName: T,
-      operator: ComparisionOperator,
+      operator: ComparisonOperator,
       value: QueryBuilder<TRecordInner, TResultInner>
     ): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
@@ -1151,11 +1151,11 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
   }
 
-  // Note: Attempting to unify AssymetricAggregation & TypePreservingAggregation
+  // Note: Attempting to unify AsymmetricAggregation & TypePreservingAggregation
   // by extracting out a common base interface will not work because order of overloads
   // is significant.
 
-  interface AssymetricAggregation<TRecord = any, TResult = unknown[], TValue = any> {
+  interface AsymmetricAggregation<TRecord = any, TResult = unknown[], TValue = any> {
     <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
       ...columnNames: (keyof TRecord)[]
     ): QueryBuilder<TRecord, TResult2>;
@@ -1232,7 +1232,7 @@ declare namespace Knex {
     <K1 extends keyof TRecord, K2 extends keyof TRecord>(
       tableName: string,
       column1: K1,
-      operator: ComparisionOperator,
+      operator: ComparisonOperator,
       column2: K2
     ): QueryBuilder<TRecord, TResult>;
     (
