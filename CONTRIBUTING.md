@@ -3,18 +3,18 @@
 - Make changes in the `/lib` directory. 
 
 - Before sending a pull request for a feature or bug fix, be sure to have
-  [tests](https://github.com/tgriesser/knex/tree/master/test). Every pull request that changes the queries should have
+  [tests](https://github.com/knex/knex/tree/master/test). Every pull request that changes the queries should have
   also **integration tests which are ran against real database** (in addition to unit tests which checks which kind of queries
   are being created).
 
 - Use the same coding style as the rest of the
-  [codebase](https://github.com/tgriesser/knex/blob/master/knex.js).
+  [codebase](https://github.com/knex/knex/blob/master/knex.js).
 
 - All pull requests should be made to the `master` branch.
 
 - Pull request description should have link to corresponding PR of documentation branch.
 
-- All pull requests that modify the public API should be updated in [types/index.d.ts](https://github.com/tgriesser/knex/blob/master/types/index.d.ts)
+- All pull requests that modify the public API should be updated in [types/index.d.ts](https://github.com/knex/knex/blob/master/types/index.d.ts)
 
 ## Documentation
 
@@ -144,7 +144,7 @@ $ DB='postgres mysql' npm test
 
 ### Custom Configuration
 
-If you'd like to override the database configuration (to use a different host, for example), you can override the path to the [default test configuration](https://github.com/tgriesser/knex/blob/master/test/knexfile.js) using the `KNEX_TEST` environment variable.
+If you'd like to override the database configuration (to use a different host, for example), you can override the path to the [default test configuration](https://github.com/knex/knex/blob/master/test/knexfile.js) using the `KNEX_TEST` environment variable.
 
 ```bash
 $ KNEX_TEST='./path/to/my/config.js' npm test
