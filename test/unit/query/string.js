@@ -92,4 +92,45 @@ describe('String utility functions', () => {
       expect(escapeObject(undefined)).to.equal(undefined);
     });
   });
+
+  describe('escapeString', () => {
+    it('should return a quoted string for a regular string', () => {
+      expect(escapeString('Foo Bar')).to.equal("'Foo Bar'");
+    });
+
+    it('should return a quoted empty string for an empty string', () => {
+      expect(escapeString('')).to.equal("''");
+    });
+
+    it('should escape a string with quotes', () => {
+      expect(escapeString('foo = "bar"')).to.equal('\'foo = \\"bar\\"\'');
+      expect(escapeString("foo = 'bar'")).to.equal("'foo = \\'bar\\''");
+    });
+
+    it('should escape a encoded json string', () => {
+      const input = '{"foo": "bar"}';
+      const output = '\'{\\"foo\\": \\"bar\\"}\'';
+
+      expect(escapeString(input)).to.equal(output);
+    });
+
+    it('should escape strings with newline or other whitespace characters', () => {
+      const input1 = `
+      Foo Bar
+      `;
+      const output1 = "'\\n      Foo Bar\\n      '";
+      const input2 =
+        String.fromCharCode(13) +
+        String.fromCharCode(10) +
+        'Foo' +
+        String.fromCharCode(9) +
+        String.fromCharCode(9) +
+        'Bar' +
+        String.fromCharCode(13) +
+        String.fromCharCode(10);
+      const output2 = "'" + '\\r\\nFoo\\t\\tBar\\r\\n' + "'";
+      expect(escapeString(input1)).to.equal(output1);
+      expect(escapeString(input2)).to.equal(output2);
+    });
+  });
 });
