@@ -1854,6 +1854,7 @@ declare namespace Knex {
     error?: LogFn;
     debug?: LogFn;
     inspectionDepth?: number;
+    enableColors?: boolean;
     deprecate?: (method: string, alternative: string) => void;
   }
 
