@@ -3839,6 +3839,22 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('raw', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .whereRaw('1 = ?', [1])
+        .raw('FOR SYSTEM_TIME AS OF ?', ['12/24/2019']),
+      {
+        pg: {
+          sql: 'select * from "users" where 1 = ? FOR SYSTEM_TIME AS OF ?',
+          bindings: [1, '12/24/2019'],
+        },
+      }
+    );
+  });
+
   it('limits', () => {
     testsql(
       qb()
