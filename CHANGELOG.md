@@ -1,5 +1,20 @@
 # Master (Unreleased)
 
+# 0.20.5 - 29 December, 2019
+
+### New features:
+
+- Return more information about empty updates #3597
+
+### Bug fixes:
+
+- Fix colors in debug logs #3592
+
+### Test / internal changes:
+
+- Use more efficient algorithm for generating internal ids #3595 #3596
+- Use Buffer.alloc() instead of deprecated constructor #3574
+
 # 0.20.4 - 08 December, 2019
 
 ### Bug fixes:
