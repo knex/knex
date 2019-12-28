@@ -1,7 +1,7 @@
-/*global expect*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
+const { expect } = require('chai');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const PG_Client = require('../../../lib/dialects/postgres');
 const Redshift_Client = require('../../../lib/dialects/redshift');
@@ -9546,12 +9546,12 @@ describe('QueryBuilder', () => {
     try {
       qb()
         .table('sometable')
-        .update({ column: undefined })
+        .update({ foobar: undefined })
         .toString();
       throw new Error('Should not reach this point');
     } catch (error) {
       expect(error.message).to.equal(
-        'Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query.'
+        'Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query. Table: sometable. Columns: foobar.'
       );
     }
   });
