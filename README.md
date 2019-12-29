@@ -41,7 +41,7 @@ We have several examples [on the website](http://knexjs.org). Here is the first 
 
 ```js
 const knex = require('knex')({
-  dialect: 'sqlite3',
+  client: 'sqlite3',
   connection: {
     filename: './data.db',
   },
