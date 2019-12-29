@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.20.6 - 29 December, 2019
+
+### Bug fixes:
+
+- Enforce Unix (lf) line terminators #3598
+
 # 0.20.5 - 29 December, 2019
 
 ### New features:

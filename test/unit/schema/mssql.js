@@ -11,12 +11,15 @@ describe('MSSQL SchemaBuilder', function() {
 
   it('throws when charset and collate are specified', function() {
     expect(() => {
-      tableSql = client.schemaBuilder().createTable('users', function(table) {
-        table.increments('id');
-        table.string('email');
-        table.charset('utf8');
-        table.collate('utf8_unicode_ci');
-      }).toSQL();
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function(table) {
+          table.increments('id');
+          table.string('email');
+          table.charset('utf8');
+          table.collate('utf8_unicode_ci');
+        })
+        .toSQL();
     }).to.throw('Knex only supports charset statement with mysql');
   });
 
