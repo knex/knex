@@ -31,6 +31,8 @@ describe('Seeder.loadExtensions', function() {
         'litcoffee-seed.litcoffee': 'litcoffee seed content',
         'ls-seed.ls': 'ls seed content',
         'ts-seed.ts': 'ts seed content',
+        'mjs-seed.mjs': 'mjs seed content',
+        'cjs-seed.cjs': 'cjs seed content',
         'useless.txt': 'i am not a seed',
       },
     });

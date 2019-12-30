@@ -23,13 +23,14 @@ const {
 } = require('./utils/cli-config-utils');
 
 const { listMigrations } = require('./utils/migrationsLister');
+const { requireFile } = require('../lib/util/require-interop');
 
 const fsPromised = {
   readFile: promisify(fs.readFile),
   writeFile: promisify(fs.writeFile),
 };
 
-function initKnex(env, opts) {
+async function initKnex(env, opts) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -42,7 +43,7 @@ function initKnex(env, opts) {
   if (!opts.knexfile) {
     const configurationPath = resolveKnexFilePath();
     const configuration = configurationPath
-      ? require(configurationPath.path)
+      ? (await requireFile(configurationPath.path))
       : undefined;
 
     env.configuration = configuration || mkConfigObj(opts);
@@ -55,7 +56,7 @@ function initKnex(env, opts) {
     const resolvedKnexfilePath = path.resolve(opts.knexfile);
     const knexfileDir = path.dirname(resolvedKnexfilePath);
     process.chdir(knexfileDir);
-    env.configuration = require(resolvedKnexfilePath);
+    env.configuration = await requireFile(resolvedKnexfilePath);
 
     if (!env.configuration) {
       exit(
@@ -91,6 +92,10 @@ function invoke(env) {
     color.green(env.modulePackage.version || 'None'),
   ].join(' ');
 
+  const trackPending = (fn) => (...args) => {
+    pending = fn(...args);
+  }
+
   commander
     .version(`${cliVersion}\n${localVersion}`)
     .option('--debug', 'Run with debugging.')
@@ -119,7 +124,7 @@ function invoke(env) {
       `-x [${filetypes.join('|')}]`,
       'Specify the knexfile extension (default js)'
     )
-    .action(() => {
+    .action(trackPending(async () => {
       const type = (argv.x || 'js').toLowerCase();
       if (filetypes.indexOf(type) === -1) {
         exit(`Invalid filetype specified: ${type}`);
@@ -129,21 +134,15 @@ function invoke(env) {
       }
       checkLocalModule(env);
       const stubPath = `./knexfile.${type}`;
-      pending = fsPromised
-        .readFile(
+      const code = await fsPromised.readFile(
           path.dirname(env.modulePath) +
             '/lib/migrate/stub/knexfile-' +
             type +
             '.stub'
-        )
-        .then((code) => {
-          return fsPromised.writeFile(stubPath, code);
-        })
-        .then(() => {
-          success(color.green(`Created ${stubPath}`));
-        })
-        .catch(exit);
-    });
+      );
+      await fsPromised.writeFile(stubPath, code);
+      success(color.green(`Created ${stubPath}`));
+    }));
 
   commander
     .command('migrate:make <name>')
@@ -156,10 +155,10 @@ function invoke(env) {
       `--stub [<relative/path/from/knexfile>|<name>]`,
       'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
     )
-    .action((name) => {
+    .action(trackPending(async (name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
-      const instance = initKnex(env, opts);
+      const instance = await initKnex(env, opts);
       const ext = getMigrationExtension(env, opts);
       const configOverrides = { extension: ext };
 
@@ -168,128 +167,105 @@ function invoke(env) {
         configOverrides.stub = stub;
       }
 
-      pending = instance.migrate
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created Migration: ${name}`));
-        })
-        .catch(exit);
-    });
+      name = await instance.migrate.make(name, configOverrides)
+      success(color.green(`Created Migration: ${name}`));
+    }));
 
   commander
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
     .option('--verbose', 'verbose')
-    .action(() => {
-      pending = initKnex(env, commander.opts())
-        .migrate.latest()
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already up to date'));
-          }
-          success(
-            color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
-              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
-          );
-        })
-        .catch(exit);
-    });
+    .action(trackPending(async () => {
+      const instance = await initKnex(env, commander.opts());
+      const [batchNo, log] = await instance.migrate.latest()
+      if (log.length === 0) {
+        success(color.cyan('Already up to date'));
+      }
+      success(
+        color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
+          (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
+      );
+    }));
 
   commander
     .command('migrate:up [<name>]')
     .description(
       '        Run the next or the specified migration that has not yet been run.'
     )
-    .action((name) => {
-      pending = initKnex(env, commander.opts())
-        .migrate.up({ name })
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already up to date'));
-          }
-
-          success(
-            color.green(
-              `Batch ${batchNo} ran the following migrations:\n${log.join(
-                '\n'
-              )}`
-            )
-          );
-        })
-        .catch(exit);
-    });
+    .action(trackPending(async (name) => {
+      const instance = await initKnex(env, commander.opts());
+      const [batchNo, log] = await instance.migrate.up({ name })
+      if (log.length === 0) {
+        success(color.cyan('Already up to date'));
+      }
+      success(
+        color.green(
+          `Batch ${batchNo} ran the following migrations:\n${log.join(
+            '\n'
+          )}`
+        )
+      );
+    }));
 
   commander
     .command('migrate:rollback')
     .description('        Rollback the last batch of migrations performed.')
     .option('--all', 'rollback all completed migrations')
     .option('--verbose', 'verbose')
-    .action((cmd) => {
+    .action(trackPending(async (cmd) => {
       const { all } = cmd;
-
-      pending = initKnex(env, commander.opts())
-        .migrate.rollback(null, all)
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already at the base migration'));
-          }
-          success(
-            color.green(
-              `Batch ${batchNo} rolled back: ${log.length} migrations`
-            ) + (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
-          );
-        })
-        .catch(exit);
-    });
+      const instance = await initKnex(env, commander.opts());
+      const [batchNo, log] = await instance.migrate.rollback(null, all);
+      if (log.length === 0) {
+        success(color.cyan('Already at the base migration'));
+      }
+      success(
+        color.green(
+          `Batch ${batchNo} rolled back: ${log.length} migrations`
+        ) + (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
+      );
+    }));
 
   commander
     .command('migrate:down [<name>]')
     .description(
       '        Undo the last or the specified migration that was already run.'
     )
-    .action((name) => {
-      pending = initKnex(env, commander.opts())
-        .migrate.down({ name })
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already at the base migration'));
-          }
+    .action(trackPending(async (name) => {
+      const instance = await initKnex(env, commander.opts());
+      const [batchNo, log] = await instance.migrate.down({ name })
 
-          success(
-            color.green(
-              `Batch ${batchNo} rolled back the following migrations:\n${log.join(
-                '\n'
-              )}`
-            )
-          );
-        })
-        .catch(exit);
-    });
+      if (log.length === 0) {
+        success(color.cyan('Already at the base migration'));
+      }
+
+      success(
+        color.green(
+          `Batch ${batchNo} rolled back the following migrations:\n${log.join(
+            '\n'
+          )}`
+        )
+      );
+    }));
 
   commander
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
-    .action(() => {
-      pending = initKnex(env, commander.opts())
-        .migrate.currentVersion()
-        .then((version) => {
-          success(color.green('Current Version: ') + color.blue(version));
-        })
-        .catch(exit);
-    });
+    .action(trackPending(async () => {
+      const instance = await initKnex(env, commander.opts());
+      const version = await instance.migrate.currentVersion()
+      success(color.green('Current Version: ') + color.blue(version));
+    }));
 
   commander
     .command('migrate:list')
     .alias('migrate:status')
     .description('        List all migrations files with status.')
-    .action(() => {
-      pending = initKnex(env, commander.opts())
-        .migrate.list()
-        .then(([completed, newMigrations]) => {
-          listMigrations(completed, newMigrations);
-        })
-        .catch(exit);
-    });
+    .action(trackPending(async () => {
+      const instance = await initKnex(env, commander.opts());
+      const [completed, newMigrations] = await instance.migrate.list()
+      listMigrations(completed, newMigrations);
+    }));
 
   commander
     .command('seed:make <name>')
@@ -302,51 +278,43 @@ function invoke(env) {
       `--stub [<relative/path/from/knexfile>|<name>]`,
       'Specify the seed stub to use. If using <name> the file must be located in config.seeds.directory'
     )
-    .action((name) => {
+    .action(trackPending(async (name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
-      const instance = initKnex(env, opts);
+      const instance = await initKnex(env, opts);
       const ext = getSeedExtension(env, opts);
       const configOverrides = { extension: ext };
       const stub = getStubPath('seeds', env, opts);
       if (stub) {
         configOverrides.stub = stub;
       }
-
-      pending = instance.seed
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created seed file: ${name}`));
-        })
-        .catch(exit);
-    });
+      name = await instance.seed.make(name, configOverrides);
+      success(color.green(`Created seed file: ${name}`));
+    }));
 
   commander
     .command('seed:run')
     .description('        Run seed files.')
     .option('--verbose', 'verbose')
     .option('--specific', 'run specific seed file')
-    .action(() => {
-      pending = initKnex(env, commander.opts())
-        .seed.run({ specific: argv.specific })
-        .then(([log]) => {
-          if (log.length === 0) {
-            success(color.cyan('No seed files exist'));
-          }
-          success(
-            color.green(`Ran ${log.length} seed files`) +
-              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
-          );
-        })
-        .catch(exit);
-    });
+    .action(trackPending(async () => {
+      const instance = await initKnex(env, commander.opts());
+      const [log] = await instance.seed.run({ specific: argv.specific })
+      if (log.length === 0) {
+        success(color.cyan('No seed files exist'));
+      }
+      success(
+        color.green(`Ran ${log.length} seed files`) +
+          (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
+      );
+    }));
 
   commander.parse(process.argv);
 
   Promise.resolve(pending).then(() => {
     commander.outputHelp();
     exit('Unknown command-line options, exiting');
-  });
+  }).catch(exit);
 }
 
 const cli = new Liftoff({

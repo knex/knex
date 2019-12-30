@@ -23,6 +23,8 @@ describe('migration-list-resolver', () => {
           'litcoffee-migration.litcoffee': 'litcoffee migation content',
           'ls-migration.ls': 'ls migation content',
           'ts-migration.ts': 'ts migation content',
+          'cjs-migration.cjs': 'commonjs migration content',
+          'mjs-migration.mjs': 'esm migration content',
           'useless.txt': 'i am not a migration',
         },
       });

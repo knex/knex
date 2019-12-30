@@ -46,7 +46,7 @@ function test(description, func) {
 }
 
 /* * * TESTS * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
+/*
 test('Create a migration file', (temp) =>
   assertExec(`${KNEX} migrate:make \
                --client=sqlite3 \
@@ -731,6 +731,79 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
   assert.include(
     migrationsList2Result.stdout,
     `No Pending Migration files Found.`
+  );
+});
+*/
+
+test('migrate cli handles ESM modules when type is specified as module', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile = '001_one.js';
+  const migrationData = `
+      export const up = () => Promise.resolve();
+      export const down = () => Promise.resolve();
+    `;
+  fs.writeFileSync(`${temp}/package.json`, JSON.stringify({type: 'module'}));
+  fs.writeFileSync(`${migrationsPath}/${migrationFile}`, migrationData);
+
+  const { stdout, stderr } = await assertExec(
+    `node ${KNEX} migrate:latest \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+  );
+  console.log({stdout, stderr});
+  assert.include(
+    stdout,
+    `Batch 1 ran the following migrations:\n${migrationFile}`
+  );
+});
+
+test('migrate cli handles ESM modules when mjs extension is specified', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile = '001_one.mjs';
+  const migrationData = `
+      export const up = () => Promise.resolve();
+      export const down = () => Promise.resolve();
+    `;
+  fs.writeFileSync(`${migrationsPath}/${migrationFile}`, migrationData);
+
+  const { stdout } = await assertExec(
+    `node ${KNEX} migrate:latest \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+  );
+  assert.include(
+    stdout,
+    `Batch 1 ran the following migrations:\n${migrationFile}`
+  );
+});
+
+test('migrate cli handles cjs modules when type is specified as module', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFiles = ['001.mjs', '002.cjs', '003.js'];
+  const cjsMigrationData = `
+      exports.up = () => Promise.resolve();
+      export.down = () => Promise.resolve();
+    `;
+  const mjsMigrationData = `
+      export const up = () => Promise.resolve();
+      export const down = () => Promise.resolve();
+    `;
+  fs.writeFileSync(`${temp}/package.json`, JSON.stringify({type: 'module'}));
+  fs.writeFileSync(`${migrationsPath}/${migrationFiles[0]}`, mjsMigrationData);
+  fs.writeFileSync(`${migrationsPath}/${migrationFiles[1]}`, cjsMigrationData);
+  fs.writeFileSync(`${migrationsPath}/${migrationFiles[2]}`, mjsMigrationData);
+
+  const { stdout } = await assertExec(
+    `node ${KNEX} migrate:latest \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+  );
+  assert.include(
+    stdout,
+    `Batch 1 ran the following migrations:\n${migrationFile[0]}\n${migrationFile[1]}\n${migrationFile[2]}`
   );
 });
 
