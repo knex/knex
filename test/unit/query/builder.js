@@ -198,7 +198,10 @@ describe('Custom identifier wrapping', () => {
       qb()
         .from('users')
         .insert(
-          [{ email: 'foo', name: 'taylor' }, { email: 'bar', name: 'dayle' }],
+          [
+            { email: 'foo', name: 'taylor' },
+            { email: 'bar', name: 'dayle' },
+          ],
           'id'
         ),
       {
@@ -253,7 +256,10 @@ describe('Custom identifier wrapping', () => {
       qb()
         .from('users')
         .insert(
-          [{ email: 'foo', name: 'taylor' }, { email: 'bar', name: 'dayle' }],
+          [
+            { email: 'foo', name: 'taylor' },
+            { email: 'bar', name: 'dayle' },
+          ],
           ['id', 'name']
         ),
       {
@@ -1425,7 +1431,14 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .whereIn(['a', 'b'], [[1, 2], [3, 4], [5, 6]]),
+        .whereIn(
+          ['a', 'b'],
+          [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+          ]
+        ),
       {
         mysql: {
           sql:
@@ -5900,7 +5913,10 @@ describe('QueryBuilder', () => {
       qb()
         .from('users')
         .insert(
-          [{ email: 'foo', name: 'taylor' }, { email: 'bar', name: 'dayle' }],
+          [
+            { email: 'foo', name: 'taylor' },
+            { email: 'bar', name: 'dayle' },
+          ],
           'id'
         ),
       {
@@ -5952,7 +5968,10 @@ describe('QueryBuilder', () => {
       qb()
         .from('users')
         .insert(
-          [{ email: 'foo', name: 'taylor' }, { email: 'bar', name: 'dayle' }],
+          [
+            { email: 'foo', name: 'taylor' },
+            { email: 'bar', name: 'dayle' },
+          ],
           ['id', 'name']
         ),
       {
@@ -8160,6 +8179,37 @@ describe('QueryBuilder', () => {
           sql:
             'insert into "entries" ("secret", "sequence") values (?, (select count(*) from "entries" where "secret" = ?))',
           bindings: [123, 123],
+        },
+      }
+    );
+  });
+
+  it('should always wrap subquery with parenthesis', () => {
+    const subquery = qb().select(raw('?', ['inner raw select']), 'bar');
+    testsql(
+      qb()
+        .select(raw('?', ['outer raw select']))
+        .from(subquery),
+      {
+        mysql: {
+          sql: 'select ? from (select ?, `bar`)',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        mssql: {
+          sql: 'select ? from (select ?, [bar])',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        oracledb: {
+          sql: 'select ? from (select ?, "bar")',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        pg: {
+          sql: 'select ? from (select ?, "bar")',
+          bindings: ['outer raw select', 'inner raw select'],
+        },
+        'pg-redshift': {
+          sql: 'select ? from (select ?, "bar")',
+          bindings: ['outer raw select', 'inner raw select'],
         },
       }
     );

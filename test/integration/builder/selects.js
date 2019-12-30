@@ -825,7 +825,13 @@ module.exports = function(knex) {
     it('handles multi-column "where in" cases', function() {
       if (knex.client.driverName !== 'mssql') {
         return knex('composite_key_test')
-          .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .whereIn(
+            ['column_a', 'column_b'],
+            [
+              [1, 1],
+              [1, 2],
+            ]
+          )
           .orderBy('status', 'desc')
           .select()
           .testSql(function(tester) {
@@ -935,7 +941,13 @@ module.exports = function(knex) {
       ) {
         return knex('composite_key_test')
           .where('status', 1)
-          .whereIn(['column_a', 'column_b'], [[1, 1], [1, 2]])
+          .whereIn(
+            ['column_a', 'column_b'],
+            [
+              [1, 1],
+              [1, 2],
+            ]
+          )
           .select()
           .testSql(function(tester) {
             tester(
@@ -1380,6 +1392,39 @@ module.exports = function(knex) {
             throw err;
         }
       }
+    });
+
+    it('select from subquery', async function() {
+      const subquery = knex.from('accounts').whereBetween('id', [3, 5]);
+      return knex
+        .pluck('id')
+        .orderBy('id')
+        .from(subquery)
+        .then(
+          (rows) => {
+            expect(rows).to.deep.equal([3, 4, 5]);
+            expect(knex.client.driverName).to.oneOf(['sqlite3', 'oracledb']);
+          },
+          (e) => {
+            switch (knex.client.driverName) {
+              case 'mysql':
+              case 'mysql2':
+                expect(e.errno).to.equal(1248);
+                break;
+              case 'pg':
+                expect(e.message).to.contain('must have an alias');
+                break;
+
+              case 'mssql':
+                expect(e.message).to.contain(
+                  "Incorrect syntax near the keyword 'order'"
+                );
+                break;
+              default:
+                throw e;
+            }
+          }
+        );
     });
   });
 };

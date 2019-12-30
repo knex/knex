@@ -1734,16 +1734,7 @@ declare namespace Knex {
     client?: string | typeof Client;
     dialect?: string;
     version?: string;
-    connection?:
-      | string
-      | ConnectionConfig
-      | MariaSqlConnectionConfig
-      | MySqlConnectionConfig
-      | MsSqlConnectionConfig
-      | MsSqlAzureActiveDirectoryAccesstokenAuthenticationConfig
-      | OracleDbConnectionConfig
-      | Sqlite3ConnectionConfig
-      | SocketConnectionConfig;
+    connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
@@ -1759,6 +1750,24 @@ declare namespace Knex {
     asyncStackTraces?: boolean;
     log?: Logger;
   }
+
+  type StaticConnectionConfig =
+    | ConnectionConfig
+    | MariaSqlConnectionConfig
+    | MySqlConnectionConfig
+    | MsSqlConnectionConfig
+    | MsSqlAzureActiveDirectoryAccesstokenAuthenticationConfig
+    | OracleDbConnectionConfig
+    | PgConnectionConfig
+    | RedshiftConnectionConfig
+    | Sqlite3ConnectionConfig
+    | SocketConnectionConfig;
+
+  type ConnectionConfigProvider =
+    | SyncConnectionConfigProvider
+    | AsyncConnectionConfigProvider;
+  type SyncConnectionConfigProvider = () => StaticConnectionConfig;
+  type AsyncConnectionConfigProvider = () => Promise<StaticConnectionConfig>;
 
   interface ConnectionConfig {
     host: string;
@@ -1786,7 +1795,6 @@ declare namespace Knex {
 
     user?: string;
     password?: string;
-    server: string;
     port?: number;
     domain?: string;
     database: string;
@@ -1798,6 +1806,8 @@ declare namespace Knex {
     clientSecret?: string;
     tenantId?: string;
     msiEndpoint?: string;
+    parseJSON?: boolean;
+    expirationChecker?(): boolean;
     options?: {
       encrypt?: boolean;
       instanceName?: string;
@@ -1851,6 +1861,7 @@ declare namespace Knex {
     read_default_group?: string;
     charset?: string;
     streamHWM?: number;
+    expirationChecker?(): boolean;
   }
 
   interface MariaSslConfiguration {
@@ -1860,6 +1871,7 @@ declare namespace Knex {
     capath?: string;
     cipher?: string;
     rejectUnauthorized?: boolean;
+    expirationChecker?(): boolean;
   }
 
   // Config object for mysql: https://github.com/mysqljs/mysql#connection-options
@@ -1887,6 +1899,7 @@ declare namespace Knex {
     flags?: string;
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface OracleDbConnectionConfig {
@@ -1899,12 +1912,31 @@ declare namespace Knex {
     debug?: boolean;
     requestTimeout?: number;
     connectString?: string;
+    expirationChecker?(): boolean;
   }
+
+  // Config object for pg: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pg/index.d.ts
+  interface PgConnectionConfig {
+    user?: string;
+    database?: string;
+    password?: string;
+    port?: number;
+    host?: string;
+    connectionString?: string;
+    keepAlive?: boolean;
+    stream?: stream.Duplex;
+    statement_timeout?: false | number;
+    connectionTimeoutMillis?: number;
+    keepAliveInitialDelayMillis?: number;
+  }
+
+  type RedshiftConnectionConfig = PgConnectionConfig;
 
   /** Used with SQLite3 adapter */
   interface Sqlite3ConnectionConfig {
     filename: string;
     debug?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface SocketConnectionConfig {
@@ -1913,6 +1945,7 @@ declare namespace Knex {
     password: string;
     database: string;
     debug?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface PoolConfig {
