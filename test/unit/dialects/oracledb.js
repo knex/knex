@@ -126,3 +126,42 @@ describe('OracleDb parameters', function() {
     });
   });
 });
+
+describe('OracleDb unit tests', function() {
+  let knexClient;
+
+  before(function() {
+    const conf = _.clone(config.oracledb);
+    conf.fetchAsString = ['number', 'DATE', 'cLOb'];
+    knexClient = knex(conf);
+    return knexClient;
+  });
+
+  it('clears the connection from the pool on disconnect during commit', async function() {
+    const err = 'error message';
+    const spy = sinon.spy(knexClient.client, 'releaseConnection');
+    // call the real acquireConnection but ensure commitAsync fails simulating a disconnect
+    const acquireConnection = knexClient.client.acquireConnection;
+    sinon.stub(knexClient.client, 'acquireConnection').callsFake(async () => {
+      const conn = await acquireConnection.call(knexClient.client);
+      conn.commitAsync = () => Promise.reject(err);
+      return conn;
+    });
+
+    let exception;
+    try {
+      await knexClient.transaction(async (trx) => {
+        await trx('DUAL').select('*');
+      });
+    } catch (e) {
+      exception = e;
+    }
+
+    expect(spy.callCount).to.equal(1);
+    expect(exception).to.equal(err);
+  });
+
+  after(function() {
+    return knexClient.destroy();
+  });
+});
