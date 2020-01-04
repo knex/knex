@@ -341,12 +341,11 @@ function invoke(env) {
         .catch(exit);
     });
 
-  commander.parse(process.argv);
-
-  Promise.resolve(pending).then(() => {
+  if (!commander._args.length) {
     commander.outputHelp();
-    exit('Unknown command-line options, exiting');
-  });
+  }
+
+  commander.parse(process.argv);
 }
 
 const cli = new Liftoff({
