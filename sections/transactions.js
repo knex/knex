@@ -82,6 +82,75 @@ export default [
   },
   {
     type: "text",
+    content: "Same example as above using await/async:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      try {
+        await knex.transaction(async trx => {
+    
+          const books = [
+            {title: 'Canterbury Tales'},
+            {title: 'Moby Dick'},
+            {title: 'Hamlet'}
+          ];
+          
+          const ids = await trx('catalogues')
+            .insert({
+              name: 'Old Books'
+            }, 'id')
+
+          books.forEach((book) => book.catalogue_id = ids[0])
+          const inserts = await trx('books').insert(books)
+          
+          console.log(inserts.length + ' new books saved.')
+        })
+      } catch (error) {
+        // If we get here, that means that neither the 'Old Books' catalogues insert,
+        // nor any of the books inserts will have taken place.
+        console.error(error);
+      }
+    `
+  },
+  {
+    type: "text",
+    content: "Same example as above using another await/async approach:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      try {
+        await knex.transaction(async trx => {
+  
+          const books = [
+            {title: 'Canterbury Tales'},
+            {title: 'Moby Dick'},
+            {title: 'Hamlet'}
+          ];
+  
+          const ids = await knex('catalogues')
+            .insert({
+              name: 'Old Books'
+            }, 'id')
+            .transacting(trx)
+  
+          books.forEach(book => book.catalogue_id = ids[0])
+          await knex('books')
+            .insert(books)
+            .transacting(trx)
+
+          console.log(inserts.length + ' new books saved.')
+        })
+      } catch (error) {
+        console.error(error);
+      }
+    `
+  },
+  {
+    type: "text",
     content: [
       "Throwing an error directly from the transaction handler function automatically rolls back the transaction, same as returning a rejected promise.",
       "Notice that if a promise is not returned within the handler, it is up to you to ensure `trx.commit`, or `trx.rollback` are called, otherwise the transaction connection will hang.",
