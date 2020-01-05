@@ -30,6 +30,13 @@ const fsPromised = {
 };
 
 function initKnex(env, opts) {
+
+  env.configuration = (
+    (env.configPath)
+      ? require(env.configPath)
+      : mkConfigObj(opts)
+  );
+
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -39,36 +46,36 @@ function initKnex(env, opts) {
     );
   }
 
-  if (!opts.knexfile) {
-    const configurationPath = resolveKnexFilePath();
-    const configuration = configurationPath
-      ? require(configurationPath.path)
-      : undefined;
+  // if (!opts.knexfile) {
+  //   const configurationPath = resolveKnexFilePath();
+  //   const configuration = configurationPath
+  //     ? require(configurationPath.path)
+  //     : undefined;
 
-    env.configuration = configuration || mkConfigObj(opts);
-    if (!env.configuration.ext && configurationPath) {
-      env.configuration.ext = configurationPath.extension;
-    }
-  }
-  // If knexfile is specified
-  else {
-    const resolvedKnexfilePath = path.resolve(opts.knexfile);
-    const knexfileDir = path.dirname(resolvedKnexfilePath);
-    process.chdir(knexfileDir);
-    env.configuration = require(resolvedKnexfilePath);
+  //   env.configuration = configuration || mkConfigObj(opts);
+  //   if (!env.configuration.ext && configurationPath) {
+  //     env.configuration.ext = configurationPath.extension;
+  //   }
+  // }
+  // // If knexfile is specified
+  // else {
+  //   const resolvedKnexfilePath = path.resolve(opts.knexfile);
+  //   const knexfileDir = path.dirname(resolvedKnexfilePath);
+  //   process.chdir(knexfileDir);
+  //   env.configuration = require(resolvedKnexfilePath);
 
-    if (!env.configuration) {
-      exit(
-        'Knexfile not found. Specify a path with --knexfile or pass --client and --connection params in commandline'
-      );
-    }
+  //   if (!env.configuration) {
+  //     exit(
+  //       'Knexfile not found. Specify a path with --knexfile or pass --client and --connection params in commandline'
+  //     );
+  //   }
 
-    if (!env.configuration.ext) {
-      env.configuration.ext = path
-        .extname(resolvedKnexfilePath)
-        .replace('.', '');
-    }
-  }
+  //   if (!env.configuration.ext) {
+  //     env.configuration.ext = path
+  //       .extname(resolvedKnexfilePath)
+  //       .replace('.', '');
+  //   }
+  // }
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
   const knex = require(env.modulePath);
@@ -369,6 +376,7 @@ cli.launch(
     cwd: argv.cwd,
     knexfile: argv.knexfile,
     knexpath: argv.knexpath,
+    configPath: argv.knexfile,
     require: argv.require,
     completion: argv.completion,
   },
