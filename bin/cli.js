@@ -351,8 +351,6 @@ cli.on('requireFail', function(name) {
 cli.launch(
   {
     cwd: argv.cwd,
-    knexfile: argv.knexfile,
-    knexpath: argv.knexpath,
     configPath: argv.knexfile,
     require: argv.require,
     completion: argv.completion,
