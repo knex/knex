@@ -9,24 +9,21 @@ describe('MSSQL SchemaBuilder', function() {
   let tableSql;
   const equal = require('assert').equal;
 
-  it('test basic create table with charset and collate', function() {
-    tableSql = client.schemaBuilder().createTable('users', function(table) {
-      table.increments('id');
-      table.string('email');
-      table.charset('utf8');
-      table.collate('utf8_unicode_ci');
-    });
-
-    equal(1, tableSql.toSQL().length);
-    expect(tableSql.toSQL()[0].sql).to.equal(
-      'CREATE TABLE [users] ([id] int identity(1,1) not null primary key, [email] nvarchar(255))'
-    );
-    expect(tableSql.toQuery()).to.equal(
-      'CREATE TABLE [users] ([id] int identity(1,1) not null primary key, [email] nvarchar(255))'
-    );
+  it('throws when charset and collate are specified', function() {
+    expect(() => {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function(table) {
+          table.increments('id');
+          table.string('email');
+          table.charset('utf8');
+          table.collate('utf8_unicode_ci');
+        })
+        .toSQL();
+    }).to.throw('Knex only supports charset statement with mysql');
   });
 
-  it('basic create table without charset or collate', function() {
+  it('basic create table', function() {
     tableSql = client
       .schemaBuilder()
       .table('users', function() {

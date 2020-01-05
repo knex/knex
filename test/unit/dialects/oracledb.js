@@ -111,8 +111,57 @@ describe('OracleDb parameters', function() {
         });
     });
 
+    it('on blob', async () => {
+      const result = await knexClient.raw(
+        'select TO_BLOB(\'67c1a1acaaca11a1b36fa6636166709b\') as "field" from dual'
+      );
+      expect(result[0]).to.be.ok;
+      expect(result[0].field.toString('hex')).to.be.equal(
+        '67c1a1acaaca11a1b36fa6636166709b'
+      );
+    });
+
     after(function() {
       return knexClient.destroy();
     });
+  });
+});
+
+describe('OracleDb unit tests', function() {
+  let knexClient;
+
+  before(function() {
+    const conf = _.clone(config.oracledb);
+    conf.fetchAsString = ['number', 'DATE', 'cLOb'];
+    knexClient = knex(conf);
+    return knexClient;
+  });
+
+  it('clears the connection from the pool on disconnect during commit', async function() {
+    const err = 'error message';
+    const spy = sinon.spy(knexClient.client, 'releaseConnection');
+    // call the real acquireConnection but ensure commitAsync fails simulating a disconnect
+    const acquireConnection = knexClient.client.acquireConnection;
+    sinon.stub(knexClient.client, 'acquireConnection').callsFake(async () => {
+      const conn = await acquireConnection.call(knexClient.client);
+      conn.commitAsync = () => Promise.reject(err);
+      return conn;
+    });
+
+    let exception;
+    try {
+      await knexClient.transaction(async (trx) => {
+        await trx('DUAL').select('*');
+      });
+    } catch (e) {
+      exception = e;
+    }
+
+    expect(spy.callCount).to.equal(1);
+    expect(exception).to.equal(err);
+  });
+
+  after(function() {
+    return knexClient.destroy();
   });
 });

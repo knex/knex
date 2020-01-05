@@ -27,6 +27,9 @@ const knex2 = Knex({
     ...clientConfig,
     log: {
         debug(msg: string) {}
+    },
+    pool: {
+      log: (msg: string, level: string) => {}
     }
 });
 
@@ -1322,4 +1325,15 @@ const main = async () => {
       extension: 'ts',
       directory: 'lib/seeds'
   });
+
+  // $ExpectType any[]
+  await knex('users', { only: true });
+
+  // $ExpectType any[]
+  await knex
+    .select('*')
+    .from('users', { only: true });
+
+  // $ExpectType any
+  knex.queryBuilder().queryContext();
 };

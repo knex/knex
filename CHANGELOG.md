@@ -1,5 +1,78 @@
 # Master (Unreleased)
 
+# 0.20.6 - 29 December, 2019
+
+### Bug fixes:
+
+- Enforce Unix (lf) line terminators #3598
+
+# 0.20.5 - 29 December, 2019
+
+### New features:
+
+- Return more information about empty updates #3597
+
+### Bug fixes:
+
+- Fix colors in debug logs #3592
+
+### Test / internal changes:
+
+- Use more efficient algorithm for generating internal ids #3595 #3596
+- Use Buffer.alloc() instead of deprecated constructor #3574
+
+# 0.20.4 - 08 December, 2019
+
+### Bug fixes:
+
+- Fix debug logger messing up queries with % #3566
+- Make logger methods mutually consistent #3567
+
+### Typings:
+
+- Add missing methods to client type #3565
+- Fix queryContext function defintion #3562
+- Fix QueryBuilder.extend this type #3526 #3528
+
+### Test / internal changes:
+
+- Remove bluebird.using #3552
+
+# 0.20.3 - 27 November, 2019
+
+### New features:
+
+- MSSQL, MySQL: Add connection string qs to connection params #3547
+
+### Bug fixes:
+
+- Oracle: Fix issue retrieving BLOB from database #3545
+- PostgreSQL: Timeout for postgresql use cancel instead of terminate #3518
+- Make sure CLI works for namespaced knex packages #2539
+
+### Typings:
+
+- Lift up dialect specific methods in the CreateTableBuilder #3532
+- Add client property to QueryBuilder type #3541
+- Support 'only' option #3551
+
+# 0.20.2 - 14 November, 2019
+
+### New features:
+
+- Add support for distinct on for postgres #3513
+
+### Bug fixes:
+
+- Make sqlite3 hasColumn case insensitive #3435
+
+### Typings:
+
+- Fix PoolConfig typing #3505
+- Expand SeedsConfig types #3531
+- Make the default type parameters of QueryBuilder less strict #3520
+- Fix regression in older version of node when Promise#finally was not available #3507
+
 # 0.20.1 - 29 October, 2019
 
 ### New features:
