@@ -35,6 +35,16 @@ function initKnex(env, opts) {
       : mkConfigObj(opts)
   );
 
+  // FYI: By default, the extension for the migration files is inferred
+  //      from the knexfile's extension. So, the following lines are in
+  //      place for backwards compatibility purposes.
+  if(!env.configuration.ext) {
+    const p = (env.configPath || opts.knexpath);
+
+    // TODO: Should this property be documented somewhere?
+    env.configuration.ext = path.extname(p).replace('.', '');
+  }
+
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);

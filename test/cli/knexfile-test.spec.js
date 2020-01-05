@@ -44,7 +44,7 @@ describe('knexfile resolution', () => {
 
   it('Throws informative error when no knexfile is found', () => {
     return execCommand(`node ${KNEX} migrate:latest --knexpath=../knex.js`, {
-      expectedErrorMessage: 'No default configuration file',
+      expectedErrorMessage: 'No configuration file found',
     });
   });
 
