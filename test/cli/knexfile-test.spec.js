@@ -37,7 +37,7 @@ describe('knexfile resolution', () => {
     return execCommand(
       `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
       {
-        expectedOutput: 'Already up to date',
+        expectedOutput: 'Batch 1 run: 2 migrations',
       }
     );
   });
