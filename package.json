@@ -106,6 +106,7 @@
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0",
     "toxiproxy-node-client": "^2.0.6",
+    "ts-node": "^8.5.4",
     "typescript": "3.6.4",
     "webpack-cli": "^3.3.10"
   },
