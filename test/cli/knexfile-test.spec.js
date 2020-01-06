@@ -71,7 +71,7 @@ module.exports = {
     });
   });
 
-  context.only('--cwd is specified', function() {
+  context('--cwd is specified', function() {
     context('and --knexfile is also specified', function() {
       it('uses the indicated knexfile', function() {
         // Notice: the Knexfile is using Typescript.  This means that Knex
