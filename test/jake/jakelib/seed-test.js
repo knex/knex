@@ -55,6 +55,16 @@ test(taskList, 'Handles seeding errors correctly', (temp) => {
   });
 });
 
+test(taskList, 'seed:run runs "esm" files', () => {
+  return assertExec(
+    `node ${KNEX} --esm seed:run --knexfile=test/jake-util/knexfile-esm/knexfile.js`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Ran 1 seed files');
+    assert.notInclude(stdout, 'first.js');
+    assert.notInclude(stdout, 'second.js');
+  });
+});
+
 module.exports = {
   taskList,
 };

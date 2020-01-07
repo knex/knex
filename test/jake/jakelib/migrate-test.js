@@ -734,6 +734,20 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
   );
 });
 
+test('migrate runs "esm" modules', (temp) => {
+  const db = knexfile.connection.filename;
+  if (fs.existsSync(db)) {
+    fs.unlinkSync(db);
+  }
+
+  return assertExec(
+    `node ${KNEX} --esm migrate:latest --knexfile=test/jake-util/knexfile-esm/knexfile.js --knexpath=../knex.js`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Batch 1 run: 1 migrations');
+    assert.include(stdout, 'one.js');
+  });
+});
+
 module.exports = {
   taskList,
 };

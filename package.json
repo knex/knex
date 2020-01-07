@@ -32,6 +32,7 @@
     "colorette": "1.1.0",
     "commander": "^4.0.1",
     "debug": "4.1.1",
+    "esm": "^3.2.25",
     "getopts": "2.2.5",
     "inherits": "~2.0.4",
     "interpret": "^2.0.0",
