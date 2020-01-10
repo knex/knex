@@ -118,6 +118,14 @@ const main = async () => {
   await knex('users').first('id');
 
   // $ExpectType any
+  await knex
+    .first('*')
+    .from('table')
+    .where({
+      whatever: 'whatever'
+    });
+
+  // $ExpectType any
   await knex('users').first('id', 'name');
 
   const u3: User = await knex('users').first('id', 'name');

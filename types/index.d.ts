@@ -1258,7 +1258,7 @@ declare namespace Knex {
     // we can extend our selection by these columns
     (columnName: '*'): QueryBuilder<
       TRecord,
-      DeferredKeySelection<TRecord, string>[]
+      ArrayIfAlready<TResult, DeferredKeySelection<TRecord, string>>
     >;
 
     <
