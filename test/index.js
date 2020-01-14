@@ -93,4 +93,5 @@ describe('CLI tests', function() {
   require('./cli/migrate-make.spec');
   require('./cli/seed-make.spec');
   require('./cli/version.spec');
+  require('./cli/help.spec');
 });
