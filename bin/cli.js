@@ -30,6 +30,10 @@ const fsPromised = {
 };
 
 function initKnex(env, opts) {
+  if (opts.esm) {
+    // enable esm interop via 'esm' module
+    require = require('esm')(module);
+  }
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -110,7 +114,8 @@ function invoke(env) {
     .option(
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
-    );
+    )
+    .option('--esm', 'Enable ESM interop.');
 
   commander
     .command('init')
