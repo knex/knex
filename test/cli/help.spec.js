@@ -3,7 +3,6 @@
 const path = require('path');
 const { execCommand } = require('cli-testlab');
 
-const cliPkg = require('../../package');
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
 describe('help', () => {
@@ -26,8 +25,8 @@ describe('help', () => {
   });
 
   it('Does not print help when argument is given', () => {
-    return execCommand(`node ${KNEX} -V`).then(({ stdout, _ }) => {
-      expect(stdout).to.not.include('Usage');
+    return execCommand(`node ${KNEX} -V`, {
+      notExpectedOutput: 'Usage',
     });
   });
 });
