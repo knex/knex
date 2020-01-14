@@ -1,5 +1,19 @@
 # Master (Unreleased)
 
+# 0.20.8 - 14 January, 2020
+
+### New features:
+
+- CLI: Support ES6 modules via flag --esm #3616
+
+### Bug fixes:
+
+- CLI: Print help only when there are no arguments #3617
+
+### Typings:
+
+- Fix incorrect type of QueryBuilder.first('*') result #3621
+
 # 0.20.7 - 07 January, 2020
 
 ### New features:
