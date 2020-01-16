@@ -1851,8 +1851,8 @@ export declare namespace Knex {
       callback: (tableBuilder: AlterTableBuilder) => any
     ): Promise<void>;
     dropTableIfExists(tableName: string): SchemaBuilder;
-    dropSchema(schemaName: string): SchemaBuilder;
-    dropSchemaIfExists(schemaName: string): SchemaBuilder;
+    dropSchema(schemaName: string, cascade?: boolean): SchemaBuilder;
+    dropSchemaIfExists(schemaName: string, cascade?: boolean): SchemaBuilder;
     raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;

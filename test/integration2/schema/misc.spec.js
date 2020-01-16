@@ -121,6 +121,58 @@ describe('Schema (misc)', () => {
         });
       });
 
+      describe('dropSchema', () => {
+        before(async () => {
+          await knex.schema
+            .createSchema('test')
+            .createSchema('test2')
+            .createSchema('test3')
+            .createSchema('test4')
+            .createSchema('schema_drop_1')
+            .createSchema('schema_drop_2')
+            .createSchema('schema_drop_cascade_1')
+            .createSchema('schema_drop_cascade_2')
+            .withSchema('schema_drop_cascade_1')
+            .createTable('table_cascade_1', () => {})
+            .withSchema('schema_drop_cascade_2')
+            .createTable('table_cascade_2', () => {});
+        });
+
+        it('has a dropSchema/dropSchemaIfExists method', function () {
+          if (!isPgBased(knex)) {
+            return this.skip();
+          }
+
+          this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
+          const dbDropSchema = ['pg', 'cockroachdb'];
+          return Promise.all([
+            knex.schema.dropSchema('test').testSql((tester) => {
+              tester(dbDropSchema, ['drop schema "test"']);
+            }),
+            knex.schema.dropSchemaIfExists('test2').testSql((tester) => {
+              tester(dbDropSchema, ['drop schema if exists "test2"']);
+            }),
+            knex.schema.dropSchema('test3', true).testSql((tester) => {
+              tester(dbDropSchema, ['drop schema "test3" cascade']);
+            }),
+            knex.schema.dropSchemaIfExists('test4', true).testSql((tester) => {
+              tester(dbDropSchema, ['drop schema if exists "test4" cascade']);
+            }),
+            knex.schema
+              .dropSchema('schema_drop_1')
+              .dropSchemaIfExists('schema_drop_2')
+              .dropSchema('schema_drop_cascade_1', true)
+              .dropSchemaIfExists('schema_drop_cascade_2', true),
+            knex.schema.hasTable('table_cascade_1').then((resp) => {
+              expect(resp).to.equal(false);
+            }),
+            knex.schema.hasTable('table_cascade_2').then((resp) => {
+              expect(resp).to.equal(false);
+            }),
+          ]);
+        });
+      });
+
       describe('dropTable', () => {
         it('has a dropTableIfExists method', function () {
           this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
