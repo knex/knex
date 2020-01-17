@@ -1701,6 +1701,7 @@ declare namespace Knex {
       appName?: string;
       abortTransactionOnError?: boolean;
       trustedConnection?: boolean;
+      enableArithAbort: null | boolean,
     };
     pool?: {
       min?: number;
