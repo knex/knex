@@ -6,6 +6,7 @@ const Bluebird = require('bluebird');
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const sinon = require('sinon');
+const { KnexTimeoutError } = require('../../../lib/util/timeout');
 
 module.exports = function(knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
@@ -505,7 +506,7 @@ module.exports = function(knex) {
         .then(function() {
           throw new Error('should not get here');
         })
-        .catch(Bluebird.TimeoutError, function(error) {});
+        .catch(KnexTimeoutError, function(error) {});
     });
 
     /**
