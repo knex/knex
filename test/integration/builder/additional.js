@@ -739,7 +739,7 @@ module.exports = function(knex) {
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 200,
-            name: 'TimeoutError',
+            name: 'KnexTimeoutError',
             message:
               'Defined query timeout of 200ms exceeded when running query.',
           });
@@ -826,7 +826,7 @@ module.exports = function(knex) {
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 200,
-            name: 'TimeoutError',
+            name: 'KnexTimeoutError',
             message:
               'Defined query timeout of 200ms exceeded when running query.',
           });
@@ -911,7 +911,7 @@ module.exports = function(knex) {
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 1,
-            name: 'TimeoutError',
+            name: 'KnexTimeoutError',
             message:
               'After query timeout of 1ms exceeded, cancelling of query failed.',
           });
@@ -980,7 +980,7 @@ module.exports = function(knex) {
         .catch(function(error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: secondQueryTimeout,
-            name: 'TimeoutError',
+            name: 'KnexTimeoutError',
             message: `Defined query timeout of ${secondQueryTimeout}ms exceeded when running query.`,
           });
         })
