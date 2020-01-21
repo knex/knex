@@ -1990,7 +1990,7 @@ declare namespace Knex {
       ) => QueryBuilder<TRecord, TResult>
     ): void;
   }
-  
+
   export class KnexTimeoutError extends Error {}
 }
 
