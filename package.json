@@ -39,7 +39,6 @@
     "liftoff": "3.1.0",
     "lodash": "^4.17.15",
     "mkdirp": "^0.5.1",
-    "p-timeout": "^3.2.0",
     "pg-connection-string": "2.1.0",
     "tarn": "^2.0.0",
     "tildify": "2.0.0",
