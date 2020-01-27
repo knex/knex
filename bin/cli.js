@@ -3,6 +3,7 @@
 const Liftoff = require('liftoff');
 const interpret = require('interpret');
 const path = require('path');
+const pkgDir = require('pkg-dir');
 const tildify = require('tildify');
 const commander = require('commander');
 const color = require('colorette');
@@ -40,6 +41,7 @@ const fsPromised = {
 };
 
 const initKnex = async (env, opts) => {
+  console.log(opts);
   if (opts.esm) {
     console.warn(
       `The 'esm' opt is deprecated. Knex supports esm module imports using 'import()'`
@@ -70,7 +72,7 @@ const initKnex = async (env, opts) => {
 function invoke(env) {
   env.modulePath = env.modulePath || env.knexpath || process.env.KNEX_PATH;
 
-  const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls', 'cjs'];
+  const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls', 'cjs', 'mjs'];
 
   const cliVersion = [
     color.blue('Knex CLI version:'),
@@ -117,26 +119,35 @@ function invoke(env) {
       'Specify the knexfile extension (default js)'
     )
     .action(async () => {
-      try {
-        const type = (argv.x || 'js').toLowerCase();
-        if (filetypes.indexOf(type) === -1) {
-          exit(`Invalid filetype specified: ${type}`);
-        }
-        if (env.configuration) {
-          exit(`Error: ${env.knexfile} already exists`);
-        }
-        checkLocalModule(env);
-        const stubPath = `./knexfile.${type}`;
-        const code = fsPromised.readFile(
-          `${path.dirname(
-            env.modulePath
-          )}/lib/migrate/stub/knexfile-${type}.stub`
-        );
-        fsPromised.writeFile(stubPath, code);
-        success(color.green(`Created ${stubPath}`));
-      } catch {
-        exit();
+      const packageDirectory = await pkgDir(process.cwd());
+      const consumingPackageJson = require(path.resolve(
+        packageDirectory,
+        'package.json'
+      ));
+      const consumingPackageIsModule = consumingPackageJson.type === 'module';
+      const stubExtension = (argv.x || 'js').toLowerCase();
+      const stubFormatToUse =
+        stubExtension === 'js'
+          ? consumingPackageIsModule
+            ? 'mjs'
+            : 'cjs'
+          : stubExtension;
+
+      if (filetypes.indexOf(stubExtension) === -1) {
+        exit(`Invalid filetype specified: ${stubExtension}`);
       }
+      if (env.configuration) {
+        exit(`Error: ${env.knexfile} already exists`);
+      }
+      checkLocalModule(env);
+      const stubPath = `./knexfile.${stubExtension}`;
+      const code = await fsPromised.readFile(
+        `${path.dirname(
+          env.modulePath
+        )}/lib/migrate/stub/knexfile-${stubFormatToUse}.stub`
+      );
+      await fsPromised.writeFile(stubPath, code);
+      success(color.green(`Created ${stubPath}`));
     });
 
   commander
@@ -157,17 +168,15 @@ function invoke(env) {
         const knex = await initKnex(env, opts);
         const ext = getMigrationExtension(env, opts);
         const configOverrides = { extension: ext };
-
         const stub = getStubPath('migrations', env, opts);
         if (stub) {
           configOverrides.stub = stub;
         }
 
-        const name = await knex.migrate.make(name, configOverrides);
-        success(color.green(`Created Migration: ${name}`));
+        const createdName = await knex.migrate.make(name, configOverrides);
+        success(color.green(`Created Migration: ${createdName}`));
       } catch {
         exit();
-      }
     });
 
   commander

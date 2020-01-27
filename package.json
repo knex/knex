@@ -43,6 +43,7 @@
     "lodash": "^4.17.20",
     "mkdirp": "^1.0.4",
     "pg-connection-string": "2.3.0",
+    "pkg-dir": "^4.2.0",
     "tarn": "^3.0.0",
     "tildify": "2.0.0",
     "uuid": "^7.0.3",

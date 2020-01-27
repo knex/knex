@@ -46,13 +46,21 @@ function resolveKnexFilePath() {
       extension: 'ts',
     };
   }
-  
+
+  const mjsPath = resolveDefaultKnexfilePath('mjs');
+  if (fs.existsSync(mjsPath)) {
+    return {
+      path: mjsPath,
+      extension: 'cjs',
+    };
+  }
+
   const cjsPath = resolveDefaultKnexfilePath('cjs');
   if (fs.existsSync(cjsPath)) {
     return {
       path: cjsPath,
-      extension: 'cjs'
-    }
+      extension: 'cjs',
+    };
   }
 
   console.warn(
@@ -63,7 +71,7 @@ function resolveKnexFilePath() {
 }
 
 function resolveDefaultKnexfilePath(extension) {
-  return process.cwd() + `/knexfile.${extension}`;
+  return `${process.cwd()}/knexfile.${extension}`;
 }
 
 function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
