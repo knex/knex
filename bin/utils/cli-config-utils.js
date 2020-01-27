@@ -51,7 +51,7 @@ function resolveKnexFilePath() {
   if (fs.existsSync(mjsPath)) {
     return {
       path: mjsPath,
-      extension: 'cjs',
+      extension: 'mjs',
     };
   }
 
