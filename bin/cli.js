@@ -41,7 +41,6 @@ const fsPromised = {
 };
 
 const initKnex = async (env, opts) => {
-  console.log(opts);
   if (opts.esm) {
     console.warn(
       `The 'esm' opt is deprecated. Knex supports esm module imports using 'import()'`
@@ -272,13 +271,9 @@ function invoke(env) {
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
     .action(async () => {
-      try {
-        const knex = await initKnex(env, commander.opts());
-        const version = await knex.migrate.currentVersion();
-        success(color.green('Current Version: ') + color.blue(version));
-      } catch {
-        exit();
-      }
+      const knex = await initKnex(env, commander.opts());
+      const version = await knex.migrate.currentVersion();
+      success(color.green('Current Version: ') + color.blue(version));
     });
 
   commander
@@ -286,13 +281,9 @@ function invoke(env) {
     .alias('migrate:status')
     .description('        List all migrations files with status.')
     .action(async () => {
-      try {
-        const knex = await initKnex(env, commander.opts());
-        const [completed, newMigrations] = await knex.migrate.list();
-        listMigrations(completed, newMigrations);
-      } catch {
-        exit();
-      }
+      const knex = await initKnex(env, commander.opts());
+      const [completed, newMigrations] = await knex.migrate.list();
+      listMigrations(completed, newMigrations);
     });
 
   commander
