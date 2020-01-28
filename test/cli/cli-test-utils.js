@@ -63,10 +63,12 @@ function expectContentMatchesStub(stubPath, globPath, fileHelper) {
   expect(content).equals(stubContent);
 }
 
+function getRootDir() {
+  return path.resolve(__dirname, '../jake-util');
+}
+
 function setupFileHelper() {
-  const fileHelper = new FileTestHelper(
-    path.resolve(__dirname, '../jake-util')
-  );
+  const fileHelper = new FileTestHelper(getRootDir());
   fileHelper.deleteFile('test.sqlite3');
   fileHelper.registerForCleanup('test.sqlite3');
 
@@ -75,6 +77,7 @@ function setupFileHelper() {
 
 module.exports = {
   expectContentMatchesStub,
+  getRootDir,
   migrationStubOptionSetup,
   seedStubOptionSetup,
   setupFileHelper,
