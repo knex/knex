@@ -14,3 +14,8 @@ export const down = (knex) => {
   return knex.schema.dropTable("<%= d.tableName %>");
   <% } %>
 };
+
+export default {
+    up,
+    down
+}
