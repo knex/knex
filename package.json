@@ -32,6 +32,8 @@
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
   },
   "dependencies": {
+    "babel-plugin-transform-dynamic-import": "^2.1.0",
+    "bluebird": "^3.7.2",
     "colorette": "1.2.1",
     "commander": "^5.1.0",
     "debug": "4.1.1",
