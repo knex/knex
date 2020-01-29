@@ -7,6 +7,7 @@ const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 
 function mkConfigObj(opts) {
+  console.log('\n\n\n>>>mkConfigObj<<<\n\n');
   if (!opts.client) {
     throw new Error(
       `No configuration file found and no commandline connection parameters passed`

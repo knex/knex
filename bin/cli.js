@@ -118,35 +118,40 @@ function invoke(env) {
       'Specify the knexfile extension (default js)'
     )
     .action(async () => {
-      const packageDirectory = await pkgDir(process.cwd());
-      const consumingPackageJson = require(path.resolve(
-        packageDirectory,
-        'package.json'
-      ));
-      const consumingPackageIsModule = consumingPackageJson.type === 'module';
-      const stubExtension = (argv.x || 'js').toLowerCase();
-      const stubFormatToUse =
-        stubExtension === 'js'
-          ? consumingPackageIsModule
-            ? 'mjs'
-            : 'cjs'
-          : stubExtension;
+      try {
+        const packageDirectory = await pkgDir(process.cwd());
+        const consumingPackageJson = require(path.resolve(
+          packageDirectory,
+          'package.json'
+        ));
+        const consumingPackageIsModule = consumingPackageJson.type === 'module';
+        const stubExtension = (argv.x || 'js').toLowerCase();
+        const stubFormatToUse =
+          stubExtension === 'js'
+            ? consumingPackageIsModule
+              ? 'mjs'
+              : 'cjs'
+            : stubExtension;
 
-      if (filetypes.indexOf(stubExtension) === -1) {
-        exit(`Invalid filetype specified: ${stubExtension}`);
+        if (filetypes.indexOf(stubExtension) === -1) {
+          exit(`Invalid filetype specified: ${stubExtension}`);
+        }
+        if (env.configuration) {
+          exit(`Error: ${env.knexfile} already exists`);
+        }
+        checkLocalModule(env);
+        const stubPath = `./knexfile.${stubExtension}`;
+        const code = await fsPromised.readFile(
+          `${path.dirname(
+            env.modulePath
+          )}/lib/migrate/stub/knexfile-${stubFormatToUse}.stub`
+        );
+        await fsPromised.writeFile(stubPath, code);
+        success(color.green(`Created ${stubPath}`));
+      } catch (error) {
+        console.log(error);
+        exit();
       }
-      if (env.configuration) {
-        exit(`Error: ${env.knexfile} already exists`);
-      }
-      checkLocalModule(env);
-      const stubPath = `./knexfile.${stubExtension}`;
-      const code = await fsPromised.readFile(
-        `${path.dirname(
-          env.modulePath
-        )}/lib/migrate/stub/knexfile-${stubFormatToUse}.stub`
-      );
-      await fsPromised.writeFile(stubPath, code);
-      success(color.green(`Created ${stubPath}`));
     });
 
   commander
@@ -174,8 +179,10 @@ function invoke(env) {
 
         const createdName = await knex.migrate.make(name, configOverrides);
         success(color.green(`Created Migration: ${createdName}`));
-      } catch {
+      } catch (error) {
+        console.log(error);
         exit();
+      }
     });
 
   commander
@@ -193,8 +200,9 @@ function invoke(env) {
           color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
             (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
         );
-      } catch (err) {
-        exit(err);
+      } catch (error) {
+        console.log(error);
+        exit();
       }
     });
 
@@ -216,7 +224,8 @@ function invoke(env) {
             `Batch ${batchNo} ran the following migrations:\n${migrationsRun}`
           )
         );
-      } catch {
+      } catch (error) {
+        console.log(error);
         exit();
       }
     });
@@ -239,7 +248,8 @@ function invoke(env) {
             `Batch ${batchNo} rolled back: ${log.length} migrations`
           ) + (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
         );
-      } catch {
+      } catch (error) {
+        console.log(error);
         exit();
       }
     });
@@ -262,7 +272,8 @@ function invoke(env) {
             `Batch ${batchNo} rolled back the following migrations:\n${rolledBack}`
           )
         );
-      } catch {
+      } catch (error) {
+        console.log(error);
         exit();
       }
     });
@@ -271,9 +282,14 @@ function invoke(env) {
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
     .action(async () => {
-      const knex = await initKnex(env, commander.opts());
-      const version = await knex.migrate.currentVersion();
-      success(color.green('Current Version: ') + color.blue(version));
+      try {
+        const knex = await initKnex(env, commander.opts());
+        const version = await knex.migrate.currentVersion();
+        success(color.green('Current Version: ') + color.blue(version));
+      } catch (error) {
+        console.log(error);
+        exit();
+      }
     });
 
   commander
@@ -281,9 +297,14 @@ function invoke(env) {
     .alias('migrate:status')
     .description('        List all migrations files with status.')
     .action(async () => {
-      const knex = await initKnex(env, commander.opts());
-      const [completed, newMigrations] = await knex.migrate.list();
-      listMigrations(completed, newMigrations);
+      try {
+        const knex = await initKnex(env, commander.opts());
+        const [completed, newMigrations] = await knex.migrate.list();
+        listMigrations(completed, newMigrations);
+      } catch (error) {
+        console.log(error);
+        exit();
+      }
     });
 
   commander
@@ -317,10 +338,6 @@ function invoke(env) {
       false
     )
     .action(async (name) => {
-      if (stub) {
-        configOverrides.stub = stub;
-      }
-    .action(async (name) => {
       try {
         const opts = commander.opts();
         opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
@@ -336,7 +353,8 @@ function invoke(env) {
         }
         const createdName = await knex.seed.make(name, configOverrides);
         success(color.green(`Created seed file: ${createdName}`));
-      } catch {
+      } catch (error) {
+        console.log(error);
         exit();
       }
     });
@@ -357,7 +375,8 @@ function invoke(env) {
           color.green(`Ran ${log.length} seed files`) +
             (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
         );
-      } catch {
+      } catch (error) {
+        console.log(error);
         exit();
       }
     });
