@@ -190,7 +190,10 @@
     "lines": 84,
     "statements": 82,
     "functions": 83,
-    "branches": 69
+    "branches": 69,
+    "extension": [
+      ".js"
+    ]
   },
   "husky": {
     "hooks": {
