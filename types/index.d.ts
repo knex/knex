@@ -1258,7 +1258,7 @@ declare namespace Knex {
     // we can extend our selection by these columns
     (columnName: '*'): QueryBuilder<
       TRecord,
-      DeferredKeySelection<TRecord, string>[]
+      ArrayIfAlready<TResult, DeferredKeySelection<TRecord, string>>
     >;
 
     <
@@ -1483,6 +1483,8 @@ declare namespace Knex {
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
+    createSchema(schemaName: string): SchemaBuilder;
+    createSchemaIfNotExists(schemaName: string): SchemaBuilder;
     alterTable(
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
@@ -1496,6 +1498,8 @@ declare namespace Knex {
       callback: (tableBuilder: AlterTableBuilder) => any
     ): Promise<void>;
     dropTableIfExists(tableName: string): SchemaBuilder;
+    dropSchema(schemaName: string): SchemaBuilder;
+    dropSchemaIfExists(schemaName: string): SchemaBuilder;
     raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
@@ -1697,6 +1701,7 @@ declare namespace Knex {
       appName?: string;
       abortTransactionOnError?: boolean;
       trustedConnection?: boolean;
+      enableArithAbort?: boolean;
     };
     pool?: {
       min?: number;

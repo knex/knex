@@ -126,3 +126,69 @@ describe('OracleDb parameters', function() {
     });
   });
 });
+
+describe('OracleDb unit tests', function() {
+  let knexClient;
+
+  before(function() {
+    const conf = _.clone(config.oracledb);
+    conf.fetchAsString = ['number', 'DATE', 'cLOb'];
+    knexClient = knex(conf);
+    return knexClient;
+  });
+
+  it('disposes the connection on connection error', async function() {
+    let spy = sinon.spy();
+    // call the real acquireConnection but release the connection immediately to cause connection error
+    const acquireConnection = knexClient.client.acquireConnection;
+    sinon.stub(knexClient.client, 'acquireConnection').callsFake(async () => {
+      const conn = await acquireConnection.call(knexClient.client);
+      conn.release();
+      spy = sinon.spy(conn, 'close');
+      return conn;
+    });
+
+    let exception;
+    try {
+      await knexClient.raw('insert into DUAL values(1)');
+    } catch (e) {
+      exception = e;
+    }
+
+    expect(exception).not.to.equal(undefined);
+    expect(exception.message).to.include('NJS-003: invalid connection');
+    expect(spy.callCount).to.equal(1);
+  });
+
+  it('clears the connection from the pool on disconnect during commit', async function() {
+    const err = 'error message';
+    const spy = sinon.spy(knexClient.client, 'releaseConnection');
+    // call the real acquireConnection but ensure commitAsync fails simulating a disconnect
+    const acquireConnection = knexClient.client.acquireConnection;
+    sinon.stub(knexClient.client, 'acquireConnection').callsFake(async () => {
+      const conn = await acquireConnection.call(knexClient.client);
+      conn.commitAsync = () => Promise.reject(err);
+      return conn;
+    });
+
+    let exception;
+    try {
+      await knexClient.transaction(async (trx) => {
+        await trx('DUAL').select('*');
+      });
+    } catch (e) {
+      exception = e;
+    }
+
+    expect(spy.callCount).to.equal(1);
+    expect(exception).to.equal(err);
+  });
+
+  afterEach(function() {
+    knexClient.client.acquireConnection.restore();
+  });
+
+  after(function() {
+    return knexClient.destroy();
+  });
+});

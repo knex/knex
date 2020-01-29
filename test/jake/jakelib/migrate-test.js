@@ -82,37 +82,6 @@ test('Create a migration file without client passed', (temp) =>
       )
     ));
 
-test('Run migrations', (temp) =>
-  new Promise((resolve, reject) =>
-    fs.writeFile(
-      temp + '/migrations/000_create_rule_table.js',
-      `
-            exports.up = (knex)=> knex.schema.createTable('rules', (table)=> {
-                table.string('name');
-            });
-            exports.down = (knex)=> knex.schema.dropTable('rules');
-        `,
-      (err) => (err ? reject(err) : resolve())
-    )
-  )
-    .then(() =>
-      assertExec(`${KNEX} migrate:latest \
-                 --client=sqlite3 --connection=${temp}/db \
-                 --migrations-directory=${temp}/migrations \
-                 create_rule_table`)
-    )
-    .then(() => assertExec(`ls ${temp}/db`, 'Find the database file'))
-    .then(() => new sqlite3.Database(temp + '/db'))
-    .then(
-      (db) =>
-        new Promise((resolve, reject) =>
-          db.get('SELECT name FROM knex_migrations', function(err, row) {
-            err ? reject(err) : resolve(row);
-          })
-        )
-    )
-    .then((row) => assert.equal(row.name, '000_create_rule_table.js')));
-
 test('run migrations without knexfile and with --migrations-table-name', (temp) =>
   assertExec(`${KNEX} migrate:latest \
               --client=sqlite3  --connection=${temp}/db \
@@ -732,6 +701,20 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
     migrationsList2Result.stdout,
     `No Pending Migration files Found.`
   );
+});
+
+test('migrate runs "esm" modules', (temp) => {
+  const db = knexfile.connection.filename;
+  if (fs.existsSync(db)) {
+    fs.unlinkSync(db);
+  }
+
+  return assertExec(
+    `node ${KNEX} --esm migrate:latest --knexfile=test/jake-util/knexfile-esm/knexfile.js --knexpath=../knex.js`
+  ).then(({ stdout }) => {
+    assert.include(stdout, 'Batch 1 run: 1 migrations');
+    assert.include(stdout, 'one.js');
+  });
 });
 
 module.exports = {

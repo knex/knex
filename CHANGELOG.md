@@ -1,5 +1,35 @@
 # Master (Unreleased)
 
+# 0.20.8 - 14 January, 2020
+
+### New features:
+
+- CLI: Support ES6 modules via flag --esm #3616
+
+### Bug fixes:
+
+- CLI: Print help only when there are no arguments #3617
+
+### Typings:
+
+- Fix incorrect type of QueryBuilder.first('*') result #3621
+
+# 0.20.7 - 07 January, 2020
+
+### New features:
+
+- Throw better error when trying to modify schema while using unsupported dialect #3609
+
+### Bug fixes:
+
+- Oracle: dispose connection on connection error #3611
+- Oracle: fix not releasing connection from pool on disconnect #3605
+- CLI: prevent warning with root command #3604
+
+### Typings:
+
+- Add create/drop schema methods to SchemaBuilder #3579
+
 # 0.20.6 - 29 December, 2019
 
 ### Bug fixes:

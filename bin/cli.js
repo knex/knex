@@ -29,17 +29,20 @@ const fsPromised = {
 };
 
 function initKnex(env, opts) {
-  env.configuration = (
-    (env.configPath)
-      ? require(env.configPath)
-      : mkConfigObj(opts)
-  );
+  if (opts.esm) {
+    // enable esm interop via 'esm' module
+    require = require('esm')(module);
+  }
+
+  env.configuration = env.configPath
+    ? require(env.configPath)
+    : mkConfigObj(opts);
 
   // FYI: By default, the extension for the migration files is inferred
   //      from the knexfile's extension. So, the following lines are in
   //      place for backwards compatibility purposes.
-  if(!env.configuration.ext) {
-    const p = (env.configPath || opts.knexpath);
+  if (!env.configuration.ext) {
+    const p = env.configPath || opts.knexpath;
 
     // TODO: Should this property be documented somewhere?
     env.configuration.ext = path.extname(p).replace('.', '');
@@ -94,7 +97,8 @@ function invoke(env) {
     .option(
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
-    );
+    )
+    .option('--esm', 'Enable ESM interop.');
 
   commander
     .command('init')
@@ -325,12 +329,11 @@ function invoke(env) {
         .catch(exit);
     });
 
-  commander.parse(process.argv);
-
-  Promise.resolve(pending).then(() => {
+  if (!process.argv.slice(2).length) {
     commander.outputHelp();
-    exit('Unknown command-line options, exiting');
-  });
+  }
+
+  commander.parse(process.argv);
 }
 
 const cli = new Liftoff({

@@ -40,6 +40,11 @@ process.on('exit', (code) => {
   console.log('No unhandled exceptions');
 });
 
+describe('Util Tests', function() {
+  // Unit Tests for utilities.
+  require('./unit/query/string');
+});
+
 describe('Query Building Tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
 
@@ -84,8 +89,11 @@ if (config.sqlite3) {
 
 describe('CLI tests', function() {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+  require('./cli/help.spec');
   require('./cli/knexfile-test.spec');
+  require('./cli/migrate.spec');
   require('./cli/migrate-make.spec');
+  require('./cli/seed.spec');
   require('./cli/seed-make.spec');
   require('./cli/version.spec');
 });
