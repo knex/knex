@@ -26,7 +26,6 @@ describe('knexfile resolution', () => {
     process.env.KNEX_PATH = '../knex.js';
   });
 
-
   context('--cwd is NOT specified', function() {
     context('and --knexfile is also NOT specified', function() {
       it('Resolves default knexfile in working directory correctly', () => {
@@ -47,9 +46,12 @@ module.exports = {
           { isPathAbsolute: true }
         );
 
-        return execCommand(`node ${KNEX} migrate:latest --knexpath=../knex.js`, {
-          expectedOutput: 'Batch 1 run: 1 migrations',
-        });
+        return execCommand(
+          `node ${KNEX} migrate:latest --knexpath=../knex.js`,
+          {
+            expectedOutput: 'Batch 1 run: 1 migrations',
+          }
+        );
       });
     });
 
@@ -62,7 +64,6 @@ module.exports = {
           }
         );
       });
-
 
       it("changes the process's cwd to the directory that contains the knexfile", () => {
         const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
@@ -88,34 +89,48 @@ module.exports = {
       });
 
       it('Throws informative error when no knexfile is found', () => {
-        return execCommand(`node ${KNEX} migrate:latest --knexpath=../knex.js`, {
-          expectedErrorMessage: 'No configuration file found',
-        });
-      });
-
-    });
-
-  });
-
-
-
-  context('--cwd is specified', function() {
-    context('and --knexfile is also specified', function() {
-      it('uses the indicated knexfile', function() {
-        // Notice: the Knexfile is using Typescript.  This means that Knex
-        // is pre-loading the appropriate Typescript modules before loading
-        // the Knexfile.
         return execCommand(
-          `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile --knexfile=test/jake-util/knexfile-ts/custom-config.ts`,
+          `node ${KNEX} migrate:latest --knexpath=../knex.js`,
           {
-            expectedOutput: 'Batch 1 run: 1 migrations',
+            expectedErrorMessage: 'No configuration file found',
           }
         );
       });
     });
+  });
+
+  context('--cwd is specified', function() {
+    context('and --knexfile is also specified', function() {
+      context('and --knexfile is a relative path', function() {
+        it('resolves --knexfile relative to --cwd', function() {
+          return execCommand(
+            `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile --knexfile=knexfile.js`,
+            {
+              expectedOutput: 'Batch 1 run: 1 migrations',
+            }
+          );
+        });
+      });
+
+      context('and --knexfile is an absolute path', function() {
+        it('uses the indicated knexfile', function() {
+          // Notice: the Knexfile is using Typescript.  This means that Knex
+          // is pre-loading the appropriate Typescript modules before loading
+          // the Knexfile.
+          const knexfile = path.resolve(
+            'test/jake-util/knexfile-ts/custom-config.ts'
+          );
+          return execCommand(
+            `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile --knexfile=${knexfile}`,
+            {
+              expectedOutput: 'Batch 1 run: 4 migrations',
+            }
+          );
+        });
+      });
+    });
 
     context('but --knexfile is NOT specified', function() {
-
       it('resolves knexfile relative to the specified cwd', () => {
         return execCommand(
           `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile`,
@@ -124,9 +139,6 @@ module.exports = {
           }
         );
       });
-
     });
-
   });
-
 });

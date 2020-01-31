@@ -351,9 +351,20 @@ cli.on('requireFail', function(name) {
   console.log(color.red('Failed to load external module'), color.magenta(name));
 });
 
+// FYI: The handling for the `--cwd` and `--knexfile` arguments is a bit strange,
+//      but we decided to retain the behavior for backwards-compatibility.  In
+//      particular: if `--knexfile` is a relative path, then it will be resolved
+//      relative to `--cwd` instead of the shell's CWD.
+//
+//      So, the easiest way to replicate this behavior is to have the CLI change
+//      its CWD to `--cwd` immediately before initializing everything else.  This
+//      ensures that Liftoff will then resolve the path to `--knexfile` correctly.
+if (argv.cwd) {
+  process.chdir(argv.cwd);
+}
+
 cli.launch(
   {
-    cwd: argv.cwd,
     configPath: argv.knexfile,
     require: argv.require,
     completion: argv.completion,
