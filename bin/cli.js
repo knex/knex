@@ -377,7 +377,7 @@ function invoke(env) {
         );
       } catch (error) {
         console.log(error);
-        exit();
+        exit(error);
       }
     });
 
