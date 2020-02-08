@@ -1,5 +1,20 @@
 # Master (Unreleased)
 
+# 0.20.9 - 08 February, 2020
+
+### Bug fixes:
+
+- CLI: Improve Support for Liftoff's Preloaders - this should fix some cases like using TS for your migrations #3613
+
+### Typings:
+
+- MSSQL: Add `enableArithAbort` to `MsSqlConnectionConfig` 
+
+### Test / internal changes:
+
+- Refactor more tests to use cli-testlab #3640
+- Update QueryCompiler implementation to use classes #3647
+
 # 0.20.8 - 14 January, 2020
 
 ### New features:
