@@ -8,9 +8,8 @@ const argv = require('getopts')(process.argv.slice(2));
 
 function mkConfigObj(opts) {
   if (!opts.client) {
-    const path = resolveDefaultKnexfilePath();
     throw new Error(
-      `No default configuration file '${path}' found and no commandline connection parameters passed`
+      `No configuration file found and no commandline connection parameters passed`
     );
   }
 
@@ -29,34 +28,6 @@ function mkConfigObj(opts) {
       },
     },
   };
-}
-
-function resolveKnexFilePath() {
-  const jsPath = resolveDefaultKnexfilePath('js');
-  if (fs.existsSync(jsPath)) {
-    return {
-      path: jsPath,
-      extension: 'js',
-    };
-  }
-
-  const tsPath = resolveDefaultKnexfilePath('ts');
-  if (fs.existsSync(tsPath)) {
-    return {
-      path: tsPath,
-      extension: 'ts',
-    };
-  }
-
-  console.warn(
-    `Failed to find configuration at default location of ${resolveDefaultKnexfilePath(
-      'js'
-    )}`
-  );
-}
-
-function resolveDefaultKnexfilePath(extension) {
-  return process.cwd() + `/knexfile.${extension}`;
 }
 
 function resolveEnvironmentConfig(opts, allConfigs) {
@@ -156,7 +127,6 @@ function getStubPath(configKey, env, opts) {
 
 module.exports = {
   mkConfigObj,
-  resolveKnexFilePath,
   resolveEnvironmentConfig,
   exit,
   success,

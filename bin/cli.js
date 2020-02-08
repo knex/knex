@@ -12,7 +12,6 @@ const { promisify } = require('util');
 const cliPkg = require('../package');
 const {
   mkConfigObj,
-  resolveKnexFilePath,
   resolveEnvironmentConfig,
   exit,
   success,
@@ -34,6 +33,21 @@ function initKnex(env, opts) {
     // enable esm interop via 'esm' module
     require = require('esm')(module);
   }
+
+  env.configuration = env.configPath
+    ? require(env.configPath)
+    : mkConfigObj(opts);
+
+  // FYI: By default, the extension for the migration files is inferred
+  //      from the knexfile's extension. So, the following lines are in
+  //      place for backwards compatibility purposes.
+  if (!env.configuration.ext) {
+    const p = env.configPath || opts.knexpath;
+
+    // TODO: Should this property be documented somewhere?
+    env.configuration.ext = path.extname(p).replace('.', '');
+  }
+
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -41,37 +55,6 @@ function initKnex(env, opts) {
       'Working directory changed to',
       color.magenta(tildify(env.cwd))
     );
-  }
-
-  if (!opts.knexfile) {
-    const configurationPath = resolveKnexFilePath();
-    const configuration = configurationPath
-      ? require(configurationPath.path)
-      : undefined;
-
-    env.configuration = configuration || mkConfigObj(opts);
-    if (!env.configuration.ext && configurationPath) {
-      env.configuration.ext = configurationPath.extension;
-    }
-  }
-  // If knexfile is specified
-  else {
-    const resolvedKnexfilePath = path.resolve(opts.knexfile);
-    const knexfileDir = path.dirname(resolvedKnexfilePath);
-    process.chdir(knexfileDir);
-    env.configuration = require(resolvedKnexfilePath);
-
-    if (!env.configuration) {
-      exit(
-        'Knexfile not found. Specify a path with --knexfile or pass --client and --connection params in commandline'
-      );
-    }
-
-    if (!env.configuration.ext) {
-      env.configuration.ext = path
-        .extname(resolvedKnexfilePath)
-        .replace('.', '');
-    }
   }
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
@@ -368,11 +351,21 @@ cli.on('requireFail', function(name) {
   console.log(color.red('Failed to load external module'), color.magenta(name));
 });
 
+// FYI: The handling for the `--cwd` and `--knexfile` arguments is a bit strange,
+//      but we decided to retain the behavior for backwards-compatibility.  In
+//      particular: if `--knexfile` is a relative path, then it will be resolved
+//      relative to `--cwd` instead of the shell's CWD.
+//
+//      So, the easiest way to replicate this behavior is to have the CLI change
+//      its CWD to `--cwd` immediately before initializing everything else.  This
+//      ensures that Liftoff will then resolve the path to `--knexfile` correctly.
+if (argv.cwd) {
+  process.chdir(argv.cwd);
+}
+
 cli.launch(
   {
-    cwd: argv.cwd,
-    knexfile: argv.knexfile,
-    knexpath: argv.knexpath,
+    configPath: argv.knexfile,
     require: argv.require,
     completion: argv.completion,
   },

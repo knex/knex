@@ -107,6 +107,7 @@
     "tap-spec": "^5.0.0",
     "tape": "^4.13.0",
     "toxiproxy-node-client": "^2.0.6",
+    "ts-node": "^8.5.4",
     "typescript": "3.7.4",
     "webpack-cli": "^3.3.10"
   },
@@ -189,7 +190,10 @@
     "lines": 84,
     "statements": 82,
     "functions": 83,
-    "branches": 69
+    "branches": 69,
+    "extension": [
+      ".js"
+    ]
   },
   "husky": {
     "hooks": {
