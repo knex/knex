@@ -29,6 +29,15 @@ const fsPromised = {
 };
 
 function initKnex(env, opts) {
+  checkLocalModule(env);
+  if (process.cwd() !== env.cwd) {
+    process.chdir(env.cwd);
+    console.log(
+      'Working directory changed to',
+      color.magenta(tildify(env.cwd))
+    );
+  }
+
   if (opts.esm) {
     // enable esm interop via 'esm' module
     require = require('esm')(module);
@@ -46,15 +55,6 @@ function initKnex(env, opts) {
 
     // TODO: Should this property be documented somewhere?
     env.configuration.ext = path.extname(p).replace('.', '');
-  }
-
-  checkLocalModule(env);
-  if (process.cwd() !== env.cwd) {
-    process.chdir(env.cwd);
-    console.log(
-      'Working directory changed to',
-      color.magenta(tildify(env.cwd))
-    );
   }
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
