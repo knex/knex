@@ -28,6 +28,17 @@ const fsPromised = {
   writeFile: promisify(fs.writeFile),
 };
 
+function openKnexfile(configPath) {
+  const config = require(configPath);
+
+  // FYI: By default, the extension for the migration files is inferred
+  //      from the knexfile's extension. So, the following lines are in
+  //      place for backwards compatibility purposes.
+  config.ext = config.ext || path.extname(configPath).replace('.', '');
+
+  return config;
+}
+
 function initKnex(env, opts) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
@@ -44,18 +55,8 @@ function initKnex(env, opts) {
   }
 
   env.configuration = env.configPath
-    ? require(env.configPath)
+    ? openKnexfile(env.configPath)
     : mkConfigObj(opts);
-
-  // FYI: By default, the extension for the migration files is inferred
-  //      from the knexfile's extension. So, the following lines are in
-  //      place for backwards compatibility purposes.
-  if (!env.configuration.ext) {
-    const p = env.configPath || opts.knexpath;
-
-    // TODO: Should this property be documented somewhere?
-    env.configuration.ext = path.extname(p).replace('.', '');
-  }
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
   const knex = require(env.modulePath);
