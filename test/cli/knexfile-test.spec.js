@@ -77,6 +77,27 @@ module.exports = {
         );
       });
 
+      // This addresses the issue that was reported here:
+      //
+      //   https://github.com/knex/knex/issues/3660
+      //
+      context(
+        'and the knexfile itself resolves paths relative to process.cwd()',
+        function() {
+          it("changes the process's cwd to the directory that contains the knexfile before opening the knexfile", () => {
+            const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
+            const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
+
+            return execCommand(
+              `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
+              {
+                expectedOutput: `Working directory changed to ${expectedCWD}`,
+              }
+            );
+          });
+        }
+      );
+
       // FYI: This is only true because the Knex CLI changes the CWD to
       //      the directory of the knexfile.
       it('Resolves migrations relatively to knexfile', () => {

@@ -28,26 +28,18 @@ const fsPromised = {
   writeFile: promisify(fs.writeFile),
 };
 
-function initKnex(env, opts) {
-  if (opts.esm) {
-    // enable esm interop via 'esm' module
-    require = require('esm')(module);
-  }
-
-  env.configuration = env.configPath
-    ? require(env.configPath)
-    : mkConfigObj(opts);
+function openKnexfile(configPath) {
+  const config = require(configPath);
 
   // FYI: By default, the extension for the migration files is inferred
   //      from the knexfile's extension. So, the following lines are in
   //      place for backwards compatibility purposes.
-  if (!env.configuration.ext) {
-    const p = env.configPath || opts.knexpath;
+  config.ext = config.ext || path.extname(configPath).replace('.', '');
 
-    // TODO: Should this property be documented somewhere?
-    env.configuration.ext = path.extname(p).replace('.', '');
-  }
+  return config;
+}
 
+function initKnex(env, opts) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -56,6 +48,15 @@ function initKnex(env, opts) {
       color.magenta(tildify(env.cwd))
     );
   }
+
+  if (opts.esm) {
+    // enable esm interop via 'esm' module
+    require = require('esm')(module);
+  }
+
+  env.configuration = env.configPath
+    ? openKnexfile(env.configPath)
+    : mkConfigObj(opts);
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
   const knex = require(env.modulePath);
