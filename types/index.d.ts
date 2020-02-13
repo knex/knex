@@ -1912,7 +1912,7 @@ declare namespace Knex {
   }
 
   interface FunctionHelper {
-    now(): Raw;
+    now(precision?: number): Raw;
   }
 
   interface EnumOptions {
