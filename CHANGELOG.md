@@ -1,5 +1,20 @@
 # Master (Unreleased)
 
+# 0.20.10 - 13 February, 2020
+
+### Bug fixes:
+
+- CLI: Knex calls process.chdir() before opening Knexfile #3661
+
+### Typings:
+
+- `fn.now` takes optionally a precision argument. #3662
+- PG: Include SSL in connection definition #3659 
+
+### Test / internal changes:
+
+- replace Bluebird.timeout #3634
+
 # 0.20.9 - 08 February, 2020
 
 ### Bug fixes:
