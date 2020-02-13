@@ -13,6 +13,8 @@ import events = require('events');
 import stream = require('stream');
 import ResultTypes = require('./result');
 
+import { ConnectionOptions } from "tls";
+
 // # Generic type-level utilities
 
 // If T is object then make it a partial otherwise fallback to any
@@ -1808,6 +1810,7 @@ declare namespace Knex {
     statement_timeout?: false | number;
     connectionTimeoutMillis?: number;
     keepAliveInitialDelayMillis?: number;
+    ssl?: boolean | ConnectionOptions;
   }
 
   type RedshiftConnectionConfig = PgConnectionConfig;
