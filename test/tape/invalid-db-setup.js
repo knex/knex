@@ -3,7 +3,7 @@
 const tape = require('tape');
 const _ = require('lodash');
 const makeKnex = require('../../knex');
-const Bluebird = require('bluebird');
+const { KnexTimeoutError } = require('../../lib/util/timeout');
 
 module.exports = (knexfile) => {
   Object.keys(knexfile).forEach((key) => {
@@ -29,7 +29,7 @@ module.exports = (knexfile) => {
           .then((res) => {
             t.fail(`Query should have failed, got: ${JSON.stringify(res)}`);
           })
-          .catch(Bluebird.TimeoutError, (e) => {
+          .catch(KnexTimeoutError, (e) => {
             t.fail(`Query should have failed with non timeout error`);
           })
           .catch((e) => {
@@ -54,7 +54,7 @@ module.exports = (knexfile) => {
                 `Stream query should have failed, got: ${JSON.stringify(res)}`
               );
             })
-            .catch(Bluebird.TimeoutError, (e) => {
+            .catch(KnexTimeoutError, (e) => {
               t.fail(`Stream query should have failed with non timeout error`);
             })
             .catch((e) => {
@@ -104,7 +104,7 @@ module.exports = (knexfile) => {
               .then(() => {
                 t.fail('query should have stalled');
               })
-              .catch(Bluebird.TimeoutError, (e) => {
+              .catch(KnexTimeoutError, (e) => {
                 t.pass('Got acquireTimeout error');
               })
               .catch((e) => {

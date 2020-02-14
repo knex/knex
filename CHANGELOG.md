@@ -1,5 +1,65 @@
 # Master (Unreleased)
 
+# 0.20.10 - 13 February, 2020
+
+### Bug fixes:
+
+- CLI: Knex calls process.chdir() before opening Knexfile #3661
+
+### Typings:
+
+- `fn.now` takes optionally a precision argument. #3662
+- PG: Include SSL in connection definition #3659 
+
+### Test / internal changes:
+
+- replace Bluebird.timeout #3634
+
+# 0.20.9 - 08 February, 2020
+
+### Bug fixes:
+
+- CLI: Improve Support for Liftoff's Preloaders - this should fix some cases like using TS for your migrations #3613
+
+### Typings:
+
+- MSSQL: Add `enableArithAbort` to `MsSqlConnectionConfig` 
+
+### Test / internal changes:
+
+- Refactor more tests to use cli-testlab #3640
+- Update QueryCompiler implementation to use classes #3647
+
+# 0.20.8 - 14 January, 2020
+
+### New features:
+
+- CLI: Support ES6 modules via flag --esm #3616
+
+### Bug fixes:
+
+- CLI: Print help only when there are no arguments #3617
+
+### Typings:
+
+- Fix incorrect type of QueryBuilder.first('*') result #3621
+
+# 0.20.7 - 07 January, 2020
+
+### New features:
+
+- Throw better error when trying to modify schema while using unsupported dialect #3609
+
+### Bug fixes:
+
+- Oracle: dispose connection on connection error #3611
+- Oracle: fix not releasing connection from pool on disconnect #3605
+- CLI: prevent warning with root command #3604
+
+### Typings:
+
+- Add create/drop schema methods to SchemaBuilder #3579
+
 # 0.20.6 - 29 December, 2019
 
 ### Bug fixes:

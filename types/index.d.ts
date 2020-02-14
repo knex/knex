@@ -13,6 +13,8 @@ import events = require('events');
 import stream = require('stream');
 import ResultTypes = require('./result');
 
+import { ConnectionOptions } from "tls";
+
 // # Generic type-level utilities
 
 // If T is object then make it a partial otherwise fallback to any
@@ -1258,7 +1260,7 @@ declare namespace Knex {
     // we can extend our selection by these columns
     (columnName: '*'): QueryBuilder<
       TRecord,
-      DeferredKeySelection<TRecord, string>[]
+      ArrayIfAlready<TResult, DeferredKeySelection<TRecord, string>>
     >;
 
     <
@@ -1701,6 +1703,7 @@ declare namespace Knex {
       appName?: string;
       abortTransactionOnError?: boolean;
       trustedConnection?: boolean;
+      enableArithAbort?: boolean;
     };
     pool?: {
       min?: number;
@@ -1807,6 +1810,7 @@ declare namespace Knex {
     statement_timeout?: false | number;
     connectionTimeoutMillis?: number;
     keepAliveInitialDelayMillis?: number;
+    ssl?: boolean | ConnectionOptions;
   }
 
   type RedshiftConnectionConfig = PgConnectionConfig;
@@ -1911,7 +1915,7 @@ declare namespace Knex {
   }
 
   interface FunctionHelper {
-    now(): Raw;
+    now(precision?: number): Raw;
   }
 
   interface EnumOptions {
@@ -1989,6 +1993,8 @@ declare namespace Knex {
       ) => QueryBuilder<TRecord, TResult>
     ): void;
   }
+
+  export class KnexTimeoutError extends Error {}
 }
 
 export = Knex;
