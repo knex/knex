@@ -70,18 +70,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should immediately return updated value for other connections when updating row to DB returns (TODO: fix oracle fail)', function() {
-      if (knex.client.driverName == 'oracledb') {
-        // TODO: this test was added to catch strange random fails with oracle
-        // currently it looks like at least oracle transactions seem to return before
-        // they are actually committed to database...
-
-        // if those selects are changed to forUpdate() then the test seem to pass fine
-
-        this.skip();
-        return;
-      }
-
+    it('should immediately return updated value for other connections when updating row to DB returns', function() {
       return knex('accounts').then((res) => {
         function runTest() {
           return Promise.all(

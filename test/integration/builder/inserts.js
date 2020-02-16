@@ -1098,11 +1098,7 @@ module.exports = function(knex) {
         });
     });
 
-    describe('batchInsert (TODO: fix random oracle fail)', function() {
-      if (knex.client.driverName == 'oracledb') {
-        return;
-      }
-
+    describe('batchInsert', function() {
       const driverName = knex.client.driverName;
       const fiftyLengthString =
         'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';

@@ -245,12 +245,7 @@ module.exports = function(knex) {
         });
       });
 
-      it('should remove the record in the lock table once finished (TODO: fix random oracle fail)', function() {
-        if (knex.client.driverName == 'oracledb') {
-          this.skip();
-          return;
-        }
-
+      it('should remove the record in the lock table once finished', function() {
         return knex('knex_migrations_lock')
           .select('*')
           .then(function(data) {
