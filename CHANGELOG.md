@@ -4,7 +4,9 @@
 
 ### Bug fixes:
 
+- Oracle: commit was a no-op causing race conditions #3668
 - CLI: Knex calls process.chdir() before opening Knexfile #3661
+- Fixed unresolved promise in cancelQuery() #3666
 
 ### Typings:
 
