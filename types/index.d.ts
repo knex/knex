@@ -1451,7 +1451,7 @@ declare namespace Knex {
       writable: T,
       options?: { [key: string]: any }
     ): stream.PassThrough;
-    asCallback(callback: Function): this;
+    asCallback(callback: Function): Promise<T>;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any>
