@@ -96,27 +96,6 @@ export default [
     ]
   },
   {
-    type: "method",
-    method: "return",
-    example: ".return(value)",
-    description: "Shorthand for calling .then(function() { return value }).",
-    children: [
-      {
-        type: "code",
-        language: "js",
-        content: `
-          // Without return:
-          knex.insert(values).into('users')
-            .then(function() {
-              return {inserted: true};
-            });
-
-          knex.insert(values).into('users').return({inserted: true});
-        `
-      }
-    ]
-  },
-  {
     type: "heading",
     size: "md",
     content: "Callbacks",
