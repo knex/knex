@@ -137,18 +137,21 @@
   },
   "contributors": [
     {
-      "name": "Simon Liden"
+      "name": "Mikael Lepisto"
     },
     {
-      "name": "Mikael Lepisto"
+      "name": "Igor Savin",
+      "web": "https://www.codeflashbacks.com"
+    },
+    {
+      "name": "Simon Liden"
     },
     {
       "name": "Paul Gaurab",
       "web": "https://lorefnon.tech"
     },
     {
-      "name": "Igor Savin",
-      "web": "https://www.codeflashbacks.com"
+      "name": "Brian Lauber"
     }
   ],
   "browser": {
