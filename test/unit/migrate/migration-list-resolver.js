@@ -1,7 +1,6 @@
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
-const Promise = require('bluebird');
 const { expect } = require('chai');
 const sinon = require('sinon');
 const mockFs = require('mock-fs');
@@ -197,7 +196,7 @@ describe('migration-list-resolver', () => {
 
       const stub = sinon
         .stub(migrationSource, 'getMigrations')
-        .callsFake(() => Promise.resolve(true));
+        .callsFake(async () => true);
       return migrationListResolver
         .listAll(migrationSource, ['.ts'])
         .then(() => {

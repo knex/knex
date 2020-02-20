@@ -6,9 +6,9 @@ const tarn = require('tarn');
 const Pool = tarn.Pool;
 const knexfile = require('../knexfile');
 const makeKnex = require('../../knex');
-const Bluebird = require('bluebird');
+const delay = require('../../lib/util/delay');
 
-test(`pool evicts dead resources when factory.validate rejects`, (t) => {
+test(`pool evicts dead resources when factory.validate rejects`, async (t) => {
   t.plan(10);
 
   let i = 0;
@@ -30,51 +30,37 @@ test(`pool evicts dead resources when factory.validate rejects`, (t) => {
       return true;
     },
   });
-
-  Bluebird.resolve(Array.from(Array(5)))
-    .map(() => {
-      return pool.acquire().promise.catch((e) => {
-        t.fail('1# Could not get resource from pool');
-      });
-    })
-    .map((con) => {
-      pool.release(con);
-      return con;
-    })
-    .map((con) => {
-      // fake kill connections
-      con.error = 'connection lost';
-      return con;
-    })
-    .map((con) => {
-      return pool
-        .acquire()
-        .promise.then((con) => {
-          t.ok(con.id > 4, 'old dead connections were not reused');
-          return con;
+  const fiveElements = Array.from(Array(5));
+  const allocateConnections = () =>
+    Promise.all(
+      fiveElements.map(() =>
+        pool.acquire().promise.catch((e) => {
+          t.fail('Could not get resource from pool');
         })
-        .catch((e) => {
-          t.fail('2# Could not get resource from pool');
-        });
-    })
-    .map((con) => {
-      pool.release(con);
-      return con;
-    })
-    .map((con) => {
-      return pool.acquire().promise.then((con) => {
-        t.ok(con.id > 4 && con.id < 11, 'Released working connection was used');
-        return con;
-      });
-    })
-    .map((con) => {
-      pool.release(con);
-      return con;
-    })
-    .then(() => pool.destroy())
-    .then(() => {
-      t.end();
-    });
+      )
+    );
+
+  const connectionsGroup1 = await allocateConnections();
+  connectionsGroup1.forEach((con) => pool.release(con));
+  connectionsGroup1.forEach((con) => {
+    // fake kill connections
+    con.error = 'connection lost';
+  });
+
+  const connectionsGroup2 = await allocateConnections();
+  connectionsGroup2.forEach((con) =>
+    t.ok(con.id > 4, 'old dead connections were not reused')
+  );
+  connectionsGroup2.forEach((con) => pool.release(con));
+
+  const connectionsGroup3 = await allocateConnections();
+  connectionsGroup3.forEach((con) =>
+    t.ok(con.id > 4 && con.id < 11, 'Released working connection was used')
+  );
+  connectionsGroup3.forEach((con) => pool.release(con));
+
+  await pool.destroy();
+  t.end();
 });
 
 test('#822, pool config, max: 0 should skip pool construction', function(t) {
@@ -101,39 +87,36 @@ test('#823, should not skip pool construction pool config is not defined', funct
   }
 });
 
-test('#2321 dead connections are not evicted from pool', (t) => {
+test('#2321 dead connections are not evicted from pool', async (t) => {
   if (knexfile['mysql2']) {
     const knex = makeKnex(knexfile['mysql2']);
 
     t.plan(10);
-    Bluebird.all(
-      Array.from(Array(30)).map(() => {
-        // kill all connections in pool
-        return knex.raw(`KILL connection_id()`).catch(() => {
-          // just ignore errors
-        });
-      })
-    )
-      .delay(50) // wait driver to notice connection errors (2ms was enough locally)
-      .then(() => {
-        // all connections are dead, so they should be evicted from pool and this should work
-        return Bluebird.all(
-          Array.from(Array(10)).map(() =>
-            knex.select(1).then(() => t.pass('Read data'))
-          )
-        );
-      })
-      .catch((e) => {
-        t.fail(
-          `Should have created new connection and execute the query, got : ${e}`
-        );
-      })
-      .then(() => {
-        t.end();
-      })
-      .finally(() => {
-        return knex.destroy();
-      });
+    try {
+      await Promise.all(
+        Array.from(Array(30)).map(() => {
+          // kill all connections in pool
+          return knex.raw(`KILL connection_id()`).catch(() => {
+            // just ignore errors
+          });
+        })
+      );
+      await delay(50); // wait driver to notice connection errors (2ms was enough locally)
+
+      // all connections are dead, so they should be evicted from pool and this should work
+      await Promise.all(
+        Array.from(Array(10)).map(() =>
+          knex.select(1).then(() => t.pass('Read data'))
+        )
+      );
+    } catch (e) {
+      t.fail(
+        `Should have created new connection and execute the query, got : ${e}`
+      );
+    } finally {
+      t.end();
+      await knex.destroy();
+    }
   } else {
     t.end();
   }

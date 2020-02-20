@@ -5,10 +5,10 @@ const equal = require('assert').equal;
 const fs = require('fs');
 const path = require('path');
 const rimraf = require('rimraf');
-const Bluebird = require('bluebird');
 const knexLib = require('../../../knex');
 const logger = require('../logger');
 const config = require('../../knexfile');
+const delay = require('../../../lib/util/delay');
 const _ = require('lodash');
 const testMemoryMigrations = require('./memory-migrations');
 
@@ -23,30 +23,25 @@ module.exports = function(knex) {
   });
 
   describe('knex.migrate', function() {
-    it('should not fail on null default for timestamp', () => {
-      return knex.schema
-        .dropTableIfExists('null_date')
-        .then(() => {
-          return knex.migrate.latest({
-            directory: 'test/integration/migrate/null_timestamp_default',
-          });
-        })
-        .then(() => {
-          return knex.into('null_date').insert({
-            dummy: 'cannot insert empty object',
-          });
-        })
-        .then(() => {
-          return knex('null_date').first();
-        })
-        .then((rows) => {
-          expect(rows.deleted_at).to.equal(null);
-        })
-        .finally(() => {
-          return knex.migrate.rollback({
-            directory: 'test/integration/migrate/null_timestamp_default',
-          });
+    it('should not fail on null default for timestamp', async () => {
+      try {
+        await knex.schema.dropTableIfExists('null_date');
+
+        await knex.migrate.latest({
+          directory: 'test/integration/migrate/null_timestamp_default',
         });
+
+        await knex.into('null_date').insert({
+          dummy: 'cannot insert empty object',
+        });
+
+        const rows = await knex('null_date').first();
+        expect(rows.deleted_at).to.equal(null);
+      } finally {
+        await knex.migrate.rollback({
+          directory: 'test/integration/migrate/null_timestamp_default',
+        });
+      }
     });
 
     it('should not fail drop-and-recreate-column operation when using promise chain', () => {
@@ -193,7 +188,7 @@ module.exports = function(knex) {
       });
 
       it('should return a positive number if the DB is ahead', function() {
-        return Bluebird.all([
+        return Promise.all([
           knex('knex_migrations')
             .returning('id')
             .insert({
@@ -307,7 +302,7 @@ module.exports = function(knex) {
           // Save the promise, then wait a short time to ensure it's had time
           // to start its query and get blocked.
           const trx2Promise = migrator._lockMigrations(trx2);
-          await Bluebird.delay(100);
+          await delay(100);
           if (!trx2Promise.isPending()) {
             throw new Error('expected trx2 to be pending');
           }
@@ -1033,23 +1028,22 @@ module.exports = function(knex) {
   });
 
   describe('knex.migrate.latest with disableValidateMigrationList', function() {
-    it('should not fail if there is a missing migration', () => {
-      return knex.migrate
-        .latest({
+    it('should not fail if there is a missing migration', async () => {
+      try {
+        await knex.migrate.latest({
           directory: 'test/integration/migrate/test',
-        })
-        .then(() => {
-          return knex.migrate.latest({
-            directory:
-              'test/integration/migrate/test_with_missing_first_migration',
-            disableMigrationsListValidation: true,
-          });
-        })
-        .finally(() => {
-          return knex.migrate.rollback({
-            directory: 'test/integration/migrate/test',
-          });
         });
+
+        await knex.migrate.latest({
+          directory:
+            'test/integration/migrate/test_with_missing_first_migration',
+          disableMigrationsListValidation: true,
+        });
+      } finally {
+        await knex.migrate.rollback({
+          directory: 'test/integration/migrate/test',
+        });
+      }
     });
   });
 };
