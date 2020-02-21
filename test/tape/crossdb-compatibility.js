@@ -44,10 +44,12 @@ module.exports = function(knex) {
         );
         t.assert(true, 'unique constraint prevents adding rows');
 
-        await knex('test_table').insert([
-          { first: 'foo2', second: 'bar2' },
-          { first: 'foo2', second: 'bar2' },
-        ]);
+        await expectError(
+          knex('test_table').insert([
+            { first: 'foo2', second: 'bar2' },
+            { first: 'foo2', second: 'bar2' },
+          ])
+        );
         t.assert(true, 'two column unique constraint prevents adding rows');
 
         // even one null makes index to not match, thus allows adding the row
