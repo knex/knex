@@ -96,7 +96,7 @@ module.exports = (knexfile) => {
         t.timeoutAfter(1000);
 
         // just hog the only connection.
-        const trx = knex.transaction();
+        const trx = await knex.transaction();
 
         try {
           await knex('accounts').select(1);
