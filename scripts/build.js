@@ -2,7 +2,6 @@
 const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
-const Promise = require('bluebird');
 const _ = require('lodash');
 
 const exec = function(cmd, args) {
@@ -91,7 +90,7 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
           ? exec('npm install ' + installArgs, opts)
           : Promise.resolve();
         dependenciesInstalledQ
-          .then(function(stdout, stderr) {
+          .then(function() {
             console.log('✓');
             // Don't need the flag anymore as `postinstall` was already run.
             // Change it back so the environment is minimally changed for the
@@ -104,7 +103,7 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
             console.error(err);
             process.exit(1);
           })
-          .then(function(stdout, stderr) {
+          .then(function() {
             if (process.env.NODE_ENV === 'production') {
               console.log('✓');
               console.log('Pruning dev dependencies for production build');
