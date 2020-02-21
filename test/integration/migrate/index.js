@@ -303,7 +303,11 @@ module.exports = function(knex) {
           // to start its query and get blocked.
           const trx2Promise = migrator._lockMigrations(trx2);
           await delay(100);
-          if (!trx2Promise.isPending()) {
+          const isPending = await Promise.race([
+            delay(10).then(() => true),
+            trx2Promise.catch(() => {}).then(() => false),
+          ]);
+          if (!isPending) {
             throw new Error('expected trx2 to be pending');
           }
           await trx1.commit();
