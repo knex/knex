@@ -22,7 +22,7 @@ module.exports = (knexfile) => {
       const knex = makeKnex(knexConf);
 
       tape(dialect + ' - propagate error when DB does not exist', (t) => {
-        t.plan(1);
+        t.plan(2);
         t.timeoutAfter(1000);
         knex('accounts')
           .select(1)
