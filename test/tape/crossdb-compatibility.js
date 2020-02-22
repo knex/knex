@@ -1,6 +1,5 @@
 'use strict';
 const tape = require('tape');
-const { expectError } = require('../utils');
 
 /**
  * Collection of tests for making sure that certain features are cross database compatible
@@ -39,17 +38,18 @@ module.exports = function(knex) {
       t.plan(3);
 
       try {
-        await expectError(
+        await expect(
           knex('test_table').insert([{ third: 'foo' }, { third: 'foo' }])
-        );
+        ).to.be.eventually.rejected;
         t.assert(true, 'unique constraint prevents adding rows');
 
-        await expectError(
+        await expect(
           knex('test_table').insert([
             { first: 'foo2', second: 'bar2' },
             { first: 'foo2', second: 'bar2' },
           ])
-        );
+        ).to.be.eventually.rejected;
+
         t.assert(true, 'two column unique constraint prevents adding rows');
 
         // even one null makes index to not match, thus allows adding the row

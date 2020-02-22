@@ -4,13 +4,9 @@
 require('source-map-support').install();
 
 global.sinon = require('sinon');
+require('./chai-setup');
+global.chai.use(require('sinon-chai'));
 
-const chai = (global.chai = require('chai'));
-
-chai.use(require('sinon-chai'));
-chai.should();
-
-global.expect = chai.expect;
 global.d = new Date();
 
 // '.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection' produced unhandled rejection and it's unclear how to avoid that

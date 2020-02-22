@@ -5,7 +5,6 @@
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const delay = require('../../../lib/util/delay');
-const { expectError } = require('../../utils');
 
 module.exports = function(knex) {
   describe('Additional', function() {
@@ -864,9 +863,9 @@ module.exports = function(knex) {
       const query = testQueries[driverName]();
 
       try {
-        const error = await expectError(query.timeout(1, { cancel: true }));
-
-        expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+        await expect(
+          query.timeout(1, { cancel: true })
+        ).to.eventually.be.rejected.and.to.deep.include({
           timeout: 1,
           name: 'KnexTimeoutError',
           message:
@@ -921,11 +920,9 @@ module.exports = function(knex) {
       const secondQueryTimeout = 11;
 
       try {
-        const error1 = await expectError(
+        await expect(
           getTestQuery().timeout(queryTimeout, { cancel: true })
-        );
-
-        expect(_.pick(error1, 'timeout', 'name', 'message')).to.deep.equal({
+        ).to.be.eventually.rejected.and.deep.include({
           timeout: queryTimeout,
           name: 'error',
           message: `After query timeout of ${queryTimeout}ms exceeded, cancelling of query failed.`,
@@ -933,10 +930,9 @@ module.exports = function(knex) {
 
         knexPrototype._wrappedCancelQueryCall = originalWrappedCancelQueryCall;
 
-        const error2 = await expectError(
+        await expect(
           getTestQuery().timeout(secondQueryTimeout, { cancel: true })
-        );
-        expect(_.pick(error2, 'timeout', 'name', 'message')).to.deep.equal({
+        ).to.be.eventually.rejected.and.deep.include({
           timeout: secondQueryTimeout,
           name: 'KnexTimeoutError',
           message: `Defined query timeout of ${secondQueryTimeout}ms exceeded when running query.`,
