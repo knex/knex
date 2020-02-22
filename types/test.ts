@@ -198,7 +198,6 @@ const main = async () => {
   // $ExpectType User[]
   await knex<User>('user').where('name', ['a', 'b', 'c']);
 
-
   // $ExpectType User[]
   await knex<User>('user').whereRaw('name = ?', 'L');
 
