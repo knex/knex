@@ -1419,21 +1419,8 @@ declare namespace Knex {
 
   type ExposedPromiseKeys =
     | "then"
-    | "bind"
     | "catch"
-    | "finally"
-    | "asCallback"
-    | "spread"
-    | "map"
-    | "reduce"
-    | "thenReturn"
-    | "return"
-    | "yield"
-    | "ensure"
-    | "reflect"
-    | "get"
-    | "mapSeries"
-    | "delay";
+    | "finally";
 
   interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys> {
     toQuery(): string;
