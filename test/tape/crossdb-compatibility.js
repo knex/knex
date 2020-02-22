@@ -1,5 +1,6 @@
 'use strict';
 const tape = require('tape');
+const { expect } = require('chai');
 
 /**
  * Collection of tests for making sure that certain features are cross database compatible
