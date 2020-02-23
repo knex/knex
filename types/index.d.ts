@@ -1421,21 +1421,8 @@ declare namespace Knex {
 
   type ExposedPromiseKeys =
     | "then"
-    | "bind"
     | "catch"
-    | "finally"
-    | "asCallback"
-    | "spread"
-    | "map"
-    | "reduce"
-    | "thenReturn"
-    | "return"
-    | "yield"
-    | "ensure"
-    | "reflect"
-    | "get"
-    | "mapSeries"
-    | "delay";
+    | "finally";
 
   interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys> {
     toQuery(): string;
@@ -1453,7 +1440,7 @@ declare namespace Knex {
       writable: T,
       options?: Readonly<{ [key: string]: any }>
     ): stream.PassThrough;
-    asCallback(callback: Function): this;
+    asCallback(callback: Function): Promise<T>;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any>
