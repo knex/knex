@@ -890,8 +890,6 @@ module.exports = function(knex) {
       knexConfig.pool.max = 2;
       knexConfig.pool.acquireTimeoutMillis = 100;
 
-      const knexDb = new Knex(knexConfig);
-
       const rawTestQueries = {
         pg: (sleepSeconds) => `SELECT pg_sleep(${sleepSeconds})`,
       };
@@ -899,6 +897,8 @@ module.exports = function(knex) {
       if (!Object.prototype.hasOwnProperty.call(rawTestQueries, driverName)) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
+
+      const knexDb = new Knex(knexConfig);
 
       const getTestQuery = (sleepSeconds = 10) => {
         const rawTestQuery = rawTestQueries[driverName](sleepSeconds);

@@ -493,12 +493,9 @@ module.exports = function(knex) {
 
       const db = new Knex(knexConfig);
 
-      try {
-        await db.transaction(() => db.transaction(() => ({})));
-        expect.fail('should not get here');
-      } catch (error) {
-        expect(error).to.be.an.instanceof(KnexTimeoutError);
-      }
+      await expect(
+        db.transaction(() => db.transaction(() => ({})))
+      ).to.be.rejectedWith(KnexTimeoutError);
     });
 
     /**
