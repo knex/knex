@@ -2,11 +2,11 @@
 
 'use strict';
 
-const Bluebird = require('bluebird');
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const sinon = require('sinon');
 const { KnexTimeoutError } = require('../../../lib/util/timeout');
+const delay = require('../../../lib/util/delay');
 
 module.exports = function(knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
@@ -255,7 +255,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should be able to run schema methods', function() {
+    it('should be able to run schema methods', async () => {
       let __knexUid,
         count = 0;
       const err = new Error('error message');
@@ -290,13 +290,14 @@ module.exports = function(knex) {
             expect(count).to.equal(5);
             return knex('test_schema_migrations').count('*');
           })
+          .then(() => expect.fail('should never reach this line'))
           .catch(function(e) {
             // https://www.postgresql.org/docs/8.2/static/errcodes-appendix.html
             expect(e.code).to.equal('42P01');
           });
       } else {
         let id = null;
-        return knex
+        const promise = knex
           .transaction(function(trx) {
             return trx('accounts')
               .returning('id')
@@ -348,10 +349,13 @@ module.exports = function(knex) {
             if (!constid) {
               expect(resp).to.have.length(1);
             }
-          })
-          .finally(function() {
-            return knex.schema.dropTableIfExists('test_schema_transactions');
           });
+
+        try {
+          await promise;
+        } finally {
+          await knex.schema.dropTableIfExists('test_schema_transactions');
+        }
       }
     });
 
@@ -397,8 +401,8 @@ module.exports = function(knex) {
       if (/mssql/i.test(knex.client.driverName)) {
         return Promise.resolve();
       }
-      const first = Bluebird.delay(50);
-      const second = first.then(() => Bluebird.delay(50));
+      const first = delay(50);
+      const second = first.then(() => delay(50));
       return knex.transaction(function(trx) {
         return Promise.all([
           trx.transaction(function(trx2) {
@@ -479,7 +483,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', function() {
+    it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', async function() {
       const knexConfig = _.clone(knex.client.config);
       knexConfig.pool = {
         min: 0,
@@ -489,14 +493,12 @@ module.exports = function(knex) {
 
       const db = new Knex(knexConfig);
 
-      return db
-        .transaction(function() {
-          return db.transaction(function() {});
-        })
-        .then(function() {
-          throw new Error('should not get here');
-        })
-        .catch(KnexTimeoutError, function(error) {});
+      try {
+        await db.transaction(() => db.transaction(() => ({})));
+        expect.fail('should not get here');
+      } catch (error) {
+        expect(error).to.be.an.instanceof(KnexTimeoutError);
+      }
     });
 
     /**

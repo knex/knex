@@ -4,17 +4,10 @@
 require('source-map-support').install();
 
 global.sinon = require('sinon');
+require('./chai-setup');
+global.chai.use(require('sinon-chai'));
 
-const chai = (global.chai = require('chai'));
-
-chai.use(require('sinon-chai'));
-chai.should();
-
-const bluebird = require('bluebird');
-global.expect = chai.expect;
 global.d = new Date();
-
-bluebird.longStackTraces();
 
 // '.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection' produced unhandled rejection and it's unclear how to avoid that
 const EXPECTED_REJECTION_COUNT = 2;
