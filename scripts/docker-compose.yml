@@ -23,7 +23,10 @@ services:
 
   mysql:
     image: mysql
-    command: --default-authentication-plugin=mysql_native_password --sync_binlog=0 --skip-innodb_doublewrite --innodb-flush-log-at-trx-commit=0 --innodb-flush-method=nosync
+    # https://dev.mysql.com/doc/refman/8.0/en/mysql-acid.html
+    # https://dev.mysql.com/doc/refman/8.0/en/innodb-parameters.html#sysvar_innodb_flush_method
+    # nosync only for unix, edit for local start on other systems
+    command: --default-authentication-plugin=mysql_native_password --sync_binlog=0 --innodb_doublewrite=OFF  --innodb-flush-log-at-trx-commit=0 --innodb-flush-method=nosync
     ports:
       - '23306:3306'
     environment:
