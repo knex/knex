@@ -2,7 +2,7 @@
 
 'use strict';
 
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 const _ = require('lodash');
 const sinon = require('sinon');
 
