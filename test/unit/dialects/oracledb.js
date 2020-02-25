@@ -48,7 +48,7 @@ describe('OracleDb parameters', function() {
 
     before(function() {
       const conf = _.clone(config.oracledb);
-      conf.fetchAsString = ['number', 'DATE', 'cLOb'];
+      conf.fetchAsString = ['number', 'DATE', 'cLOb', 'BUFFER'];
       knexClient = knex(conf);
       return knexClient;
     });
@@ -77,6 +77,15 @@ describe('OracleDb parameters', function() {
         .then(function(result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.be.equal('LONG CONTENT');
+        });
+    });
+
+    it('on raw', function() {
+      return knexClient
+        .raw('select UTL_RAW.CAST_TO_RAW(3) as "field" from dual')
+        .then(function(result) {
+          expect(result[0]).to.be.ok;
+          expect(result[0].field).to.be.equal('33');
         });
     });
 
@@ -121,6 +130,15 @@ describe('OracleDb parameters', function() {
       );
     });
 
+    it('on raw', function() {
+      return knexClient
+        .raw('select UTL_RAW.CAST_TO_RAW(3) as "field" from dual')
+        .then(function(result) {
+          expect(result[0]).to.be.ok;
+          expect(result[0].field).to.be.instanceOf(Buffer);
+        });
+    });
+
     after(function() {
       return knexClient.destroy();
     });
@@ -132,7 +150,7 @@ describe('OracleDb unit tests', function() {
 
   before(function() {
     const conf = _.clone(config.oracledb);
-    conf.fetchAsString = ['number', 'DATE', 'cLOb'];
+    conf.fetchAsString = ['number', 'DATE', 'cLOb', 'BUFFER'];
     knexClient = knex(conf);
     return knexClient;
   });
