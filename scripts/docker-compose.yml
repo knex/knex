@@ -67,7 +67,6 @@ services:
       - POSTGRES_USER=testuser
       - POSTGRES_PASSWORD=knextest
       - POSTGRES_DB=knex_test
-      - POSTGRES_INITDB_ARGS="--nosync"
   waitpostgres:
     image: postgres:alpine
     links:
