@@ -28,7 +28,6 @@
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
   },
   "dependencies": {
-    "bluebird": "^3.7.2",
     "colorette": "1.1.0",
     "commander": "^4.1.1",
     "debug": "4.1.1",
