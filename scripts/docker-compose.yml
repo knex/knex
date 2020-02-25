@@ -23,7 +23,7 @@ services:
 
   mysql:
     image: mysql
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --sync_binlog=0 --skip-innodb_doublewrite --innodb-flush-log-at-trx-commit=0 --innodb-flush-method=nosync
     ports:
       - '23306:3306'
     environment:
@@ -59,12 +59,15 @@ services:
 
   postgres:
     image: postgres:alpine
+    # see https://www.postgresql.org/docs/current/non-durability.html
+    command: '-c full_page_writes=off -c fsync=off -c synchronous_commit=off'
     ports:
       - '25432:5432'
     environment:
       - POSTGRES_USER=testuser
       - POSTGRES_PASSWORD=knextest
       - POSTGRES_DB=knex_test
+      - POSTGRES_INITDB_ARGS="--nosync"
   waitpostgres:
     image: postgres:alpine
     links:
