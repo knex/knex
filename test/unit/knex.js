@@ -1,7 +1,6 @@
 const Knex = require('../../lib/index');
 const QueryBuilder = require('../../lib/query/builder');
 const { expect } = require('chai');
-const bluebird = require('bluebird');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
@@ -285,11 +284,10 @@ describe('knex', () => {
 
     const knexWithParams = knex.withUserParams({ userParam: '451' });
 
-    return knexWithParams.transaction((trx) => {
+    return knexWithParams.transaction(async (trx) => {
       expect(trx.userParams).to.deep.equal({
         userParam: '451',
       });
-      return bluebird.resolve();
     });
   });
 
@@ -478,13 +476,12 @@ describe('knex', () => {
 
     const knex = Knex(sqliteConfig);
 
-    return knex.transaction((trx) => {
+    return knex.transaction(async (trx) => {
       expect(() => {
         trx.withUserParams({ userParam: '451' });
       }).to.throw(
         /Cannot set user params on a transaction - it can only inherit params from main knex instance/
       );
-      return bluebird.resolve();
     });
   });
 

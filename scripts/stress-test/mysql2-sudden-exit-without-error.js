@@ -3,7 +3,7 @@
  * to dead connection.
  */
 
-const Bluebird = require('bluebird');
+const delay = require('../../lib/util/delay');
 const toxiproxy = require('toxiproxy-node-client');
 const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');
@@ -70,7 +70,7 @@ async function main() {
 
   // wait forever
   while (true) {
-    await Bluebird.delay(1000);
+    await delay(1000);
     try {
       await insanelyParanoidQuery(mysql2Con);
     } catch (err) {

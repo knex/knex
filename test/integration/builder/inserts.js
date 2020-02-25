@@ -4,7 +4,6 @@
 
 const uuid = require('uuid');
 const _ = require('lodash');
-const bluebird = require('bluebird');
 const sinon = require('sinon');
 
 module.exports = function(knex) {
@@ -1148,39 +1147,37 @@ module.exports = function(knex) {
         if (/redshift/i.test(knex.client.driverName)) {
           return;
         }
+        this.timeout(10000);
+
         const fn = sinon.stub();
         process.on('unhandledRejection', fn);
-        await new bluebird(function(resolve, reject) {
-          return knex.schema
-            .dropTableIfExists('batchInsertDuplicateKey')
-            .then(function() {
-              return knex.schema.createTable(
-                'batchInsertDuplicateKey',
-                function(table) {
-                  table.string('col');
-                  table.primary('col');
-                }
-              );
-            })
-            .then(function() {
-              const rows = [{ col: 'a' }, { col: 'a' }];
-              return knex.batchInsert(
-                'batchInsertDuplicateKey',
-                rows,
-                rows.length
-              );
-            })
-            .then(function() {
-              return reject(new Error('Should not reach this point'));
-            })
-            .catch(function(error) {
-              //Should reach this point before timeout of 10s
-              expect(error.message.toLowerCase()).to.include(
-                'batchinsertduplicatekey'
-              );
-              resolve(error);
+        await knex.schema
+          .dropTableIfExists('batchInsertDuplicateKey')
+          .then(function() {
+            return knex.schema.createTable('batchInsertDuplicateKey', function(
+              table
+            ) {
+              table.string('col');
+              table.primary('col');
             });
-        }).timeout(10000);
+          })
+          .then(function() {
+            const rows = [{ col: 'a' }, { col: 'a' }];
+            return knex.batchInsert(
+              'batchInsertDuplicateKey',
+              rows,
+              rows.length
+            );
+          })
+          .then(function() {
+            expect.fail('Should not reach this point');
+          })
+          .catch(function(error) {
+            //Should reach this point before timeout of 10s
+            expect(error.message.toLowerCase()).to.include(
+              'batchinsertduplicatekey'
+            );
+          });
         expect(fn).have.not.been.called;
         process.removeListener('unhandledRejection', fn);
       });

@@ -2,7 +2,7 @@
  * Test case for figuring out robust way to recognize if connection is dead
  * for mysql based drivers.
  */
-const Bluebird = require('bluebird');
+const delay = require('../../lib/util/delay');
 const toxiproxy = require('toxiproxy-node-client');
 const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');
@@ -122,7 +122,7 @@ async function main() {
       try {
         counts.queries += 1;
         // without this delay we might endup to busy failure loop
-        await Bluebird.delay(0);
+        await delay(0);
         await query();
         counts.results += 1;
       } catch (err) {
@@ -136,7 +136,7 @@ async function main() {
 
   // wait forever
   while (true) {
-    await Bluebird.delay(1000);
+    await delay(1000);
   }
 }
 
