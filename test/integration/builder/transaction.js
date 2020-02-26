@@ -659,13 +659,5 @@ module.exports = function(knex) {
         return builder;
       });
     });
-
-    it('does not shallow exception when error during transaction occurs', async () => {
-      await expect(
-        knex.transaction(async (trx) => {
-          await trx.raw('incorrect sql');
-        }).to.eventually.rejected
-      );
-    });
   });
 };
