@@ -660,7 +660,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('#3690 does not swallow exception when error during transaction occurs', async () => {
+    it('#3690 does not swallow exception when error during transaction occurs', async function() {
       const killConnectionMap = {
         mysql: async (connection) => knex.raw('KILL ?', [connection.threadId]),
         mysql2: async (connection) => knex.raw('KILL ?', [connection.threadId]),
@@ -681,7 +681,10 @@ module.exports = function(knex) {
       };
 
       const killConnection = killConnectionMap[knex.client.driverName];
-      if (!killConnection) return;
+      if (!killConnection) {
+        this.skip();
+        return;
+      }
 
       await knex.transaction(async (trx2) => {
         await killConnection(await trx2.client.acquireConnection(), trx2);
