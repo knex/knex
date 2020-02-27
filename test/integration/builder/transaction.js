@@ -661,13 +661,24 @@ module.exports = function(knex) {
     });
 
     it('#3690 does not swallow exception when error during transaction occurs', async () => {
-      if (knex.client.driverName !== 'mysql') return;
+      const killConnectionMap = {
+        mysql: async (connection) => knex.raw('KILL ?', [connection.threadId]),
+        mysql2: async (connection) => knex.raw('KILL ?', [connection.threadId]),
+        pg: async (connection) =>
+          knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
+        redshift: async (connection) =>
+          knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
+        mssql: async (connection, trx) =>
+          knex.raw('KILL ?', [(await trx.raw('select @@SPID as id'))[0].id]),
+        oracledb: async (connection) => connection.drop(),
+      };
+
+      const killConnection = killConnectionMap[knex.client.driverName];
+      if (!killConnection) return;
 
       await expect(
         knex.transaction(async (trx2) => {
-          await knex.raw('KILL ?', [
-            (await trx2.client.acquireConnection()).threadId,
-          ]);
+          await killConnection(await trx2.client.acquireConnection(), trx2);
           await trx2.transaction(async () => 2);
         })
       ).to.be.rejected;
