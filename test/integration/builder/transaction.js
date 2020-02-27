@@ -668,7 +668,7 @@ module.exports = function(knex) {
         await trx2.schema.createTable(tableName, (qb) => qb.string('a'));
         // TODO somehow kill connection of trx2???
         const promise = trx2.transaction(async () => 2);
-        expect(promise).to.be.eventually.not.equal(2);
+        await expect(promise).to.be.eventually.not.equal(2);
       });
     });
   });
