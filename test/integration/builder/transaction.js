@@ -668,9 +668,16 @@ module.exports = function(knex) {
           knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
         redshift: async (connection) =>
           knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
-        mssql: async (connection, trx) =>
-          knex.raw('KILL ?', [(await trx.raw('select @@SPID as id'))[0].id]),
-        oracledb: async (connection) => connection.drop(),
+        mssql: async (connection, trx) => {
+          const id = (await trx.raw('select @@SPID as id'))[0].id;
+          return knex.raw(`KILL ${id}`);
+        },
+        oracledb: async (connection, trx) => {
+          const id = (await trx.raw(
+            `select sys_context('userenv','sessionid') id from dual;`
+          ))[0].id;
+          return knex.raw(`Alter System Kill Session '${id}'`);
+        },
       };
 
       const killConnection = killConnectionMap[knex.client.driverName];
