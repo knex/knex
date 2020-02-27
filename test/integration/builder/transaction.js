@@ -660,17 +660,17 @@ module.exports = function(knex) {
       });
     });
 
-    if (knex.canCancelQuery) {
-      it('does not swallow exception when error during transaction occurs', async () => {
-        await expect(
-          knex.transaction(async (trx2) => {
-            await knex.raw('KILL ?', [
-              (await trx2.client.acquireConnection()).threadId,
-            ]);
-            await trx2.transaction(async () => 2);
-          })
-        ).to.be.rejected;
-      });
-    }
+    it('#3690 does not swallow exception when error during transaction occurs', async () => {
+      if (knex.client.driverName !== 'mysql') return;
+
+      await expect(
+        knex.transaction(async (trx2) => {
+          await knex.raw('KILL ?', [
+            (await trx2.client.acquireConnection()).threadId,
+          ]);
+          await trx2.transaction(async () => 2);
+        })
+      ).to.be.rejected;
+    });
   });
 };
