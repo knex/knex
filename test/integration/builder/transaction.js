@@ -660,7 +660,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('does not shallow exception when error during transaction occurs', async () => {
+    it('does not swallow exception when error during transaction occurs', async () => {
       const tableName = 'test_table_inside_trx_3690';
       await knex.schema.dropTableIfExists(tableName);
 
