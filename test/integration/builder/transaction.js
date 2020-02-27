@@ -661,12 +661,12 @@ module.exports = function(knex) {
     });
 
     it('#3690 does not swallow exception when error during transaction occurs', async function() {
+      const mysqlKillConnection = async (connection) =>
+        knex.raw('KILL ?', [connection.threadId]);
       const killConnectionMap = {
-        mysql: async (connection) => knex.raw('KILL ?', [connection.threadId]),
-        mysql2: async (connection) => knex.raw('KILL ?', [connection.threadId]),
+        mysql: mysqlKillConnection,
+        mysql2: mysqlKillConnection,
         pg: async (connection) =>
-          knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
-        redshift: async (connection) =>
           knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
         /* TODO FIX
         mssql: async (connection, trx) => {
