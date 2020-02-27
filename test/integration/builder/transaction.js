@@ -673,10 +673,15 @@ module.exports = function(knex) {
           return knex.raw(`KILL ${id}`);
         },
         oracledb: async (connection, trx) => {
-          const id = (await trx.raw(
-            `select sys_context('userenv','sessionid') id from dual;`
-          ))[0].id;
-          return knex.raw(`Alter System Kill Session '${id}'`);
+          // https://stackoverflow.com/a/28815685
+          const row = (await trx.raw(
+            `SELECT * FROM V$SESSION WHERE AUDSID = Sys_Context('USERENV', 'SESSIONID')`
+          ))[0];
+          return knex.raw(
+            `Alter System Kill Session '${row.SID}, ${
+              row['SERIAL#']
+            }' immediate`
+          );
         },
       };
 
