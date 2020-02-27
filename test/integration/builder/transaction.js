@@ -668,6 +668,7 @@ module.exports = function(knex) {
           knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
         redshift: async (connection) =>
           knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
+        /* TODO FIX
         mssql: async (connection, trx) => {
           const id = (await trx.raw('select @@SPID as id'))[0].id;
           return knex.raw(`KILL ${id}`);
@@ -683,6 +684,7 @@ module.exports = function(knex) {
             }' immediate`
           );
         },
+      */
       };
 
       const killConnection = killConnectionMap[knex.client.driverName];
