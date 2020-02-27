@@ -691,10 +691,12 @@ module.exports = function(knex) {
         return;
       }
 
-      await knex.transaction(async (trx2) => {
-        await killConnection(await trx2.client.acquireConnection(), trx2);
-        await trx2.transaction(async () => 2);
-      });
+      await expect(
+        knex.transaction(async (trx2) => {
+          await killConnection(await trx2.client.acquireConnection(), trx2);
+          await trx2.transaction(async () => 2);
+        })
+      ).to.be.rejected;
     });
   });
 };
