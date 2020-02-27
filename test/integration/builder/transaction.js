@@ -676,12 +676,10 @@ module.exports = function(knex) {
       const killConnection = killConnectionMap[knex.client.driverName];
       if (!killConnection) return;
 
-      await expect(
-        knex.transaction(async (trx2) => {
-          await killConnection(await trx2.client.acquireConnection(), trx2);
-          await trx2.transaction(async () => 2);
-        })
-      ).to.be.rejected;
+      await knex.transaction(async (trx2) => {
+        await killConnection(await trx2.client.acquireConnection(), trx2);
+        await trx2.transaction(async () => 2);
+      });
     });
   });
 };
