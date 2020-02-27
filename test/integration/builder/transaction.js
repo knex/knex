@@ -659,5 +659,17 @@ module.exports = function(knex) {
         return builder;
       });
     });
+
+    it('does not shallow exception when error during transaction occurs', async () => {
+      const tableName = 'test_table_inside_trx_3690';
+      await knex.schema.dropTableIfExists(tableName);
+
+      await knex.transaction(async (trx2) => {
+        await trx2.schema.createTable(tableName, (qb) => qb.string('a'));
+        // TODO somehow kill connection of trx2???
+        const promise = trx2.transaction(async () => 2);
+        expect(promise).to.be.eventually.not.equal(2);
+      });
+    });
   });
 };
