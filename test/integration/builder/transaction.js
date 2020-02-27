@@ -660,16 +660,17 @@ module.exports = function(knex) {
       });
     });
 
-    it('does not swallow exception when error during transaction occurs', async () => {
-      const tableName = 'test_table_inside_trx_3690';
-      await knex.schema.dropTableIfExists(tableName);
-
-      await knex.transaction(async (trx2) => {
-        await trx2.schema.createTable(tableName, (qb) => qb.string('a'));
-        // TODO somehow kill connection of trx2???
-        const promise = trx2.transaction(async () => 2);
-        await expect(promise).to.be.eventually.not.equal(2);
+    if (knex.canCancelQuery) {
+      it('does not swallow exception when error during transaction occurs', async () => {
+        await expect(
+          knex.transaction(async (trx2) => {
+            await knex.raw('KILL ?', [
+              (await trx2.client.acquireConnection()).threadId,
+            ]);
+            await trx2.transaction(async () => 2);
+          })
+        ).to.be.rejected;
       });
-    });
+    }
   });
 };
