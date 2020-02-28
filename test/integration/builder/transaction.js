@@ -659,5 +659,46 @@ module.exports = function(knex) {
         return builder;
       });
     });
+
+    it('#3690 does not swallow exception when error during transaction occurs', async function() {
+      const mysqlKillConnection = async (connection) =>
+        knex.raw('KILL ?', [connection.threadId]);
+      const killConnectionMap = {
+        mysql: mysqlKillConnection,
+        mysql2: mysqlKillConnection,
+        pg: async (connection) =>
+          knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
+        /* TODO FIX
+        mssql: async (connection, trx) => {
+          const id = (await trx.raw('select @@SPID as id'))[0].id;
+          return knex.raw(`KILL ${id}`);
+        },
+        oracledb: async (connection, trx) => {
+          // https://stackoverflow.com/a/28815685
+          const row = (await trx.raw(
+            `SELECT * FROM V$SESSION WHERE AUDSID = Sys_Context('USERENV', 'SESSIONID')`
+          ))[0];
+          return knex.raw(
+            `Alter System Kill Session '${row.SID}, ${
+              row['SERIAL#']
+            }' immediate`
+          );
+        },
+      */
+      };
+
+      const killConnection = killConnectionMap[knex.client.driverName];
+      if (!killConnection) {
+        this.skip();
+        return;
+      }
+
+      await expect(
+        knex.transaction(async (trx2) => {
+          await killConnection(await trx2.client.acquireConnection(), trx2);
+          await trx2.transaction(async () => 2);
+        })
+      ).to.be.rejected;
+    });
   });
 };
