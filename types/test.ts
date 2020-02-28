@@ -82,6 +82,12 @@ type _T8 = ExtendsWitness<Knex.QueryBuilder<User, number[]>, Knex.QueryBuilder>;
 type _T9 = ExtendsWitness<Knex.QueryBuilder<any, any[]>, Knex.QueryBuilder>;
 type _T10 = ExtendsWitness<Knex.QueryBuilder<User, number>, Knex.QueryBuilder>;
 
+class TestClient extends Knex.Client {
+  validateConnection(connection: any): boolean {
+    return super.validateConnection(connection) && 1 < 42;
+  }
+}
+
 const main = async () => {
   // # Select:
 

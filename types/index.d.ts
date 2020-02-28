@@ -1927,7 +1927,7 @@ declare namespace Knex {
 
     acquireRawConnection(): Promise<any>;
     destroyRawConnection(connection: any): Promise<void>;
-    validateConnection(connection: any): Promise<boolean>;
+    validateConnection(connection: any): boolean;
     logger: Logger;
     version?: string;
     connectionConfigProvider: any;
