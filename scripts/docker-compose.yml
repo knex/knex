@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mssql:
-    image: microsoft/mssql-server-linux:2017-latest
+    image: mcr.microsoft.com/mssql/server:2017-latest
     ports:
       - '21433:1433'
     environment:
@@ -11,7 +11,7 @@ services:
     healthcheck:
       test: /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P 'S0meVeryHardPassword' -Q 'select 1'
   initmssqlknexdb:
-    image: microsoft/mssql-server-linux:2017-latest
+    image: mcr.microsoft.com/mssql-tools:2017-latest
     links:
       - mssql
     depends_on:
