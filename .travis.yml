@@ -4,6 +4,8 @@ sudo: required
 cache:
   directories:
     - 'node_modules'
+    # cache typescript libraries
+    - $HOME/.dts/
 
 matrix:
   fast_finish: true
