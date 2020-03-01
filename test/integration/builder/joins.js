@@ -1792,7 +1792,7 @@ module.exports = function(knex) {
 
     it('supports joins with overlapping column names', function() {
       if (knex.client.driverName === 'oracledb') {
-        return;
+        return this.skip();
       }
 
       return knex('accounts as a1')
