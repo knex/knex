@@ -395,12 +395,6 @@ module.exports = function(knex) {
     });
 
     it('#2213 - should wait for sibling transactions to finish', function() {
-      if (/redshift/i.test(knex.client.driverName)) {
-        return Promise.resolve();
-      }
-      if (/mssql/i.test(knex.client.driverName)) {
-        return Promise.resolve();
-      }
       const first = delay(50);
       const second = first.then(() => delay(50));
       return knex.transaction(function(trx) {
