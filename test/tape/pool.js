@@ -101,7 +101,16 @@ test('#2321 dead connections are not evicted from pool', async (t) => {
           });
         })
       );
-      await delay(50); // wait driver to notice connection errors (2ms was enough locally)
+
+      // TODO: It looks like this test case can trigger the race condition
+      //       outlined in this issue comment:
+      //
+      //         https://github.com/knex/knex/issues/3636#issuecomment-592005391
+      //
+      //       For now, we're working around this problem by introducing a
+      //       1 second delay.  But, we should revisit this once the connection
+      //       pool logic has been refactored.
+      await delay(1000); // wait driver to notice connection errors (2ms was enough locally)
 
       // all connections are dead, so they should be evicted from pool and this should work
       await Promise.all(

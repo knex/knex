@@ -32,9 +32,9 @@ const postProcessResponse = (response) => {
 module.exports = (knex) => {
   describe('Schema', () => {
     describe('errors for unsupported dialects', () => {
-      it('throws an error if client does not support createSchema', async () => {
+      it('throws an error if client does not support createSchema', async function() {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -48,9 +48,9 @@ module.exports = (knex) => {
         );
       });
 
-      it('throws an error if client does not support createSchemaIfNotExists', async () => {
+      it('throws an error if client does not support createSchemaIfNotExists', async function() {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -64,9 +64,9 @@ module.exports = (knex) => {
         );
       });
 
-      it('throws an error if client does not support dropSchema', async () => {
+      it('throws an error if client does not support dropSchema', async function() {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -80,9 +80,9 @@ module.exports = (knex) => {
         );
       });
 
-      it('throws an error if client does not support dropSchemaIfExists', async () => {
+      it('throws an error if client does not support dropSchemaIfExists', async function() {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -910,9 +910,9 @@ module.exports = (knex) => {
           t.json('json_data', true);
         }));
 
-      it('allows adding multiple columns at once', () => {
+      it('allows adding multiple columns at once', function() {
         if (/redshift/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
         return knex.schema
           .table('test_table_two', (t) => {
@@ -940,7 +940,7 @@ module.exports = (knex) => {
           })
           .then(() => knex.schema.dropTable('test_table_numerics2')));
 
-      it('allows alter column syntax', () => {
+      it('allows alter column syntax', function() {
         if (
           knex.client.driverName.match('sqlite3') ||
           knex.client.driverName.match('pg-redshift') ||

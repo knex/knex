@@ -216,7 +216,7 @@ module.exports = function(knex) {
 
     it('allows you to stream with mysql dialect options', function() {
       if (!_.includes(['mysql', 'mysql2'], knex.client.driverName)) {
-        return;
+        return this.skip();
       }
       const rows = [];
       return knex('accounts')
@@ -1178,7 +1178,7 @@ module.exports = function(knex) {
 
     it('select for update locks selected row', function() {
       if (knex.client.driverName === 'sqlite3') {
-        return;
+        return this.skip();
       }
 
       return knex('test_default_table')
@@ -1209,7 +1209,7 @@ module.exports = function(knex) {
 
     it('select for update locks only some tables, #2834', function() {
       if (knex.client.driverName !== 'pg') {
-        return;
+        return this.skip();
       }
 
       return knex('test_default_table')
@@ -1261,7 +1261,7 @@ module.exports = function(knex) {
         knex.client.driverName === 'sqlite3' ||
         knex.client.driverName === 'oracledb'
       ) {
-        return;
+        return this.skip();
       }
 
       return knex('test_default_table')
@@ -1303,7 +1303,7 @@ module.exports = function(knex) {
     it('forUpdate().skipLocked() with order by should return the first non-locked row', async function() {
       // Note: this test doesn't work properly on MySQL - see https://bugs.mysql.com/bug.php?id=67745
       if (knex.client.driverName !== 'pg') {
-        return;
+        return this.skip();
       }
 
       const rowName = 'row for skipLocked() test #1';
@@ -1341,7 +1341,7 @@ module.exports = function(knex) {
         knex.client.driverName !== 'pg' &&
         knex.client.driverName !== 'mysql'
       ) {
-        return;
+        return this.skip();
       }
 
       const rowName = 'row for skipLocked() test #2';
@@ -1375,7 +1375,7 @@ module.exports = function(knex) {
         knex.client.driverName !== 'pg' &&
         knex.client.driverName !== 'mysql'
       ) {
-        return;
+        return this.skip();
       }
 
       const rowName = 'row for noWait() test';

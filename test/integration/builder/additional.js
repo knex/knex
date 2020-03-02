@@ -452,7 +452,7 @@ module.exports = function(knex) {
 
     it('#2184 - should properly escape table name for SQLite columnInfo', function() {
       if (knex.client.driverName !== 'sqlite3') {
-        return;
+        return this.skip();
       }
 
       return knex.schema
@@ -664,10 +664,10 @@ module.exports = function(knex) {
     it('.timeout() should throw TimeoutError', function() {
       const driverName = knex.client.driverName;
       if (driverName === 'sqlite3') {
-        return;
+        return this.skip();
       } //TODO -- No built-in support for sleeps
       if (/redshift/.test(driverName)) {
-        return;
+        return this.skip();
       }
       const testQueries = {
         pg: function() {
@@ -711,10 +711,10 @@ module.exports = function(knex) {
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
       const driverName = knex.client.driverName;
       if (driverName === 'sqlite3') {
-        return;
+        return this.skip();
       } //TODO -- No built-in support for sleeps
       if (/redshift/.test(driverName)) {
-        return;
+        return this.skip();
       }
 
       // There's unexpected behavior caused by knex releasing a connection back
@@ -758,7 +758,7 @@ module.exports = function(knex) {
         expect(addTimeout).to.throw(
           'Query cancelling not supported for this dialect'
         );
-        return;
+        return; // TODO: Use `this.skip()` here?
       }
 
       const getProcessesQueries = {
@@ -819,14 +819,14 @@ module.exports = function(knex) {
         });
     });
 
-    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async () => {
+    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async function() {
       // Only mysql/postgres query cancelling supported for now
       const driverName = knex.client.driverName;
       if (
         !_.startsWith(driverName, 'mysql') &&
         !_.startsWith(driverName, 'pg')
       ) {
-        return;
+        return this.skip();
       }
 
       // To make this test easier, I'm changing the pool settings to max 1.
@@ -880,7 +880,7 @@ module.exports = function(knex) {
       // Only mysql/postgres query cancelling supported for now
       const driverName = knex.client.driverName;
       if (!_.startsWith(driverName, 'pg')) {
-        return;
+        return this.skip();
       }
 
       // To make this test easier, I'm changing the pool settings to max 1.

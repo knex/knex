@@ -97,7 +97,7 @@ module.exports = function(knex) {
 
   it('#1781 - decimal value must not be converted to integer', function() {
     if (!/mssql/i.test(knex.client.driverName)) {
-      return;
+      return this.skip();
     }
 
     const tableName = 'decimal_test';

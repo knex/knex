@@ -494,7 +494,7 @@ module.exports = function(knex) {
 
     it('will fail when multiple inserts are made into a unique column', function() {
       if (/redshift/i.test(knex.client.driverName)) {
-        return;
+        return this.skip();
       }
       return knex('accounts')
         .where('id', '>', 1)
@@ -1011,7 +1011,7 @@ module.exports = function(knex) {
 
     it('should allow a * for returning in postgres and oracle', function() {
       if (/redshift/i.test(knex.client.driverName)) {
-        return;
+        return this.skip();
       }
       const insertData = {
         account_id: 10,
@@ -1145,7 +1145,7 @@ module.exports = function(knex) {
 
       it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', async function() {
         if (/redshift/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
         this.timeout(10000);
 

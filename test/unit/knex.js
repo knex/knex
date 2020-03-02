@@ -168,9 +168,9 @@ describe('knex', () => {
     ).to.equal(null);
   });
 
-  it('passes queryContext to wrapIdentifier in raw query', () => {
+  it('passes queryContext to wrapIdentifier in raw query', function() {
     if (!sqliteConfig) {
-      return;
+      return this.skip();
     }
 
     const knex = Knex(
@@ -210,9 +210,9 @@ describe('knex', () => {
       });
   });
 
-  it('passes queryContext to wrapIdentifier in raw query in transaction', () => {
+  it('passes queryContext to wrapIdentifier in raw query in transaction', function() {
     if (!sqliteConfig) {
-      return;
+      return this.skip();
     }
 
     const knex = Knex(
@@ -275,9 +275,9 @@ describe('knex', () => {
     ).to.equal(null);
   });
 
-  it('transaction of a copy with userParams retains userparams', () => {
+  it('transaction of a copy with userParams retains userparams', function() {
     if (!sqliteConfig) {
-      return;
+      return this.skip();
     }
 
     const knex = Knex(sqliteConfig);
@@ -469,9 +469,9 @@ describe('knex', () => {
     });
   });
 
-  it('creating transaction copy with user params should throw an error', () => {
+  it('creating transaction copy with user params should throw an error', function() {
     if (!sqliteConfig) {
-      return;
+      return this.skip();
     }
 
     const knex = Knex(sqliteConfig);
@@ -505,9 +505,9 @@ describe('knex', () => {
   });
 
   describe('async stack traces', () => {
-    it('should capture stack trace on query builder instantiation', () => {
+    it('should capture stack trace on query builder instantiation', function() {
       if (!sqliteConfig) {
-        return;
+        return this.skip();
       }
 
       const knex = Knex(
