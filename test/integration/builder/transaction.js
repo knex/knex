@@ -395,6 +395,10 @@ module.exports = function(knex) {
     });
 
     it('#2213 - should wait for sibling transactions to finish', function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
+
       const first = delay(50);
       const second = first.then(() => delay(50));
       return knex.transaction(function(trx) {
@@ -410,6 +414,10 @@ module.exports = function(knex) {
     });
 
     it('#2213 - should not evaluate a Transaction container until all previous siblings have completed', async function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
+
       const TABLE_NAME = 'test_sibling_transaction_order';
       await knex.schema.dropTableIfExists(TABLE_NAME);
       await knex.schema.createTable(TABLE_NAME, function(t) {
