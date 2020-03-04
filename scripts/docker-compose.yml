@@ -19,7 +19,8 @@ services:
     entrypoint:
       - bash
       - -c
-      - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P S0meVeryHardPassword -d master -Q "CREATE DATABASE knex_test"; do sleep 5; done'
+      # https://docs.microsoft.com/en-us/sql/relational-databases/logs/control-transaction-durability?view=sql-server-ver15#bkmk_DbControl
+      - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P S0meVeryHardPassword -d master -Q "CREATE DATABASE knex_test; ALTER DATABASE knex_test SET DELAYED_DURABILITY = FORCED"; do sleep 5; done'
 
   mysql:
     image: mysql
