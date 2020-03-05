@@ -81,9 +81,7 @@ test('mysql connection protocol allows skip username', function(t) {
 test('mysql connection protocol allows skip password', function(t) {
   t.plan(1);
   t.deepEqual(
-    parseConnection(
-      'mysql://username@path.to.some-url:3306/testdb?foo=bar&anotherParam=%2Fa%2Fb%2Fc'
-    ),
+    parseConnection('mysql://username@path.to.some-url:3306/testdb'),
     {
       client: 'mysql',
       connection: {
@@ -91,8 +89,38 @@ test('mysql connection protocol allows skip password', function(t) {
         host: 'path.to.some-url',
         port: '3306',
         database: 'testdb',
-        foo: 'bar',
-        anotherParam: '/a/b/c',
+      },
+    }
+  );
+});
+
+test('decodes username and password', function(t) {
+  t.plan(1);
+  t.deepEqual(parseConnection('mysql://user%3A@path.to.some-url:3306/testdb'), {
+    client: 'mysql',
+    connection: {
+      user: 'user:',
+      host: 'path.to.some-url',
+      port: '3306',
+      database: 'testdb',
+    },
+  });
+});
+
+test('do not encode password', function(t) {
+  t.plan(1);
+  t.deepEqual(
+    parseConnection(
+      'mysql://user:password-start:rest@path.to.some-url:3306/testdb?'
+    ),
+    {
+      client: 'mysql',
+      connection: {
+        user: 'user',
+        password: 'password-start:rest',
+        host: 'path.to.some-url',
+        port: '3306',
+        database: 'testdb',
       },
     }
   );
