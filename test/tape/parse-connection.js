@@ -39,7 +39,9 @@ test('parses standard connections without password', function (t) {
 test('mysql connection protocol with query string params', function (t) {
   t.plan(1);
   t.deepEqual(
-    parseConnection('mysql://user:pass@path.to.some-url:3306/testdb?foo=bar'),
+    parseConnection(
+      'mysql://user:pass@path.to.some-url:3306/testdb?foo=bar&anotherParam=%2Fa%2Fb%2Fc'
+    ),
     {
       client: 'mysql',
       connection: {
@@ -49,6 +51,48 @@ test('mysql connection protocol with query string params', function (t) {
         port: '3306',
         database: 'testdb',
         foo: 'bar',
+        anotherParam: '/a/b/c',
+      },
+    }
+  );
+});
+
+test('mysql connection protocol allows skip username', function(t) {
+  t.plan(1);
+  t.deepEqual(
+    parseConnection(
+      'mysql://:pass@path.to.some-url:3306/testdb?foo=bar&anotherParam=%2Fa%2Fb%2Fc'
+    ),
+    {
+      client: 'mysql',
+      connection: {
+        user: '',
+        password: 'pass',
+        host: 'path.to.some-url',
+        port: '3306',
+        database: 'testdb',
+        foo: 'bar',
+        anotherParam: '/a/b/c',
+      },
+    }
+  );
+});
+
+test('mysql connection protocol allows skip password', function(t) {
+  t.plan(1);
+  t.deepEqual(
+    parseConnection(
+      'mysql://username@path.to.some-url:3306/testdb?foo=bar&anotherParam=%2Fa%2Fb%2Fc'
+    ),
+    {
+      client: 'mysql',
+      connection: {
+        user: 'username',
+        host: 'path.to.some-url',
+        port: '3306',
+        database: 'testdb',
+        foo: 'bar',
+        anotherParam: '/a/b/c',
       },
     }
   );
@@ -93,7 +137,7 @@ test('parses mssql connections, aliasing host to server and adding extra params'
   );
 });
 
-test('assume a path is mysql', function (t) {
+test('assume a path is sqlite', function (t) {
   t.plan(1);
   t.deepEqual(parseConnection('/path/to/file.db'), {
     client: 'sqlite3',
