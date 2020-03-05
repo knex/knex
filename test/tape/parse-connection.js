@@ -94,6 +94,22 @@ test('mysql connection protocol allows skip password', function(t) {
   );
 });
 
+test('mysql connection protocol allows empty password', function(t) {
+  t.plan(1);
+  t.deepEqual(
+    parseConnection('mysql://username:@path.to.some-url:3306/testdb'),
+    {
+      client: 'mysql',
+      connection: {
+        user: 'username',
+        host: 'path.to.some-url',
+        port: '3306',
+        database: 'testdb',
+      },
+    }
+  );
+});
+
 test('decodes username and password', function(t) {
   t.plan(1);
   t.deepEqual(parseConnection('mysql://user%3A@path.to.some-url:3306/testdb'), {
