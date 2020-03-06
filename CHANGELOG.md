@@ -1,5 +1,24 @@
 # Master (Unreleased)
 
+# 0.20.11 - 26 February, 2020
+
+### New features:
+
+- Oracle: Add OracleDB handling for buffer type in fetchAsString #3685
+
+### Bug fixes:
+
+- Fix race condition in non-container transactions #3671
+
+### Typings:
+
+- Mark knex arguments of composite/collection types to be readonly #3680
+
+### Test / internal changes:
+
+- Remove dependency on bluebird methods from sources #3683
+- Cleanup and extract Transaction Workflow logic #3674
+
 # 0.20.10 - 13 February, 2020
 
 ### Bug fixes:

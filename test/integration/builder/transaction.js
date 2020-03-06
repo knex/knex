@@ -396,11 +396,9 @@ module.exports = function(knex) {
 
     it('#2213 - should wait for sibling transactions to finish', function() {
       if (/redshift/i.test(knex.client.driverName)) {
-        return Promise.resolve();
+        return this.skip();
       }
-      if (/mssql/i.test(knex.client.driverName)) {
-        return Promise.resolve();
-      }
+
       const first = delay(50);
       const second = first.then(() => delay(50));
       return knex.transaction(function(trx) {
@@ -410,6 +408,35 @@ module.exports = function(knex) {
           }),
           trx.transaction(function(trx3) {
             return second;
+          }),
+        ]);
+      });
+    });
+
+    it('#2213 - should not evaluate a Transaction container until all previous siblings have completed', async function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
+
+      const TABLE_NAME = 'test_sibling_transaction_order';
+      await knex.schema.dropTableIfExists(TABLE_NAME);
+      await knex.schema.createTable(TABLE_NAME, function(t) {
+        t.string('username');
+      });
+
+      await knex.transaction(async function(trx) {
+        await Promise.all([
+          trx.transaction(async function(trx1) {
+            // This delay provides `trx2` with an opportunity to run first.
+            await delay(200);
+            await trx1(TABLE_NAME).insert({ username: 'bob' });
+          }),
+          trx.transaction(async function(trx2) {
+            const rows = await trx2(TABLE_NAME);
+
+            // Even though `trx1` was delayed, `trx2` waited patiently for `trx1`
+            // to finish.  Therefore, `trx2` discovers that there is already 1 row.
+            expect(rows.length).to.equal(1);
           }),
         ]);
       });
