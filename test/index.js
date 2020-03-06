@@ -10,7 +10,7 @@ global.chai.use(require('sinon-chai'));
 global.d = new Date();
 
 // '.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection' produced unhandled rejection and it's unclear how to avoid that
-const EXPECTED_REJECTION_COUNT = 2;
+const EXPECTED_REJECTION_COUNT = 0;
 const rejectionLog = [];
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled rejection:', reason);
