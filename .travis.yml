@@ -4,21 +4,22 @@ sudo: required
 cache:
   directories:
     - 'node_modules'
+    # cache typescript libraries
+    - $HOME/.dts/
 
 matrix:
   fast_finish: true
   include:
     - node_js: '13'
-      env: DB="mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+      env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
     - node_js: '12'
-      env: DB="mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+      env: TESTSCRIPT=test:everything DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
     - node_js: '10'
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
     - node_js: '8'
-      env: TESTSCRIPT=test:everything DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+      env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
 install:
   - npm i
-  - (echo $DB | grep oracledb) && npm install oracledb || true
 
 before_script:
   - npm run db:start
