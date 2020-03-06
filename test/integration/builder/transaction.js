@@ -728,4 +728,25 @@ module.exports = function(knex) {
       ).to.be.rejected;
     });
   });
+
+  it('handles promise rejections in nested Transactions (#3706)', async function() {
+    const fn = sinon.stub();
+    process.on('unhandledRejection', fn);
+    try {
+      await knex.transaction(async function(trx1) {
+        // These two lines together will cause the underlying Transaction
+        // to be rejected.  Prior to #3706, this rejection would be unhandled.
+        const trx2 = await trx1.transaction(undefined, {
+          doNotRejectOnRollback: false,
+        });
+        await trx2.rollback();
+
+        await expect(trx2.executionPromise).to.have.been.rejected;
+      });
+
+      expect(fn).have.not.been.called;
+    } finally {
+      process.removeListener('unhandledRejection', fn);
+    }
+  });
 };
