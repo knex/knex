@@ -1671,7 +1671,8 @@ module.exports = (knex) => {
           .then(() => {
             if (/sqlite/i.test(knex.client.dialect)) {
               //For SQLite inspect metadata to make sure the constraint exists
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'table',
@@ -1702,7 +1703,8 @@ module.exports = (knex) => {
           .then(() => {
             if (/sqlite/i.test(knex.client.dialect)) {
               //For SQLite inspect metadata to make sure the constraint exists
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'table',
@@ -1746,7 +1748,8 @@ module.exports = (knex) => {
                     '` primary key (`test`, `test2`))',
                 },
               ];
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'table',
