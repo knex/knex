@@ -1801,7 +1801,8 @@ module.exports = (knex) => {
                     '` (`test`)',
                 },
               ];
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'index',
@@ -1864,7 +1865,8 @@ module.exports = (knex) => {
                     '` (`test`, `test2`)',
                 },
               ];
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'index',
