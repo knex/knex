@@ -16,6 +16,10 @@ tmp
 bin/migrations-folder
 bin/db.sqlite3
 
+# Other artifacts created during testing
+/knexfile.js
+
+
 # Bench stuff
 test/bench/temp
 test/coverage/*
