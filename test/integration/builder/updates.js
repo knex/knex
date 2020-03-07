@@ -340,5 +340,36 @@ module.exports = function(knex) {
           );
         });
     });
+
+    describe('#3553 update with bigint', function() {
+      if (typeof BigInt === 'undefined') return;
+
+      it('should allow insert with BigInt', async function() {
+        const firstName = '#3553';
+        await knex('accounts').insert([{ balance: 5, first_name: firstName }]);
+        await knex('accounts').update([
+          { balance: BigInt(Number.MAX_SAFE_INTEGER) },
+        ]);
+      });
+
+      it('should allow update array with BigInt', async function() {
+        if (knex.client.driverName !== 'pg') return true;
+        const tableName = 'pg_array_test';
+        const value = BigInt(Number.MAX_SAFE_INTEGER) * BigInt(2);
+
+        await knex.schema.dropTableIfExists(tableName);
+        await knex.schema.createTable(tableName, (t) => {
+          t.increments();
+          t.specificType('column', 'bigserial[]');
+        });
+        await knex(tableName).insert([{ column: [value] }]);
+
+        await expect(
+          knex(tableName)
+            .select('column')
+            .first()
+        ).to.eventually.be.resolved.and.equal.to([value.toString()]);
+      });
+    });
   });
 };

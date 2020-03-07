@@ -1303,5 +1303,17 @@ module.exports = function(knex) {
           });
       });
     });
+
+    describe('#3553 insert with bigint', function() {
+      if (typeof BigInt === 'undefined') return;
+
+      it('should allow insert with BigInt', async function() {
+        await knex('accounts').insert([{ id: BigInt(12) }]);
+      });
+      it('should allow insert array with BigInt', async function() {
+        if (knex.client.driverName !== 'pg') return true;
+        await knex('accounts').insert([{ id: [BigInt(12)] }]);
+      });
+    });
   });
 };

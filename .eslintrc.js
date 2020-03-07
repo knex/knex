@@ -20,6 +20,9 @@ module.exports = {
     'no-fallthrough': warning,
     'require-atomic-updates': 0,
   },
+  globals: {
+    BigInt: true,
+  },
   env: {
     node: true,
     mocha: true,

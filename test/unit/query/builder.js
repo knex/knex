@@ -132,7 +132,7 @@ function testquery(chain, valuesToCheck, selectedClients) {
     newChain.client = selectedClients[key];
     const sqlString = newChain.toQuery();
     const checkValue = valuesToCheck[key];
-    expect(checkValue).to.equal(sqlString);
+    expect(checkValue).to.equal(sqlString, `for driver ${key}`);
   });
 }
 
@@ -9860,6 +9860,33 @@ describe('QueryBuilder', () => {
             'select "p"."ID" "id", "p"."post_status" "status", "p"."post_title" "name", "price"."meta_value" "price", "p"."post_date_gmt" "createdAt", "p"."post_modified_gmt" "updatedAt" from "wp_posts" "p" left join "wp_postmeta" "price" on ("price"."meta_key" = ? and "price_meta_key" = ?) or ("price_meta"."key" = ?)',
           bindings: ['_regular_price', '_regular_price', '_regular_price'],
         },
+      }
+    );
+  });
+
+  it('#3553 should correctly compile insert with BigInt', function() {
+    testquery(
+      qb()
+        .insert([{ a: BigInt(12) }])
+        .into('test'),
+      {
+        pg: `insert into "test" ("a") values (12)`,
+        mysql: 'insert into `test` (`a`) values (12)',
+        mssql: `insert into [test] ([a]) values (12)`,
+        'pg-redshift': `insert into "test" ("a") values (12)`,
+        oracledb: `insert into "test" ("a") values (12)`,
+        sqlite3: 'insert into `test` (`a`) values (12)',
+      }
+    );
+  });
+
+  it('#3553 should correctly compile update with BigInt in array', function() {
+    testquery(
+      qb()
+        .update({ a: [BigInt(12)] })
+        .into('test'),
+      {
+        pg: `update "test" set "a" = '{12}'`,
       }
     );
   });
