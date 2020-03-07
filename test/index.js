@@ -5,7 +5,6 @@ require('source-map-support').install();
 
 global.sinon = require('sinon');
 require('./chai-setup');
-global.chai.use(require('sinon-chai'));
 
 global.d = new Date();
 
