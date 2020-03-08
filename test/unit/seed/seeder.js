@@ -1,6 +1,7 @@
-/*global expect*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
+
+const { expect } = require('chai');
 
 const mockFs = require('mock-fs');
 const knex = require('../../../knex');

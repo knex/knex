@@ -1,6 +1,6 @@
-/*global expect*/
-
 'use strict';
+
+const { expect } = require('chai');
 
 const sinon = require('sinon');
 const Oracle_Client = require('../../../lib/dialects/oracle');

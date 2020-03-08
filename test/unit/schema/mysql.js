@@ -1,4 +1,4 @@
-/*global expect*/
+const { expect } = require('chai');
 
 const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');

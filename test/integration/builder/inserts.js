@@ -1,6 +1,7 @@
-/*global expect, d*/
-
+/*global d*/
 'use strict';
+
+const { expect } = require('chai');
 
 const uuid = require('uuid');
 const _ = require('lodash');

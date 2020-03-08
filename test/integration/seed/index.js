@@ -1,5 +1,6 @@
-/*global expect*/
 'use strict';
+
+const { expect } = require('chai');
 
 const path = require('path');
 const rimraf = require('rimraf');

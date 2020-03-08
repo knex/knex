@@ -1,6 +1,5 @@
-// global it, describe, expect
-
 'use strict';
+
 const sinon = require('sinon');
 const DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 

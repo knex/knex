@@ -1,5 +1,4 @@
 /*global d*/
-
 'use strict';
 
 module.exports = function(knex) {

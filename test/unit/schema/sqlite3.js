@@ -1,6 +1,6 @@
-/*global expect*/
-
 'use strict';
+
+const { expect } = require('chai');
 
 let tableSql;
 
