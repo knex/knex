@@ -1,6 +1,7 @@
-/*global expect, d*/
-
+/*global d*/
 'use strict';
+
+const { expect } = require('chai');
 
 module.exports = function(knex) {
   describe('Updates', function() {

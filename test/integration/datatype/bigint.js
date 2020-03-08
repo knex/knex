@@ -1,6 +1,6 @@
-/*global expect*/
-
 'use strict';
+
+const { expect } = require('chai');
 
 module.exports = function(knex) {
   const bigintTimestamp = 1464294366973;

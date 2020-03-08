@@ -1,7 +1,7 @@
-/*global expect*/
 /* eslint max-len:0 */
-
 'use strict';
+
+const { expect } = require('chai');
 
 let tableSql;
 

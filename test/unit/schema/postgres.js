@@ -1,4 +1,4 @@
-/*global expect*/
+const { expect } = require('chai');
 
 let tableSql;
 

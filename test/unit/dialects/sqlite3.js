@@ -1,6 +1,7 @@
-// global it, describe, expect
-
 'use strict';
+
+const { expect } = require('chai');
+
 const sinon = require('sinon');
 const DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 

@@ -1,5 +1,7 @@
-/*global expect, d*/
+/*global d*/
 'use strict';
+
+const { expect } = require('chai');
 
 const _ = require('lodash');
 const assert = require('assert');

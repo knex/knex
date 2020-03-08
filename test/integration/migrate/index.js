@@ -1,5 +1,6 @@
-/*global expect*/
 'use strict';
+
+const { expect } = require('chai');
 
 const equal = require('assert').equal;
 const fs = require('fs');
