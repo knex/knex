@@ -1,5 +1,3 @@
-// global it, describe
-
 'use strict';
 const expect = require('chai').expect;
 const knex = require('../../../knex');

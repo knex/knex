@@ -1,5 +1,3 @@
-// global it, describe
-
 'use strict';
 const _ = require('lodash');
 const expect = require('chai').expect;
