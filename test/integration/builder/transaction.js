@@ -590,7 +590,7 @@ module.exports = function(knex) {
             expect(false).to.be.ok;
           })
           .catch(function(err) {
-            expect(err).should.exist;
+            expect(err).to.exist;
             expect(err.originalError).to.equal(originalError);
             // confirm transaction rolled back
             return querySampleRow().then(function(resp) {
