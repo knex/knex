@@ -9864,30 +9864,34 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it('#3553 should correctly compile insert with BigInt', function() {
-    testquery(
-      qb()
-        .insert([{ a: BigInt(12) }])
-        .into('test'),
-      {
-        pg: `insert into "test" ("a") values (12)`,
-        mysql: 'insert into `test` (`a`) values (12)',
-        mssql: `insert into [test] ([a]) values (12)`,
-        'pg-redshift': `insert into "test" ("a") values (12)`,
-        oracledb: `insert into "test" ("a") values (12)`,
-        sqlite3: 'insert into `test` (`a`) values (12)',
-      }
-    );
-  });
+  if (typeof BigInt !== 'undefined') {
+    describe('BigInt tests', () => {
+      it('#3553 should correctly compile insert with BigInt', function() {
+        testquery(
+          qb()
+            .insert([{ a: BigInt(12) }])
+            .into('test'),
+          {
+            pg: `insert into "test" ("a") values (12)`,
+            mysql: 'insert into `test` (`a`) values (12)',
+            mssql: `insert into [test] ([a]) values (12)`,
+            'pg-redshift': `insert into "test" ("a") values (12)`,
+            oracledb: `insert into "test" ("a") values (12)`,
+            sqlite3: 'insert into `test` (`a`) values (12)',
+          }
+        );
+      });
 
-  it('#3553 should correctly compile update with BigInt in array', function() {
-    testquery(
-      qb()
-        .update({ a: [BigInt(12)] })
-        .into('test'),
-      {
-        pg: `update "test" set "a" = '{12}'`,
-      }
-    );
-  });
+      it('#3553 should correctly compile update with BigInt in array', function() {
+        testquery(
+          qb()
+            .update({ a: [BigInt(12)] })
+            .into('test'),
+          {
+            pg: `update "test" set "a" = '{12}'`,
+          }
+        );
+      });
+    });
+  }
 });
