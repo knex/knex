@@ -496,6 +496,16 @@ const main = async () => {
     .orderBy('name', 'desc')
     .having('age', '>', 10);
 
+  const u5: User[] = await knex('users')
+    .groupBy('count')
+    .orderBy('name', 'desc')
+    .having(knex.raw('age > ?', 10));
+
+  const u6: User[] = await knex('users')
+    .groupBy('count')
+    .orderBy('name', 'desc')
+    .having(knex.raw('age'), '>', 10);
+
   // $ExpectType User[]
   await knex<User>('users')
     .groupBy('count')
