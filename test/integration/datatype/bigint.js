@@ -123,32 +123,33 @@ module.exports = function(knex) {
       });
   });
 
-  it('#3553 - js BigInt inserts', function() {
-    if (!/mssql/i.test(knex.client.driverName)) {
-      return this.skip();
-    }
-    if (typeof BigInt === 'undefined') return;
+  if (typeof BigInt !== 'undefined') {
+    it('#3553 - js BigInt inserts', function() {
+      if (!/mssql/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
 
-    const tableName = 'js_bigint_test';
-    const value = BigInt(Number.MAX_SAFE_INTEGER) * BigInt(2);
+      const tableName = 'js_bigint_test';
+      const value = BigInt(Number.MAX_SAFE_INTEGER) * BigInt(2);
 
-    return knex
-      .transaction(function(tr) {
-        return tr.schema.dropTableIfExists(tableName).then(function() {
-          return tr.schema.createTable(tableName, function(table) {
-            table.increments();
-            table.bigInteger('value');
+      return knex
+        .transaction(function(tr) {
+          return tr.schema.dropTableIfExists(tableName).then(function() {
+            return tr.schema.createTable(tableName, function(table) {
+              table.increments();
+              table.bigInteger('value');
+            });
           });
+        })
+        .then(function() {
+          return knex(tableName).insert({ value: value });
+        })
+        .then(function() {
+          return knex(tableName).first('value');
+        })
+        .then(function(response) {
+          expect(response.value).to.be.eql(value.toString());
         });
-      })
-      .then(function() {
-        return knex(tableName).insert({ value: value });
-      })
-      .then(function() {
-        return knex(tableName).first('value');
-      })
-      .then(function(response) {
-        expect(response.value).to.be.eql(value.toString());
-      });
-  });
+    });
+  }
 };
