@@ -9906,7 +9906,7 @@ describe('QueryBuilder', () => {
           testquery(
             qb()
               .table('test')
-              .update([{ a: value }]),
+              .update({ a: value }),
             {
               pg: `update "test" set "a" = ${value}`,
               mysql: `update \`test\` \`a\` = ${value}`,
@@ -9924,7 +9924,7 @@ describe('QueryBuilder', () => {
               .update({ a: [value, value] })
               .into('test'),
             {
-              pg: `update "test" set "a" = '{${value}, ${value}}'`,
+              pg: `update "test" set "a" = '{${value},${value}}'`,
             }
           );
         });
