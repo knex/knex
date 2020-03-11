@@ -1089,7 +1089,7 @@ module.exports = function(knex) {
       });
       it('should capture stack trace on raw query', () => {
         return knex.raw('select * from some_nonexisten_table').catch((err) => {
-          expect(err.stack.split('\n')[2]).to.match(/at Function\.raw \(/); // the index 2 might need adjustment if the code is refactored
+          expect(err.stack.split('\n')[2]).to.match(/at Object\.raw \(/); // the index 2 might need adjustment if the code is refactored
           expect(typeof err.originalStack).to.equal('string');
         });
       });
