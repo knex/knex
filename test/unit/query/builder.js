@@ -9866,32 +9866,63 @@ describe('QueryBuilder', () => {
 
   if (typeof BigInt !== 'undefined') {
     describe('BigInt tests', () => {
-      it('#3553 should correctly compile insert with BigInt', function() {
-        testquery(
-          qb()
-            .insert([{ a: BigInt(12) }])
-            .into('test'),
-          {
-            pg: `insert into "test" ("a") values (12)`,
-            mysql: 'insert into `test` (`a`) values (12)',
-            mssql: `insert into [test] ([a]) values (12)`,
-            'pg-redshift': `insert into "test" ("a") values (12)`,
-            oracledb: `insert into "test" ("a") values (12)`,
-            sqlite3: 'insert into `test` (`a`) values (12)',
-          }
-        );
-      });
+      const testValues = [
+        -BigInt(Number.MAX_VALUE) * BigInt(2),
+        -BigInt(Number.MAX_VALUE),
+        BigInt(Number.MIN_SAFE_INTEGER),
+        BigInt(-(2 ** 32)),
+        BigInt(-1),
+        BigInt(0),
+        BigInt(2 ** 32),
+        BigInt(Number.MAX_SAFE_INTEGER),
+        BigInt(Number.MAX_VALUE),
+        BigInt(Number.MAX_VALUE) * BigInt(2),
+      ];
+      for (const value of testValues) {
+        expect(BigInt(value.toString())).to.be.equal(value); // just self-test
 
-      it('#3553 should correctly compile update with BigInt in array', function() {
-        testquery(
-          qb()
-            .update({ a: [BigInt(12)] })
-            .into('test'),
-          {
-            pg: `update "test" set "a" = '{12}'`,
-          }
-        );
-      });
+        it('#3553 should correctly compile insert with BigInt', function() {
+          testquery(
+            qb()
+              .insert([{ a: value }])
+              .into('test'),
+            {
+              pg: `insert into "test" ("a") values (${value})`,
+              mysql: `insert into \`test\` (\`a\`) values (${value})`,
+              mssql: `insert into [test] ([a]) values (${value})`,
+              'pg-redshift': `insert into "test" ("a") values (${value})`,
+              oracledb: `insert into "test" ("a") values (${value})`,
+              sqlite3: `insert into \`test\` (\`a\`) values (${value})`,
+            }
+          );
+        });
+        it('#3553 should correctly compile update with BigInt', function() {
+          testquery(
+            qb()
+              .table('test')
+              .update([{ a: value }]),
+            {
+              pg: `update "test" set "a" = ${value}`,
+              mysql: `update \`test\` \`a\` = ${value}`,
+              mssql: `update [test] set [a] = ${value}`,
+              'pg-redshift': `update "test" set "a" = ${value}`,
+              oracledb: `update "test" set "a" = ${value}`,
+              sqlite3: `update \`test\` set \`a\` = ${value}`,
+            }
+          );
+        });
+
+        it('#3553 should correctly compile update with BigInt in array', function() {
+          testquery(
+            qb()
+              .update({ a: [value, value] })
+              .into('test'),
+            {
+              pg: `update "test" set "a" = '{${value}, ${value}}'`,
+            }
+          );
+        });
+      }
     });
   }
 });
