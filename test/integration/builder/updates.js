@@ -1,6 +1,7 @@
 /*global d*/
 'use strict';
 
+const { differentBigInts } = require('../../test-data/bigints');
 const { expect } = require('chai');
 
 module.exports = function(knex) {
@@ -343,34 +344,53 @@ module.exports = function(knex) {
 
     if (typeof BigInt !== 'undefined') {
       describe('#3553 update with bigint', function() {
-        it('should allow insert with BigInt', async function() {
-          const firstName = '#3553';
-          await knex('accounts').insert([
-            { balance: 5, first_name: firstName },
-          ]);
-          await knex('accounts').update([
-            { balance: BigInt(Number.MAX_SAFE_INTEGER) },
-          ]);
-        });
-
-        it('should allow update array with BigInt', async function() {
-          if (knex.client.driverName !== 'pg') return true;
-          const tableName = 'pg_array_test';
-          const value = BigInt(Number.MAX_SAFE_INTEGER) * BigInt(2);
-
-          await knex.schema.dropTableIfExists(tableName);
-          await knex.schema.createTable(tableName, (t) => {
-            t.increments();
-            t.specificType('column', 'bigserial[]');
+        const tableName = 'bigint_updates_tests';
+        before(async function() {
+          await knex.schema.createTableIfNotExists(tableName, (t) => {
+            t.integer('id').primary();
+            t.bigInteger('value');
+            if (knex.client.driverName === 'pg') {
+              t.specificType('values', 'bignumber[]');
+            }
           });
-          await knex(tableName).insert([{ column: [value] }]);
-
-          await expect(
-            knex(tableName)
-              .select('column')
-              .first()
-          ).to.eventually.be.resolved.and.equal.to([value.toString()]);
+          await knex(tableName).truncate();
         });
+
+        for (const [id, value] of differentBigInts.entries()) {
+          it(
+            'should allow update with BigInt for value' + value,
+            async function() {
+              await knex(tableName).insert([{ id, value: '1' }]);
+              await knex(tableName)
+                .where({ id })
+                .update([{ value }]);
+              await expect(
+                knex(tableName).where({ id })
+              ).to.eventually.be.equal({
+                id,
+                value: value.toString(),
+              });
+            }
+          );
+
+          it(
+            'should allow update array with BigInt for value ' + value,
+            async function() {
+              if (knex.client.driverName !== 'pg') return true;
+              await knex(tableName).insert([{ id, value: '1' }]);
+              await knex(tableName)
+                .where({ id })
+                .update([{ values: [value, value] }]);
+              await expect(
+                knex(tableName).where({ id })
+              ).to.eventually.be.equal({
+                id: id,
+                value: '1',
+                values: [value.toString(), value.toString()],
+              });
+            }
+          );
+        }
       });
     }
   });

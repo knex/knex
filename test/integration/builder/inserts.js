@@ -6,6 +6,7 @@ const { expect } = require('chai');
 const uuid = require('uuid');
 const _ = require('lodash');
 const sinon = require('sinon');
+const { differentBigInts } = require('../../test-data/bigints');
 
 module.exports = function(knex) {
   describe('Inserts', function() {
@@ -1304,50 +1305,36 @@ module.exports = function(knex) {
       });
     });
 
-    if (typeof BigInt === 'undefined') {
+    if (typeof BigInt !== 'undefined') {
       describe('#3553 insert with bigint', function() {
-        const testValues = [
-          -(BigInt(2) ** BigInt(128)),
-          -(BigInt(2) ** BigInt(64)),
-          -BigInt(Number.MAX_VALUE) * BigInt(2),
-          -BigInt(Number.MAX_VALUE),
-          BigInt(Number.MIN_SAFE_INTEGER),
-          BigInt(-(2 ** 40)),
-          BigInt(-(2 ** 32)),
-          BigInt(-(2 ** 15)),
-          BigInt(-1),
-          BigInt(0),
-          BigInt(2 ** 15),
-          BigInt(2 ** 32),
-          BigInt(2 ** 40),
-          BigInt(Number.MAX_SAFE_INTEGER),
-          BigInt(Number.MAX_VALUE),
-          BigInt(Number.MAX_VALUE) * BigInt(2),
-          BigInt(2) ** BigInt(64),
-          BigInt(2) ** BigInt(128),
-        ];
-
+        const tableName = 'bigint_insert_tests';
         before(async function() {
-          await knex.schema.createTableIfNotExists(
-            'bigint_inser_tests',
-            (t) => {
-              t.increments();
-              t.bigInteger('column');
-              if (knex.client.driverName === 'pg') {
-                t.specificType('columns', 'bignumber[]');
-              }
+          await knex.schema.createTableIfNotExists(tableName, (t) => {
+            t.integer('id').primary();
+            t.bigInteger('value');
+            if (knex.client.driverName === 'pg') {
+              t.specificType('values', 'bignumber[]');
             }
-          );
+          });
+          await knex(tableName).truncate();
         });
 
-        for (const value of testValues) {
+        for (const [id, value] of differentBigInts.entries()) {
           it('should allow insert with BigInt', async function() {
-            await knex('accounts').insert([{ column: value }]);
+            await knex(tableName).insert([{ id, value }]);
+            await expect(knex(tableName).where({ id })).to.eventually.be.equal({
+              id,
+              value: value.toString(),
+            });
           });
 
           it('should allow insert array with BigInt', async function() {
             if (knex.client.driverName !== 'pg') return true;
-            await knex('accounts').insert([{ columns: [value, value] }]);
+            await knex(tableName).insert([{ id, values: [value, value] }]);
+            await expect(knex(tableName).where({ id })).to.eventually.be.equal({
+              id: id,
+              values: [value.toString(), value.toString()],
+            });
           });
         }
       });

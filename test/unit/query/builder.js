@@ -8,6 +8,7 @@ const Redshift_Client = require('../../../lib/dialects/redshift');
 const Oracledb_Client = require('../../../lib/dialects/oracledb');
 const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
+const { differentBigInts } = require('../../test-data/bigints');
 
 // use driverName as key
 const clients = {
@@ -9866,24 +9867,7 @@ describe('QueryBuilder', () => {
 
   if (typeof BigInt !== 'undefined') {
     describe('BigInt tests', () => {
-      const testValues = [
-        -BigInt(Number.MAX_VALUE) * BigInt(2),
-        -BigInt(Number.MAX_VALUE),
-        BigInt(Number.MIN_SAFE_INTEGER),
-        BigInt(-(2 ** 40)),
-        BigInt(-(2 ** 32)),
-        BigInt(-(2 ** 15)),
-        BigInt(-1),
-        BigInt(0),
-        BigInt(2 ** 15),
-        BigInt(2 ** 32),
-        BigInt(2 ** 40),
-        BigInt(Number.MAX_SAFE_INTEGER),
-        BigInt(Number.MAX_VALUE),
-        BigInt(Number.MAX_VALUE) * BigInt(2),
-      ];
-
-      for (const value of testValues) {
+      for (const value of differentBigInts) {
         expect(BigInt(value.toString())).to.be.equal(value); // just self-test
 
         it('#3553 should correctly compile insert with BigInt', function() {
