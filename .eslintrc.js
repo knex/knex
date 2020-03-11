@@ -26,4 +26,12 @@ module.exports = {
     mocha: true,
     es6: true,
   },
+  overrides: [
+    {
+      files: './test/**/*.js',
+      globals: {
+        BigInt: 'readonly',
+      },
+    },
+  ],
 };
