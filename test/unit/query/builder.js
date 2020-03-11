@@ -9870,14 +9870,19 @@ describe('QueryBuilder', () => {
         -BigInt(Number.MAX_VALUE) * BigInt(2),
         -BigInt(Number.MAX_VALUE),
         BigInt(Number.MIN_SAFE_INTEGER),
+        BigInt(-(2 ** 40)),
         BigInt(-(2 ** 32)),
+        BigInt(-(2 ** 15)),
         BigInt(-1),
         BigInt(0),
+        BigInt(2 ** 15),
         BigInt(2 ** 32),
+        BigInt(2 ** 40),
         BigInt(Number.MAX_SAFE_INTEGER),
         BigInt(Number.MAX_VALUE),
         BigInt(Number.MAX_VALUE) * BigInt(2),
       ];
+
       for (const value of testValues) {
         expect(BigInt(value.toString())).to.be.equal(value); // just self-test
 
@@ -9896,6 +9901,7 @@ describe('QueryBuilder', () => {
             }
           );
         });
+
         it('#3553 should correctly compile update with BigInt', function() {
           testquery(
             qb()

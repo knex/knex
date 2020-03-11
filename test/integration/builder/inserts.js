@@ -1306,16 +1306,50 @@ module.exports = function(knex) {
 
     if (typeof BigInt === 'undefined') {
       describe('#3553 insert with bigint', function() {
-        const bigValue = BigInt(Number.MAX_VALUE) * BigInt(2);
+        const testValues = [
+          -(BigInt(2) ** BigInt(128)),
+          -(BigInt(2) ** BigInt(64)),
+          -BigInt(Number.MAX_VALUE) * BigInt(2),
+          -BigInt(Number.MAX_VALUE),
+          BigInt(Number.MIN_SAFE_INTEGER),
+          BigInt(-(2 ** 40)),
+          BigInt(-(2 ** 32)),
+          BigInt(-(2 ** 15)),
+          BigInt(-1),
+          BigInt(0),
+          BigInt(2 ** 15),
+          BigInt(2 ** 32),
+          BigInt(2 ** 40),
+          BigInt(Number.MAX_SAFE_INTEGER),
+          BigInt(Number.MAX_VALUE),
+          BigInt(Number.MAX_VALUE) * BigInt(2),
+          BigInt(2) ** BigInt(64),
+          BigInt(2) ** BigInt(128),
+        ];
 
-        it('should allow insert with BigInt', async function() {
-          await knex('accounts').insert([{ id: bigValue }]);
+        before(async function() {
+          await knex.schema.createTableIfNotExists(
+            'bigint_inser_tests',
+            (t) => {
+              t.increments();
+              t.bigInteger('column');
+              if (knex.client.driverName === 'pg') {
+                t.specificType('columns', 'bignumber[]');
+              }
+            }
+          );
         });
 
-        it('should allow insert array with BigInt', async function() {
-          if (knex.client.driverName !== 'pg') return true;
-          await knex('accounts').insert([{ id: [bigValue] }]);
-        });
+        for (const value of testValues) {
+          it('should allow insert with BigInt', async function() {
+            await knex('accounts').insert([{ column: value }]);
+          });
+
+          it('should allow insert array with BigInt', async function() {
+            if (knex.client.driverName !== 'pg') return true;
+            await knex('accounts').insert([{ columns: [value, value] }]);
+          });
+        }
       });
     }
   });
