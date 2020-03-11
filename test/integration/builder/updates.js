@@ -357,26 +357,19 @@ module.exports = function(knex) {
         });
 
         for (const [id, value] of differentBigInts.entries()) {
-          it(
-            'should allow update with BigInt for value' + value,
-            async function() {
-              await knex(tableName).insert([{ id, value: '1' }]);
-              await knex(tableName)
-                .where({ id })
-                .update([{ value }]);
-              await expect(
-                knex(tableName).where({ id })
-              ).to.eventually.be.equal({
-                id,
-                value: value.toString(),
-              });
-            }
-          );
+          it('should allow update with BigInt', async function() {
+            await knex(tableName).insert([{ id, value: '1' }]);
+            await knex(tableName)
+              .where({ id })
+              .update([{ value }]);
+            await expect(knex(tableName).where({ id })).to.eventually.be.equal({
+              id,
+              value: value.toString(),
+            });
+          });
 
-          it(
-            'should allow update array with BigInt for value ' + value,
-            async function() {
-              if (knex.client.driverName !== 'pg') return true;
+          if (knex.client.driverName === 'pg') {
+            it('should allow update array with BigInt', async function() {
               await knex(tableName).insert([{ id, value: '1' }]);
               await knex(tableName)
                 .where({ id })
@@ -388,8 +381,8 @@ module.exports = function(knex) {
                 value: '1',
                 values: [value.toString(), value.toString()],
               });
-            }
-          );
+            });
+          }
         }
       });
     }

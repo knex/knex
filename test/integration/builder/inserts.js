@@ -1328,14 +1328,17 @@ module.exports = function(knex) {
             });
           });
 
-          it('should allow insert array with BigInt', async function() {
-            if (knex.client.driverName !== 'pg') return true;
-            await knex(tableName).insert([{ id, values: [value, value] }]);
-            await expect(knex(tableName).where({ id })).to.eventually.be.equal({
-              id: id,
-              values: [value.toString(), value.toString()],
+          if (knex.client.driverName === 'pg') {
+            it('should allow insert array with BigInt', async function() {
+              await knex(tableName).insert([{ id, values: [value, value] }]);
+              await expect(
+                knex(tableName).where({ id })
+              ).to.eventually.be.equal({
+                id: id,
+                values: [value.toString(), value.toString()],
+              });
             });
-          });
+          }
         }
       });
     }
