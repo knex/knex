@@ -1048,15 +1048,18 @@ declare namespace Knex {
       WhereWrapped<TRecord, TResult>,
       WhereNull<TRecord, TResult> {
     (raw: Raw): QueryBuilder<TRecord, TResult>;
+
     (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
 
     (object: Readonly<SafePartial<TRecord>>): QueryBuilder<TRecord, TResult>;
+
     (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof TRecord>(
       columnName: T,
       value: TRecord[T] | null
     ): QueryBuilder<TRecord, TResult>;
+
     (columnName: string, value: Value | null): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof TRecord>(
@@ -1064,6 +1067,7 @@ declare namespace Knex {
       operator: ComparisonOperator,
       value: TRecord[T] | null
     ): QueryBuilder<TRecord, TResult>;
+
     (columnName: string, operator: string, value: Value | null): QueryBuilder<
       TRecord,
       TResult
@@ -1074,6 +1078,7 @@ declare namespace Knex {
       operator: ComparisonOperator,
       value: QueryBuilder<TRecordInner, TResultInner>
     ): QueryBuilder<TRecord, TResult>;
+
     <TRecordInner, TResultInner>(
       columnName: string,
       operator: string,
@@ -1084,6 +1089,7 @@ declare namespace Knex {
       TRecord,
       TResult
     >;
+
     <TRecordInner, TResultInner>(
       left: Raw,
       operator: string,
@@ -1231,20 +1237,23 @@ declare namespace Knex {
     extends Intersect<TRecord, TResult> {}
 
   interface Having<TRecord = any, TResult = unknown[]>
-    extends RawQueryBuilder<TRecord, TResult>,
-      WhereWrapped<TRecord, TResult> {
-    <K1 extends keyof TRecord, K2 extends keyof TRecord>(
-      tableName: string,
-      column1: K1,
+    extends WhereWrapped<TRecord, TResult> {
+    <K extends keyof TRecord>(
+      column: K,
       operator: ComparisonOperator,
-      column2: K2
+      value: TRecord[K]
     ): QueryBuilder<TRecord, TResult>;
+
     (
-      tableName: string,
-      column1: string,
+      column: string | Raw,
       operator: string,
-      column2: string
+      value: Value | QueryBuilder | null
     ): QueryBuilder<TRecord, TResult>;
+
+    (raw: Raw): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface HavingRange<TRecord = any, TResult = unknown[]> {
