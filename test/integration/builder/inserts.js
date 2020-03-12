@@ -1309,23 +1309,25 @@ module.exports = function(knex) {
       describe('#3553 insert with bigint', function() {
         const tableName = 'bigint_insert_tests';
         before(async function() {
-          await knex.schema.createTableIfNotExists(tableName, (t) => {
+          await knex.schema.dropTableIfExists(tableName);
+          await knex.schema.createTable(tableName, (t) => {
             t.integer('id').primary();
             t.bigInteger('value');
             if (knex.client.driverName === 'pg') {
               t.specificType('values', 'bignumber[]');
             }
           });
-          await knex(tableName).truncate();
         });
 
         for (const [id, value] of differentBigInts.entries()) {
           it('should allow insert with BigInt', async function() {
             await knex(tableName).insert([{ id, value }]);
-            await expect(knex(tableName).where({ id })).to.eventually.be.equal({
-              id,
-              value: value.toString(),
-            });
+            await expect(knex(tableName).where({ id })).to.eventually.be.equal([
+              {
+                id,
+                value: value.toString(),
+              },
+            ]);
           });
 
           if (knex.client.driverName === 'pg') {
@@ -1333,10 +1335,12 @@ module.exports = function(knex) {
               await knex(tableName).insert([{ id, values: [value, value] }]);
               await expect(
                 knex(tableName).where({ id })
-              ).to.eventually.be.equal({
-                id: id,
-                values: [value.toString(), value.toString()],
-              });
+              ).to.eventually.be.equal([
+                {
+                  id: id,
+                  values: [value.toString(), value.toString()],
+                },
+              ]);
             });
           }
         }

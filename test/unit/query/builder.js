@@ -9893,8 +9893,8 @@ describe('QueryBuilder', () => {
               .update({ a: value }),
             {
               pg: `update "test" set "a" = ${value}`,
-              mysql: `update \`test\` \`a\` = ${value}`,
-              mssql: `update [test] set [a] = ${value}`,
+              mysql: `update \`test\` set \`a\` = ${value}`,
+              mssql: `update [test] set [a] = ${value};select @@rowcount`,
               'pg-redshift': `update "test" set "a" = ${value}`,
               oracledb: `update "test" set "a" = ${value}`,
               sqlite3: `update \`test\` set \`a\` = ${value}`,
