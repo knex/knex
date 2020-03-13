@@ -15,7 +15,7 @@
     "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\"",
     "lint:types": "dtslint types",
     "lint:everything": "npm run lint:types && npm run lint",
-    "test": "mocha --exit -t 10000 test/index.js && npm run test:tape && npm run test:cli",
+    "test": "mocha --exit -t 10000 test/index.js",
     "test:coverage": "nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 test/index.js && npm run test:tape && npm run test:cli",
     "test:everything": "npm run lint:everything && npm run test:coverage",
     "test:sqlite": "cross-env DB=sqlite3 npm test",
