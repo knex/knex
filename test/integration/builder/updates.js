@@ -1,7 +1,11 @@
 /*global d*/
 'use strict';
 
-const { differentBigInts } = require('../../test-data/bigints');
+const {
+  lowerInt64,
+  upperInt64,
+  differentBigInts,
+} = require('../../test-data/bigints');
 const { expect } = require('chai');
 
 module.exports = function(knex) {
@@ -343,11 +347,15 @@ module.exports = function(knex) {
     });
 
     if (typeof BigInt !== 'undefined') {
-      for (const columnType of ['bigint', 'string']) {
+      for (const columnType of ['bigint', 'decimal', 'string']) {
         describe(`#3553 update with bigint with column type ${columnType}`, function() {
+          // TODO
           // see: https://github.com/mapbox/node-sqlite3/issues/922
           // in short: driver converts all selected BigInts as integers
-          if (knex.client.driverName === 'sqlite3' && columnType === 'bigint')
+          if (
+            knex.client.driverName === 'sqlite3' &&
+            ['bigint', 'decimal'].includes(columnType)
+          )
             return;
 
           const tableName = 'bigint_updates_tests';
@@ -356,10 +364,16 @@ module.exports = function(knex) {
             await knex.schema.createTable(tableName, (t) => {
               t.integer('id').primary();
 
-              if (columnType === 'bigint') {
-                t.bigInteger('value');
-              } else {
-                t.string('value');
+              switch (columnType) {
+                case 'decimal':
+                  t.decimal('value', 15, 0);
+                  break;
+                case 'bigint':
+                  t.bigInteger('value');
+                  break;
+                case 'string':
+                  t.string('value');
+                  break;
               }
 
               if (knex.client.driverName === 'pg') {
@@ -369,6 +383,14 @@ module.exports = function(knex) {
           });
 
           for (const [id, value] of differentBigInts.entries()) {
+            if (
+              columnType === 'bigint' &&
+              (value < lowerInt64 || value > upperInt64)
+            ) {
+              // because bigint stands for 8-bytes integer (or int64)
+              continue;
+            }
+
             it('should allow update with BigInt', async function() {
               await knex(tableName).insert([{ id, value: '1' }]);
               await knex(tableName)
