@@ -23,7 +23,7 @@ module.exports = function(knex) {
     });
   });
 
-  describe.skip('knex.migrate', function() {
+  describe('knex.migrate', function() {
     it('should not fail on null default for timestamp', async () => {
       try {
         await knex.schema.dropTableIfExists('null_date');
