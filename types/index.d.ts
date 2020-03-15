@@ -25,8 +25,6 @@ type SafePartial<T> = T extends {} ? Partial<T> : any;
 
 type MaybeArray<T> = T | T[];
 
-type MaybeROArray<T> = Readonly<T> | ReadonlyArray<Readonly<T>>;
-
 type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
@@ -409,6 +407,16 @@ declare namespace Knex {
       TRegistry[TKey] :
       TDefault;
 
+  type MaybeRaw<TRecord> = {
+    [K in keyof TRecord]: TRecord[K] | Raw<TRecord[K]>
+  };
+
+  // suitable for insert, select, update
+  type DbPartialRecord<TRecord> = Readonly<SafePartial<MaybeRaw<TRecord>>>;
+
+  // suitable for inserts and updates
+  type DbPartialRecordArray<TRecord> = Readonly<MaybeArray<DbPartialRecord<TRecord>>>;
+
   //
   // QueryInterface
   //
@@ -561,7 +569,7 @@ declare namespace Knex {
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
     insert(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
@@ -572,7 +580,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -583,7 +591,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -594,7 +602,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -605,11 +613,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<TResult2 = number[]>(
-      data: MaybeROArray<SafePartial<TRecord>>
+      data: DbPartialRecordArray<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
 
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
@@ -618,7 +626,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord2, TResult2>;
 
     update(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     update<
@@ -629,7 +637,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -640,7 +648,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -651,7 +659,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: TKey | readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -662,11 +670,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbPartialRecordArray<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(
-      data: MaybeROArray<SafePartial<TRecord>>
+      data: DbPartialRecordArray<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
     update<
       K1 extends StrKey<TRecord>,
@@ -1051,7 +1059,7 @@ declare namespace Knex {
 
     (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
 
-    (object: Readonly<SafePartial<TRecord>>): QueryBuilder<TRecord, TResult>;
+    (object: DbPartialRecord<TRecord>): QueryBuilder<TRecord, TResult>;
 
     (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
 

@@ -56,6 +56,13 @@ interface Article {
   authorId?: string;
 }
 
+interface Ticket {
+  name: string;
+  from: string;
+  to: string;
+  at: Date;
+}
+
 // Interface to witness type compatibility
 interface ExtendsWitness<T1 extends T2, T2> {
   _t: T1;
@@ -1412,4 +1419,45 @@ const main = async () => {
 
   // $ExpectType any
   knex.queryBuilder().queryContext();
+
+  // .raw() support
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .where({
+      id: knex.raw<number>('a')
+    });
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .where('id', knex.raw<string>('a'));
+
+  // $ExpectType Ticket[]
+  await knex<Ticket>('users')
+    .where({
+      at: knex.fn.now()
+    });
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    // we can't do anything here for now
+    .where('id', knex.raw<string>('string'));
+
+  // $ExpectType number[]
+  await knex<User>('users')
+    .insert({
+      id: knex.raw<number>('a')
+    });
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .insert([{
+      id: knex.raw<number>('a')
+    }], '*');
+
+  // $ExpectType number[]
+  await knex<User>('users')
+    .update({
+      id: knex.raw<number>('a')
+    }, 'id');
 };
