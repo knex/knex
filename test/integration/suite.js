@@ -44,19 +44,4 @@ module.exports = function(knex) {
       });
     });
   });
-
-  describe('knex.initialize', function() {
-    it('should allow initialize the pool with knex.initialize', function() {
-      expect(knex.client.pool).to.equal(undefined);
-      knex.initialize();
-      expect(knex.client.pool.destroyed).to.equal(false);
-      const waitForDestroy = knex.destroy();
-      expect(knex.client.pool.destroyed).to.equal(true);
-      return waitForDestroy.then(() => {
-        expect(knex.client.pool).to.equal(undefined);
-        knex.initialize();
-        expect(knex.client.pool.destroyed).to.equal(false);
-      });
-    });
-  });
 };
