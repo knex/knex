@@ -749,4 +749,41 @@ module.exports = function(knex) {
       process.removeListener('unhandledRejection', fn);
     }
   });
+
+  context('when a `connection` is passed in explicitly', function() {
+    beforeEach(function() {
+      this.sandbox = sinon.createSandbox();
+    });
+
+    afterEach(function() {
+      this.sandbox.restore();
+    });
+
+    it('assumes the caller will release the connection', async function() {
+      this.sandbox.spy(knex.client, 'releaseConnection');
+      const conn = await knex.client.acquireConnection();
+      try {
+        await knex.transaction(
+          async function(trx) {
+            // Do nothing!
+          },
+          { connection: conn }
+        );
+      } catch (err) {
+        // Do nothing.  The transaction could have failed due to some other
+        // bug, and it might have still released the connection in the process.
+      }
+
+      expect(knex.client.releaseConnection).to.have.not.been.calledWith(conn);
+
+      // By design, this line will only be reached if the connection
+      // was never released.
+      knex.client.releaseConnection(conn);
+
+      // Note: It's still possible that the test might fail due to a Timeout
+      // even after concluding.  This is because the underlying implementation
+      // might have opened another connection by mistake, but never actually
+      // closed it. (Ex: this was the case for OracleDB before fixing #3721)
+    });
+  });
 };
