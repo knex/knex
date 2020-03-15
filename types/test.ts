@@ -1094,10 +1094,20 @@ const main = async () => {
     .where('id', 10)
     .update({ active: true }, 'id');
 
+  // $ExpectType number[]
+  await knex<User>('users')
+    .where('id', 10)
+    .update('active', true, 'id');
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
     .where('id', 10)
     .update({ active: true }, ['id', 'age']);
+
+  // $ExpectType Pick<User, "id" | "age">[]
+  await knex<User>('users')
+    .where('id', 10)
+    .update('active', true, ['id', 'age']);
 
   const userUpdateReturnCols = ['id', 'age'] as const;
   // $ExpectType Pick<User, "id" | "age">[]
@@ -1105,6 +1115,7 @@ const main = async () => {
     .where('id', 10)
     .update({ active: true }, userUpdateReturnCols);
 
+  // TODO: .update('active', true', ['id', 'age']) does not works correctly
   // $ExpectType Pick<User, "id" | "age">[]
   await knex
     .where('id', 10)
