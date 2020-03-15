@@ -1460,4 +1460,12 @@ const main = async () => {
     .update({
       id: knex.raw<number>('a')
     }, 'id');
+
+  // $ExpectType string[]
+  await knex<User>('users')
+    .update<'active', 'name'>('active', knex.raw<boolean>('true'), 'name');
+
+  // $ExpectType Pick<User, "name">[]
+  await knex<User>('users')
+    .update<'active', 'name'>('active', knex.raw<boolean>('true'), ['name']);
 };
