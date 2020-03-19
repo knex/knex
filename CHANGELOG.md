@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.20.12 - 19 March, 2020
+
+### Bug fixes:
+
+- Added missing call to _reject in Transactor#transaction #3706
+- Fix method binding on knex proxy #3717
+- Oracle: Transaction_OracleDB can use config.connection #3731
+
+### Typings:
+
+- Fix incorrect type signature of Having #3719
+
+### Test / internal changes:
+
+- Cleanup/remove transaction stalling #3716
+- Rewrote Transaction#acquireConnection() methods to use async #3707 
+
 # 0.20.11 - 26 February, 2020
 
 ### New features:
