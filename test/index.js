@@ -33,6 +33,7 @@ process.on('exit', (code) => {
 describe('Util Tests', function() {
   // Unit Tests for utilities.
   require('./unit/query/string');
+  require('./unit/util/fs');
 });
 
 describe('Query Building Tests', function() {
