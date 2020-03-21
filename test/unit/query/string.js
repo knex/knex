@@ -174,6 +174,14 @@ describe('String utility functions', () => {
       expect(
         dateToString(new Date(1995, 11, 17, 3, 24, 0), undefined, {})
       ).to.equal('1995-12-17 03:24:00.000');
+
+      expect(
+        dateToString(new Date('December 17, 1995 03:24:00'), undefined, {})
+      ).to.equal('1995-12-17 03:24:00.000');
+
+      expect(dateToString('1995-12-17 03:24:00.000', undefined, {})).to.equal(
+        '1995-12-17 03:24:00.000'
+      );
     });
 
     it('should work even when only the date argument is given', () => {
@@ -183,6 +191,52 @@ describe('String utility functions', () => {
       expect(dateToString(new Date(1995, 11, 17, 3, 24, 0))).to.equal(
         '1995-12-17 03:24:00.000'
       );
+
+      expect(dateToString(new Date('December 17, 1995 03:24:00'))).to.equal(
+        '1995-12-17 03:24:00.000'
+      );
+
+      expect(dateToString('1995-12-17 03:24:00.000')).to.equal(
+        '1995-12-17 03:24:00.000'
+      );
+    });
+
+    it('should also convert timezone when given', () => {
+      expect(
+        dateToString(
+          new Date('August 19, 1975 23:15:30 GMT+07:00'),
+          undefined,
+          {
+            timeZone: 'GMT+07:00',
+          }
+        )
+      ).to.equal('1975-08-19 23:15:30.000');
+
+      expect(
+        dateToString(new Date('August 19, 1975 GMT+00:00'), undefined, {
+          timeZone: 'GMT+05:45',
+        })
+      ).to.equal('1975-08-19 05:45:00.000');
+
+      expect(
+        dateToString(
+          new Date('August 19, 1975 05:45:00 GMT+05:45'),
+          undefined,
+          {
+            timeZone: 'GMT+00:00',
+          }
+        )
+      ).to.equal('1975-08-19 00:00:00.000');
+
+      expect(
+        dateToString(
+          new Date('August 19, 1975 05:45:00 GMT+00:00'),
+          undefined,
+          {
+            timeZone: 'Z',
+          }
+        )
+      ).to.equal('1975-08-19 05:45:00.000');
     });
   });
 });
