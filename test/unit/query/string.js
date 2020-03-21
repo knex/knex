@@ -5,6 +5,7 @@ const {
   escapeObject,
   arrayToList,
   escapeString,
+  dateToString,
 } = require('../../../lib/query/string');
 
 describe('String utility functions', () => {
@@ -162,6 +163,17 @@ describe('String utility functions', () => {
         "SELECT * FROM users WHERE user = '\\' OR 0 = 0' AND password = '\\' OR 1 = 1; DROP TABLE users; /*';";
 
       expect(sql).to.equal(sqlOutput);
+    });
+  });
+
+  describe('dateToString', () => {
+    it('should convert the given date to a string', () => {
+      expect(dateToString(new Date(1995, 11, 17), undefined, {})).to.equal(
+        '1995-12-17 00:00:00.000'
+      );
+      expect(
+        dateToString(new Date(1995, 11, 17, 3, 24, 0), undefined, {})
+      ).to.equal('1995-12-17 03:24:00.000');
     });
   });
 });
