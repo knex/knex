@@ -293,15 +293,15 @@ describe('String utility functions', () => {
 
     describe('when config passed', () => {
       const escapeFunc = makeEscape({
-        escapeDate: (date) => new Date(date).toISOString(),
+        escapeDate: (date) => new Date(date).toUTCString(),
         escapeArray: (arr) => arr.join(', '),
         escapeObject: (obj) => JSON.stringify(obj),
         escapeBuffer: (buf) => buf.toString('hex'),
       });
 
       it('should work with a custom date escape function', () => {
-        expect(escapeFunc(new Date('December 17, 1995 03:24:00'))).to.equal(
-          "'1995-12-16T21:39:00.000Z'"
+        expect(escapeFunc(new Date('14 Jun 2017 00:00:00 GMT'))).to.equal(
+          "'Wed, 14 Jun 2017 00:00:00 GMT'"
         );
       });
 
