@@ -255,6 +255,13 @@ describe('String utility functions', () => {
         expect(escapeFunc(5678.9)).to.equal('5678.9');
         expect(escapeFunc(-4321.1234)).to.equal('-4321.1234');
       });
+
+      it('should convert an array to string', () => {
+        expect(escapeFunc([1, 2, 3, 4])).to.equal('1, 2, 3, 4');
+        expect(escapeFunc(['one', 'two', 'three', 'four'])).to.equal(
+          "'one', 'two', 'three', 'four'"
+        );
+      });
     });
   });
 });
