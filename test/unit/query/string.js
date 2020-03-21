@@ -262,6 +262,12 @@ describe('String utility functions', () => {
           "'one', 'two', 'three', 'four'"
         );
       });
+
+      it('should convert a date instance to string', () => {
+        expect(escapeFunc(new Date('December 17, 1995 03:24:00'))).to.equal(
+          "'1995-12-17 03:24:00.000'"
+        );
+      });
     });
   });
 });
