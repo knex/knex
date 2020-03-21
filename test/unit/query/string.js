@@ -242,7 +242,7 @@ describe('String utility functions', () => {
   });
 
   describe('makeEscape', () => {
-    describe('with no config passed (default)', () => {
+    describe('when no config passed (default)', () => {
       const escapeFunc = makeEscape();
 
       it('should convert and escape boolean values to string', () => {
@@ -288,6 +288,33 @@ describe('String utility functions', () => {
       it('should convert empty value to `NULL` string', () => {
         expect(escapeFunc(undefined)).to.equal('NULL');
         expect(escapeFunc(null)).to.equal('NULL');
+      });
+    });
+
+    describe('when config passed', () => {
+      const escapeFunc = makeEscape({
+        escapeDate: (date) => new Date(date).toISOString(),
+        escapeArray: (arr) => arr.join(', '),
+        escapeObject: (obj) => JSON.stringify(obj),
+        escapeBuffer: (buf) => buf.toString('hex'),
+      });
+
+      it('should work with a custom date escape function', () => {
+        expect(escapeFunc(new Date('December 17, 1995 03:24:00'))).to.equal(
+          "'1995-12-16T21:39:00.000Z'"
+        );
+      });
+
+      it('should work with a custom array escape function', () => {
+        expect(escapeFunc([1, 2, 3, 4])).to.equal('1, 2, 3, 4');
+      });
+
+      it('should work with a custom object escape function', () => {
+        expect(escapeFunc({ a: [1, 2, 3, 4] })).to.equal('{"a":[1,2,3,4]}');
+      });
+
+      it('should work with a custom buffer escape function', () => {
+        expect(escapeFunc(Buffer.from('Foo Bar'))).to.equal('466f6f20426172');
       });
     });
   });
