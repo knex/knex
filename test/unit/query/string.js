@@ -268,6 +268,16 @@ describe('String utility functions', () => {
           "'1995-12-17 03:24:00.000'"
         );
       });
+
+      it('should convert an object to string', () => {
+        expect(escapeFunc({ foo: 'bar', baz: [1, 2] })).to.equal(
+          '{"foo":"bar","baz":[1,2]}'
+        );
+
+        expect(
+          escapeFunc({ toSQL: () => 'SELECT 1 FROM test_table;' })
+        ).to.equal('SELECT 1 FROM test_table;');
+      });
     });
   });
 });
