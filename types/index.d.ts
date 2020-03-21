@@ -417,7 +417,7 @@ declare namespace Knex {
 
   type DbRecord<TRecord> = Readonly<SafePartial<MaybeRawRecord<TRecord>>>;
 
-  type DbRecordSet<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
+  type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
 
   //
   // QueryInterface
@@ -571,7 +571,7 @@ declare namespace Knex {
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
     insert(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
@@ -582,7 +582,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -593,7 +593,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -604,7 +604,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -615,11 +615,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<TResult2 = number[]>(
-      data: DbRecordSet<TRecord>
+      data: DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
 
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
@@ -628,7 +628,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord2, TResult2>;
 
     update(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     update<
@@ -639,7 +639,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -650,7 +650,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -661,7 +661,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: TKey | readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -672,11 +672,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordSet<TRecord>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(
-      data: DbRecordSet<TRecord>
+      data: DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
     update<
       K1 extends StrKey<TRecord>,
