@@ -316,6 +316,22 @@ describe('String utility functions', () => {
       it('should work with a custom buffer escape function', () => {
         expect(escapeFunc(Buffer.from('Foo Bar'))).to.equal('466f6f20426172');
       });
+
+      it('should convert empty value to `NULL` string', () => {
+        expect(escapeFunc(undefined)).to.equal('NULL');
+        expect(escapeFunc(null)).to.equal('NULL');
+      });
+
+      it('should convert and escape boolean values to string', () => {
+        expect(escapeFunc(true)).to.equal('true');
+        expect(escapeFunc(false)).to.equal('false');
+      });
+
+      it('should convert and escape numeric values to string', () => {
+        expect(escapeFunc(1234)).to.equal('1234');
+        expect(escapeFunc(5678.9)).to.equal('5678.9');
+        expect(escapeFunc(-4321.1234)).to.equal('-4321.1234');
+      });
     });
   });
 });
