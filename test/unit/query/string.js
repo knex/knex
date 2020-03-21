@@ -284,6 +284,11 @@ describe('String utility functions', () => {
           "X'466f6f20426172'"
         );
       });
+
+      it('should convert empty value to `NULL` string', () => {
+        expect(escapeFunc(undefined)).to.equal('NULL');
+        expect(escapeFunc(null)).to.equal('NULL');
+      });
     });
   });
 });
