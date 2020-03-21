@@ -245,31 +245,31 @@ describe('String utility functions', () => {
     describe('with no config passed (default)', () => {
       const escapeFunc = makeEscape();
 
-      it('should convert boolean values to string', () => {
+      it('should convert and escape boolean values to string', () => {
         expect(escapeFunc(true)).to.equal('true');
         expect(escapeFunc(false)).to.equal('false');
       });
 
-      it('should convert numeric values to string', () => {
+      it('should convert and escape numeric values to string', () => {
         expect(escapeFunc(1234)).to.equal('1234');
         expect(escapeFunc(5678.9)).to.equal('5678.9');
         expect(escapeFunc(-4321.1234)).to.equal('-4321.1234');
       });
 
-      it('should convert an array to string', () => {
+      it('should convert and escape an array to string', () => {
         expect(escapeFunc([1, 2, 3, 4])).to.equal('1, 2, 3, 4');
         expect(escapeFunc(['one', 'two', 'three', 'four'])).to.equal(
           "'one', 'two', 'three', 'four'"
         );
       });
 
-      it('should convert a date instance to string', () => {
+      it('should convert and escape a date instance to string', () => {
         expect(escapeFunc(new Date('December 17, 1995 03:24:00'))).to.equal(
           "'1995-12-17 03:24:00.000'"
         );
       });
 
-      it('should convert an object to string', () => {
+      it('should convert and escape an object to string', () => {
         expect(escapeFunc({ foo: 'bar', baz: [1, 2] })).to.equal(
           '{"foo":"bar","baz":[1,2]}'
         );
@@ -277,6 +277,12 @@ describe('String utility functions', () => {
         expect(
           escapeFunc({ toSQL: () => 'SELECT 1 FROM test_table;' })
         ).to.equal('SELECT 1 FROM test_table;');
+      });
+
+      it('should convert and escape a buffer to string', () => {
+        expect(escapeFunc(Buffer.from('Foo Bar'))).to.equal(
+          "X'466f6f20426172'"
+        );
       });
     });
   });
