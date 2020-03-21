@@ -6,6 +6,7 @@ const {
   arrayToList,
   escapeString,
   dateToString,
+  makeEscape,
 } = require('../../../lib/query/string');
 
 describe('String utility functions', () => {
@@ -237,6 +238,23 @@ describe('String utility functions', () => {
           }
         )
       ).to.equal('1975-08-19 05:45:00.000');
+    });
+  });
+
+  describe('makeEscape', () => {
+    describe('with no config passed (default)', () => {
+      const escapeFunc = makeEscape();
+
+      it('should convert boolean values to string', () => {
+        expect(escapeFunc(true)).to.equal('true');
+        expect(escapeFunc(false)).to.equal('false');
+      });
+
+      it('should convert numeric values to string', () => {
+        expect(escapeFunc(1234)).to.equal('1234');
+        expect(escapeFunc(5678.9)).to.equal('5678.9');
+        expect(escapeFunc(-4321.1234)).to.equal('-4321.1234');
+      });
     });
   });
 });
