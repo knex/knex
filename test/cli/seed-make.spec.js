@@ -1,8 +1,10 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const { execCommand } = require('cli-testlab');
 const { expect } = require('chai');
+const { createTemp } = require('../../lib/util/fs');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -32,6 +34,36 @@ describe('seed:make', () => {
 
     before(() => {
       process.env.KNEX_PATH = '../knex.js';
+    });
+
+    it('Creates new seed auto-creating seed directory when it does not exist', async () => {
+      const tmpDir = await createTemp();
+      const seedsDirectory = path.join(tmpDir, 'abc/xyz/temp/seeds');
+      const knexfileContents = `
+        module.exports = {
+          client: 'sqlite3',
+          connection: {
+            filename: __dirname + '/test/jake-util/test.sqlite3',
+          },
+          seeds: {
+            directory: '${seedsDirectory}',
+          },
+        };`;
+
+      fileHelper.createFile(
+        path.join(process.cwd(), 'knexfile.js'),
+        knexfileContents,
+        { isPathAbsolute: true }
+      );
+
+      await execCommand(
+        `${NODE} ${KNEX} seed:make somename --knexpath=../knex.js`,
+        {
+          expectedOutput: 'Created seed file',
+        }
+      );
+
+      expect(fs.existsSync(`${seedsDirectory}/somename.js`)).to.equal(true);
     });
 
     it('Creates new seed with js knexfile passed', async () => {
