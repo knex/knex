@@ -5,6 +5,8 @@ const {
   escapeObject,
   arrayToList,
   escapeString,
+  dateToString,
+  makeEscape,
 } = require('../../../lib/query/string');
 
 describe('String utility functions', () => {
@@ -162,6 +164,174 @@ describe('String utility functions', () => {
         "SELECT * FROM users WHERE user = '\\' OR 0 = 0' AND password = '\\' OR 1 = 1; DROP TABLE users; /*';";
 
       expect(sql).to.equal(sqlOutput);
+    });
+  });
+
+  describe('dateToString', () => {
+    it('should convert the given date to a string', () => {
+      expect(dateToString(new Date(1995, 11, 17), undefined, {})).to.equal(
+        '1995-12-17 00:00:00.000'
+      );
+      expect(
+        dateToString(new Date(1995, 11, 17, 3, 24, 0), undefined, {})
+      ).to.equal('1995-12-17 03:24:00.000');
+
+      expect(
+        dateToString(new Date('December 17, 1995 03:24:00'), undefined, {})
+      ).to.equal('1995-12-17 03:24:00.000');
+
+      expect(dateToString('1995-12-17 03:24:00.000', undefined, {})).to.equal(
+        '1995-12-17 03:24:00.000'
+      );
+    });
+
+    it('should work even when only the date argument is given', () => {
+      expect(dateToString(new Date(1995, 11, 17))).to.equal(
+        '1995-12-17 00:00:00.000'
+      );
+      expect(dateToString(new Date(1995, 11, 17, 3, 24, 0))).to.equal(
+        '1995-12-17 03:24:00.000'
+      );
+
+      expect(dateToString(new Date('December 17, 1995 03:24:00'))).to.equal(
+        '1995-12-17 03:24:00.000'
+      );
+
+      expect(dateToString('1995-12-17 03:24:00.000')).to.equal(
+        '1995-12-17 03:24:00.000'
+      );
+    });
+
+    it('should also convert timezone when given', () => {
+      expect(
+        dateToString(
+          new Date('August 19, 1975 23:15:30 GMT+07:00'),
+          undefined,
+          {
+            timeZone: 'GMT+07:00',
+          }
+        )
+      ).to.equal('1975-08-19 23:15:30.000');
+
+      expect(
+        dateToString(new Date('August 19, 1975 GMT+00:00'), undefined, {
+          timeZone: 'GMT+05:45',
+        })
+      ).to.equal('1975-08-19 05:45:00.000');
+
+      expect(
+        dateToString(
+          new Date('August 19, 1975 05:45:00 GMT+05:45'),
+          undefined,
+          {
+            timeZone: 'GMT+00:00',
+          }
+        )
+      ).to.equal('1975-08-19 00:00:00.000');
+
+      expect(
+        dateToString(
+          new Date('August 19, 1975 05:45:00 GMT+00:00'),
+          undefined,
+          {
+            timeZone: 'Z',
+          }
+        )
+      ).to.equal('1975-08-19 05:45:00.000');
+    });
+  });
+
+  describe('makeEscape', () => {
+    describe('when no config passed (default)', () => {
+      const escapeFunc = makeEscape();
+
+      it('should convert and escape boolean values to string', () => {
+        expect(escapeFunc(true)).to.equal('true');
+        expect(escapeFunc(false)).to.equal('false');
+      });
+
+      it('should convert and escape numeric values to string', () => {
+        expect(escapeFunc(1234)).to.equal('1234');
+        expect(escapeFunc(5678.9)).to.equal('5678.9');
+        expect(escapeFunc(-4321.1234)).to.equal('-4321.1234');
+      });
+
+      it('should convert and escape an array to string', () => {
+        expect(escapeFunc([1, 2, 3, 4])).to.equal('1, 2, 3, 4');
+        expect(escapeFunc(['one', 'two', 'three', 'four'])).to.equal(
+          "'one', 'two', 'three', 'four'"
+        );
+      });
+
+      it('should convert and escape a date instance to string', () => {
+        expect(escapeFunc(new Date('December 17, 1995 03:24:00'))).to.equal(
+          "'1995-12-17 03:24:00.000'"
+        );
+      });
+
+      it('should convert and escape an object to string', () => {
+        expect(escapeFunc({ foo: 'bar', baz: [1, 2] })).to.equal(
+          '{"foo":"bar","baz":[1,2]}'
+        );
+
+        expect(
+          escapeFunc({ toSQL: () => 'SELECT 1 FROM test_table;' })
+        ).to.equal('SELECT 1 FROM test_table;');
+      });
+
+      it('should convert and escape a buffer to string', () => {
+        expect(escapeFunc(Buffer.from('Foo Bar'))).to.equal(
+          "X'466f6f20426172'"
+        );
+      });
+
+      it('should convert empty value to `NULL` string', () => {
+        expect(escapeFunc(undefined)).to.equal('NULL');
+        expect(escapeFunc(null)).to.equal('NULL');
+      });
+    });
+
+    describe('when config passed', () => {
+      const escapeFunc = makeEscape({
+        escapeDate: (date) => new Date(date).toUTCString(),
+        escapeArray: (arr) => arr.join(', '),
+        escapeObject: (obj) => JSON.stringify(obj),
+        escapeBuffer: (buf) => buf.toString('hex'),
+      });
+
+      it('should work with a custom date escape function', () => {
+        expect(escapeFunc(new Date('14 Jun 2017 00:00:00 GMT'))).to.equal(
+          "'Wed, 14 Jun 2017 00:00:00 GMT'"
+        );
+      });
+
+      it('should work with a custom array escape function', () => {
+        expect(escapeFunc([1, 2, 3, 4])).to.equal('1, 2, 3, 4');
+      });
+
+      it('should work with a custom object escape function', () => {
+        expect(escapeFunc({ a: [1, 2, 3, 4] })).to.equal('{"a":[1,2,3,4]}');
+      });
+
+      it('should work with a custom buffer escape function', () => {
+        expect(escapeFunc(Buffer.from('Foo Bar'))).to.equal('466f6f20426172');
+      });
+
+      it('should convert empty value to `NULL` string', () => {
+        expect(escapeFunc(undefined)).to.equal('NULL');
+        expect(escapeFunc(null)).to.equal('NULL');
+      });
+
+      it('should convert and escape boolean values to string', () => {
+        expect(escapeFunc(true)).to.equal('true');
+        expect(escapeFunc(false)).to.equal('false');
+      });
+
+      it('should convert and escape numeric values to string', () => {
+        expect(escapeFunc(1234)).to.equal('1234');
+        expect(escapeFunc(5678.9)).to.equal('5678.9');
+        expect(escapeFunc(-4321.1234)).to.equal('-4321.1234');
+      });
     });
   });
 });
