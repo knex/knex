@@ -25,8 +25,6 @@ type SafePartial<T> = T extends {} ? Partial<T> : any;
 
 type MaybeArray<T> = T | T[];
 
-type MaybeROArray<T> = Readonly<T> | ReadonlyArray<Readonly<T>>;
-
 type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
@@ -409,6 +407,18 @@ declare namespace Knex {
       TRegistry[TKey] :
       TDefault;
 
+  type MaybeRawColumn<TColumn> = TColumn | Raw<TColumn>;
+
+  type MaybeRawRecord<TRecord> = {
+    [K in keyof TRecord]: MaybeRawColumn<TRecord[K]>
+  };
+
+  type DbColumn<TColumn> = Readonly<MaybeRawColumn<TColumn>>;
+
+  type DbRecord<TRecord> = Readonly<SafePartial<MaybeRawRecord<TRecord>>>;
+
+  type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
+
   //
   // QueryInterface
   //
@@ -561,7 +571,7 @@ declare namespace Knex {
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
     insert(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
@@ -572,7 +582,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -583,7 +593,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -594,7 +604,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -605,11 +615,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<TResult2 = number[]>(
-      data: MaybeROArray<SafePartial<TRecord>>
+      data: DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
 
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
@@ -618,7 +628,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord2, TResult2>;
 
     update(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     update<
@@ -629,7 +639,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -640,7 +650,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -651,7 +661,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: TKey | readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -662,11 +672,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: MaybeROArray<SafePartial<TRecord>>,
+      data: DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(
-      data: MaybeROArray<SafePartial<TRecord>>
+      data: DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
     update<
       K1 extends StrKey<TRecord>,
@@ -678,8 +688,8 @@ declare namespace Knex {
       >[]
     >(
       columnName: K1,
-      value: TRecord[K1],
-      returning: K1
+      value: DbColumn<TRecord[K1]>,
+      returning: K2
     ): QueryBuilder<TRecord, TResult2>;
     update<
       K1 extends StrKey<TRecord>,
@@ -691,12 +701,12 @@ declare namespace Knex {
       >[]
     >(
       columnName: K1,
-      value: TRecord[K1],
-      returning: readonly K1[]
+      value: DbColumn<TRecord[K1]>,
+      returning: readonly K2[]
     ): QueryBuilder<TRecord, TResult2>;
     update<K extends keyof TRecord>(
       columnName: K,
-      value: TRecord[K]
+      value: DbColumn<TRecord[K]>
     ): QueryBuilder<TRecord, number>;
     update<TResult2 = SafePartial<TRecord>[]>(
       columnName: string,
@@ -1051,13 +1061,13 @@ declare namespace Knex {
 
     (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
 
-    (object: Readonly<SafePartial<TRecord>>): QueryBuilder<TRecord, TResult>;
+    (object: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
 
     (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof TRecord>(
       columnName: T,
-      value: TRecord[T] | null
+      value: DbColumn<TRecord[T]> | null
     ): QueryBuilder<TRecord, TResult>;
 
     (columnName: string, value: Value | null): QueryBuilder<TRecord, TResult>;
@@ -1065,7 +1075,7 @@ declare namespace Knex {
     <T extends keyof TRecord>(
       columnName: T,
       operator: ComparisonOperator,
-      value: TRecord[T] | null
+      value: DbColumn<TRecord[T]> | null
     ): QueryBuilder<TRecord, TResult>;
 
     (columnName: string, operator: string, value: Value | null): QueryBuilder<
@@ -1114,7 +1124,7 @@ declare namespace Knex {
   interface WhereBetween<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
-      range: readonly [TRecord[K], TRecord[K]]
+      range: readonly [DbColumn<TRecord[K]>, DbColumn<TRecord[K]>]
     ): QueryBuilder<TRecord, TResult>;
     (columnName: string, range: readonly [Value, Value]): QueryBuilder<TRecord, TResult>;
   }
@@ -1129,7 +1139,7 @@ declare namespace Knex {
   interface WhereIn<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
-      values: readonly TRecord[K][] | QueryCallback
+      values: readonly DbColumn<TRecord[K]>[] | QueryCallback
     ): QueryBuilder<TRecord, TResult>;
     (columnName: string, values: readonly Value[] | QueryCallback): QueryBuilder<
       TRecord,
@@ -1137,7 +1147,7 @@ declare namespace Knex {
     >;
     <K extends keyof TRecord>(
       columnNames: readonly K[],
-      values: readonly (readonly TRecord[K][])[] | QueryCallback
+      values: readonly (readonly DbColumn<TRecord[K]>[])[] | QueryCallback
     ): QueryBuilder<TRecord, TResult>;
     (columnNames: readonly string[], values: readonly Value[][] | QueryCallback): QueryBuilder<
       TRecord,
@@ -1241,7 +1251,7 @@ declare namespace Knex {
     <K extends keyof TRecord>(
       column: K,
       operator: ComparisonOperator,
-      value: TRecord[K]
+      value: DbColumn<TRecord[K]>
     ): QueryBuilder<TRecord, TResult>;
 
     (
@@ -1259,7 +1269,7 @@ declare namespace Knex {
   interface HavingRange<TRecord = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
-      values: readonly TRecord[K][]
+      values: readonly DbColumn<TRecord[K]>[]
     ): QueryBuilder<TRecord, TResult>;
     (columnName: string, values: readonly Value[]): QueryBuilder<TRecord, TResult>;
   }

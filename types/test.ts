@@ -56,6 +56,13 @@ interface Article {
   authorId?: string;
 }
 
+interface Ticket {
+  name: string;
+  from: string;
+  to: string;
+  at: Date;
+}
+
 // Interface to witness type compatibility
 interface ExtendsWitness<T1 extends T2, T2> {
   _t: T1;
@@ -1087,10 +1094,20 @@ const main = async () => {
     .where('id', 10)
     .update({ active: true }, 'id');
 
+  // $ExpectType number[]
+  await knex<User>('users')
+    .where('id', 10)
+    .update('active', true, 'id');
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
     .where('id', 10)
     .update({ active: true }, ['id', 'age']);
+
+  // $ExpectType Pick<User, "id" | "age">[]
+  await knex<User>('users')
+    .where('id', 10)
+    .update('active', true, ['id', 'age']);
 
   const userUpdateReturnCols = ['id', 'age'] as const;
   // $ExpectType Pick<User, "id" | "age">[]
@@ -1098,6 +1115,7 @@ const main = async () => {
     .where('id', 10)
     .update({ active: true }, userUpdateReturnCols);
 
+  // TODO: .update('active', true', ['id', 'age']) does not works correctly
   // $ExpectType Pick<User, "id" | "age">[]
   await knex
     .where('id', 10)
@@ -1412,4 +1430,53 @@ const main = async () => {
 
   // $ExpectType any
   knex.queryBuilder().queryContext();
+
+  // .raw() support
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .where({
+      id: knex.raw<number>('a')
+    });
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .where('id', knex.raw<string>('a'));
+
+  // $ExpectType Ticket[]
+  await knex<Ticket>('users')
+    .where({
+      at: knex.fn.now()
+    });
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    // we can't do anything here for now
+    .where('id', knex.raw<string>('string'));
+
+  // $ExpectType number[]
+  await knex<User>('users')
+    .insert({
+      id: knex.raw<number>('a')
+    });
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .insert([{
+      id: knex.raw<number>('a')
+    }], '*');
+
+  // $ExpectType number[]
+  await knex<User>('users')
+    .update({
+      id: knex.raw<number>('a')
+    }, 'id');
+
+  // $ExpectType string[]
+  await knex<User>('users')
+    .update<'active', 'name'>('active', knex.raw<boolean>('true'), 'name');
+
+  // $ExpectType Pick<User, "name">[]
+  await knex<User>('users')
+    .update<'active', 'name'>('active', knex.raw<boolean>('true'), ['name']);
 };
