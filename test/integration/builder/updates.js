@@ -1,7 +1,8 @@
-/*global d*/
 'use strict';
 
 const { expect } = require('chai');
+
+const { TEST_TIMESTAMP } = require('../../constants');
 
 module.exports = function(knex) {
   describe('Updates', function() {
@@ -289,8 +290,8 @@ module.exports = function(knex) {
                 logins: 1,
                 balance: 12.240001,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
-                created_at: d,
-                updated_at: d,
+                created_at: TEST_TIMESTAMP,
+                updated_at: TEST_TIMESTAMP,
                 phone: null,
               },
             ]
@@ -332,8 +333,8 @@ module.exports = function(knex) {
                 logins: 1,
                 balance: 12.240000000000002,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
-                created_at: d,
-                updated_at: d,
+                created_at: TEST_TIMESTAMP,
+                updated_at: TEST_TIMESTAMP,
                 phone: null,
               },
             ]
