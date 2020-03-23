@@ -1,5 +1,6 @@
-/*global d*/
 'use strict';
+
+const d = new Date();
 
 module.exports = function(knex) {
   describe('Deletes', function() {

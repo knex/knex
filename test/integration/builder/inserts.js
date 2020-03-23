@@ -1,4 +1,3 @@
-/*global d*/
 'use strict';
 
 const { expect } = require('chai');
@@ -6,6 +5,8 @@ const { expect } = require('chai');
 const uuid = require('uuid');
 const _ = require('lodash');
 const sinon = require('sinon');
+
+const d = new Date();
 
 module.exports = function(knex) {
   describe('Inserts', function() {

@@ -1,8 +1,8 @@
-/*global d*/
-
 'use strict';
 
-const expect = require('chai').expect;
+const { expect } = require('chai');
+
+const d = new Date();
 
 module.exports = function(knex) {
   describe('Joins', function() {

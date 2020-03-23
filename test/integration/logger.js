@@ -1,10 +1,9 @@
-/*global d*/
-
 'use strict';
 
 const { expect } = require('chai');
-
 const _ = require('lodash');
+
+const d = new Date();
 
 module.exports = function(knex) {
   const client = knex.client;

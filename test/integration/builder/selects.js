@@ -1,4 +1,3 @@
-/*global d*/
 'use strict';
 
 const { expect } = require('chai');
@@ -6,6 +5,8 @@ const { expect } = require('chai');
 const _ = require('lodash');
 const assert = require('assert');
 const Runner = require('../../../lib/runner');
+
+const d = new Date();
 
 module.exports = function(knex) {
   describe('Selects', function() {
