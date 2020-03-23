@@ -1,5 +1,16 @@
 # Master (Unreleased)
 
+# 0.20.13 - 23 March, 2020
+
+### Bug fixes:
+
+- Correctly handle dateToString escaping without timezone passed #3742 
+- Make protocol length check more defensive #3744
+
+### Typings:
+
+- Make the ChainableInterface conform to Promise<T> #3724
+
 # 0.20.12 - 19 March, 2020
 
 ### Bug fixes:
