@@ -30,12 +30,12 @@ describe('FS functions', () => {
   });
 
   describe('readFile', async () => {
-    const tmpPath = await createTemp();
-    const filePath = path.join(tmpPath, `${Date.now()}1.txt`);
-
-    fs.writeFileSync(filePath, 'Hello World!');
-
     it('should be able to read from the given file path.', async () => {
+      const tmpPath = await createTemp();
+      const filePath = path.join(tmpPath, `${Date.now()}1.txt`);
+
+      fs.writeFileSync(filePath, 'Hello World!');
+
       const contents = await readFile(filePath);
 
       expect(contents.toString()).to.equal('Hello World!');
@@ -43,10 +43,10 @@ describe('FS functions', () => {
   });
 
   describe('writeFile', async () => {
-    const tmpPath = await createTemp();
-    const filePath = path.join(tmpPath, `${Date.now()}2.txt`);
-
     it('should be able to write to the given file path.', async () => {
+      const tmpPath = await createTemp();
+      const filePath = path.join(tmpPath, `${Date.now()}2.txt`);
+
       await writeFile(filePath, 'Foo Bar');
 
       expect(fs.readFileSync(filePath).toString()).to.equal('Foo Bar');
