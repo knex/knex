@@ -6,7 +6,7 @@ const uuid = require('uuid');
 const _ = require('lodash');
 const sinon = require('sinon');
 
-const d = new Date();
+const { TEST_TIMESTAMP } = require('../../constants');
 
 module.exports = function(knex) {
   describe('Inserts', function() {
@@ -19,8 +19,8 @@ module.exports = function(knex) {
             email: 'test@example.com',
             logins: 1,
             about: 'Lorem ipsum Dolore labore incididunt enim.',
-            created_at: d,
-            updated_at: d,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
           },
           'id'
         )
@@ -30,12 +30,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             [1]
           );
@@ -44,12 +44,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['1']
           );
@@ -58,12 +58,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             1
           );
@@ -72,12 +72,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             [1]
           );
@@ -86,12 +86,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               function(v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
@@ -103,12 +103,12 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['1']
           );
@@ -125,8 +125,8 @@ module.exports = function(knex) {
               email: 'test2@example.com',
               logins: 1,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
             },
             {
               first_name: 'Test',
@@ -134,8 +134,8 @@ module.exports = function(knex) {
               email: 'test3@example.com',
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               logins: 2,
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
             },
           ],
           'id'
@@ -146,19 +146,19 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [2]
           );
@@ -167,19 +167,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['2', '3']
           );
@@ -188,19 +188,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             2
           );
@@ -209,19 +209,19 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [3]
           );
@@ -230,22 +230,22 @@ module.exports = function(knex) {
             'begin execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?;end;',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               function(v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               function(v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
@@ -257,19 +257,19 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['2', '3']
           );
@@ -343,15 +343,15 @@ module.exports = function(knex) {
               email: 'test4@example.com',
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               logins: 2,
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
             },
             {
               first_name: 'Test',
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               logins: 2,
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
               last_name: 'User',
               email: 'test5@example.com',
             },
@@ -364,19 +364,19 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [4]
           );
@@ -385,19 +385,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['4', '5']
           );
@@ -406,19 +406,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             2
           );
@@ -427,19 +427,19 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [5]
           );
@@ -448,22 +448,22 @@ module.exports = function(knex) {
             'begin execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?;end;',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               function(v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               function(v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
@@ -475,19 +475,19 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['4', '5']
           );
@@ -508,8 +508,8 @@ module.exports = function(knex) {
             email: 'test5@example.com',
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             logins: 2,
-            created_at: d,
-            updated_at: d,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
           },
           'id'
         )
@@ -519,12 +519,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
           tester(
@@ -532,12 +532,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
           tester(
@@ -545,12 +545,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
           tester(
@@ -558,12 +558,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               function(v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
@@ -574,12 +574,12 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
         })
@@ -604,8 +604,8 @@ module.exports = function(knex) {
             email: 'test6@example.com',
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             logins: 2,
-            created_at: d,
-            updated_at: d,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
           },
           'id'
         )
@@ -615,12 +615,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [7]
           );
@@ -629,12 +629,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['7']
           );
@@ -643,12 +643,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             1
           );
@@ -657,12 +657,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [6]
           );
@@ -671,12 +671,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               function(v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
@@ -688,12 +688,12 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['7']
           );
