@@ -65,6 +65,33 @@ module.exports = {
         );
       });
 
+      it('Run migrations with knexfile returning function passed', () => {
+        return execCommand(
+          `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile/knexfile_func.js --knexpath=../knex.js`,
+          {
+            expectedOutput: 'Batch 1 run: 1 migrations',
+          }
+        );
+      });
+
+      it('Run migrations with knexfile with async passed', () => {
+        return execCommand(
+          `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile/knexfile_async.js --knexpath=../knex.js`,
+          {
+            expectedOutput: 'Batch 1 run: 1 migrations',
+          }
+        );
+      });
+
+      it('Run migrations with knexfile with promise passed', () => {
+        return execCommand(
+          `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile/knexfile_promise.js --knexpath=../knex.js`,
+          {
+            expectedOutput: 'Batch 1 run: 1 migrations',
+          }
+        );
+      });
+
       it("changes the process's cwd to the directory that contains the knexfile", () => {
         const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
         const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
