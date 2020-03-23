@@ -1,10 +1,9 @@
-/*global d*/
-
 'use strict';
 
 const { expect } = require('chai');
-
 const _ = require('lodash');
+
+const { TEST_TIMESTAMP } = require('../constants');
 
 module.exports = function(knex) {
   const client = knex.client;
@@ -98,7 +97,7 @@ module.exports = function(knex) {
         val,
         function(memo, val, key) {
           if (_.includes(['created_at', 'updated_at'], key)) {
-            memo[key] = d;
+            memo[key] = TEST_TIMESTAMP;
           } else {
             memo[key] = val;
           }

@@ -5,8 +5,6 @@ require('source-map-support').install();
 
 require('./chai-setup');
 
-global.d = new Date();
-
 const EXPECTED_REJECTION_COUNT = 0;
 const rejectionLog = [];
 process.on('unhandledRejection', (reason) => {
