@@ -31,11 +31,9 @@ const fsPromised = {
 async function openKnexfile(configPath) {
   let config = require(configPath);
   if (typeof config  === 'function') {
-    config = config();
+    config = await config();
   }
-  if (config instanceof Promise) {
-    config = await config;
-  }
+
   // FYI: By default, the extension for the migration files is inferred
   //      from the knexfile's extension. So, the following lines are in
   //      place for backwards compatibility purposes.

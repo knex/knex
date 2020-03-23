@@ -20,6 +20,16 @@ describe('seed:run', () => {
     );
   });
 
+  it('supports async configuration', () => {
+    return execCommand(
+      `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-async.js`,
+      {
+        expectedOutput: 'Ran 2 seed files',
+        notExpectedOutput: ['first.js', 'second.js'],
+      }
+    );
+  });
+
   it('prints verbose logs', () => {
     return execCommand(
       `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile.js --verbose`,
