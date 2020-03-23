@@ -4,6 +4,7 @@ const path = require('path');
 const { expect } = require('chai');
 const {
   stat,
+  readdir,
   readFile,
   writeFile,
   createTemp,
@@ -49,6 +50,27 @@ describe('FS functions', () => {
       await writeFile(filePath, 'Foo Bar');
 
       expect(fs.readFileSync(filePath).toString()).to.equal('Foo Bar');
+    });
+  });
+
+  describe('readdir', async () => {
+    it('should read a directory and return a list of files under it.', async () => {
+      const directory = await createTemp();
+
+      // Create files under the directory.
+      fs.writeFileSync(path.join(directory, 'testfile1.txt'), 'testfile1');
+      fs.writeFileSync(path.join(directory, 'testfile2.txt'), 'testfile2');
+      fs.writeFileSync(path.join(directory, 'testfile3.txt'), 'testfile3');
+      fs.writeFileSync(path.join(directory, 'testfile4.txt'), 'testfile4');
+
+      const result = await readdir(directory);
+
+      expect(result).to.deep.equal([
+        'testfile1.txt',
+        'testfile2.txt',
+        'testfile3.txt',
+        'testfile4.txt',
+      ]);
     });
   });
 
