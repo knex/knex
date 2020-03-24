@@ -22,8 +22,11 @@ const { readFile, writeFile } = require('./../lib/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
 
-function openKnexfile(configPath) {
-  const config = require(configPath);
+async function openKnexfile(configPath) {
+  let config = require(configPath);
+  if (typeof config  === 'function') {
+    config = await config();
+  }
 
   // FYI: By default, the extension for the migration files is inferred
   //      from the knexfile's extension. So, the following lines are in
@@ -33,7 +36,7 @@ function openKnexfile(configPath) {
   return config;
 }
 
-function initKnex(env, opts) {
+async function initKnex(env, opts) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -49,7 +52,7 @@ function initKnex(env, opts) {
   }
 
   env.configuration = env.configPath
-    ? openKnexfile(env.configPath)
+    ? await openKnexfile(env.configPath)
     : mkConfigObj(opts);
 
   const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
@@ -138,10 +141,10 @@ function invoke(env) {
       `--stub [<relative/path/from/knexfile>|<name>]`,
       'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
     )
-    .action((name) => {
+    .action(async (name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
-      const instance = initKnex(env, opts);
+      const instance = await initKnex(env, opts);
       const ext = getMigrationExtension(env, opts);
       const configOverrides = { extension: ext };
 
@@ -164,7 +167,7 @@ function invoke(env) {
     .option('--verbose', 'verbose')
     .action(() => {
       pending = initKnex(env, commander.opts())
-        .migrate.latest()
+        .then((instance) => instance.migrate.latest())
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -184,7 +187,7 @@ function invoke(env) {
     )
     .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.up({ name })
+        .then((instance) => instance.migrate.up({ name }))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -210,7 +213,7 @@ function invoke(env) {
       const { all } = cmd;
 
       pending = initKnex(env, commander.opts())
-        .migrate.rollback(null, all)
+        .then((instance) => instance.migrate.rollback(null, all))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
@@ -231,7 +234,7 @@ function invoke(env) {
     )
     .action((name) => {
       pending = initKnex(env, commander.opts())
-        .migrate.down({ name })
+        .then((instance) => instance.migrate.down({ name }))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
@@ -253,7 +256,7 @@ function invoke(env) {
     .description('        View the current version for the migration.')
     .action(() => {
       pending = initKnex(env, commander.opts())
-        .migrate.currentVersion()
+        .then((instance) => instance.migrate.currentVersion())
         .then((version) => {
           success(color.green('Current Version: ') + color.blue(version));
         })
@@ -266,7 +269,9 @@ function invoke(env) {
     .description('        List all migrations files with status.')
     .action(() => {
       pending = initKnex(env, commander.opts())
-        .migrate.list()
+        .then((instance) => {
+          return instance.migrate.list();
+        })
         .then(([completed, newMigrations]) => {
           listMigrations(completed, newMigrations);
         })
@@ -284,10 +289,10 @@ function invoke(env) {
       `--stub [<relative/path/from/knexfile>|<name>]`,
       'Specify the seed stub to use. If using <name> the file must be located in config.seeds.directory'
     )
-    .action((name) => {
+    .action(async (name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
-      const instance = initKnex(env, opts);
+      const instance = await initKnex(env, opts);
       const ext = getSeedExtension(env, opts);
       const configOverrides = { extension: ext };
       const stub = getStubPath('seeds', env, opts);
@@ -310,7 +315,7 @@ function invoke(env) {
     .option('--specific', 'run specific seed file')
     .action(() => {
       pending = initKnex(env, commander.opts())
-        .seed.run({ specific: argv.specific })
+        .then((instance) => instance.seed.run({ specific: argv.specific }))
         .then(([log]) => {
           if (log.length === 0) {
             success(color.cyan('No seed files exist'));
