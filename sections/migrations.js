@@ -298,6 +298,32 @@ export default [
     `
   },
   {
+    type: "text",
+    size: "sm",
+    content: "you can also export an async function from the knexfile. This is useful when you need to fetch credentials from a secure location like vault"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      async function fetchConfiguration() {
+        // TODO: implement me
+        return {
+          client: 'pg',
+          connection: { user: 'me', password: 'my_pass' }
+        }
+      }
+
+      module.exports = async () => {
+        const configuration = await fetchConfiguration();
+        return {
+          ...configuration,
+          migrations: {}
+        }
+      };
+    `
+  },
+  {
     type: "heading",
     size: "sm",
     content: "Environment configuration:"
