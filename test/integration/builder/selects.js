@@ -1,4 +1,3 @@
-/*global d*/
 'use strict';
 
 const { expect } = require('chai');
@@ -6,6 +5,8 @@ const { expect } = require('chai');
 const _ = require('lodash');
 const assert = require('assert');
 const Runner = require('../../../lib/runner');
+
+const { TEST_TIMESTAMP } = require('../../constants');
 
 module.exports = function(knex) {
   describe('Selects', function() {
@@ -558,8 +559,8 @@ module.exports = function(knex) {
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: d,
-                  updated_at: d,
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
                   phone: null,
                 },
               ]
@@ -577,8 +578,8 @@ module.exports = function(knex) {
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: d,
-                  updated_at: d,
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
                   phone: null,
                 },
               ]
@@ -596,8 +597,8 @@ module.exports = function(knex) {
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: d,
-                  updated_at: d,
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
                   phone: null,
                 },
               ]
@@ -615,8 +616,8 @@ module.exports = function(knex) {
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: d,
-                  updated_at: d,
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
                   phone: null,
                 },
               ]
@@ -634,8 +635,8 @@ module.exports = function(knex) {
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: d,
-                  updated_at: d,
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
                   phone: null,
                 },
               ]
@@ -653,8 +654,8 @@ module.exports = function(knex) {
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: d,
-                  updated_at: d,
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
                   phone: null,
                 },
               ]

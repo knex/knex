@@ -7,8 +7,6 @@ const tildify = require('tildify');
 const commander = require('commander');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
-const fs = require('fs');
-const { promisify } = require('util');
 const cliPkg = require('../package');
 const {
   mkConfigObj,
@@ -20,13 +18,9 @@ const {
   getSeedExtension,
   getStubPath,
 } = require('./utils/cli-config-utils');
+const { readFile, writeFile } = require('./../lib/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
-
-const fsPromised = {
-  readFile: promisify(fs.readFile),
-  writeFile: promisify(fs.writeFile),
-};
 
 async function openKnexfile(configPath) {
   let config = require(configPath);
@@ -121,15 +115,14 @@ function invoke(env) {
       }
       checkLocalModule(env);
       const stubPath = `./knexfile.${type}`;
-      pending = fsPromised
-        .readFile(
-          path.dirname(env.modulePath) +
-            '/lib/migrate/stub/knexfile-' +
-            type +
-            '.stub'
-        )
+      pending = readFile(
+        path.dirname(env.modulePath) +
+          '/lib/migrate/stub/knexfile-' +
+          type +
+          '.stub'
+      )
         .then((code) => {
-          return fsPromised.writeFile(stubPath, code);
+          return writeFile(stubPath, code);
         })
         .then(() => {
           success(color.green(`Created ${stubPath}`));
