@@ -198,10 +198,6 @@
     "branches": 69,
     "extension": [
       ".js"
-    ],
-    "exclude": [
-      "test/**/*.js",
-      "scripts/**/*.js"
     ]
   },
   "husky": {
