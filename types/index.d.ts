@@ -1519,6 +1519,8 @@ declare namespace Knex {
     raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
+    toString(): string;
+    toSQL(): Sql;
   }
 
   interface TableBuilder {
