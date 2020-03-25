@@ -1215,21 +1215,24 @@ declare namespace Knex {
       ColumnNameQueryBuilder<TRecord, TResult> {}
 
   interface OrderBy<TRecord = any, TResult = unknown[]> {
-    (columnName: keyof TRecord, order?: 'asc' | 'desc'): QueryBuilder<
+    (columnName: keyof TRecord | QueryBuilder, order?: 'asc' | 'desc'): QueryBuilder<
       TRecord,
       TResult
     >;
-    (columnName: string, order?: string): QueryBuilder<TRecord, TResult>;
+    (columnName: string | QueryBuilder, order?: string): QueryBuilder<TRecord, TResult>;
     (
       columnDefs: Array<
-        keyof TRecord | Readonly<{ column: keyof TRecord; order?: 'asc' | 'desc' }>
+        keyof TRecord | Readonly<{
+          column: keyof TRecord | QueryBuilder;
+          order?: 'asc' | 'desc'
+        }>
       >
     ): QueryBuilder<TRecord, TResult>;
     (
-      columnDefs: Array<string | Readonly<{ column: string; order?: string }>>
-    ): QueryBuilder<TRecord, TResult>;
-    <TRecordInner, TResultInner>(
-      subQueryBuilder: QueryBuilder<TRecordInner, TResultInner>
+      columnDefs: Array<string | Readonly<{
+        column: string | QueryBuilder;
+        order?: string;
+      }>>
     ): QueryBuilder<TRecord, TResult>;
   }
 
