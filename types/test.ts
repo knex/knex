@@ -541,6 +541,33 @@ const main = async () => {
         .where('users.id', 'u.id')
     );
 
+  await knex<User>('users')
+    .select()
+    .orderBy([{
+      column: knex<User>('users')
+        .select('u.id')
+        .from('users as u')
+        .where('users.id', 'u.id'),
+      order: 'desc'
+    }]);
+
+  await knex<User>('users')
+    .select()
+    .orderBy([{
+      column: 'id',
+      order: 'desc'
+    }, {
+      column: 'name',
+      order: 'desc'
+    }]);
+
+  await knex<User>('users')
+    .select()
+    .orderBy([{
+      column: 'id',
+      order: 'desc'
+    }, 'name']);
+
   // $ExpectType Dict<string | number>[]
   await knex<User>('users').count();
 
