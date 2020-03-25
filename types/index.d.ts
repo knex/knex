@@ -1877,6 +1877,17 @@ declare namespace Knex {
     deprecate?: (method: string, alternative: string) => void;
   }
 
+  interface Migration {
+      up: (knex: Knex) => PromiseLike<any>;
+      down?: (kenx: Knex) => PromiseLike<any>;
+  }
+
+  interface MigrationSource<TMigrationSpec> {
+      getMigrations(loadExtensions: readonly string[]): Promise<TMigrationSpec[]>;
+      getMigrationName(migration: TMigrationSpec): string;
+      getMigration(migration: TMigrationSpec): Migration;
+  }
+
   interface MigratorConfig {
     database?: string;
     directory?: string | readonly string[];
@@ -1888,7 +1899,7 @@ declare namespace Knex {
     disableMigrationsListValidation?: boolean;
     sortDirsSeparately?: boolean;
     loadExtensions?: readonly string[];
-    migrationSource?: any;
+    migrationSource?: MigrationSource<unknown>;
   }
 
   interface SeedsConfig<V extends {} = any> {
