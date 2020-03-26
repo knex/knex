@@ -21,7 +21,7 @@ module.exports = function(knex) {
           tester('oracledb', 'delete from "accounts" where "id" = ?', [1], 1);
           tester(
             'mssql',
-            'delete from [accounts] where [id] = ?;select @@rowcount',
+            'delete from [accounts] where [id] = ?;select @@rowcount as AFFECTEDROWS',
             [1],
             1
           );
