@@ -6094,6 +6094,114 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('insert ignore', () => {
+    testsql(
+      qb()
+        .insert({ email: 'foo' })
+        .ignore('email')
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`) values (?)',
+          bindings: ['foo'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email") values (?) on conflict ("email") do nothing',
+          bindings: ['foo'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`) values (?) on conflict (`email`) do nothing',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('insert ignore multiple', () => {
+    testsql(
+      qb()
+        .insert([{ email: 'foo' }, { email: 'bar' }])
+        .ignore('email')
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`) values (?), (?)',
+          bindings: ['foo', 'bar'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email") values (?), (?) on conflict ("email") do nothing',
+          bindings: ['foo', 'bar'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (`email`) do nothing',
+          bindings: ['foo', 'bar'],
+        },
+      }
+    );
+  });
+
+  it('insert merge with explicit updates', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'dayle' },
+        ])
+        .merge({ name: 'overidden' }, 'email'),
+      {
+        mysql: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `name` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `name` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "name" = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+      }
+    );
+  });
+
+  it('insert merge multiple with implicit updates', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'dayle' },
+        ])
+        .merge(null, 'email'),
+      {
+        mysql: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name"',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+      }
+    );
+  });
+
   it('Calling decrement and then increment will overwrite the previous value', () => {
     testsql(
       qb()
