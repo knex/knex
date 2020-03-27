@@ -6094,11 +6094,38 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('insert method respects raw bindings', () => {
+    testsql(
+      qb()
+        .insert({ email: raw('CURRENT TIMESTAMP') })
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert into `users` (`email`) values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'insert into [users] ([email]) values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        pg: {
+          sql: 'insert into "users" ("email") values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'insert into "users" ("email") values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('insert ignore', () => {
     testsql(
       qb()
         .insert({ email: 'foo' })
-        .ignore('email')
+        .onConflict('email')
+        .ignore()
         .into('users'),
       {
         mysql: {
@@ -6123,7 +6150,8 @@ describe('QueryBuilder', () => {
     testsql(
       qb()
         .insert([{ email: 'foo' }, { email: 'bar' }])
-        .ignore('email')
+        .onConflict('email')
+        .ignore()
         .into('users'),
       {
         mysql: {
@@ -6152,7 +6180,8 @@ describe('QueryBuilder', () => {
           { email: 'foo', name: 'taylor' },
           { email: 'bar', name: 'dayle' },
         ])
-        .merge({ name: 'overidden' }, 'email'),
+        .onConflict('email')
+        .merge({ name: 'overidden' }),
       {
         mysql: {
           sql:
@@ -6181,7 +6210,8 @@ describe('QueryBuilder', () => {
           { email: 'foo', name: 'taylor' },
           { email: 'bar', name: 'dayle' },
         ])
-        .merge(null, 'email'),
+        .onConflict('email')
+        .merge(),
       {
         mysql: {
           sql:

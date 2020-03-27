@@ -1278,67 +1278,54 @@ module.exports = function (knex) {
         });
     });
 
-    it('will silently do nothing when multiple inserts are made into a unique column and ignore is specificied', function() {
+    it('will silently do nothing when multiple inserts are made into a unique column and ignore is specificied', async function() {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
-      return knex('accounts')
-        .where('id', '>', 1)
-        .orWhere('x', 2)
-        .insert(
-          {
-            first_name: 'Test',
-            last_name: 'User',
-            email: 'test5@example.com',
-            about: 'Lorem ipsum Dolore labore incididunt enim.',
-            logins: 2,
-            created_at: TEST_TIMESTAMP,
-            updated_at: TEST_TIMESTAMP,
-          },
-          'id'
-        )
-        .ignore('email')
+
+      // Setup: Create table with unique email column
+      await knex.schema.dropTableIfExists('upsert_tests');
+      await knex.schema.createTable('upsert_tests', (table) => {
+        table.string('name');
+        table.string('email');
+        table.unique('email');
+      });
+
+      // Setup: Create row to conflict against
+      await knex('upsert_tests').insert({
+        email: 'ignoretest@example.com',
+        name: 'BEFORE',
+      });
+
+      // Test: Insert..ignore with same email as existing row
+      await knex('upsert_tests')
+        .insert({ email: 'ignoretest@example.com', name: 'AFTER' }, 'email')
+        .onConflict('email')
+        .ignore()
         .testSql(function(tester) {
           tester(
             'mysql',
-            'insert ignore into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
-            [
-              'Lorem ipsum Dolore labore incididunt enim.',
-              TEST_TIMESTAMP,
-              'test5@example.com',
-              'Test',
-              'User',
-              2,
-              TEST_TIMESTAMP,
-            ]
+            'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
+            ['ignoretest@example.com', 'AFTER']
           );
           tester(
             'pg',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) on conflict ("email") do nothing returning "id"',
-            [
-              'Lorem ipsum Dolore labore incididunt enim.',
-              TEST_TIMESTAMP,
-              'test5@example.com',
-              'Test',
-              'User',
-              2,
-              TEST_TIMESTAMP,
-            ]
+            'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do nothing returning "email"',
+            ['ignoretest@example.com', 'AFTER']
           );
           tester(
             'sqlite3',
-            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) on conflict (`email`) do nothing',
-            [
-              'Lorem ipsum Dolore labore incididunt enim.',
-              TEST_TIMESTAMP,
-              'test5@example.com',
-              'Test',
-              'User',
-              2,
-              TEST_TIMESTAMP,
-            ]
+            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
+            ['ignoretest@example.com', 'AFTER']
           );
         });
+
+      // Assert: there is still only 1 row, and that it HAS NOT been updated
+      const rows = await knex('upsert_tests')
+        .where({ email: 'ignoretest@example.com' })
+        .select();
+      expect(rows.length).to.equal(1);
+      expect(rows[0].name).to.equal('BEFORE');
     });
 
     it('updates columns when inserting a duplicate key to unique column and merge is specificied', async function() {
@@ -1346,85 +1333,55 @@ module.exports = function (knex) {
         return this.skip();
       }
 
-      // Insert row with email mergetest@example.com (email is a unique column)
-      await knex('accounts').insert(
-        {
-          first_name: 'Test',
-          last_name: 'User',
-          email: 'mergetest@example.com',
-          about: 'Lorem ipsum Dolore labore incididunt enim.',
-          logins: 2,
-          created_at: TEST_TIMESTAMP,
-          updated_at: TEST_TIMESTAMP,
-        },
-        'id'
-      );
+      // Setup: Create table with unique email column
+      await knex.schema.dropTableIfExists('upsert_tests');
+      await knex.schema.createTable('upsert_tests', (table) => {
+        table.string('name');
+        table.string('email');
+        table.unique('email');
+      });
+
+      // Setup: Create row to conflict against
+      await knex('upsert_tests').insert({
+        email: 'mergetest@example.com',
+        name: 'BEFORE',
+      });
 
       // Perform insert..merge (upsert)
-      await knex('accounts')
-        .where('id', '>', 1)
-        .orWhere('x', 2)
+      await knex('upsert_tests')
         .insert(
           {
-            first_name: 'Test',
-            last_name: 'User',
             email: 'mergetest@example.com',
-            about: 'Updated Description',
-            logins: 2,
-            created_at: TEST_TIMESTAMP,
-            updated_at: TEST_TIMESTAMP,
+            name: 'AFTER',
           },
-          'id'
+          'email'
         )
-        .merge(null, 'email')
+        .onConflict('email')
+        .merge()
         .testSql(function(tester) {
           tester(
             'mysql',
-            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) on duplicate key update `about` = values(`about`), `created_at` = values(`created_at`), `email` = values(`email`), `first_name` = values(`first_name`), `last_name` = values(`last_name`), `logins` = values(`logins`), `updated_at` = values(`updated_at`)',
-            [
-              'Updated Description',
-              TEST_TIMESTAMP,
-              'mergetest@example.com',
-              'Test',
-              'User',
-              2,
-              TEST_TIMESTAMP,
-            ]
+            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+            ['mergetest@example.com', 'AFTER']
           );
           tester(
             'pg',
-            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) on conflict ("email") do update set "about" = excluded."about", "created_at" = excluded."created_at", "email" = excluded."email", "first_name" = excluded."first_name", "last_name" = excluded."last_name", "logins" = excluded."logins", "updated_at" = excluded."updated_at" returning "id"',
-            [
-              'Updated Description',
-              TEST_TIMESTAMP,
-              'mergetest@example.com',
-              'Test',
-              'User',
-              2,
-              TEST_TIMESTAMP,
-            ]
+            'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
+            ['mergetest@example.com', 'AFTER']
           );
           tester(
             'sqlite3',
-            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) on conflict (`email`) do update set `about` = excluded.`about`, `created_at` = excluded.`created_at`, `email` = excluded.`email`, `first_name` = excluded.`first_name`, `last_name` = excluded.`last_name`, `logins` = excluded.`logins`, `updated_at` = excluded.`updated_at`',
-            [
-              'Updated Description',
-              TEST_TIMESTAMP,
-              'mergetest@example.com',
-              'Test',
-              'User',
-              2,
-              TEST_TIMESTAMP,
-            ]
+            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+            ['mergetest@example.com', 'AFTER']
           );
         });
 
-      // Check that row has been updated
-      const rows = await knex('accounts')
+      // Check that row HAS been updated
+      const rows = await knex('upsert_tests')
         .where({ email: 'mergetest@example.com' })
         .select();
       expect(rows.length).to.equal(1);
-      expect(rows[0].about).to.equal('Updated Description');
+      expect(rows[0].name).to.equal('AFTER');
     });
 
     it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function () {
