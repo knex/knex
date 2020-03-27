@@ -1278,6 +1278,155 @@ module.exports = function (knex) {
         });
     });
 
+    it('will silently do nothing when multiple inserts are made into a unique column and ignore is specificied', function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
+      return knex('accounts')
+        .where('id', '>', 1)
+        .orWhere('x', 2)
+        .insert(
+          {
+            first_name: 'Test',
+            last_name: 'User',
+            email: 'test5@example.com',
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            logins: 2,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          'id'
+        )
+        .ignore('email')
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'insert ignore into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+            [
+              'Lorem ipsum Dolore labore incididunt enim.',
+              TEST_TIMESTAMP,
+              'test5@example.com',
+              'Test',
+              'User',
+              2,
+              TEST_TIMESTAMP,
+            ]
+          );
+          tester(
+            'pg',
+            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) on conflict ("email") do nothing returning "id"',
+            [
+              'Lorem ipsum Dolore labore incididunt enim.',
+              TEST_TIMESTAMP,
+              'test5@example.com',
+              'Test',
+              'User',
+              2,
+              TEST_TIMESTAMP,
+            ]
+          );
+          tester(
+            'sqlite3',
+            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) on conflict (`email`) do nothing',
+            [
+              'Lorem ipsum Dolore labore incididunt enim.',
+              TEST_TIMESTAMP,
+              'test5@example.com',
+              'Test',
+              'User',
+              2,
+              TEST_TIMESTAMP,
+            ]
+          );
+        });
+    });
+
+    it('updates columns when inserting a duplicate key to unique column and merge is specificied', async function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
+
+      // Insert row with email mergetest@example.com (email is a unique column)
+      await knex('accounts').insert(
+        {
+          first_name: 'Test',
+          last_name: 'User',
+          email: 'mergetest@example.com',
+          about: 'Lorem ipsum Dolore labore incididunt enim.',
+          logins: 2,
+          created_at: TEST_TIMESTAMP,
+          updated_at: TEST_TIMESTAMP,
+        },
+        'id'
+      );
+
+      // Perform insert..merge (upsert)
+      await knex('accounts')
+        .where('id', '>', 1)
+        .orWhere('x', 2)
+        .insert(
+          {
+            first_name: 'Test',
+            last_name: 'User',
+            email: 'mergetest@example.com',
+            about: 'Updated Description',
+            logins: 2,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          'id'
+        )
+        .merge(null, 'email')
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) on duplicate key update `about` = values(`about`), `created_at` = values(`created_at`), `email` = values(`email`), `first_name` = values(`first_name`), `last_name` = values(`last_name`), `logins` = values(`logins`), `updated_at` = values(`updated_at`)',
+            [
+              'Updated Description',
+              TEST_TIMESTAMP,
+              'mergetest@example.com',
+              'Test',
+              'User',
+              2,
+              TEST_TIMESTAMP,
+            ]
+          );
+          tester(
+            'pg',
+            'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) on conflict ("email") do update set "about" = excluded."about", "created_at" = excluded."created_at", "email" = excluded."email", "first_name" = excluded."first_name", "last_name" = excluded."last_name", "logins" = excluded."logins", "updated_at" = excluded."updated_at" returning "id"',
+            [
+              'Updated Description',
+              TEST_TIMESTAMP,
+              'mergetest@example.com',
+              'Test',
+              'User',
+              2,
+              TEST_TIMESTAMP,
+            ]
+          );
+          tester(
+            'sqlite3',
+            'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) on conflict (`email`) do update set `about` = excluded.`about`, `created_at` = excluded.`created_at`, `email` = excluded.`email`, `first_name` = excluded.`first_name`, `last_name` = excluded.`last_name`, `logins` = excluded.`logins`, `updated_at` = excluded.`updated_at`',
+            [
+              'Updated Description',
+              TEST_TIMESTAMP,
+              'mergetest@example.com',
+              'Test',
+              'User',
+              2,
+              TEST_TIMESTAMP,
+            ]
+          );
+        });
+
+      // Check that row has been updated
+      const rows = await knex('accounts')
+        .where({ email: 'mergetest@example.com' })
+        .select();
+      expect(rows.length).to.equal(1);
+      expect(rows[0].about).to.equal('Updated Description');
+    });
+
     it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function () {
       if (knex.client.driverName === 'sqlite3') {
         return true;
