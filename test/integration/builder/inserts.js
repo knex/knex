@@ -1278,7 +1278,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('will silently do nothing when multiple inserts are made into a unique column and ignore is specificied', async function() {
+    it('will silently do nothing when multiple inserts are made into a unique column and ignore is specified', async function() {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
@@ -1322,6 +1322,61 @@ module.exports = function (knex) {
 
       // Assert: there is still only 1 row, and that it HAS NOT been updated
       const rows = await knex('upsert_tests')
+        .where({ email: 'ignoretest@example.com' })
+        .select();
+      expect(rows.length).to.equal(1);
+      expect(rows[0].name).to.equal('BEFORE');
+    });
+
+    it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specificied', async function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
+
+      // Setup: Create table with unique email column
+      await knex.schema.dropTableIfExists('upsert_composite_key_tests');
+      await knex.schema.createTable('upsert_composite_key_tests', (table) => {
+        table.string('name');
+        table.string('email');
+        table.string('org');
+        table.unique(['org', 'email']);
+      });
+
+      // Setup: Create row to conflict against
+      await knex('upsert_composite_key_tests').insert({
+        org: 'acme-inc',
+        email: 'ignoretest@example.com',
+        name: 'BEFORE',
+      });
+
+      // Test: Insert..ignore with same email as existing row
+      await knex('upsert_composite_key_tests')
+        .insert(
+          { org: 'acme-inc', email: 'ignoretest@example.com', name: 'AFTER' },
+          'email'
+        )
+        .onConflict(['org', 'email'])
+        .ignore()
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'insert ignore into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?)',
+            ['ignoretest@example.com', 'AFTER', 'acme-inc']
+          );
+          tester(
+            'pg',
+            'insert into "upsert_composite_key_tests" ("email", "name", "org") values (?, ?, ?) on conflict ("org", "email") do nothing returning "email"',
+            ['ignoretest@example.com', 'AFTER', 'acme-inc']
+          );
+          tester(
+            'sqlite3',
+            'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
+            ['ignoretest@example.com', 'AFTER', 'acme-inc']
+          );
+        });
+
+      // Assert: there is still only 1 row, and that it HAS NOT been updated
+      const rows = await knex('upsert_composite_key_tests')
         .where({ email: 'ignoretest@example.com' })
         .select();
       expect(rows.length).to.equal(1);
@@ -1382,6 +1437,64 @@ module.exports = function (knex) {
         .select();
       expect(rows.length).to.equal(1);
       expect(rows[0].name).to.equal('AFTER');
+    });
+
+    it('updates and inserts columns when inserting multiple rows merge is specified', async function() {
+      if (/redshift/i.test(knex.client.driverName)) {
+        return this.skip();
+      }
+
+      // Setup: Create table with unique email column
+      await knex.schema.dropTableIfExists('upsert_tests');
+      await knex.schema.createTable('upsert_tests', (table) => {
+        table.string('name');
+        table.string('email');
+        table.unique('email');
+      });
+
+      // Setup: Create row to conflict against
+      await knex('upsert_tests').insert(
+        { email: 'one@example.com', name: 'BEFORE' },
+        { email: 'two@example.com', name: 'BEFORE' }
+      );
+
+      // Perform insert..merge (upsert)
+      await knex('upsert_tests')
+        .insert(
+          { email: 'two@example.com', name: 'AFTER' },
+          { email: 'three@example.com', name: 'AFTER' },
+          'email'
+        )
+        .onConflict('email')
+        .merge()
+        .testSql(function(tester) {
+          tester(
+            'mysql',
+            'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+            ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+          );
+          tester(
+            'pg',
+            'insert into "upsert_tests" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
+            ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+          );
+          tester(
+            'sqlite3',
+            'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+            ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+          );
+        });
+
+      // Check that row HAS been updated
+      const rows = await knex('upsert_tests').select();
+      expect(rows.length).to.equal(3);
+
+      const row1 = rows.find((row) => row.email === 'one@example.com');
+      expect(row1 && row1.name).to.equal('BEFORE');
+      const row2 = rows.find((row) => row.email === 'two@example.com');
+      expect(row2 && row2.name).to.equal('AFTER');
+      const row3 = rows.find((row) => row.email === 'three@example.com');
+      expect(row3 && row3.name).to.equal('AFTER');
     });
 
     it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function () {
