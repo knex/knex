@@ -743,6 +743,32 @@ declare namespace Knex {
       column: string | readonly string[]
     ): QueryBuilder<TRecord, TResult2>;
 
+    onConflict<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
+      column: TKey
+    ): QueryBuilder<TRecord, TResult2>;
+    onConflict<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.SetSingle<
+        DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, TRecord, TKey>,
+        false
+      >[]
+    >(
+      columns: readonly TKey[]
+    ): QueryBuilder<TRecord, TResult2>;
+    returning<TResult2 = SafePartial<TRecord>[]>(
+      column: string | readonly string[]
+    ): QueryBuilder<TRecord, TResult2>;
+
+    ignore(): QueryBuilder<TRecord, TResult>;
+    merge(data?: DbRecordArr<TRecord>): QueryBuilder<TRecord, TResult>;
+
     del(
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
