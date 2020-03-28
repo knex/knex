@@ -767,7 +767,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
 
     ignore(): QueryBuilder<TRecord, TResult>;
-    merge(data?: DbRecordArr<TRecord>): QueryBuilder<TRecord, TResult>;
+    merge(data?: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
 
     del(
       returning: '*'
