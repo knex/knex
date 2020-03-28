@@ -21,7 +21,7 @@ import { ConnectionOptions } from "tls";
 //
 // This is primarily to prevent type incompatibilities where target can be unknown.
 // While unknown can be assigned to any, Partial<unknown> can't be.
-type SafePartial<T> = T extends {} ? Partial<T> : any;
+type SafePartial<T> = Partial<AnyOrUnknownToOther<T, {}>>;
 
 type MaybeArray<T> = T | T[];
 
@@ -30,6 +30,7 @@ type StrKey<T> = string & keyof T;
 // If T is unknown then convert to any, else retain original
 type UnknownToAny<T> = unknown extends T ? any : T;
 type AnyToUnknown<T> = unknown extends T ? unknown : T;
+type AnyOrUnknownToOther<T1, T2> = unknown extends T1 ? T2 : T1;
 
 // Intersection conditionally applied only when TParams is non-empty
 // This is primarily to keep the signatures more intuitive.
