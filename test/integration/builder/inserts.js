@@ -1328,7 +1328,7 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('BEFORE');
     });
 
-    it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specificied', async function() {
+    it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function() {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
