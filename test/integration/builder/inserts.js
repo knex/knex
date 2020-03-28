@@ -1328,7 +1328,7 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('BEFORE');
     });
 
-    it('updates columns when inserting a duplicate key to unique column and merge is specificied', async function() {
+    it('updates columns when inserting a duplicate key to unique column and merge is specified', async function() {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
