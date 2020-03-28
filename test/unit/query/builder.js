@@ -6172,6 +6172,32 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('insert ignore with composite unique keys', () => {
+    testsql(
+      qb()
+        .insert([{ org: 'acme-inc', email: 'foo' }])
+        .onConflict(['org', 'email'])
+        .ignore()
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`, `org`) values (?, ?)',
+          bindings: ['foo', 'acme-inc'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "org") values (?, ?) on conflict ("org", "email") do nothing',
+          bindings: ['foo', 'acme-inc'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `org`) values (?, ?) on conflict (`org`, `email`) do nothing',
+          bindings: ['foo', 'acme-inc'],
+        },
+      }
+    );
+  });
+
   it('insert merge with explicit updates', () => {
     testsql(
       qb()
