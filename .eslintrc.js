@@ -20,9 +20,18 @@ module.exports = {
     'no-fallthrough': warning,
     'require-atomic-updates': 0,
   },
+  globals: {},
   env: {
     node: true,
     mocha: true,
     es6: true,
   },
+  overrides: [
+    {
+      files: './test/**/*.js',
+      globals: {
+        BigInt: 'readonly',
+      },
+    },
+  ],
 };

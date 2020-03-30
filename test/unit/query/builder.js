@@ -8,6 +8,7 @@ const Redshift_Client = require('../../../lib/dialects/redshift');
 const Oracledb_Client = require('../../../lib/dialects/oracledb');
 const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
+const { differentBigInts } = require('../../test-data/bigints');
 
 // use driverName as key
 const clients = {
@@ -132,7 +133,7 @@ function testquery(chain, valuesToCheck, selectedClients) {
     newChain.client = selectedClients[key];
     const sqlString = newChain.toQuery();
     const checkValue = valuesToCheck[key];
-    expect(checkValue).to.equal(sqlString);
+    expect(checkValue).to.equal(sqlString, `for driver ${key}`);
   });
 }
 
@@ -9863,4 +9864,55 @@ describe('QueryBuilder', () => {
       }
     );
   });
+
+  if (typeof BigInt !== 'undefined') {
+    describe('BigInt tests', () => {
+      for (const value of differentBigInts) {
+        expect(BigInt(value.toString())).to.be.equal(value); // just self-test
+
+        it('#3553 should correctly compile insert with BigInt', function() {
+          testquery(
+            qb()
+              .insert([{ a: value }])
+              .into('test'),
+            {
+              pg: `insert into "test" ("a") values (${value})`,
+              mysql: `insert into \`test\` (\`a\`) values (${value})`,
+              mssql: `insert into [test] ([a]) values (${value})`,
+              'pg-redshift': `insert into "test" ("a") values (${value})`,
+              oracledb: `insert into "test" ("a") values ('${value}')`,
+              sqlite3: `insert into \`test\` (\`a\`) values ('${value}')`,
+            }
+          );
+        });
+
+        it('#3553 should correctly compile update with BigInt', function() {
+          testquery(
+            qb()
+              .table('test')
+              .update({ a: value }),
+            {
+              pg: `update "test" set "a" = ${value}`,
+              mysql: `update \`test\` set \`a\` = ${value}`,
+              mssql: `update [test] set [a] = ${value};select @@rowcount`,
+              'pg-redshift': `update "test" set "a" = ${value}`,
+              oracledb: `update "test" set "a" = '${value}'`,
+              sqlite3: `update \`test\` set \`a\` = '${value}'`,
+            }
+          );
+        });
+
+        it('#3553 should correctly compile update with BigInt in array', function() {
+          testquery(
+            qb()
+              .update({ a: [value, value] })
+              .into('test'),
+            {
+              pg: `update "test" set "a" = '{${value},${value}}'`,
+            }
+          );
+        });
+      }
+    });
+  }
 });

@@ -1,5 +1,10 @@
 'use strict';
 
+const {
+  lowerInt64,
+  upperInt64,
+  differentBigInts,
+} = require('../../test-data/bigints');
 const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../constants');
@@ -341,5 +346,112 @@ module.exports = function(knex) {
           );
         });
     });
+
+    if (typeof BigInt !== 'undefined') {
+      for (const columnType of ['bigint', 'decimal', 'string']) {
+        describe(`#3553 update with bigint with column type ${columnType}`, function() {
+          // TODO
+          // see: https://github.com/mapbox/node-sqlite3/issues/922
+          // in short: driver converts all selected BigInts as integers
+          if (
+            knex.client.driverName === 'sqlite3' &&
+            ['bigint', 'decimal'].includes(columnType)
+          )
+            return;
+
+          const tableName = 'bigint_updates_tests';
+          const tableNameArray = 'bigint_updates_array_tests';
+          before(async function() {
+            await knex.schema.dropTableIfExists(tableName);
+            await knex.schema.createTable(tableName, (t) => {
+              t.integer('id').primary();
+
+              switch (columnType) {
+                case 'decimal':
+                  t.decimal('value', 18, 0);
+                  break;
+                case 'bigint':
+                  t.bigInteger('value');
+                  break;
+                case 'string':
+                  t.string('value', 500);
+                  break;
+              }
+            });
+
+            if (knex.client.driverName === 'pg') {
+              await knex.schema.dropTableIfExists(tableNameArray);
+              await knex.schema.createTable(tableNameArray, (t) => {
+                t.integer('id').primary();
+
+                switch (columnType) {
+                  case 'decimal':
+                    t.specificType('values', 'decimal(18, 0)[]');
+                    break;
+                  case 'bigint':
+                    t.specificType('values', 'bigint[]');
+                    break;
+                  case 'string':
+                    t.specificType('values', 'varchar(500)[]');
+                    break;
+                }
+              });
+            }
+          });
+
+          for (const [id, value] of differentBigInts.entries()) {
+            if (
+              columnType === 'bigint' &&
+              (value < lowerInt64 || value > upperInt64)
+            ) {
+              // because bigint stands for 8-bytes integer (or int64)
+              continue;
+            }
+
+            if (
+              columnType === 'decimal' &&
+              value.toString().length > (value > BigInt(0) ? 18 : 19)
+            ) {
+              // because decimal(18)
+              continue;
+            }
+
+            it('should allow update with BigInt', async function() {
+              await knex(tableName).insert([{ id, value: '1' }]);
+              await knex(tableName)
+                .where({ id })
+                .update({ value });
+
+              await expect(
+                knex(tableName).where({ id })
+              ).to.eventually.be.deep.equal([
+                {
+                  id,
+                  value: value.toString(),
+                },
+              ]);
+            });
+
+            if (knex.client.driverName === 'pg') {
+              it('should allow update array with BigInt', async function() {
+                await knex(tableNameArray).insert([{ id }]);
+                await knex(tableNameArray)
+                  .where({ id })
+                  .update({ values: [value, value] });
+
+                await expect(
+                  knex(tableNameArray).where({ id })
+                ).to.eventually.be.deep.equal([
+                  {
+                    id: id,
+                    values: [value.toString(), value.toString()],
+                  },
+                ]);
+              });
+            }
+          }
+        });
+      }
+    }
   });
 };
