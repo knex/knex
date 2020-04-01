@@ -734,6 +734,51 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('clear a group', () => {
+    testsql(
+      qb()
+        .table('users')
+        .groupBy('name')
+        .clearGroup(),
+      {
+        mysql: {
+          sql: 'select * from `users`',
+        },
+        mssql: {
+          sql: 'select * from [users]',
+        },
+        pg: {
+          sql: 'select * from "users"',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users"',
+        },
+      }
+    );
+
+    testsql(
+      qb()
+        .table('users')
+        .groupBy('name')
+        .clearGroup()
+        .groupBy('id'),
+      {
+        mysql: {
+          sql: 'select * from `users` group by `id`',
+        },
+        mssql: {
+          sql: 'select * from [users] group by [id]',
+        },
+        pg: {
+          sql: 'select * from "users" group by "id"',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" group by "id"',
+        },
+      }
+    );
+  });
+
   it('clear an order', () => {
     testsql(
       qb()
