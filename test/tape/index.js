@@ -1,7 +1,7 @@
 /*eslint no-var:0*/
 'use strict';
 // var wtf = require('wtfnode');
-require('../chai-setup');
+require('../util/chai-setup');
 var tape = require('tape');
 var makeKnex = require('../../knex');
 var knexfile = require('../knexfile');

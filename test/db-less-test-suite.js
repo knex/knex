@@ -1,32 +1,6 @@
-/* eslint-disable no-console */
-'use strict';
+const { initTests } = require('./testInitializer');
 
-require('source-map-support').install();
-
-require('./chai-setup');
-
-const EXPECTED_REJECTION_COUNT = 0;
-const rejectionLog = [];
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled rejection:', reason);
-  rejectionLog.push({
-    reason,
-  });
-});
-
-process.on('exit', (code) => {
-  if (rejectionLog.length) {
-    console.error(`Unhandled rejections: ${rejectionLog.length}`);
-    rejectionLog.forEach((rejection) => {
-      console.error(rejection);
-    });
-
-    if (rejectionLog.length > EXPECTED_REJECTION_COUNT) {
-      process.exitCode = code || 1;
-    }
-  }
-  console.log('No unhandled exceptions');
-});
+initTests();
 
 describe('Util Tests', function() {
   // Unit Tests for utilities.
@@ -50,11 +24,6 @@ describe('Query Building Tests', function() {
   require('./unit/seed/seeder');
   // require('./unit/interface'); ToDo Uncomment after fixed
   require('./unit/knex');
-});
-
-describe('Integration Tests', function() {
-  this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-  require('./integration');
 });
 
 const config = require('./knexfile');
