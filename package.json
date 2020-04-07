@@ -9,7 +9,7 @@
   },
   "scripts": {
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
-    "debug:test": "mocha --inspect-brk --exit -t 0 test/integration-test-suite.js",
+    "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\"",
