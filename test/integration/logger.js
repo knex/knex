@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 const _ = require('lodash');
 
-const { TEST_TIMESTAMP } = require('../constants');
+const { TEST_TIMESTAMP } = require('../util/constants');
 
 module.exports = function(knex) {
   const client = knex.client;
