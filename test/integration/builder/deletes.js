@@ -1,6 +1,6 @@
 'use strict';
 
-const { TEST_TIMESTAMP } = require('../../constants');
+const { TEST_TIMESTAMP } = require('../../util/constants');
 
 module.exports = function(knex) {
   describe('Deletes', function() {
