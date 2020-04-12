@@ -26,7 +26,7 @@
     "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql; docker-compose -f scripts/docker-compose.yml up initmssqlknexdb waitmysql waitpostgres waitoracledbxe",
     "db:stop": "docker-compose -f scripts/docker-compose.yml down",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
-    "stress:test": "node scripts/stress-test/knex-stress-test.js |  grep -A 5 -B 60 -- '- STATS '",
+    "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
   },
   "dependencies": {
