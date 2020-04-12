@@ -1133,6 +1133,20 @@ export default [
   },
   {
     type: "method",
+    method: "clearGroup",
+    example: ".clearGroup()",
+    description: "Clears all group clauses from the query, excluding subqueries.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select().from('users').groupBy('id').clearGroup()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "clearOrder",
     example: ".clearOrder()",
     description: "Clears all order clauses from the query, excluding subqueries.",
