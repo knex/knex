@@ -21,7 +21,7 @@ import { ConnectionOptions } from "tls";
 //
 // This is primarily to prevent type incompatibilities where target can be unknown.
 // While unknown can be assigned to any, Partial<unknown> can't be.
-type SafePartial<T> = T extends {} ? Partial<T> : any;
+type SafePartial<T> = Partial<AnyOrUnknownToOther<T, {}>>;
 
 type MaybeArray<T> = T | T[];
 
@@ -30,6 +30,7 @@ type StrKey<T> = string & keyof T;
 // If T is unknown then convert to any, else retain original
 type UnknownToAny<T> = unknown extends T ? any : T;
 type AnyToUnknown<T> = unknown extends T ? unknown : T;
+type AnyOrUnknownToOther<T1, T2> = unknown extends T1 ? T2 : T1;
 
 // Intersection conditionally applied only when TParams is non-empty
 // This is primarily to keep the signatures more intuitive.
@@ -627,7 +628,41 @@ declare namespace Knex {
       callback: QueryCallbackWithArgs<TRecord, any>,
       ...args: any[]
     ): QueryBuilder<TRecord2, TResult2>;
-
+    update<
+      K1 extends StrKey<TRecord>,
+      K2 extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        K2
+      >[]
+    >(
+      columnName: K1,
+      value: DbColumn<TRecord[K1]>,
+      returning: K2
+    ): QueryBuilder<TRecord, TResult2>;
+    update<
+      K1 extends StrKey<TRecord>,
+      K2 extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        K2
+      >[]
+    >(
+      columnName: K1,
+      value: DbColumn<TRecord[K1]>,
+      returning: readonly K2[]
+    ): QueryBuilder<TRecord, TResult2>;
+    update<K extends keyof TRecord>(
+      columnName: K,
+      value: DbColumn<TRecord[K]>
+    ): QueryBuilder<TRecord, number>;
+    update<TResult2 = SafePartial<TRecord>[]>(
+      columnName: string,
+      value: Value,
+      returning: string | readonly string[]
+    ): QueryBuilder<TRecord, TResult2>;
     update(
       data: DbRecordArr<TRecord>,
       returning: '*'
@@ -679,41 +714,7 @@ declare namespace Knex {
     update<TResult2 = number>(
       data: DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
-    update<
-      K1 extends StrKey<TRecord>,
-      K2 extends StrKey<TRecord>,
-      TResult2 = DeferredIndex.Augment<
-        UnwrapArrayMember<TResult>,
-        TRecord,
-        K2
-      >[]
-    >(
-      columnName: K1,
-      value: DbColumn<TRecord[K1]>,
-      returning: K2
-    ): QueryBuilder<TRecord, TResult2>;
-    update<
-      K1 extends StrKey<TRecord>,
-      K2 extends StrKey<TRecord>,
-      TResult2 = DeferredKeySelection.Augment<
-        UnwrapArrayMember<TResult>,
-        TRecord,
-        K2
-      >[]
-    >(
-      columnName: K1,
-      value: DbColumn<TRecord[K1]>,
-      returning: readonly K2[]
-    ): QueryBuilder<TRecord, TResult2>;
-    update<K extends keyof TRecord>(
-      columnName: K,
-      value: DbColumn<TRecord[K]>
-    ): QueryBuilder<TRecord, number>;
-    update<TResult2 = SafePartial<TRecord>[]>(
-      columnName: string,
-      value: Value,
-      returning: string | readonly string[]
-    ): QueryBuilder<TRecord, TResult2>;
+
     update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;
 
     returning(column: '*'): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
