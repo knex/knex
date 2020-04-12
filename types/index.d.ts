@@ -526,6 +526,7 @@ declare namespace Knex {
         : TResult
     >;
     clearWhere(): QueryBuilder<TRecord, TResult>;
+    clearGroup(): QueryBuilder<TRecord, TResult>;
     clearOrder(): QueryBuilder<TRecord, TResult>;
     clearHaving(): QueryBuilder<TRecord, TResult>;
     clearCounters(): QueryBuilder<TRecord, TResult>;
