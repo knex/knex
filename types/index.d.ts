@@ -322,7 +322,7 @@ interface PgTableOptions {
   only?: boolean;
 }
 
-interface Knex<TRecord extends {} = any, TResult = any[]>
+interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: Knex.TableDescriptor | Knex.AliasDict,
@@ -365,7 +365,7 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
   ref: Knex.RefBuilder;
 }
 
-declare function Knex<TRecord = any, TResult = unknown[]>(
+declare function Knex<TRecord extends {} = any, TResult = unknown[]>(
   config: Knex.Config | string
 ): Knex<TRecord, TResult>;
 
