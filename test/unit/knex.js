@@ -578,4 +578,18 @@ describe('knex', () => {
       ).to.throw(`Can't extend QueryBuilder with existing method ('select')`);
     });
   });
+
+  it('transactions support finally()', function(done) {
+    const knex = Knex(sqliteConfig);
+
+    const trx = knex.transaction(async (tx) => {
+      return new Promise((resolve) => {
+        resolve();
+      });
+    });
+
+    trx.finally(() => {
+      done();
+    });
+  });
 });
