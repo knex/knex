@@ -1,5 +1,15 @@
 # Master (Unreleased)
 
+# 0.20.15 - 16 April, 2020
+
+### Bug fixes:
+
+- Support for `.finally(..)` on knex's Promise-alikes #3800
+
+### Typings:
+
+- Add types for `.distinctOn` #3784
+
 # 0.20.14 - 13 April, 2020
 
 ### New features:
