@@ -603,5 +603,31 @@ describe('knex', () => {
         Knex.QueryBuilder.extend('select', function(value) {})
       ).to.throw(`Can't extend QueryBuilder with existing method ('select')`);
     });
+
+    // TODO: Consider moving these somewhere that tests the
+    //       QueryBuilder interface more directly.
+    context('qb = knex.select(1)', function() {
+      if (Promise.prototype.finally) {
+        it('returns a QueryBuilder that defines a `.finally(..)` method', async function() {
+          const knex = Knex(sqliteConfig);
+          const p = knex.select(1);
+          try {
+            expect(p.finally).to.be.a('function');
+          } finally {
+            await p;
+          }
+        });
+      } else {
+        it('returns a QueryBuilder that does NOT define a `.finally(..)` method', async function() {
+          const knex = Knex(sqliteConfig);
+          const p = knex.select(1);
+          try {
+            expect(p.finally).to.equal(undefined);
+          } finally {
+            await p;
+          }
+        });
+      }
+    });
   });
 });
