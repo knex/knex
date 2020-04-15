@@ -561,6 +561,32 @@ describe('knex', () => {
       expect(result[0].value).to.equal(42);
     });
 
+    context('const trx = knex.transaction(cb)', function() {
+      context('and cb returns a Promise', function() {
+        if (Promise.prototype.finally) {
+          it('returns a Transaction that defines a `finally(..)` method', async function() {
+            const knex = Knex(sqliteConfig);
+            const trx = knex.transaction(async (tx) => {});
+            try {
+              expect(trx.finally).to.be.a('function');
+            } finally {
+              await trx;
+            }
+          });
+        } else {
+          it('returns a Transaction that does NOT define a `finally(..)` method', async function() {
+            const knex = Knex(sqliteConfig);
+            const trx = knex.transaction(async (tx) => {});
+            try {
+              expect(trx.finally).to.equal('undefined');
+            } finally {
+              await trx;
+            }
+          });
+        }
+      });
+    });
+
     it('should have custom method on knex with user params', async () => {
       Knex.QueryBuilder.extend('customSelect', function(value) {
         return this.select(this.client.raw(`${value} as value`));
