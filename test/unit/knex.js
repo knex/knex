@@ -578,7 +578,7 @@ describe('knex', () => {
             const knex = Knex(sqliteConfig);
             const trx = knex.transaction(async (tx) => {});
             try {
-              expect(trx.finally).to.equal('undefined');
+              expect(trx.finally).to.equal(undefined);
             } finally {
               await trx;
             }
