@@ -433,6 +433,7 @@ declare namespace Knex {
     into: Table<TRecord, TResult>;
     table: Table<TRecord, TResult>;
     distinct: Distinct<TRecord, TResult>;
+    distinctOn: DistinctOn<TRecord, TResult>;
 
     // Joins
     join: Join<TRecord, TResult>;
@@ -908,6 +909,19 @@ declare namespace Knex {
 
   interface Distinct<TRecord extends {}, TResult = {}[]>
     extends ColumnNameQueryBuilder<TRecord, TResult> {}
+
+  interface DistinctOn<TRecord extends {}, TResult = {}[]> {
+    <ColNameUT extends keyof TRecord>(
+      ...columnNames: readonly ColNameUT[]
+    ): QueryBuilder<TRecord, TResult>;
+
+    <ColNameUT extends keyof TRecord>(
+      columnNames: readonly ColNameUT[]
+    ): QueryBuilder<TRecord, TResult>;
+
+    (...columnNames: readonly string[]): QueryBuilder<TRecord, TResult>;
+    (columnNames: readonly string[]): QueryBuilder<TRecord, TResult>;
+  }
 
   interface JoinCallback {
     (this: JoinClause, join: JoinClause): void;
