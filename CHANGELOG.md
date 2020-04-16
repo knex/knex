@@ -1,5 +1,65 @@
 # Master (Unreleased)
 
+# 0.20.15 - 16 April, 2020
+
+### Bug fixes:
+
+- Support for `.finally(..)` on knex's Promise-alikes #3800
+
+### Typings:
+
+- Add types for `.distinctOn` #3784
+
+# 0.20.14 - 13 April, 2020
+
+### New features:
+
+- CLI: adds support for asynchronous knexfile loading #3748
+- Add clearGroup method #3771
+
+### Typings:
+
+- Support Raw types for insert, where, update #3730
+- Add typings for MigrationSource #3756
+- Update signature of orderBy to support QueryBuilder inside array #3757
+- Add toSQL and toString to SchemaBuilder #3758
+- `interface Knex` and `function Knex` should have the same types #3787
+- Fix minor issues around typings #3765
+
+### Test / internal changes:
+
+- Minor test internal enhancements #3747
+- Minor improvements on the usage of fs utilities #3749
+- Split tests in groups #3785
+
+# 0.20.13 - 23 March, 2020
+
+### Bug fixes:
+
+- Correctly handle dateToString escaping without timezone passed #3742 
+- Make protocol length check more defensive #3744
+
+### Typings:
+
+- Make the ChainableInterface conform to Promise<T> #3724
+
+# 0.20.12 - 19 March, 2020
+
+### Bug fixes:
+
+- Added missing call to _reject in Transactor#transaction #3706
+- Fix method binding on knex proxy #3717
+- Oracle: Transaction_OracleDB can use config.connection #3731
+
+### Typings:
+
+- Fix incorrect type signature of Having #3719
+
+### Test / internal changes:
+
+- Cleanup/remove transaction stalling #3716
+- Rewrote Transaction#acquireConnection() methods to use async #3707 
+
 # 0.20.11 - 26 February, 2020
 
 ### New features:
