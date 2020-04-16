@@ -636,7 +636,7 @@ export default [
     type: "method",
     method: "alter",
     example: "column.alter()",
-    description: 'Marks the column as an alter / modify, instead of the default add. Note: This only works in .alterTable() and is not supported by SQlite or Amazon Redshift. Alter is *not* done incrementally over older column type so if you like to add `notNull` and keep the old default value, the alter statement must contain both `.notNull().defaultTo(1).alter()`. If one just tries to add `.notNull().alter()` the old default value will be dropped.',
+    description: 'Marks the column as an alter / modify, instead of the default add. Note: This only works in .alterTable() and is not supported by SQlite or Amazon Redshift. Alter is *not* done incrementally over older column type so if you like to add `notNullable` and keep the old default value, the alter statement must contain both `.notNullable().defaultTo(1).alter()`. If one just tries to add `.notNullable().alter()` the old default value will be dropped.',
     children: [    ]
   },
   {
