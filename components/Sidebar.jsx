@@ -108,6 +108,7 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-clearCounters">clearCounters</a></li>
 
           <li>– <a href="#Builder-distinct">distinct</a></li>
+          <li>– <a href="#Builder-distinctOn">distinctOn</a></li>
           <li>– <a href="#Builder-groupBy">groupBy</a></li>
           <li>– <a href="#Builder-groupByRaw">groupByRaw</a></li>
           <li>– <a href="#Builder-orderBy">orderBy</a></li>

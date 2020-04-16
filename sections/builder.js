@@ -1219,6 +1219,20 @@ export default [
   },
   {
     type: "method",
+    method: "distinctOn",
+    example: ".distinctOn([*columns])",
+    description: "PostgreSQL only. Adds a distinctOn clause to the query.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('users').distinctOn('age')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "groupBy",
     example: ".groupBy(*names)",
     description: "Adds a group by clause to the query.",
