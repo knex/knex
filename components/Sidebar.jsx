@@ -69,6 +69,7 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-whereRaw">whereRaw</a></li>
 
           <li><b><a href="#Builder-join">Join Methods:</a></b></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-join">join</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-innerJoin">innerJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-leftJoin">leftJoin</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-leftOuterJoin">leftOuterJoin</a></li>
