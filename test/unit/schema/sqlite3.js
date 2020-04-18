@@ -12,11 +12,11 @@ const SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 const _ = require('lodash');
 const { equal, deepEqual } = require('assert');
 
-describe('SQLite SchemaBuilder', function() {
-  it('basic create table', function() {
+describe('SQLite SchemaBuilder', function () {
+  it('basic create table', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.increments('id');
         table.string('email');
       })
@@ -29,23 +29,23 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('create json table', function() {
+  it('create json table', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('user', function(table) {
+      .createTable('user', function (table) {
         table.json('preferences');
       })
-      .table('user', function(t) {})
+      .table('user', function (t) {})
       .toSQL();
     expect(tableSql[0].sql).to.equal(
       'create table `user` (`preferences` json)'
     );
   });
 
-  it('basic alter table', function() {
+  it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()
-      .alterTable('users', function(table) {
+      .alterTable('users', function (table) {
         table.increments('id');
         table.string('email');
       })
@@ -59,15 +59,12 @@ describe('SQLite SchemaBuilder', function() {
     expect(expected).to.eql(_.map(tableSql, 'sql'));
   });
 
-  it('alter column not supported', function() {
+  it('alter column not supported', function () {
     try {
       tableSql = client
         .schemaBuilder()
-        .alterTable('users', function(table) {
-          table
-            .string('email')
-            .notNull()
-            .alter();
+        .alterTable('users', function (table) {
+          table.string('email').notNull().alter();
         })
         .toSQL();
       expect(false).to.eql('Should have thrown an error');
@@ -76,29 +73,23 @@ describe('SQLite SchemaBuilder', function() {
     }
   });
 
-  it('drop table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTable('users')
-      .toSQL();
+  it('drop table', function () {
+    tableSql = client.schemaBuilder().dropTable('users').toSQL();
     equal(1, tableSql.length);
     equal(tableSql[0].sql, 'drop table `users`');
   });
 
-  it('drop table if exists', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTableIfExists('users')
-      .toSQL();
+  it('drop table if exists', function () {
+    tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
     equal(1, tableSql.length);
     equal(tableSql[0].sql, 'drop table if exists `users`');
   });
 
-  it('drop unique', function() {
+  it('drop unique', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropUnique('foo');
       })
       .toSQL();
@@ -107,10 +98,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'drop index `users_foo_unique`');
   });
 
-  it('drop unique, custom', function() {
+  it('drop unique, custom', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropUnique(null, 'foo');
       })
       .toSQL();
@@ -119,10 +110,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'drop index `foo`');
   });
 
-  it('drop index', function() {
+  it('drop index', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropIndex('foo');
       })
       .toSQL();
@@ -131,10 +122,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'drop index `users_foo_index`');
   });
 
-  it('drop index, custom', function() {
+  it('drop index, custom', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropIndex(null, 'foo');
       })
       .toSQL();
@@ -143,20 +134,17 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'drop index `foo`');
   });
 
-  it('rename table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .renameTable('users', 'foo')
-      .toSQL();
+  it('rename table', function () {
+    tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
     equal(1, tableSql.length);
     equal(tableSql[0].sql, 'alter table `users` rename to `foo`');
   });
 
-  it('adding primary key', function() {
+  it('adding primary key', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo');
         table.primary('foo');
       })
@@ -169,10 +157,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding primary key with specific identifier', function() {
+  it('adding primary key with specific identifier', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo');
         table.primary('foo', 'pk-users');
       })
@@ -185,10 +173,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding composite primary key', function() {
+  it('adding composite primary key', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo');
         table.string('order_id');
         table.primary(['foo', 'order_id']);
@@ -202,10 +190,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding composite primary key with specific identifier', function() {
+  it('adding composite primary key with specific identifier', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo');
         table.string('order_id');
         table.primary(['foo', 'order_id'], 'pk-users');
@@ -219,10 +207,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding primary key fluently', function() {
+  it('adding primary key fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo').primary();
       })
       .toSQL();
@@ -234,10 +222,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding primary key fluently with specific identifier', function() {
+  it('adding primary key fluently with specific identifier', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo').primary('pk-users');
       })
       .toSQL();
@@ -249,16 +237,13 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding foreign key', function() {
+  it('adding foreign key', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo').primary();
         table.string('order_id');
-        table
-          .foreign('order_id')
-          .references('id')
-          .on('orders');
+        table.foreign('order_id').references('id').on('orders');
       })
       .toSQL();
 
@@ -269,10 +254,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding foreign key with specific identifier', function() {
+  it('adding foreign key with specific identifier', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo').primary();
         table.string('order_id');
         table
@@ -289,15 +274,12 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding foreign key fluently', function() {
+  it('adding foreign key fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('foo').primary();
-        table
-          .string('order_id')
-          .references('id')
-          .on('orders');
+        table.string('order_id').references('id').on('orders');
       })
       .toSQL();
 
@@ -308,10 +290,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adds a unique key with autogenerated name', function() {
+  it('adds a unique key with autogenerated name', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.unique('foo');
       })
       .toSQL();
@@ -323,10 +305,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding unique key with specific name', function() {
+  it('adding unique key with specific name', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.unique('foo', 'bar');
       })
       .toSQL();
@@ -335,10 +317,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'create unique index `bar` on `users` (`foo`)');
   });
 
-  it('adding index', function() {
+  it('adding index', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.index(['foo', 'bar'], 'baz');
       })
       .toSQL();
@@ -347,10 +329,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'create index `baz` on `users` (`foo`, `bar`)');
   });
 
-  it('adding incrementing id', function() {
+  it('adding incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('id');
       })
       .toSQL();
@@ -362,10 +344,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding big incrementing id', function() {
+  it('adding big incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigIncrements('id');
       })
       .toSQL();
@@ -377,10 +359,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding string', function() {
+  it('adding string', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo');
       })
       .toSQL();
@@ -389,10 +371,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` varchar(255)');
   });
 
-  it('allows setting a value in the string length, although unused by sqlite3', function() {
+  it('allows setting a value in the string length, although unused by sqlite3', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo', 100);
       })
       .toSQL();
@@ -401,10 +383,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` varchar(100)');
   });
 
-  it('correctly interprets defaultTo(null)', function() {
+  it('correctly interprets defaultTo(null)', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo').defaultTo(null);
       })
       .toSQL();
@@ -415,14 +397,11 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('chains notNull and defaultTo', function() {
+  it('chains notNull and defaultTo', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
-        table
-          .string('foo', 100)
-          .notNull()
-          .defaultTo('bar');
+      .table('users', function (table) {
+        table.string('foo', 100).notNull().defaultTo('bar');
       })
       .toSQL();
 
@@ -433,10 +412,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding text', function() {
+  it('adding text', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.text('foo');
       })
       .toSQL();
@@ -445,10 +424,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` text');
   });
 
-  it('adding big integer', function() {
+  it('adding big integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigInteger('foo');
       })
       .toSQL();
@@ -457,10 +436,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` bigint');
   });
 
-  it('bigincrements works the same as increments for sqlite3', function() {
+  it('bigincrements works the same as increments for sqlite3', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigIncrements('foo');
       })
       .toSQL();
@@ -472,10 +451,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding integer', function() {
+  it('adding integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.integer('foo');
       })
       .toSQL();
@@ -484,10 +463,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` integer');
   });
 
-  it('adding autoincrements', function() {
+  it('adding autoincrements', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('foo');
       })
       .toSQL();
@@ -499,10 +478,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding medium integer', function() {
+  it('adding medium integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.mediumint('foo');
       })
       .toSQL();
@@ -511,10 +490,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` integer');
   });
 
-  it('adding tiny integer', function() {
+  it('adding tiny integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.tinyint('foo');
       })
       .toSQL();
@@ -523,10 +502,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` tinyint');
   });
 
-  it('adding small integer', function() {
+  it('adding small integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.smallint('foo');
       })
       .toSQL();
@@ -535,10 +514,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` integer');
   });
 
-  it('adding float', function() {
+  it('adding float', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.float('foo', 5, 2);
       })
       .toSQL();
@@ -547,10 +526,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
-  it('adding double', function() {
+  it('adding double', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.double('foo', 15, 8);
       })
       .toSQL();
@@ -559,10 +538,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
-  it('adding decimal', function() {
+  it('adding decimal', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.decimal('foo', 5, 2);
       })
       .toSQL();
@@ -571,10 +550,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
-  it('test adding decimal, no precision', function() {
+  it('test adding decimal, no precision', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.decimal('foo', null);
       })
       .toSQL();
@@ -583,10 +562,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
   });
 
-  it('adding boolean', function() {
+  it('adding boolean', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.boolean('foo');
       })
       .toSQL();
@@ -595,10 +574,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` boolean');
   });
 
-  it('adding enum', function() {
+  it('adding enum', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.enum('foo', ['bar', 'baz']);
       })
       .toSQL();
@@ -610,10 +589,10 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  it('adding date', function() {
+  it('adding date', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.date('foo');
       })
       .toSQL();
@@ -622,10 +601,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` date');
   });
 
-  it('adding date time', function() {
+  it('adding date time', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dateTime('foo');
       })
       .toSQL();
@@ -634,10 +613,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` datetime');
   });
 
-  it('adding time', function() {
+  it('adding time', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.time('foo');
       })
       .toSQL();
@@ -646,10 +625,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` time');
   });
 
-  it('adding time stamp', function() {
+  it('adding time stamp', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.timestamp('foo');
       })
       .toSQL();
@@ -658,10 +637,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` datetime');
   });
 
-  it('adding time stamps', function() {
+  it('adding time stamps', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.timestamps();
       })
       .toSQL();
@@ -674,10 +653,10 @@ describe('SQLite SchemaBuilder', function() {
     deepEqual(expected, _.map(tableSql, 'sql'));
   });
 
-  it('adding binary', function() {
+  it('adding binary', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.binary('foo');
       })
       .toSQL();
@@ -686,10 +665,10 @@ describe('SQLite SchemaBuilder', function() {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` blob');
   });
 
-  it('allows for on delete cascade with foreign keys, #166', function() {
+  it('allows for on delete cascade with foreign keys, #166', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table
           .string('user_id', 36)
           .index()
@@ -706,11 +685,11 @@ describe('SQLite SchemaBuilder', function() {
     );
   });
 
-  describe('SQLite3_DDL.prototype._doReplace', function() {
-    it('should not change a query that has no matches', function() {
+  describe('SQLite3_DDL.prototype._doReplace', function () {
+    it('should not change a query that has no matches', function () {
       return client
         .schemaBuilder()
-        .table('foo', function() {
+        .table('foo', function () {
           const doReplace = SQLite3_DDL.prototype._doReplace;
 
           const sql1 =
@@ -735,32 +714,32 @@ describe('SQLite SchemaBuilder', function() {
     });
   });
 
-  describe('queryContext', function() {
+  describe('queryContext', function () {
     let spy;
     let originalWrapIdentifier;
 
-    before(function() {
+    before(function () {
       spy = sinon.spy();
       originalWrapIdentifier = client.config.wrapIdentifier;
-      client.config.wrapIdentifier = function(value, wrap, queryContext) {
+      client.config.wrapIdentifier = function (value, wrap, queryContext) {
         spy(value, queryContext);
         return wrap(value);
       };
     });
 
-    beforeEach(function() {
+    beforeEach(function () {
       spy.resetHistory();
     });
 
-    after(function() {
+    after(function () {
       client.config.wrapIdentifier = originalWrapIdentifier;
     });
 
-    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function() {
+    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('table context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id');
           table.string('email');
         })
@@ -772,10 +751,10 @@ describe('SQLite SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
 
-    it('TableCompiler passes queryContext to wrapIdentifier', function() {
+    it('TableCompiler passes queryContext to wrapIdentifier', function () {
       client
         .schemaBuilder()
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');
         })
@@ -787,11 +766,11 @@ describe('SQLite SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
     });
 
-    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function() {
+    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('schema context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.queryContext('table context');
           table.increments('id');
           table.string('email');
@@ -804,11 +783,11 @@ describe('SQLite SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
 
-    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function() {
+    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('schema context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.queryContext('table context');
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');

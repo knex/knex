@@ -2,8 +2,8 @@
 const tape = require('tape');
 const debug = require('debug')('knex:tests');
 
-module.exports = function(tableName, knex) {
-  return function(name, dialects, cb) {
+module.exports = function (tableName, knex) {
+  return function (name, dialects, cb) {
     if (arguments.length === 2) {
       cb = dialects;
     } else {
@@ -16,7 +16,7 @@ module.exports = function(tableName, knex) {
       }
     }
 
-    return tape(name, async function(t) {
+    return tape(name, async function (t) {
       const val = cb(t);
       try {
         if (!val || typeof val.then !== 'function') {

@@ -6,7 +6,7 @@ const { expect } = require('chai');
 const mockFs = require('mock-fs');
 const knex = require('../../../knex');
 
-describe('Seeder.loadExtensions', function() {
+describe('Seeder.loadExtensions', function () {
   const config = {
     client: 'postgres',
     connection: {
@@ -21,7 +21,7 @@ describe('Seeder.loadExtensions', function() {
   };
   let seeder;
 
-  before(function() {
+  before(function () {
     mockFs({
       'test/integration/seed/seeds': {
         'co-seed.co': 'co seed content',
@@ -37,16 +37,16 @@ describe('Seeder.loadExtensions', function() {
     });
   });
 
-  after(function() {
+  after(function () {
     mockFs.restore();
   });
 
-  beforeEach(function() {
+  beforeEach(function () {
     seeder = knex(config).seed;
   });
 
-  it('should include all supported extensions by default', function() {
-    return seeder._listAll().then(function(list) {
+  it('should include all supported extensions by default', function () {
+    return seeder._listAll().then(function (list) {
       expect(list).to.eql([
         'co-seed.co',
         'coffee-seed.coffee',
@@ -60,16 +60,16 @@ describe('Seeder.loadExtensions', function() {
     });
   });
 
-  it('should list only files with specified extensions', function() {
+  it('should list only files with specified extensions', function () {
     return seeder
       ._listAll({ loadExtensions: ['.ts', '.js'] })
-      .then(function(list) {
+      .then(function (list) {
         expect(list).to.eql(['js-seed.js', 'ts-seed.ts']);
       });
   });
 });
 
-describe('Seeder._waterfallBatch', function() {
+describe('Seeder._waterfallBatch', function () {
   const config = {
     client: 'postgres',
     connection: {
@@ -84,7 +84,7 @@ describe('Seeder._waterfallBatch', function() {
   };
   let seeder;
 
-  beforeEach(function() {
+  beforeEach(function () {
     seeder = knex(config).seed;
   });
 

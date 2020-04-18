@@ -3,7 +3,7 @@
 const knex = require('../../lib/index');
 const test = require('tape');
 
-test('it should parse the connection string', function(t) {
+test('it should parse the connection string', function (t) {
   t.plan(1);
   const knexObj = knex({
     client: 'mysql',
@@ -18,7 +18,7 @@ test('it should parse the connection string', function(t) {
   knexObj.destroy();
 });
 
-test('it should allow to use proprietary dialect', function(t) {
+test('it should allow to use proprietary dialect', function (t) {
   t.plan(2);
   const Client = require('../../lib/dialects/mysql');
   const knexObj = knex({
@@ -43,7 +43,7 @@ test('it should allow to use proprietary dialect', function(t) {
   knexObj.destroy();
 });
 
-test('it should use knex supported dialect', function(t) {
+test('it should use knex supported dialect', function (t) {
   t.plan(1);
   const knexObj = knex({
     client: 'postgres',
@@ -66,7 +66,7 @@ test('it should use knex supported dialect', function(t) {
   knexObj.destroy();
 });
 
-test('it should throw error if client is omitted in config', function(t) {
+test('it should throw error if client is omitted in config', function (t) {
   t.plan(1);
   try {
     knex({});

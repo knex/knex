@@ -70,7 +70,7 @@ describe('migration-list-resolver', () => {
       });
     });
 
-    it('should include only files with specified extensions', function() {
+    it('should include only files with specified extensions', function () {
       return migrationListResolver
         .listAll(migrationSource, ['.ts', '.js'])
         .then((list) => {

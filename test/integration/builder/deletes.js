@@ -2,13 +2,13 @@
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
 
-module.exports = function(knex) {
-  describe('Deletes', function() {
-    it('should handle deletes', function() {
+module.exports = function (knex) {
+  describe('Deletes', function () {
+    it('should handle deletes', function () {
       return knex('accounts')
         .where('id', 1)
         .del()
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester('mysql', 'delete from `accounts` where `id` = ?', [1], 1);
           tester('pg', 'delete from "accounts" where "id" = ?', [1], 1);
           tester(
@@ -28,11 +28,11 @@ module.exports = function(knex) {
         });
     });
 
-    it('should allow returning for deletes in postgresql and mssql', function() {
+    it('should allow returning for deletes in postgresql and mssql', function () {
       return knex('accounts')
         .where('id', 2)
         .del('*')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester('mysql', 'delete from `accounts` where `id` = ?', [2], 1);
           tester(
             'pg',

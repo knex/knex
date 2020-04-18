@@ -5,7 +5,7 @@ const pgDialect = require('../../../lib/dialects/postgres/index.js');
 const pg = require('pg');
 const _ = require('lodash');
 
-describe('Postgres Unit Tests', function() {
+describe('Postgres Unit Tests', function () {
   let checkVersionStub, querySpy;
   before(() => {
     const fakeConnection = {
@@ -21,11 +21,11 @@ describe('Postgres Unit Tests', function() {
 
     checkVersionStub = sinon
       .stub(pgDialect.prototype, 'checkVersion')
-      .callsFake(function() {
+      .callsFake(function () {
         return Promise.resolve('9.6');
       });
 
-    sinon.stub(pg.Client.prototype, 'connect').callsFake(function(cb) {
+    sinon.stub(pg.Client.prototype, 'connect').callsFake(function (cb) {
       cb(null, fakeConnection);
     });
   });
@@ -88,22 +88,22 @@ describe('Postgres Unit Tests', function() {
     });
   });
 
-  it('Validates searchPath as Array/String', function() {
+  it('Validates searchPath as Array/String', function () {
     const knexInstance = knex({
       client: 'pg',
     });
 
-    expect(function() {
+    expect(function () {
       knexInstance.client.setSchemaSearchPath(null, {});
     }).to.throw(TypeError);
 
-    expect(function() {
+    expect(function () {
       knexInstance.client.setSchemaSearchPath(null, 4);
     }).to.throw(TypeError);
 
-    const fakeQueryFn = function(expectedSearchPath) {
+    const fakeQueryFn = function (expectedSearchPath) {
       return {
-        query: function(sql, callback) {
+        query: function (sql, callback) {
           try {
             expect(sql).to.equal('set search_path to ' + expectedSearchPath);
             callback(null);
@@ -116,13 +116,13 @@ describe('Postgres Unit Tests', function() {
 
     return knexInstance.client
       .setSchemaSearchPath(fakeQueryFn('"public,knex"'), 'public,knex')
-      .then(function() {
+      .then(function () {
         return knexInstance.client.setSchemaSearchPath(
           fakeQueryFn('"public","knex"'),
           ['public', 'knex']
         );
       })
-      .then(function() {
+      .then(function () {
         return knexInstance.client.setSchemaSearchPath(
           fakeQueryFn('"public"'),
           'public'

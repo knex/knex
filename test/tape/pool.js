@@ -63,7 +63,7 @@ test(`pool evicts dead resources when factory.validate rejects`, async (t) => {
   t.end();
 });
 
-test('#822, pool config, max: 0 should skip pool construction', function(t) {
+test('#822, pool config, max: 0 should skip pool construction', function (t) {
   const client = new Client({
     connection: { filename: ':memory:' },
     pool: { max: 0 },
@@ -77,7 +77,7 @@ test('#822, pool config, max: 0 should skip pool construction', function(t) {
   }
 });
 
-test('#823, should not skip pool construction pool config is not defined', function(t) {
+test('#823, should not skip pool construction pool config is not defined', function (t) {
   const client = new Client({ connection: { filename: ':memory:' } });
   try {
     t.ok(client.pool instanceof Pool);

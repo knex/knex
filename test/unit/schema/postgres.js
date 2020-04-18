@@ -9,7 +9,7 @@ const knex = require('../../../knex');
 
 const equal = require('chai').assert.equal;
 
-describe('PostgreSQL Config', function() {
+describe('PostgreSQL Config', function () {
   let knexInstance;
   let version;
   const config = {
@@ -21,21 +21,21 @@ describe('PostgreSQL Config', function() {
       database: 'knex_test',
     },
   };
-  describe('check version', function() {
-    describe('check version < 9.2', function() {
-      beforeEach(function() {
+  describe('check version', function () {
+    describe('check version < 9.2', function () {
+      beforeEach(function () {
         version = '7.2';
         config.version = version;
         knexInstance = knex(config);
       });
 
-      it('client.version', function() {
+      it('client.version', function () {
         expect(knexInstance.client.version).to.equal(version);
       });
 
-      it('json', function() {
+      it('json', function () {
         tableSql = knexInstance.schema
-          .table('public', function(t) {
+          .table('public', function (t) {
             t.json('test_name');
           })
           .toSQL();
@@ -45,9 +45,9 @@ describe('PostgreSQL Config', function() {
         );
       });
 
-      it('jsonb', function() {
+      it('jsonb', function () {
         tableSql = knexInstance.schema
-          .table('public', function(t) {
+          .table('public', function (t) {
             t.jsonb('test_name');
           })
           .toSQL();
@@ -58,20 +58,20 @@ describe('PostgreSQL Config', function() {
       });
     });
 
-    describe('check version >= 9.2', function() {
-      beforeEach(function() {
+    describe('check version >= 9.2', function () {
+      beforeEach(function () {
         version = '9.5';
         config.version = version;
         knexInstance = knex(config);
       });
 
-      it('client.version', function() {
+      it('client.version', function () {
         expect(knexInstance.client.version).to.equal(version);
       });
 
-      it('json', function() {
+      it('json', function () {
         tableSql = knexInstance.schema
-          .table('public', function(t) {
+          .table('public', function (t) {
             t.json('test_name');
           })
           .toSQL();
@@ -81,9 +81,9 @@ describe('PostgreSQL Config', function() {
         );
       });
 
-      it('jsonb', function() {
+      it('jsonb', function () {
         tableSql = knexInstance.schema
-          .table('public', function(t) {
+          .table('public', function (t) {
             t.jsonb('test_name');
           })
           .toSQL();
@@ -96,11 +96,11 @@ describe('PostgreSQL Config', function() {
   });
 });
 
-describe('PostgreSQL SchemaBuilder', function() {
-  it('fixes memoization regression', function() {
+describe('PostgreSQL SchemaBuilder', function () {
+  it('fixes memoization regression', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.uuid('key');
         table.increments('id');
         table.string('email');
@@ -112,10 +112,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('basic alter table', function() {
+  it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('id');
         table.string('email');
       })
@@ -126,14 +126,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('should alter columns with the alter flag', function() {
+  it('should alter columns with the alter flag', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.string('foo')
-          .notNullable()
-          .default('foo')
-          .alter();
+      .table('users', function () {
+        this.string('foo').notNullable().default('foo').alter();
         this.integer('bar').alter();
       })
       .toSQL();
@@ -165,11 +162,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('alter table with schema', function() {
+  it('alter table with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('myschema')
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('id');
       })
       .toSQL();
@@ -179,16 +176,13 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTable('users')
-      .toSQL();
+  it('drop table', function () {
+    tableSql = client.schemaBuilder().dropTable('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table "users"');
   });
 
-  it('drop table with schema', function() {
+  it('drop table with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('myschema')
@@ -198,16 +192,13 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('drop table "myschema"."users"');
   });
 
-  it('drop table if exists', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTableIfExists('users')
-      .toSQL();
+  it('drop table if exists', function () {
+    tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table if exists "users"');
   });
 
-  it('drop table if exists with schema', function() {
+  it('drop table if exists with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('myschema')
@@ -217,10 +208,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('drop table if exists "myschema"."users"');
   });
 
-  it('drop column', function() {
+  it('drop column', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropColumn('foo');
       })
       .toSQL();
@@ -228,10 +219,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo"');
   });
 
-  it('drop multiple columns', function() {
+  it('drop multiple columns', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropColumn(['foo', 'bar']);
       })
       .toSQL();
@@ -241,10 +232,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop multiple columns with arguments', function() {
+  it('drop multiple columns with arguments', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropColumn('foo', 'bar');
       })
       .toSQL();
@@ -254,10 +245,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop primary', function() {
+  it('drop primary', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropPrimary();
       })
       .toSQL();
@@ -267,10 +258,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop unique', function() {
+  it('drop unique', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropUnique('foo');
       })
       .toSQL();
@@ -280,10 +271,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop unique, custom', function() {
+  it('drop unique, custom', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropUnique(null, 'foo');
       })
       .toSQL();
@@ -293,10 +284,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop index', function() {
+  it('drop index', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropIndex('foo');
       })
       .toSQL();
@@ -304,10 +295,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('drop index "users_foo_index"');
   });
 
-  it('drop index, custom', function() {
+  it('drop index, custom', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropIndex(null, 'foo');
       })
       .toSQL();
@@ -315,11 +306,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('drop index "foo"');
   });
 
-  it('drop index, with schema', function() {
+  it('drop index, with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('mySchema')
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropIndex('foo');
       })
       .toSQL();
@@ -327,10 +318,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('drop index "mySchema"."users_foo_index"');
   });
 
-  it('drop foreign', function() {
+  it('drop foreign', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropForeign('foo');
       })
       .toSQL();
@@ -340,10 +331,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop foreign', function() {
+  it('drop foreign', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropForeign(null, 'foo');
       })
       .toSQL();
@@ -353,10 +344,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('drop timestamps', function() {
+  it('drop timestamps', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropTimestamps();
       })
       .toSQL();
@@ -366,19 +357,16 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('rename table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .renameTable('users', 'foo')
-      .toSQL();
+  it('rename table', function () {
+    tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" rename to "foo"');
   });
 
-  it('rename column', function() {
+  it('rename column', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.renameColumn('foo', 'bar');
       })
       .toSQL();
@@ -388,10 +376,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding primary key', function() {
+  it('adding primary key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.primary('foo');
       })
       .toSQL();
@@ -401,10 +389,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding primary key fluently', function() {
+  it('adding primary key fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('name').primary();
       })
       .toSQL();
@@ -417,13 +405,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding foreign key', function() {
+  it('adding foreign key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.foreign('foo_id')
-          .references('id')
-          .on('orders');
+      .table('users', function () {
+        this.foreign('foo_id').references('id').on('orders');
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -433,10 +419,8 @@ describe('PostgreSQL SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.integer('foo_id')
-          .references('id')
-          .on('orders');
+      .table('users', function () {
+        this.integer('foo_id').references('id').on('orders');
       })
       .toSQL();
     equal(2, tableSql.length);
@@ -448,13 +432,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding foreign key with specific identifier', function() {
+  it('adding foreign key with specific identifier', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.foreign('foo_id', 'fk_foo')
-          .references('id')
-          .on('orders');
+      .table('users', function () {
+        this.foreign('foo_id', 'fk_foo').references('id').on('orders');
       })
       .toSQL();
 
@@ -465,7 +447,7 @@ describe('PostgreSQL SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.integer('foo_id')
           .references('id')
           .on('orders')
@@ -482,10 +464,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adds foreign key with onUpdate and onDelete', function() {
+  it('adds foreign key with onUpdate and onDelete', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('person', function(table) {
+      .createTable('person', function (table) {
         table
           .integer('user_id')
           .notNull()
@@ -508,10 +490,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding unique key', function() {
+  it('adding unique key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.unique('foo', 'bar');
       })
       .toSQL();
@@ -521,10 +503,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding unique key fluently', function() {
+  it('adding unique key fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('email').unique();
       })
       .toSQL();
@@ -537,10 +519,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding index without value', function() {
+  it('adding index without value', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.index(['foo', 'bar']);
       })
       .toSQL();
@@ -550,10 +532,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding index', function() {
+  it('adding index', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.index(['foo', 'bar'], 'baz');
       })
       .toSQL();
@@ -563,10 +545,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding index fluently', function() {
+  it('adding index fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('name').index();
       })
       .toSQL();
@@ -579,10 +561,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding index with an index type', function() {
+  it('adding index with an index type', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.index(['foo', 'bar'], 'baz', 'gist');
       })
       .toSQL();
@@ -592,10 +574,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding index with an index type fluently', function() {
+  it('adding index with an index type fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('name').index('baz', 'gist');
       })
       .toSQL();
@@ -608,10 +590,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding index with an index type and default name fluently', function() {
+  it('adding index with an index type and default name fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('name').index(null, 'gist');
       })
       .toSQL();
@@ -624,10 +606,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding incrementing id', function() {
+  it('adding incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('id');
       })
       .toSQL();
@@ -637,10 +619,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding big incrementing id', function() {
+  it('adding big incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigIncrements('id');
       })
       .toSQL();
@@ -650,10 +632,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding string', function() {
+  it('adding string', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo');
       })
       .toSQL();
@@ -663,10 +645,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding varchar with length', function() {
+  it('adding varchar with length', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo', 100);
       })
       .toSQL();
@@ -676,10 +658,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding a string with a default', function() {
+  it('adding a string with a default', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo', 100).defaultTo('bar');
       })
       .toSQL();
@@ -689,10 +671,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding text', function() {
+  it('adding text', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.text('foo');
       })
       .toSQL();
@@ -702,10 +684,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding big integer', function() {
+  it('adding big integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigInteger('foo');
       })
       .toSQL();
@@ -715,10 +697,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('tests a big integer as the primary autoincrement key', function() {
+  it('tests a big integer as the primary autoincrement key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigIncrements('foo');
       })
       .toSQL();
@@ -728,10 +710,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding integer', function() {
+  it('adding integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.integer('foo');
       })
       .toSQL();
@@ -741,10 +723,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding autoincrement integer', function() {
+  it('adding autoincrement integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('foo');
       })
       .toSQL();
@@ -754,10 +736,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding medium integer', function() {
+  it('adding medium integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.mediumint('foo');
       })
       .toSQL();
@@ -767,10 +749,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding tiny integer', function() {
+  it('adding tiny integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.tinyint('foo');
       })
       .toSQL();
@@ -780,10 +762,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding small integer', function() {
+  it('adding small integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.smallint('foo');
       })
       .toSQL();
@@ -793,10 +775,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding float', function() {
+  it('adding float', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.float('foo', 5, 2);
       })
       .toSQL();
@@ -806,10 +788,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding double', function() {
+  it('adding double', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.double('foo', 15, 8);
       })
       .toSQL();
@@ -819,10 +801,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding decimal', function() {
+  it('adding decimal', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.decimal('foo', 5, 2);
       })
       .toSQL();
@@ -832,10 +814,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding decimal, variable precision', function() {
+  it('adding decimal, variable precision', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.decimal('foo', null);
       })
       .toSQL();
@@ -845,10 +827,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding boolean', function() {
+  it('adding boolean', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.boolean('foo').defaultTo(false);
       })
       .toSQL();
@@ -858,10 +840,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum', function() {
+  it('adding enum', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.enum('foo', ['bar', 'baz']);
       })
       .toSQL();
@@ -871,10 +853,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum with useNative', function() {
+  it('adding enum with useNative', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table
           .enu('foo', ['bar', 'baz'], {
             useNative: true,
@@ -892,14 +874,14 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum with useNative and withSchema', function() {
+  it('adding enum with useNative and withSchema', function () {
     const schema = 'test';
     const enumName = 'foo_type';
 
     tableSql = client
       .schemaBuilder()
       .withSchema(schema)
-      .table('users', function(table) {
+      .table('users', function (table) {
         table
           .enu('foo', ['bar', 'baz'], {
             useNative: true,
@@ -918,11 +900,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum with useNative and existingType', function() {
+  it('adding enum with useNative and existingType', function () {
     tableSql = client
       .schemaBuilder()
       .raw("create type \"foo_type\" as enum ('bar', 'baz')")
-      .table('users', function(table) {
+      .table('users', function (table) {
         table
           .enu('foo', ['bar', 'baz'], {
             useNative: true,
@@ -941,11 +923,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum with useNative and existingType works without enum values', function() {
+  it('adding enum with useNative and existingType works without enum values', function () {
     tableSql = client
       .schemaBuilder()
       .raw("create type \"foo_type\" as enum ('bar', 'baz')")
-      .table('users', function(table) {
+      .table('users', function (table) {
         table
           .enu('foo', undefined, {
             useNative: true,
@@ -964,7 +946,7 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum with useNative, from manually defined schema and withSchema', function() {
+  it('adding enum with useNative, from manually defined schema and withSchema', function () {
     const tableSchema = 'table_schema';
     const tableName = 'table_name';
     const typeSchema = 'type_schema';
@@ -974,7 +956,7 @@ describe('PostgreSQL SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .withSchema(tableSchema)
-      .table(tableName, function(table) {
+      .table(tableName, function (table) {
         table.enu(columnName, ['foo', 'bar', 'baz'], {
           useNative: true,
           schemaName: typeSchema,
@@ -991,7 +973,7 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding enum with useNative and existingType, from manually defined schema and withSchema', function() {
+  it('adding enum with useNative and existingType, from manually defined schema and withSchema', function () {
     const tableSchema = 'table_schema';
     const tableName = 'table_name';
     const typeSchema = 'type_schema';
@@ -1001,7 +983,7 @@ describe('PostgreSQL SchemaBuilder', function() {
     tableSql = client
       .schemaBuilder()
       .withSchema(tableSchema)
-      .table(tableName, function(table) {
+      .table(tableName, function (table) {
         table.enu(columnName, null, {
           useNative: true,
           schemaName: typeSchema,
@@ -1016,10 +998,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding date', function() {
+  it('adding date', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.date('foo');
       })
       .toSQL();
@@ -1159,10 +1141,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding binary', function() {
+  it('adding binary', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.binary('foo');
       })
       .toSQL();
@@ -1172,10 +1154,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding jsonb', function() {
+  it('adding jsonb', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
+      .table('user', function (t) {
         t.jsonb('preferences');
       })
       .toSQL();
@@ -1184,10 +1166,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('set comment', function() {
+  it('set comment', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
+      .table('user', function (t) {
         t.comment('Custom comment');
       })
       .toSQL();
@@ -1197,10 +1179,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('set empty comment', function() {
+  it('set empty comment', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
+      .table('user', function (t) {
         t.comment('');
       })
       .toSQL();
@@ -1208,35 +1190,33 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('comment on table "user" is \'\'');
   });
 
-  it('set comment to undefined', function() {
-    expect(function() {
+  it('set comment to undefined', function () {
+    expect(function () {
       client
         .schemaBuilder()
-        .table('user', function(t) {
+        .table('user', function (t) {
           t.comment();
         })
         .toSQL();
     }).to.throw(TypeError);
   });
 
-  it('set comment to null', function() {
-    expect(function() {
+  it('set comment to null', function () {
+    expect(function () {
       client
         .schemaBuilder()
-        .table('user', function(t) {
+        .table('user', function (t) {
           t.comment(null);
         })
         .toSQL();
     }).to.throw(TypeError);
   });
 
-  it('allows adding default json objects when the column is json', function() {
+  it('allows adding default json objects when the column is json', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
-        t.json('preferences')
-          .defaultTo({})
-          .notNullable();
+      .table('user', function (t) {
+        t.json('preferences').defaultTo({}).notNullable();
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
@@ -1244,13 +1224,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('allows adding default jsonb objects when the column is json', function() {
+  it('allows adding default jsonb objects when the column is json', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
-        t.jsonb('preferences')
-          .defaultTo({})
-          .notNullable();
+      .table('user', function (t) {
+        t.jsonb('preferences').defaultTo({}).notNullable();
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
@@ -1258,13 +1236,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('sets specificType correctly', function() {
+  it('sets specificType correctly', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
-        t.specificType('email', 'CITEXT')
-          .unique()
-          .notNullable();
+      .table('user', function (t) {
+        t.specificType('email', 'CITEXT').unique().notNullable();
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
@@ -1272,23 +1248,17 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('allows creating an extension', function() {
-    const sql = client
-      .schemaBuilder()
-      .createExtension('test')
-      .toSQL();
+  it('allows creating an extension', function () {
+    const sql = client.schemaBuilder().createExtension('test').toSQL();
     expect(sql[0].sql).to.equal('create extension "test"');
   });
 
-  it('allows dropping an extension', function() {
-    const sql = client
-      .schemaBuilder()
-      .dropExtension('test')
-      .toSQL();
+  it('allows dropping an extension', function () {
+    const sql = client.schemaBuilder().dropExtension('test').toSQL();
     expect(sql[0].sql).to.equal('drop extension "test"');
   });
 
-  it("allows creating an extension only if it doesn't exist", function() {
+  it("allows creating an extension only if it doesn't exist", function () {
     const sql = client
       .schemaBuilder()
       .createExtensionIfNotExists('test')
@@ -1296,18 +1266,15 @@ describe('PostgreSQL SchemaBuilder', function() {
     expect(sql[0].sql).to.equal('create extension if not exists "test"');
   });
 
-  it('allows dropping an extension only if it exists', function() {
-    const sql = client
-      .schemaBuilder()
-      .dropExtensionIfExists('test')
-      .toSQL();
+  it('allows dropping an extension only if it exists', function () {
+    const sql = client.schemaBuilder().dropExtensionIfExists('test').toSQL();
     expect(sql[0].sql).to.equal('drop extension if exists "test"');
   });
 
-  it('table inherits another table', function() {
+  it('table inherits another table', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('inheriteeTable', function(t) {
+      .createTable('inheriteeTable', function (t) {
         t.string('username');
         t.inherits('inheritedTable');
       })
@@ -1317,11 +1284,11 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  it('should warn on disallowed method', function() {
+  it('should warn on disallowed method', function () {
     expect(() => {
       tableSql = client
         .schemaBuilder()
-        .createTable('users', function(t) {
+        .createTable('users', function (t) {
           t.string('username');
           t.engine('myISAM');
         })
@@ -1329,10 +1296,10 @@ describe('PostgreSQL SchemaBuilder', function() {
     }).to.throw('Knex only supports engine statement with mysql');
   });
 
-  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(t) {
+      .table('users', function (t) {
         t.primary(['test1', 'test2'], 'testconstraintname');
       })
       .toSQL();
@@ -1342,7 +1309,7 @@ describe('PostgreSQL SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(t) {
+      .createTable('users', function (t) {
         t.string('test').primary('testconstraintname');
       })
       .toSQL();
@@ -1352,32 +1319,32 @@ describe('PostgreSQL SchemaBuilder', function() {
     );
   });
 
-  describe('queryContext', function() {
+  describe('queryContext', function () {
     let spy;
     let originalWrapIdentifier;
 
-    before(function() {
+    before(function () {
       spy = sinon.spy();
       originalWrapIdentifier = client.config.wrapIdentifier;
-      client.config.wrapIdentifier = function(value, wrap, queryContext) {
+      client.config.wrapIdentifier = function (value, wrap, queryContext) {
         spy(value, queryContext);
         return wrap(value);
       };
     });
 
-    beforeEach(function() {
+    beforeEach(function () {
       spy.resetHistory();
     });
 
-    after(function() {
+    after(function () {
       client.config.wrapIdentifier = originalWrapIdentifier;
     });
 
-    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function() {
+    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('table context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id');
           table.string('email');
         })
@@ -1389,10 +1356,10 @@ describe('PostgreSQL SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
 
-    it('TableCompiler passes queryContext to wrapIdentifier', function() {
+    it('TableCompiler passes queryContext to wrapIdentifier', function () {
       client
         .schemaBuilder()
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');
         })
@@ -1404,11 +1371,11 @@ describe('PostgreSQL SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
     });
 
-    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function() {
+    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('schema context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.queryContext('table context');
           table.increments('id');
           table.string('email');
@@ -1421,11 +1388,11 @@ describe('PostgreSQL SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
 
-    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function() {
+    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('schema context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.queryContext('table context');
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');
@@ -1438,10 +1405,10 @@ describe('PostgreSQL SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
 
-    it('TableCompiler calls wrapIdentifier when altering column', function() {
+    it('TableCompiler calls wrapIdentifier when altering column', function () {
       client
         .schemaBuilder()
-        .table('users', function(table) {
+        .table('users', function (table) {
           table.queryContext('table context');
           table
             .string('email')

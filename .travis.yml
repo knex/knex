@@ -16,8 +16,6 @@ matrix:
       env: TESTSCRIPT=test:everything DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
     - node_js: '10'
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
-    - node_js: '8'
-      env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
 install:
   - npm i
 

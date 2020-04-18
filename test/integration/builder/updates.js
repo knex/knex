@@ -4,9 +4,9 @@ const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
 
-module.exports = function(knex) {
-  describe('Updates', function() {
-    it('should handle updates', function() {
+module.exports = function (knex) {
+  describe('Updates', function () {
+    it('should handle updates', function () {
       return knex('accounts')
         .where('id', 1)
         .update({
@@ -14,7 +14,7 @@ module.exports = function(knex) {
           last_name: 'Test',
           email: 'test100@example.com',
         })
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'update `accounts` set `first_name` = ?, `last_name` = ?, `email` = ? where `id` = ?',
@@ -48,7 +48,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should allow for null updates', function() {
+    it('should allow for null updates', function () {
       return knex('accounts')
         .where('id', 1000)
         .update({
@@ -56,7 +56,7 @@ module.exports = function(knex) {
           first_name: null,
           last_name: 'Test',
         })
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
@@ -72,7 +72,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should immediately return updated value for other connections when updating row to DB returns', function() {
+    it('should immediately return updated value for other connections when updating row to DB returns', function () {
       return knex('accounts').then((res) => {
         function runTest() {
           return Promise.all(
@@ -133,61 +133,55 @@ module.exports = function(knex) {
       });
     });
 
-    it('should increment a value', function() {
+    it('should increment a value', function () {
       return knex('accounts')
         .select('logins')
         .where('id', 1)
-        .then(function(accounts) {
+        .then(function (accounts) {
           return knex('accounts')
             .where('id', 1)
             .increment('logins')
-            .then(function(rowsAffected) {
+            .then(function (rowsAffected) {
               expect(rowsAffected).to.equal(1);
-              return knex('accounts')
-                .select('logins')
-                .where('id', 1);
+              return knex('accounts').select('logins').where('id', 1);
             })
-            .then(function(accounts2) {
+            .then(function (accounts2) {
               expect(accounts[0].logins + 1).to.equal(accounts2[0].logins);
             });
         });
     });
 
-    it('should increment a negative value', function() {
+    it('should increment a negative value', function () {
       return knex('accounts')
         .select('logins')
         .where('id', 1)
-        .then(function(accounts) {
+        .then(function (accounts) {
           return knex('accounts')
             .where('id', 1)
             .increment('logins', -2)
-            .then(function(rowsAffected) {
+            .then(function (rowsAffected) {
               expect(rowsAffected).to.equal(1);
-              return knex('accounts')
-                .select('logins')
-                .where('id', 1);
+              return knex('accounts').select('logins').where('id', 1);
             })
-            .then(function(accounts2) {
+            .then(function (accounts2) {
               expect(accounts[0].logins - 2).to.equal(accounts2[0].logins);
             });
         });
     });
 
-    it('should increment a float value', function() {
+    it('should increment a float value', function () {
       return knex('accounts')
         .select('balance')
         .where('id', 1)
-        .then(function(accounts) {
+        .then(function (accounts) {
           return knex('accounts')
             .where('id', 1)
             .increment('balance', 22.53)
-            .then(function(rowsAffected) {
+            .then(function (rowsAffected) {
               expect(rowsAffected).to.equal(1);
-              return knex('accounts')
-                .select('balance')
-                .where('id', 1);
+              return knex('accounts').select('balance').where('id', 1);
             })
-            .then(function(accounts2) {
+            .then(function (accounts2) {
               expect(accounts[0].balance + 22.53).to.be.closeTo(
                 accounts2[0].balance,
                 0.001
@@ -196,61 +190,55 @@ module.exports = function(knex) {
         });
     });
 
-    it('should decrement a value', function() {
+    it('should decrement a value', function () {
       return knex('accounts')
         .select('logins')
         .where('id', 1)
-        .then(function(accounts) {
+        .then(function (accounts) {
           return knex('accounts')
             .where('id', 1)
             .decrement('logins')
-            .then(function(rowsAffected) {
+            .then(function (rowsAffected) {
               expect(rowsAffected).to.equal(1);
-              return knex('accounts')
-                .select('logins')
-                .where('id', 1);
+              return knex('accounts').select('logins').where('id', 1);
             })
-            .then(function(accounts2) {
+            .then(function (accounts2) {
               expect(accounts[0].logins - 1).to.equal(accounts2[0].logins);
             });
         });
     });
 
-    it('should decrement a negative value', function() {
+    it('should decrement a negative value', function () {
       return knex('accounts')
         .select('logins')
         .where('id', 1)
-        .then(function(accounts) {
+        .then(function (accounts) {
           return knex('accounts')
             .where('id', 1)
             .decrement('logins', -2)
-            .then(function(rowsAffected) {
+            .then(function (rowsAffected) {
               expect(rowsAffected).to.equal(1);
-              return knex('accounts')
-                .select('logins')
-                .where('id', 1);
+              return knex('accounts').select('logins').where('id', 1);
             })
-            .then(function(accounts2) {
+            .then(function (accounts2) {
               expect(accounts[0].logins + 2).to.equal(accounts2[0].logins);
             });
         });
     });
 
-    it('should decrement a float value', function() {
+    it('should decrement a float value', function () {
       return knex('accounts')
         .select('balance')
         .where('id', 1)
-        .then(function(accounts) {
+        .then(function (accounts) {
           return knex('accounts')
             .where('id', 1)
             .decrement('balance', 10.29)
-            .then(function(rowsAffected) {
+            .then(function (rowsAffected) {
               expect(rowsAffected).to.equal(1);
-              return knex('accounts')
-                .select('balance')
-                .where('id', 1);
+              return knex('accounts').select('balance').where('id', 1);
             })
-            .then(function(accounts2) {
+            .then(function (accounts2) {
               expect(accounts[0].balance - 10.29).to.be.closeTo(
                 accounts2[0].balance,
                 0.001
@@ -259,7 +247,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should allow returning for updates in postgresql', function() {
+    it('should allow returning for updates in postgresql', function () {
       return knex('accounts')
         .where('id', 1)
         .update(
@@ -270,7 +258,7 @@ module.exports = function(knex) {
           },
           '*'
         )
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',

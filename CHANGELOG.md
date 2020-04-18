@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.21.0 - 18 April, 2020
+
+### Improvements
+
+- Reduce size of lodash in bundle #3804
+
+### Breaking changes
+
+- Dropped support for Node 8
+- Breaking upstream change in `pg-query-stream`: `Changed stream.close to stream.destroy which is the official way to terminate a readable stream. This is a breaking change if you rely on the stream.close method on pg-query-stream...though should be just a find/replace type operation to upgrade as the semantics remain very similar (not exactly the same, since internals are rewritten, but more in line with how streams are "supposed" to behave).`
+
+### Test / internal changes:
+
+- Updated Tarn.js to a version 3.0.0
+- Updated mkdirp to a version 1.0.4
+- Updated examples to use ES2015 style #3810
+
 # 0.20.15 - 16 April, 2020
 
 ### Bug fixes:
@@ -62,6 +79,10 @@
 
 # 0.20.11 - 26 February, 2020
 
+### Breaking changes:
+
+- Knex returns native JS promises instead of Bluebird ones. This means that you no longer use such methods as `map`, `spread` and `reduce` on QueryBuilder instance.
+
 ### New features:
 
 - Oracle: Add OracleDB handling for buffer type in fetchAsString #3685
@@ -76,7 +97,7 @@
 
 ### Test / internal changes:
 
-- Remove dependency on bluebird methods from sources #3683
+- Remove dependency on Bluebird methods from sources #3683
 - Cleanup and extract Transaction Workflow logic #3674
 
 # 0.20.10 - 13 February, 2020

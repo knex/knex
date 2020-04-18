@@ -5,8 +5,8 @@ const { expect } = require('chai');
 const _ = require('lodash');
 const makeKnex = require('../../knex');
 
-module.exports = function(config) {
-  describe('Connection configuration provider', function() {
+module.exports = function (config) {
+  describe('Connection configuration provider', function () {
     let configWorkingCopy;
     let providerInvocationCount;
     let connectionConfigWorkingCopy;
@@ -19,7 +19,7 @@ module.exports = function(config) {
       connectionConfigWorkingCopy = configWorkingCopy.connection;
     });
 
-    it('is not used when configuration is static', async function() {
+    it('is not used when configuration is static', async function () {
       return runTwoConcurrentTransactions(0);
     });
 

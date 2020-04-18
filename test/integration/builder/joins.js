@@ -4,14 +4,14 @@ const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
 
-module.exports = function(knex) {
-  describe('Joins', function() {
-    it('uses inner join by default', function() {
+module.exports = function (knex) {
+  describe('Joins', function () {
+    it('uses inner join by default', function () {
       return knex('accounts')
         .join('test_table_two', 'accounts.id', '=', 'test_table_two.account_id')
         .select('accounts.*', 'test_table_two.details')
         .orderBy('accounts.id')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc',
@@ -303,7 +303,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('has a leftJoin method parameter to specify the join type', function() {
+    it('has a leftJoin method parameter to specify the join type', function () {
       return knex('accounts')
         .leftJoin(
           'test_table_two',
@@ -313,7 +313,7 @@ module.exports = function(knex) {
         )
         .select('accounts.*', 'test_table_two.details')
         .orderBy('accounts.id')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc',
@@ -839,15 +839,15 @@ module.exports = function(knex) {
         });
     });
 
-    it('accepts a callback as the second argument for advanced joins', function() {
+    it('accepts a callback as the second argument for advanced joins', function () {
       return knex('accounts')
-        .leftJoin('test_table_two', function(join) {
+        .leftJoin('test_table_two', function (join) {
           join.on('accounts.id', '=', 'test_table_two.account_id');
           join.orOn('accounts.email', '=', 'test_table_two.details');
         })
         .select()
         .orderBy('accounts.id')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details` order by `accounts`.`id` asc',
@@ -1376,7 +1376,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('supports join aliases', function() {
+    it('supports join aliases', function () {
       //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
       return knex('accounts')
         .join('accounts as a2', 'a2.email', '<>', 'accounts.email')
@@ -1384,7 +1384,7 @@ module.exports = function(knex) {
         .where('a2.email', 'test2@example.com')
         .orderBy('e1')
         .limit(5)
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? order by `e1` asc limit ?',
@@ -1550,11 +1550,11 @@ module.exports = function(knex) {
         });
     });
 
-    it('supports join aliases with advanced joins', function() {
+    it('supports join aliases with advanced joins', function () {
       //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
       //But also include the case where the emails are the same, for account 2.
       return knex('accounts')
-        .join('accounts as a2', function() {
+        .join('accounts as a2', function () {
           this.on('accounts.email', '<>', 'a2.email').orOn(
             'accounts.id',
             '=',
@@ -1565,7 +1565,7 @@ module.exports = function(knex) {
         .select(['accounts.email as e1', 'a2.email as e2'])
         .limit(5)
         .orderBy('e1')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2 where `a2`.`email` = ? order by `e1` asc limit ?',
@@ -1731,18 +1731,18 @@ module.exports = function(knex) {
         });
     });
 
-    it('supports cross join without arguments', function() {
+    it('supports cross join without arguments', function () {
       return knex
         .select('account_id')
         .from('accounts')
         .crossJoin('test_table_two')
         .orderBy('account_id')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
             [],
-            function(res) {
+            function (res) {
               return res.length === 30;
             }
           );
@@ -1750,7 +1750,7 @@ module.exports = function(knex) {
             'pg',
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
-            function(res) {
+            function (res) {
               return res.length === 30;
             }
           );
@@ -1758,7 +1758,7 @@ module.exports = function(knex) {
             'pg-redshift',
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
-            function(res) {
+            function (res) {
               // redshift, not supporting insert...returning, had to fake 6 of these in previous tests
               return res.length === 24;
             }
@@ -1767,7 +1767,7 @@ module.exports = function(knex) {
             'oracledb',
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
-            function(res) {
+            function (res) {
               return res.length === 30;
             }
           );
@@ -1775,7 +1775,7 @@ module.exports = function(knex) {
             'sqlite3',
             'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
             [],
-            function(res) {
+            function (res) {
               return res.length === 30;
             }
           );
@@ -1783,20 +1783,20 @@ module.exports = function(knex) {
             'mssql',
             'select [account_id] from [accounts] cross join [test_table_two] order by [account_id] asc',
             [],
-            function(res) {
+            function (res) {
               return res.length === 30;
             }
           );
         });
     });
 
-    it('supports joins with overlapping column names', function() {
+    it('supports joins with overlapping column names', function () {
       if (knex.client.driverName === 'oracledb') {
         return this.skip();
       }
 
       return knex('accounts as a1')
-        .leftJoin('accounts as a2', function() {
+        .leftJoin('accounts as a2', function () {
           this.on('a1.email', '<>', 'a2.email');
         })
         .orderBy('a2.id', 'asc')
@@ -1807,7 +1807,7 @@ module.exports = function(knex) {
           rowMode: 'array',
         })
         .limit(2)
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select `a1`.`email`, `a2`.`email` from `accounts` as `a1` left join `accounts` as `a2` on `a1`.`email` <> `a2`.`email` where a1.id = 1 order by `a2`.`id` asc limit ?',

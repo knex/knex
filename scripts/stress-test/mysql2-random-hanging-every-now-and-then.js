@@ -16,7 +16,7 @@ async function stdMysqlQuery(con, sql) {
           sql,
           timeout: 500,
         },
-        function(error, results, fields) {
+        function (error, results, fields) {
           if (error) {
             reject(error);
           } else {

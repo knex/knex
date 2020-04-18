@@ -10,7 +10,7 @@ Object.keys(config).forEach((dialectName) => {
   return require('./suite')(logger(knex(config[dialectName])));
 });
 
-before(function() {
+before(function () {
   if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {
     fs.copyFileSync(
       __dirname + '/../multilineCreateMasterSample.sqlite3',
@@ -19,7 +19,7 @@ before(function() {
   }
 });
 
-after(function() {
+after(function () {
   if (config.sqlite3 && config.sqlite3.connection.filename !== ':memory:') {
     fs.unlinkSync(config.sqlite3.connection.filename);
     fs.unlinkSync(__dirname + '/../multilineCreateMaster.sqlite3');

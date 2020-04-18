@@ -93,7 +93,7 @@ test('run migrations without knexfile and with --migrations-table-name', (temp) 
         new Promise((resolve, reject) =>
           db.get(
             "SELECT name FROM sqlite_master where type='table' AND name='custom_migrations_table'",
-            function(err, row) {
+            function (err, row) {
               err ? reject(err) : resolve(row);
             }
           )

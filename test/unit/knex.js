@@ -117,7 +117,7 @@ describe('knex', () => {
     const knex = Knex({
       client: 'sqlite',
     });
-    const onQueryResponse = function(response, obj, builder) {};
+    const onQueryResponse = function (response, obj, builder) {};
     expect(knex.listeners('query-response').length).to.equal(0);
     knex.on('query-response', onQueryResponse);
 
@@ -168,7 +168,7 @@ describe('knex', () => {
     ).to.equal(null);
   });
 
-  it('passes queryContext to wrapIdentifier in raw query', function() {
+  it('passes queryContext to wrapIdentifier in raw query', function () {
     if (!sqliteConfig) {
       return this.skip();
     }
@@ -210,7 +210,7 @@ describe('knex', () => {
       });
   });
 
-  it('passes queryContext to wrapIdentifier in raw query in transaction', function() {
+  it('passes queryContext to wrapIdentifier in raw query in transaction', function () {
     if (!sqliteConfig) {
       return this.skip();
     }
@@ -275,7 +275,7 @@ describe('knex', () => {
     ).to.equal(null);
   });
 
-  it('transaction of a copy with userParams retains userparams', function() {
+  it('transaction of a copy with userParams retains userparams', function () {
     if (!sqliteConfig) {
       return this.skip();
     }
@@ -291,7 +291,7 @@ describe('knex', () => {
     });
   });
 
-  it('propagates error correctly when all connections are in use', function() {
+  it('propagates error correctly when all connections are in use', function () {
     this.timeout(2000);
     const knex = Knex(sqliteConfig);
     return knex
@@ -469,7 +469,7 @@ describe('knex', () => {
     });
   });
 
-  it('creating transaction copy with user params should throw an error', function() {
+  it('creating transaction copy with user params should throw an error', function () {
     if (!sqliteConfig) {
       return this.skip();
     }
@@ -505,7 +505,7 @@ describe('knex', () => {
   });
 
   describe('async stack traces', () => {
-    it('should capture stack trace on query builder instantiation', function() {
+    it('should capture stack trace on query builder instantiation', function () {
       if (!sqliteConfig) {
         return this.skip();
       }
@@ -535,7 +535,7 @@ describe('knex', () => {
     });
 
     it('should extend default queryBuilder', (done) => {
-      Knex.QueryBuilder.extend('customSelect', function(value) {
+      Knex.QueryBuilder.extend('customSelect', function (value) {
         return this.select(this.client.raw(`${value} as value`));
       });
 
@@ -550,7 +550,7 @@ describe('knex', () => {
     });
 
     it('should have custom method with transaction', async () => {
-      Knex.QueryBuilder.extend('customSelect', function(value) {
+      Knex.QueryBuilder.extend('customSelect', function (value) {
         return this.select(this.client.raw(`${value} as value`));
       });
 
@@ -561,10 +561,10 @@ describe('knex', () => {
       expect(result[0].value).to.equal(42);
     });
 
-    context('const trx = knex.transaction(cb)', function() {
-      context('and cb returns a Promise', function() {
+    context('const trx = knex.transaction(cb)', function () {
+      context('and cb returns a Promise', function () {
         if (Promise.prototype.finally) {
-          it('returns a Transaction that defines a `finally(..)` method', async function() {
+          it('returns a Transaction that defines a `finally(..)` method', async function () {
             const knex = Knex(sqliteConfig);
             const trx = knex.transaction(async (tx) => {});
             try {
@@ -574,7 +574,7 @@ describe('knex', () => {
             }
           });
         } else {
-          it('returns a Transaction that does NOT define a `finally(..)` method', async function() {
+          it('returns a Transaction that does NOT define a `finally(..)` method', async function () {
             const knex = Knex(sqliteConfig);
             const trx = knex.transaction(async (tx) => {});
             try {
@@ -588,7 +588,7 @@ describe('knex', () => {
     });
 
     it('should have custom method on knex with user params', async () => {
-      Knex.QueryBuilder.extend('customSelect', function(value) {
+      Knex.QueryBuilder.extend('customSelect', function (value) {
         return this.select(this.client.raw(`${value} as value`));
       });
 
@@ -600,15 +600,15 @@ describe('knex', () => {
 
     it('should throw exception when extending existing method', () => {
       expect(() =>
-        Knex.QueryBuilder.extend('select', function(value) {})
+        Knex.QueryBuilder.extend('select', function (value) {})
       ).to.throw(`Can't extend QueryBuilder with existing method ('select')`);
     });
 
     // TODO: Consider moving these somewhere that tests the
     //       QueryBuilder interface more directly.
-    context('qb = knex.select(1)', function() {
+    context('qb = knex.select(1)', function () {
       if (Promise.prototype.finally) {
-        it('returns a QueryBuilder that defines a `.finally(..)` method', async function() {
+        it('returns a QueryBuilder that defines a `.finally(..)` method', async function () {
           const knex = Knex(sqliteConfig);
           const p = knex.select(1);
           try {
@@ -618,7 +618,7 @@ describe('knex', () => {
           }
         });
       } else {
-        it('returns a QueryBuilder that does NOT define a `.finally(..)` method', async function() {
+        it('returns a QueryBuilder that does NOT define a `.finally(..)` method', async function () {
           const knex = Knex(sqliteConfig);
           const p = knex.select(1);
           try {

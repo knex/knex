@@ -24,7 +24,7 @@ const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
   let config = require(configPath);
-  if (typeof config  === 'function') {
+  if (typeof config === 'function') {
     config = await config();
   }
 
@@ -342,11 +342,11 @@ const cli = new Liftoff({
   moduleName: require('../package.json').name,
 });
 
-cli.on('require', function(name) {
+cli.on('require', function (name) {
   console.log('Requiring external module', color.magenta(name));
 });
 
-cli.on('requireFail', function(name) {
+cli.on('requireFail', function (name) {
   console.log(color.red('Failed to load external module'), color.magenta(name));
 });
 

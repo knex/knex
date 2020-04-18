@@ -5,7 +5,7 @@ const { expect } = require('chai');
 /**
  * Collection of tests for making sure that certain features are cross database compatible
  */
-module.exports = function(knex) {
+module.exports = function (knex) {
   const driverName = knex.client.driverName;
 
   if (driverName === 'oracledb') {
@@ -15,11 +15,11 @@ module.exports = function(knex) {
 
   tape(
     driverName + ' - crossdb compatibility: setup test table',
-    async function(t) {
+    async function (t) {
       try {
         await knex.schema
           .dropTableIfExists('test_table')
-          .createTable('test_table', function(t) {
+          .createTable('test_table', function (t) {
             t.integer('id');
             t.string('first');
             t.string('second');
