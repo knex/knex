@@ -20,7 +20,7 @@ Node.js, featuring:
 - a [thorough test suite](https://travis-ci.org/knex/knex)
 - the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
 
-Node.js versions 8+ are supported.
+Node.js versions 10+ are supported.
 
 [Read the full documentation to get started!](http://knexjs.org)  
 [Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/knex/knex/wiki/Recipes)  

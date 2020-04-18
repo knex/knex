@@ -7,8 +7,8 @@ const Knex = require('../../../knex');
 const _ = require('lodash');
 const delay = require('../../../lib/util/delay');
 
-module.exports = function(knex) {
-  describe('Additional', function() {
+module.exports = function (knex) {
+  describe('Additional', function () {
     describe('Custom response processing', () => {
       before('setup custom response handler', () => {
         knex.client.config.postProcessResponse = (response, queryContext) => {
@@ -133,7 +133,7 @@ module.exports = function(knex) {
       });
     });
 
-    describe('returning with wrapIdentifier and postProcessResponse` (TODO: fix to work on all possible dialects)', function() {
+    describe('returning with wrapIdentifier and postProcessResponse` (TODO: fix to work on all possible dialects)', function () {
       const origHooks = {};
 
       if (!['pg', 'mssql'].includes(knex.client.driverName)) {
@@ -193,10 +193,10 @@ module.exports = function(knex) {
       });
     });
 
-    it('should truncate a table with truncate', function() {
+    it('should truncate a table with truncate', function () {
       return knex('test_table_two')
         .truncate()
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('pg', 'truncate "test_table_two" restart identity');
           tester('pg-redshift', 'truncate "test_table_two"');
@@ -237,7 +237,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should allow raw queries directly with `knex.raw`', function() {
+    it('should allow raw queries directly with `knex.raw`', function () {
       const tables = {
         mysql: 'SHOW TABLES',
         mysql2: 'SHOW TABLES',
@@ -250,27 +250,29 @@ module.exports = function(knex) {
         mssql:
           "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'",
       };
-      return knex.raw(tables[knex.client.driverName]).testSql(function(tester) {
-        tester(knex.client.driverName, tables[knex.client.driverName]);
-      });
+      return knex
+        .raw(tables[knex.client.driverName])
+        .testSql(function (tester) {
+          tester(knex.client.driverName, tables[knex.client.driverName]);
+        });
     });
 
-    it('should allow using the primary table as a raw statement', function() {
+    it('should allow using the primary table as a raw statement', function () {
       expect(knex(knex.raw('raw_table_name')).toQuery()).to.equal(
         'select * from raw_table_name'
       );
     });
 
-    it('should allow using .fn-methods to create raw statements', function() {
+    it('should allow using .fn-methods to create raw statements', function () {
       expect(knex.fn.now().prototype === knex.raw().prototype);
       expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
       expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
     });
 
-    it('gets the columnInfo', function() {
+    it('gets the columnInfo', function () {
       return knex('datatype_test')
         .columnInfo()
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select * from information_schema.columns where table_name = ? and table_schema = ?',
@@ -383,10 +385,10 @@ module.exports = function(knex) {
         });
     });
 
-    it('gets the columnInfo with columntype', function() {
+    it('gets the columnInfo with columntype', function () {
       return knex('datatype_test')
         .columnInfo('uuid')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select * from information_schema.columns where table_name = ? and table_schema = ?',
@@ -451,22 +453,22 @@ module.exports = function(knex) {
         });
     });
 
-    it('#2184 - should properly escape table name for SQLite columnInfo', function() {
+    it('#2184 - should properly escape table name for SQLite columnInfo', function () {
       if (knex.client.driverName !== 'sqlite3') {
         return this.skip();
       }
 
       return knex.schema
         .dropTableIfExists('group')
-        .then(function() {
-          return knex.schema.createTable('group', function(table) {
+        .then(function () {
+          return knex.schema.createTable('group', function (table) {
             table.integer('foo');
           });
         })
-        .then(function() {
+        .then(function () {
           return knex('group').columnInfo();
         })
-        .then(function(columnInfo) {
+        .then(function (columnInfo) {
           expect(columnInfo).to.deep.equal({
             foo: {
               type: 'integer',
@@ -480,8 +482,8 @@ module.exports = function(knex) {
 
     if (knex.client.driverName === 'oracledb') {
       const oracledb = require('oracledb');
-      describe('test oracle stored procedures', function() {
-        it('create stored procedure', function() {
+      describe('test oracle stored procedures', function () {
+        it('create stored procedure', function () {
           return knex
             .raw(
               `
@@ -491,12 +493,12 @@ module.exports = function(knex) {
                 OUTPUT := X * Y;
               END;`
             )
-            .then(function(result) {
+            .then(function (result) {
               expect(result).to.be.an('array');
             });
         });
 
-        it('get outbound values from stored procedure', function() {
+        it('get outbound values from stored procedure', function () {
           const bindVars = {
             x: 6,
             y: 7,
@@ -506,17 +508,17 @@ module.exports = function(knex) {
           };
           return knex
             .raw('BEGIN SYSTEM.MULTIPLY(:x, :y, :output); END;', bindVars)
-            .then(function(result) {
+            .then(function (result) {
               expect(result[0]).to.be.ok;
               expect(result[0]).to.equal('42');
             });
         });
 
-        it('drop stored procedure', function() {
+        it('drop stored procedure', function () {
           const bindVars = { x: 6, y: 7 };
           return knex
             .raw('drop procedure SYSTEM.MULTIPLY', bindVars)
-            .then(function(result) {
+            .then(function (result) {
               expect(result).to.be.ok;
               expect(result).to.be.an('array');
             });
@@ -524,7 +526,7 @@ module.exports = function(knex) {
       });
     }
 
-    it('should allow renaming a column', function() {
+    it('should allow renaming a column', function () {
       let countColumn;
       switch (knex.client.driverName) {
         case 'oracledb':
@@ -539,7 +541,7 @@ module.exports = function(knex) {
       }
       let count;
       const inserts = [];
-      _.times(40, function(i) {
+      _.times(40, function (i) {
         inserts.push({
           email: 'email' + i,
           first_name: 'Test',
@@ -548,16 +550,16 @@ module.exports = function(knex) {
       });
       return knex('accounts')
         .insert(inserts)
-        .then(function() {
+        .then(function () {
           return knex.count('*').from('accounts');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           count = resp[0][countColumn];
           return knex.schema
-            .table('accounts', function(t) {
+            .table('accounts', function (t) {
               t.renameColumn('about', 'about_col');
             })
-            .testSql(function(tester) {
+            .testSql(function (tester) {
               tester('mysql', ['show fields from `accounts` where field = ?']);
               tester('pg', [
                 'alter table "accounts" rename "about" to "about_col"',
@@ -572,29 +574,29 @@ module.exports = function(knex) {
               tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
             });
         })
-        .then(function() {
+        .then(function () {
           return knex.count('*').from('accounts');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           expect(resp[0][countColumn]).to.equal(count);
         })
-        .then(function() {
+        .then(function () {
           return knex('accounts').select('about_col');
         })
-        .then(function() {
-          return knex.schema.table('accounts', function(t) {
+        .then(function () {
+          return knex.schema.table('accounts', function (t) {
             t.renameColumn('about_col', 'about');
           });
         })
-        .then(function() {
+        .then(function () {
           return knex.count('*').from('accounts');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           expect(resp[0][countColumn]).to.equal(count);
         });
     });
 
-    it('should allow dropping a column', function() {
+    it('should allow dropping a column', function () {
       let countColumn;
       switch (knex.client.driverName) {
         case 'oracledb':
@@ -611,15 +613,15 @@ module.exports = function(knex) {
       return knex
         .count('*')
         .from('accounts')
-        .then(function(resp) {
+        .then(function (resp) {
           count = resp[0][countColumn];
         })
-        .then(function() {
+        .then(function () {
           return knex.schema
-            .table('accounts', function(t) {
+            .table('accounts', function (t) {
               t.dropColumn('first_name');
             })
-            .testSql(function(tester) {
+            .testSql(function (tester) {
               tester('mysql', ['alter table `accounts` drop `first_name`']);
               tester('pg', ['alter table "accounts" drop column "first_name"']);
               tester('pg-redshift', [
@@ -635,13 +637,10 @@ module.exports = function(knex) {
               ]);
             });
         })
-        .then(function() {
-          return knex
-            .select('*')
-            .from('accounts')
-            .first();
+        .then(function () {
+          return knex.select('*').from('accounts').first();
         })
-        .then(function(resp) {
+        .then(function (resp) {
           expect(_.keys(resp).sort()).to.eql([
             'about',
             'balance',
@@ -654,15 +653,15 @@ module.exports = function(knex) {
             'updated_at',
           ]);
         })
-        .then(function() {
+        .then(function () {
           return knex.count('*').from('accounts');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           expect(resp[0][countColumn]).to.equal(count);
         });
     });
 
-    it('.timeout() should throw TimeoutError', function() {
+    it('.timeout() should throw TimeoutError', function () {
       const driverName = knex.client.driverName;
       if (driverName === 'sqlite3') {
         return this.skip();
@@ -671,19 +670,19 @@ module.exports = function(knex) {
         return this.skip();
       }
       const testQueries = {
-        pg: function() {
+        pg: function () {
           return knex.raw('SELECT pg_sleep(1)');
         },
-        mysql: function() {
+        mysql: function () {
           return knex.raw('SELECT SLEEP(1)');
         },
-        mysql2: function() {
+        mysql2: function () {
           return knex.raw('SELECT SLEEP(1)');
         },
-        mssql: function() {
+        mssql: function () {
           return knex.raw("WAITFOR DELAY '00:00:01'");
         },
-        oracledb: function() {
+        oracledb: function () {
           return knex.raw('begin dbms_lock.sleep(1); end;');
         },
       };
@@ -696,10 +695,10 @@ module.exports = function(knex) {
 
       return query
         .timeout(200)
-        .then(function() {
+        .then(function () {
           expect(true).to.equal(false);
         })
-        .catch(function(error) {
+        .catch(function (error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 200,
             name: 'KnexTimeoutError',
@@ -709,7 +708,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function() {
+    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function () {
       const driverName = knex.client.driverName;
       if (driverName === 'sqlite3') {
         return this.skip();
@@ -724,19 +723,19 @@ module.exports = function(knex) {
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
       const testQueries = {
-        pg: function() {
+        pg: function () {
           return knex.raw('SELECT pg_sleep(10)');
         },
-        mysql: function() {
+        mysql: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mysql2: function() {
+        mysql2: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mssql: function() {
+        mssql: function () {
           return knex.raw("WAITFOR DELAY '00:00:10'");
         },
-        oracledb: function() {
+        oracledb: function () {
           return knex.raw('begin dbms_lock.sleep(10); end;');
         },
       };
@@ -763,13 +762,13 @@ module.exports = function(knex) {
       }
 
       const getProcessesQueries = {
-        pg: function() {
+        pg: function () {
           return knex.raw('SELECT * from pg_stat_activity');
         },
-        mysql: function() {
+        mysql: function () {
           return knex.raw('SHOW PROCESSLIST');
         },
-        mysql2: function() {
+        mysql2: function () {
           return knex.raw('SHOW PROCESSLIST');
         },
       };
@@ -783,10 +782,10 @@ module.exports = function(knex) {
       const getProcessesQuery = getProcessesQueries[driverName]();
 
       return addTimeout()
-        .then(function() {
+        .then(function () {
           expect(true).to.equal(false);
         })
-        .catch(function(error) {
+        .catch(function (error) {
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 200,
             name: 'KnexTimeoutError',
@@ -799,10 +798,10 @@ module.exports = function(knex) {
           // too early.
           // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
           return delay(50)
-            .then(function() {
+            .then(function () {
               return getProcessesQuery;
             })
-            .then(function(results) {
+            .then(function (results) {
               let processes;
               let sleepProcess;
 
@@ -820,7 +819,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async function() {
+    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async function () {
       // Only mysql/postgres query cancelling supported for now
       const driverName = knex.client.driverName;
       if (
@@ -840,19 +839,19 @@ module.exports = function(knex) {
       const knexDb = new Knex(knexConfig);
 
       const testQueries = {
-        pg: function() {
+        pg: function () {
           return knexDb.raw('SELECT pg_sleep(10)');
         },
-        mysql: function() {
+        mysql: function () {
           return knexDb.raw('SELECT SLEEP(10)');
         },
-        mysql2: function() {
+        mysql2: function () {
           return knexDb.raw('SELECT SLEEP(10)');
         },
-        mssql: function() {
+        mssql: function () {
           return knexDb.raw("WAITFOR DELAY '00:00:10'");
         },
-        oracle: function() {
+        oracle: function () {
           return knexDb.raw('begin dbms_lock.sleep(10); end;');
         },
       };
@@ -877,7 +876,7 @@ module.exports = function(knex) {
       }
     });
 
-    it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', async function() {
+    it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', async function () {
       // Only mysql/postgres query cancelling supported for now
       const driverName = knex.client.driverName;
       if (!_.startsWith(driverName, 'pg')) {
@@ -943,10 +942,10 @@ module.exports = function(knex) {
       }
     });
 
-    it('Event: query-response', function() {
+    it('Event: query-response', function () {
       let queryCount = 0;
 
-      const onQueryResponse = function(response, obj, builder) {
+      const onQueryResponse = function (response, obj, builder) {
         queryCount++;
         expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
@@ -959,23 +958,23 @@ module.exports = function(knex) {
       return knex('accounts')
         .select()
         .on('query-response', onQueryResponse)
-        .then(function() {
-          return knex.transaction(function(tr) {
+        .then(function () {
+          return knex.transaction(function (tr) {
             return tr('accounts')
               .select()
               .on('query-response', onQueryResponse); //Transactions should emit the event as well
           });
         })
-        .then(function() {
+        .then(function () {
           knex.removeListener('query-response', onQueryResponse);
           expect(queryCount).to.equal(4);
         });
     });
 
-    it('Event: preserves listeners on a copy with user params', function() {
+    it('Event: preserves listeners on a copy with user params', function () {
       let queryCount = 0;
 
-      const onQueryResponse = function(response, obj, builder) {
+      const onQueryResponse = function (response, obj, builder) {
         queryCount++;
         expect(response).to.be.an('array');
         expect(obj).to.be.an('object');
@@ -989,14 +988,14 @@ module.exports = function(knex) {
       return knexCopy('accounts')
         .select()
         .on('query-response', onQueryResponse)
-        .then(function() {
-          return knexCopy.transaction(function(tr) {
+        .then(function () {
+          return knexCopy.transaction(function (tr) {
             return tr('accounts')
               .select()
               .on('query-response', onQueryResponse); //Transactions should emit the event as well
           });
         })
-        .then(function() {
+        .then(function () {
           expect(Object.keys(knex._events).length).to.equal(1);
           expect(Object.keys(knexCopy._events).length).to.equal(1);
           knex.removeListener('query-response', onQueryResponse);
@@ -1005,10 +1004,10 @@ module.exports = function(knex) {
         });
     });
 
-    it('Event: query-error', function() {
+    it('Event: query-error', function () {
       let queryCountKnex = 0;
       let queryCountBuilder = 0;
-      const onQueryErrorKnex = function(error, obj) {
+      const onQueryErrorKnex = function (error, obj) {
         queryCountKnex++;
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
@@ -1016,7 +1015,7 @@ module.exports = function(knex) {
         expect(error).to.be.an('error');
       };
 
-      const onQueryErrorBuilder = function(error, obj) {
+      const onQueryErrorBuilder = function (error, obj) {
         queryCountBuilder++;
         expect(obj).to.be.an('object');
         expect(obj.__knexUid).to.be.a('string');
@@ -1029,10 +1028,10 @@ module.exports = function(knex) {
       return knex
         .raw('Broken query')
         .on('query-error', onQueryErrorBuilder)
-        .then(function() {
+        .then(function () {
           expect(true).to.equal(false); //Should not be resolved
         })
-        .catch(function() {
+        .catch(function () {
           knex.removeListener('query-error', onQueryErrorKnex);
           knex.removeListener('query-error', onQueryErrorBuilder);
           expect(queryCountBuilder).to.equal(1);
@@ -1040,13 +1039,13 @@ module.exports = function(knex) {
         });
     });
 
-    it('Event: start', function() {
+    it('Event: start', function () {
       return knex('accounts')
         .insert({ last_name: 'Start event test' })
-        .then(function() {
+        .then(function () {
           const queryBuilder = knex('accounts').select();
 
-          queryBuilder.on('start', function(builder) {
+          queryBuilder.on('start', function (builder) {
             //Alter builder prior to compilation
             //Select only one row
             builder.where('last_name', 'Start event test').first();
@@ -1054,18 +1053,16 @@ module.exports = function(knex) {
 
           return queryBuilder;
         })
-        .then(function(row) {
+        .then(function (row) {
           expect(row).to.exist;
           expect(row.last_name).to.equal('Start event test');
         });
     });
 
-    it("Event 'query' should not emit native sql string", function() {
-      const builder = knex('accounts')
-        .where('id', 1)
-        .select();
+    it("Event 'query' should not emit native sql string", function () {
+      const builder = knex('accounts').where('id', 1).select();
 
-      builder.on('query', function(obj) {
+      builder.on('query', function (obj) {
         const native = builder.toSQL().toNative().sql;
         const sql = builder.toSQL().sql;
 
@@ -1080,7 +1077,7 @@ module.exports = function(knex) {
       return builder;
     });
 
-    describe('async stack traces', function() {
+    describe('async stack traces', function () {
       before(() => {
         knex.client.config.asyncStackTraces = true;
       });
@@ -1107,7 +1104,7 @@ module.exports = function(knex) {
       const knexConfig = _.clone(knex.client.config);
 
       let callCount = 0;
-      const assertCall = function(expectedMessage, message) {
+      const assertCall = function (expectedMessage, message) {
         expect(message).to.equal(expectedMessage);
         callCount++;
       };

@@ -5,7 +5,7 @@ const knex = require('../../../knex');
 const config = require('../../knexfile');
 const sinon = require('sinon');
 
-describe('OracleDb externalAuth', function() {
+describe('OracleDb externalAuth', function () {
   const knexInstance = knex({
     client: 'oracledb',
     connection: {
@@ -19,100 +19,101 @@ describe('OracleDb externalAuth', function() {
   });
   let spy;
 
-  before(function() {
+  before(function () {
     spy = sinon.spy(knexInstance.client.driver, 'getConnection');
   });
 
-  it('externalAuth and connectString should be sent to the getConnection', function() {
+  it('externalAuth and connectString should be sent to the getConnection', function () {
     const connectionWithExternalAuth = {
       connectString: 'connect-string',
       externalAuth: true,
     };
-    knexInstance.client
-      .acquireRawConnection()
-      .then(function(resolve) {}, function(reject) {});
+    knexInstance.client.acquireRawConnection().then(
+      function (resolve) {},
+      function (reject) {}
+    );
     expect(spy).to.have.callCount(1);
     expect(spy).to.have.been.calledWith(connectionWithExternalAuth);
   });
 
-  after(function() {
+  after(function () {
     knexInstance.client.driver.getConnection.restore();
   });
 });
 
-describe('OracleDb parameters', function() {
-  describe('with fetchAsString parameter ', function() {
+describe('OracleDb parameters', function () {
+  describe('with fetchAsString parameter ', function () {
     let knexClient;
 
-    before(function() {
+    before(function () {
       const conf = _.clone(config.oracledb);
       conf.fetchAsString = ['number', 'DATE', 'cLOb', 'BUFFER'];
       knexClient = knex(conf);
       return knexClient;
     });
 
-    it('on float', function() {
+    it('on float', function () {
       return knexClient
         .raw('select 7.329 as "field" from dual')
-        .then(function(result) {
+        .then(function (result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.be.a('string');
         });
     });
 
-    it('on date', function() {
+    it('on date', function () {
       return knexClient
         .raw('select CURRENT_DATE as "field" from dual')
-        .then(function(result) {
+        .then(function (result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.be.a('string');
         });
     });
 
-    it('on clob', function() {
+    it('on clob', function () {
       return knexClient
         .raw('select TO_CLOB(\'LONG CONTENT\') as "field" from dual')
-        .then(function(result) {
+        .then(function (result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.be.equal('LONG CONTENT');
         });
     });
 
-    it('on raw', function() {
+    it('on raw', function () {
       return knexClient
         .raw('select UTL_RAW.CAST_TO_RAW(3) as "field" from dual')
-        .then(function(result) {
+        .then(function (result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.be.equal('33');
         });
     });
 
-    after(function() {
+    after(function () {
       return knexClient.destroy();
     });
   });
 
-  describe('without fetchAsString parameter', function() {
+  describe('without fetchAsString parameter', function () {
     let knexClient;
 
-    before(function() {
+    before(function () {
       knexClient = knex(config.oracledb);
       return knexClient;
     });
 
-    it('on float', function() {
+    it('on float', function () {
       return knexClient
         .raw('select 7.329 as "field" from dual')
-        .then(function(result) {
+        .then(function (result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.not.be.a('string');
         });
     });
 
-    it('on date', function() {
+    it('on date', function () {
       return knexClient
         .raw('select CURRENT_DATE as "field" from dual')
-        .then(function(result) {
+        .then(function (result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.not.be.a('string');
         });
@@ -128,32 +129,32 @@ describe('OracleDb parameters', function() {
       );
     });
 
-    it('on raw', function() {
+    it('on raw', function () {
       return knexClient
         .raw('select UTL_RAW.CAST_TO_RAW(3) as "field" from dual')
-        .then(function(result) {
+        .then(function (result) {
           expect(result[0]).to.be.ok;
           expect(result[0].field).to.be.instanceOf(Buffer);
         });
     });
 
-    after(function() {
+    after(function () {
       return knexClient.destroy();
     });
   });
 });
 
-describe('OracleDb unit tests', function() {
+describe('OracleDb unit tests', function () {
   let knexClient;
 
-  before(function() {
+  before(function () {
     const conf = _.clone(config.oracledb);
     conf.fetchAsString = ['number', 'DATE', 'cLOb', 'BUFFER'];
     knexClient = knex(conf);
     return knexClient;
   });
 
-  it('disposes the connection on connection error', async function() {
+  it('disposes the connection on connection error', async function () {
     let spy = sinon.spy();
     // call the real acquireConnection but release the connection immediately to cause connection error
     const acquireConnection = knexClient.client.acquireConnection;
@@ -176,7 +177,7 @@ describe('OracleDb unit tests', function() {
     expect(spy.callCount).to.equal(1);
   });
 
-  it('clears the connection from the pool on disconnect during commit', async function() {
+  it('clears the connection from the pool on disconnect during commit', async function () {
     const err = 'error message';
     const spy = sinon.spy(knexClient.client, 'releaseConnection');
     // call the real acquireConnection but ensure commitAsync fails simulating a disconnect
@@ -200,11 +201,11 @@ describe('OracleDb unit tests', function() {
     expect(exception).to.equal(err);
   });
 
-  afterEach(function() {
+  afterEach(function () {
     knexClient.client.acquireConnection.restore();
   });
 
-  after(function() {
+  after(function () {
     return knexClient.destroy();
   });
 });

@@ -5,7 +5,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 
-it('[backwards compatible] can rename column with double quotes', function() {
+it('[backwards compatible] can rename column with double quotes', function () {
   const client = sinon.stub();
   const tableCompiler = sinon.stub();
   const pragma = sinon.stub();
@@ -21,7 +21,7 @@ it('[backwards compatible] can rename column with double quotes', function() {
   );
 });
 
-it('[backwards compatible] can rename column with double quotes', function() {
+it('[backwards compatible] can rename column with double quotes', function () {
   const client = sinon.stub();
   const tableCompiler = sinon.stub();
   const pragma = sinon.stub();
@@ -37,7 +37,7 @@ it('[backwards compatible] can rename column with double quotes', function() {
   );
 });
 
-it('[backwards compatible] can rename column with double quotes', function() {
+it('[backwards compatible] can rename column with double quotes', function () {
   const client = sinon.stub();
   const tableCompiler = sinon.stub();
   const pragma = sinon.stub();
@@ -53,7 +53,7 @@ it('[backwards compatible] can rename column with double quotes', function() {
   );
 });
 
-it('can rename column with back sticks', function() {
+it('can rename column with back sticks', function () {
   const client = sinon.stub();
   const tableCompiler = sinon.stub();
   const pragma = sinon.stub();
@@ -69,7 +69,7 @@ it('can rename column with back sticks', function() {
   );
 });
 
-it('can rename column with multiline and tabulated sql statement', function() {
+it('can rename column with multiline and tabulated sql statement', function () {
   const client = sinon.stub();
   const tableCompiler = sinon.stub();
   const pragma = sinon.stub();
@@ -85,7 +85,7 @@ it('can rename column with multiline and tabulated sql statement', function() {
   );
 });
 
-it('can drop column with multiline and tabulated sql statement', function() {
+it('can drop column with multiline and tabulated sql statement', function () {
   const client = sinon.stub();
   const tableCompiler = sinon.stub();
   const pragma = sinon.stub();

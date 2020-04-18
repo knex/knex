@@ -26,8 +26,8 @@ describe('knexfile resolution', () => {
     process.env.KNEX_PATH = '../knex.js';
   });
 
-  context('--cwd is NOT specified', function() {
-    context('and --knexfile is also NOT specified', function() {
+  context('--cwd is NOT specified', function () {
+    context('and --knexfile is also NOT specified', function () {
       it('Resolves default knexfile in working directory correctly', () => {
         const path = process.cwd() + '/knexfile.js';
         fileHelper.createFile(
@@ -55,7 +55,7 @@ module.exports = {
       });
     });
 
-    context('but --knexfile is specified', function() {
+    context('but --knexfile is specified', function () {
       it('Run migrations with knexfile passed', () => {
         return execCommand(
           `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile/knexfile.js --knexpath=../knex.js`,
@@ -110,7 +110,7 @@ module.exports = {
       //
       context(
         'and the knexfile itself resolves paths relative to process.cwd()',
-        function() {
+        function () {
           it("changes the process's cwd to the directory that contains the knexfile before opening the knexfile", () => {
             const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
             const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
@@ -147,10 +147,10 @@ module.exports = {
     });
   });
 
-  context('--cwd is specified', function() {
-    context('and --knexfile is also specified', function() {
-      context('and --knexfile is a relative path', function() {
-        it('resolves --knexfile relative to --cwd', function() {
+  context('--cwd is specified', function () {
+    context('and --knexfile is also specified', function () {
+      context('and --knexfile is a relative path', function () {
+        it('resolves --knexfile relative to --cwd', function () {
           return execCommand(
             `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile --knexfile=knexfile.js`,
             {
@@ -160,8 +160,8 @@ module.exports = {
         });
       });
 
-      context('and --knexfile is an absolute path', function() {
-        it('uses the indicated knexfile', function() {
+      context('and --knexfile is an absolute path', function () {
+        it('uses the indicated knexfile', function () {
           // Notice: the Knexfile is using Typescript.  This means that Knex
           // is pre-loading the appropriate Typescript modules before loading
           // the Knexfile.
@@ -178,7 +178,7 @@ module.exports = {
       });
     });
 
-    context('but --knexfile is NOT specified', function() {
+    context('but --knexfile is NOT specified', function () {
       it('resolves knexfile relative to the specified cwd', () => {
         return execCommand(
           `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile`,

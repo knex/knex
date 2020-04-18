@@ -10,11 +10,11 @@ const client = new Redshift_Client({ client: 'redshift' });
 
 const equal = require('assert').equal;
 
-describe('Redshift SchemaBuilder', function() {
-  it('fixes memoization regression', function() {
+describe('Redshift SchemaBuilder', function () {
+  it('fixes memoization regression', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.uuid('key');
         table.increments('id');
         table.string('email');
@@ -26,10 +26,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('basic alter table', function() {
+  it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('id');
         table.string('email');
       })
@@ -43,11 +43,11 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('alter table with schema', function() {
+  it('alter table with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('myschema')
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('id');
       })
       .toSQL();
@@ -57,16 +57,13 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTable('users')
-      .toSQL();
+  it('drop table', function () {
+    tableSql = client.schemaBuilder().dropTable('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table "users"');
   });
 
-  it('drop table with schema', function() {
+  it('drop table with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('myschema')
@@ -76,16 +73,13 @@ describe('Redshift SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('drop table "myschema"."users"');
   });
 
-  it('drop table if exists', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTableIfExists('users')
-      .toSQL();
+  it('drop table if exists', function () {
+    tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('drop table if exists "users"');
   });
 
-  it('drop table if exists with schema', function() {
+  it('drop table if exists with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('myschema')
@@ -95,10 +89,10 @@ describe('Redshift SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('drop table if exists "myschema"."users"');
   });
 
-  it('drop column', function() {
+  it('drop column', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropColumn('foo');
       })
       .toSQL();
@@ -106,10 +100,10 @@ describe('Redshift SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('alter table "users" drop column "foo"');
   });
 
-  it('drop multiple columns', function() {
+  it('drop multiple columns', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropColumn(['foo', 'bar']);
       })
       .toSQL();
@@ -119,10 +113,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop multiple columns with arguments', function() {
+  it('drop multiple columns with arguments', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropColumn('foo', 'bar');
       })
       .toSQL();
@@ -132,10 +126,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop primary', function() {
+  it('drop primary', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropPrimary();
       })
       .toSQL();
@@ -145,10 +139,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop unique', function() {
+  it('drop unique', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropUnique('foo');
       })
       .toSQL();
@@ -158,10 +152,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop unique, custom', function() {
+  it('drop unique, custom', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropUnique(null, 'foo');
       })
       .toSQL();
@@ -171,20 +165,20 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop index should be a no-op', function() {
+  it('drop index should be a no-op', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropIndex('foo');
       })
       .toSQL();
     equal(0, tableSql.length);
   });
 
-  it('drop foreign', function() {
+  it('drop foreign', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropForeign('foo');
       })
       .toSQL();
@@ -194,10 +188,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop foreign', function() {
+  it('drop foreign', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropForeign(null, 'foo');
       })
       .toSQL();
@@ -207,10 +201,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('drop timestamps', function() {
+  it('drop timestamps', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dropTimestamps();
       })
       .toSQL();
@@ -220,19 +214,16 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('rename table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .renameTable('users', 'foo')
-      .toSQL();
+  it('rename table', function () {
+    tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" rename to "foo"');
   });
 
-  it('adding primary key', function() {
+  it('adding primary key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.primary('foo');
       })
       .toSQL();
@@ -242,10 +233,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding primary key fluently', function() {
+  it('adding primary key fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('name').primary();
         table.string('foo');
       })
@@ -259,10 +250,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding foreign key', function() {
+  it('adding foreign key', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('accounts', function(table) {
+      .createTable('accounts', function (table) {
         table.integer('account_id').references('users.id');
       })
       .toSQL();
@@ -271,10 +262,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adds foreign key with onUpdate and onDelete', function() {
+  it('adds foreign key with onUpdate and onDelete', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('person', function(table) {
+      .createTable('person', function (table) {
         table
           .integer('user_id')
           .notNull()
@@ -297,10 +288,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding unique key', function() {
+  it('adding unique key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.unique('foo', 'bar');
       })
       .toSQL();
@@ -310,10 +301,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding unique key fluently', function() {
+  it('adding unique key fluently', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(table) {
+      .createTable('users', function (table) {
         table.string('email').unique();
       })
       .toSQL();
@@ -326,20 +317,20 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding index should be a no-op', function() {
+  it('adding index should be a no-op', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.index(['foo', 'bar'], 'baz');
       })
       .toSQL();
     equal(0, tableSql.length);
   });
 
-  it('adding incrementing id', function() {
+  it('adding incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('id');
       })
       .toSQL();
@@ -349,10 +340,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding big incrementing id', function() {
+  it('adding big incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigIncrements('id');
       })
       .toSQL();
@@ -362,10 +353,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding string', function() {
+  it('adding string', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo');
       })
       .toSQL();
@@ -375,10 +366,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding varchar with length', function() {
+  it('adding varchar with length', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo', 100);
       })
       .toSQL();
@@ -388,10 +379,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding a string with a default', function() {
+  it('adding a string with a default', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.string('foo', 100).defaultTo('bar');
       })
       .toSQL();
@@ -401,10 +392,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding text', function() {
+  it('adding text', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.text('foo');
       })
       .toSQL();
@@ -414,10 +405,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding big integer', function() {
+  it('adding big integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigInteger('foo');
       })
       .toSQL();
@@ -427,10 +418,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('tests a big integer as the primary autoincrement key', function() {
+  it('tests a big integer as the primary autoincrement key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.bigIncrements('foo');
       })
       .toSQL();
@@ -440,10 +431,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding integer', function() {
+  it('adding integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.integer('foo');
       })
       .toSQL();
@@ -453,10 +444,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding autoincrement integer', function() {
+  it('adding autoincrement integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.increments('foo');
       })
       .toSQL();
@@ -466,10 +457,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding medium integer', function() {
+  it('adding medium integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.mediumint('foo');
       })
       .toSQL();
@@ -479,10 +470,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding tiny integer', function() {
+  it('adding tiny integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.tinyint('foo');
       })
       .toSQL();
@@ -492,10 +483,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding small integer', function() {
+  it('adding small integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.smallint('foo');
       })
       .toSQL();
@@ -505,10 +496,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding float', function() {
+  it('adding float', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.float('foo', 5, 2);
       })
       .toSQL();
@@ -518,10 +509,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding double', function() {
+  it('adding double', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.double('foo', 15, 8);
       })
       .toSQL();
@@ -531,10 +522,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding decimal', function() {
+  it('adding decimal', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.decimal('foo', 5, 2);
       })
       .toSQL();
@@ -544,10 +535,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding boolean', function() {
+  it('adding boolean', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.boolean('foo').defaultTo(false);
       })
       .toSQL();
@@ -557,10 +548,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding enum', function() {
+  it('adding enum', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.enum('foo', ['bar', 'baz']);
       })
       .toSQL();
@@ -570,10 +561,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding date', function() {
+  it('adding date', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.date('foo');
       })
       .toSQL();
@@ -583,10 +574,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding date time', function() {
+  it('adding date time', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.dateTime('foo');
       })
       .toSQL();
@@ -596,10 +587,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding time', function() {
+  it('adding time', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.time('foo');
       })
       .toSQL();
@@ -609,10 +600,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding timestamp', function() {
+  it('adding timestamp', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.timestamp('foo');
       })
       .toSQL();
@@ -622,10 +613,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding timestamps', function() {
+  it('adding timestamps', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.timestamps();
       })
       .toSQL();
@@ -638,10 +629,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding timestamps with defaults', function() {
+  it('adding timestamps with defaults', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.timestamps(false, true);
       })
       .toSQL();
@@ -654,10 +645,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding binary', function() {
+  it('adding binary', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(table) {
+      .table('users', function (table) {
         table.binary('foo');
       })
       .toSQL();
@@ -667,10 +658,10 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('adding jsonb', function() {
+  it('adding jsonb', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
+      .table('user', function (t) {
         t.jsonb('preferences');
       })
       .toSQL();
@@ -679,13 +670,11 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('allows adding default json objects when the column is json', function() {
+  it('allows adding default json objects when the column is json', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
-        t.json('preferences')
-          .defaultTo({})
-          .notNullable();
+      .table('user', function (t) {
+        t.json('preferences').defaultTo({}).notNullable();
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
@@ -693,13 +682,11 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('sets specificType correctly', function() {
+  it('sets specificType correctly', function () {
     tableSql = client
       .schemaBuilder()
-      .table('user', function(t) {
-        t.specificType('email', 'CITEXT')
-          .unique()
-          .notNullable();
+      .table('user', function (t) {
+        t.specificType('email', 'CITEXT').unique().notNullable();
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
@@ -707,23 +694,17 @@ describe('Redshift SchemaBuilder', function() {
     );
   });
 
-  it('allows creating an extension', function() {
-    const sql = client
-      .schemaBuilder()
-      .createExtension('test')
-      .toSQL();
+  it('allows creating an extension', function () {
+    const sql = client.schemaBuilder().createExtension('test').toSQL();
     expect(sql[0].sql).to.equal('create extension "test"');
   });
 
-  it('allows dropping an extension', function() {
-    const sql = client
-      .schemaBuilder()
-      .dropExtension('test')
-      .toSQL();
+  it('allows dropping an extension', function () {
+    const sql = client.schemaBuilder().dropExtension('test').toSQL();
     expect(sql[0].sql).to.equal('drop extension "test"');
   });
 
-  it("allows creating an extension only if it doesn't exist", function() {
+  it("allows creating an extension only if it doesn't exist", function () {
     const sql = client
       .schemaBuilder()
       .createExtensionIfNotExists('test')
@@ -731,19 +712,16 @@ describe('Redshift SchemaBuilder', function() {
     expect(sql[0].sql).to.equal('create extension if not exists "test"');
   });
 
-  it('allows dropping an extension only if it exists', function() {
-    const sql = client
-      .schemaBuilder()
-      .dropExtensionIfExists('test')
-      .toSQL();
+  it('allows dropping an extension only if it exists', function () {
+    const sql = client.schemaBuilder().dropExtensionIfExists('test').toSQL();
     expect(sql[0].sql).to.equal('drop extension if exists "test"');
   });
 
-  it('does not support table inheritance', function() {
+  it('does not support table inheritance', function () {
     expect(() => {
       client
         .schemaBuilder()
-        .createTable('inheriteeTable', function(t) {
+        .createTable('inheriteeTable', function (t) {
           t.string('username');
           t.inherits('inheritedTable');
         })
@@ -751,11 +729,11 @@ describe('Redshift SchemaBuilder', function() {
     }).to.throw('Knex only supports inherits statement with postgresql');
   });
 
-  it('should throw on usage of disallowed method', function() {
+  it('should throw on usage of disallowed method', function () {
     expect(() => {
       client
         .schemaBuilder()
-        .createTable('users', function(t) {
+        .createTable('users', function (t) {
           t.string('username');
           t.engine('myISAM');
         })
@@ -763,10 +741,10 @@ describe('Redshift SchemaBuilder', function() {
     }).to.throw('Knex only supports engine statement with mysql');
   });
 
-  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(t) {
+      .table('users', function (t) {
         // t.string('test1').notNullable();
         t.string('test1');
         t.string('test2').notNullable();
@@ -784,7 +762,7 @@ describe('Redshift SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .table('users', function(t) {
+      .table('users', function (t) {
         t.string('test1').notNullable();
         t.string('test2').notNullable();
         t.primary(['test1', 'test2'], 'testconstraintname');
@@ -803,7 +781,7 @@ describe('Redshift SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(t) {
+      .createTable('users', function (t) {
         t.string('test').primary('testconstraintname');
       })
       .toSQL();

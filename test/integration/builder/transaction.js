@@ -8,24 +8,24 @@ const sinon = require('sinon');
 const { KnexTimeoutError } = require('../../../lib/util/timeout');
 const delay = require('../../../lib/util/delay');
 
-module.exports = function(knex) {
+module.exports = function (knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
   // then pick an id to use as the "foreign key" just for testing transactions.
   const constid = /redshift/.test(knex.client.driverName);
   let fkid = 1;
 
-  describe('Transactions', function() {
-    it('can run with asCallback', function(ok) {
+  describe('Transactions', function () {
+    it('can run with asCallback', function (ok) {
       knex
-        .transaction(function(t) {
+        .transaction(function (t) {
           t.commit();
         })
         .asCallback(ok);
     });
 
-    it('should throw when undefined transaction is sent to transacting', function() {
+    it('should throw when undefined transaction is sent to transacting', function () {
       return knex
-        .transaction(function(t) {
+        .transaction(function (t) {
           knex('accounts').transacting(undefined);
         })
         .catch(function handle(error) {
@@ -55,9 +55,9 @@ module.exports = function(knex) {
         });
     });
 
-    it('should throw when null transaction is sent to transacting', function() {
+    it('should throw when null transaction is sent to transacting', function () {
       return knex
-        .transaction(function(t) {
+        .transaction(function (t) {
           knex('accounts').transacting(null);
         })
         .catch(function handle(error) {
@@ -67,9 +67,9 @@ module.exports = function(knex) {
         });
     });
 
-    it('should throw when empty object transaction is sent to transacting', function() {
+    it('should throw when empty object transaction is sent to transacting', function () {
       return knex
-        .transaction(function(t) {
+        .transaction(function (t) {
           knex('accounts').transacting({});
         })
         .catch(function handle(error) {
@@ -79,10 +79,10 @@ module.exports = function(knex) {
         });
     });
 
-    it('should be able to commit transactions', function() {
+    it('should be able to commit transactions', function () {
       let id = null;
       return knex
-        .transaction(function(t) {
+        .transaction(function (t) {
           knex('accounts')
             .transacting(t)
             .returning('id')
@@ -95,7 +95,7 @@ module.exports = function(knex) {
               created_at: new Date(),
               updated_at: new Date(),
             })
-            .then(function(resp) {
+            .then(function (resp) {
               return knex('test_table_two')
                 .transacting(t)
                 .insert({
@@ -104,28 +104,26 @@ module.exports = function(knex) {
                   status: 1,
                 });
             })
-            .then(function() {
+            .then(function () {
               t.commit('Hello world');
             });
         })
-        .then(function(commitMessage) {
+        .then(function (commitMessage) {
           expect(commitMessage).to.equal('Hello world');
-          return knex('accounts')
-            .where('id', id)
-            .select('first_name');
+          return knex('accounts').where('id', id).select('first_name');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           if (!constid) {
             expect(resp).to.have.length(1);
           }
         });
     });
 
-    it('should be able to rollback transactions', function() {
+    it('should be able to rollback transactions', function () {
       let id = null;
       const err = new Error('error message');
       return knex
-        .transaction(function(t) {
+        .transaction(function (t) {
           knex('accounts')
             .transacting(t)
             .returning('id')
@@ -138,7 +136,7 @@ module.exports = function(knex) {
               created_at: new Date(),
               updated_at: new Date(),
             })
-            .then(function(resp) {
+            .then(function (resp) {
               return knex('test_table_two')
                 .transacting(t)
                 .insert({
@@ -147,25 +145,23 @@ module.exports = function(knex) {
                   status: 1,
                 });
             })
-            .then(function() {
+            .then(function () {
               t.rollback(err);
             });
         })
-        .catch(function(msg) {
+        .catch(function (msg) {
           expect(msg).to.equal(err);
-          return knex('accounts')
-            .where('id', id)
-            .select('first_name');
+          return knex('accounts').where('id', id).select('first_name');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           expect(resp.length).to.equal(0);
         });
     });
 
-    it('should be able to commit transactions with a resolved trx query', function() {
+    it('should be able to commit transactions with a resolved trx query', function () {
       let id = null;
       return knex
-        .transaction(function(trx) {
+        .transaction(function (trx) {
           return trx('accounts')
             .returning('id')
             .insert({
@@ -177,37 +173,35 @@ module.exports = function(knex) {
               created_at: new Date(),
               updated_at: new Date(),
             })
-            .then(function(resp) {
+            .then(function (resp) {
               return trx('test_table_two').insert({
                 account_id: constid ? ++fkid : (id = resp[0]),
                 details: '',
                 status: 1,
               });
             })
-            .then(function() {
+            .then(function () {
               return 'Hello World';
             });
         })
-        .then(function(commitMessage) {
+        .then(function (commitMessage) {
           expect(commitMessage).to.equal('Hello World');
-          return knex('accounts')
-            .where('id', id)
-            .select('first_name');
+          return knex('accounts').where('id', id).select('first_name');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           if (!constid) {
             expect(resp).to.have.length(1);
           }
         });
     });
 
-    it('should be able to rollback transactions with rejected trx query', function() {
+    it('should be able to rollback transactions with rejected trx query', function () {
       let id = null;
       const err = new Error('error message');
       let __knexUid,
         count = 0;
       return knex
-        .transaction(function(trx) {
+        .transaction(function (trx) {
           return trx('accounts')
             .returning('id')
             .insert({
@@ -219,7 +213,7 @@ module.exports = function(knex) {
               created_at: new Date(),
               updated_at: new Date(),
             })
-            .then(function(resp) {
+            .then(function (resp) {
               return trx
                 .insert({
                   account_id: constid ? ++fkid : (id = resp[0]),
@@ -228,16 +222,16 @@ module.exports = function(knex) {
                 })
                 .into('test_table_two');
             })
-            .then(function() {
+            .then(function () {
               throw err;
             });
         })
-        .on('query', function(obj) {
+        .on('query', function (obj) {
           count++;
           if (!__knexUid) __knexUid = obj.__knexUid;
           expect(__knexUid).to.equal(obj.__knexUid);
         })
-        .catch(function(msg) {
+        .catch(function (msg) {
           // oracle & mssql: BEGIN & ROLLBACK not reported as queries
           const expectedCount =
             knex.client.driverName === 'oracledb' ||
@@ -246,11 +240,9 @@ module.exports = function(knex) {
               : 4;
           expect(count).to.equal(expectedCount);
           expect(msg).to.equal(err);
-          return knex('accounts')
-            .where('id', id)
-            .select('first_name');
+          return knex('accounts').where('id', id).select('first_name');
         })
-        .then(function(resp) {
+        .then(function (resp) {
           expect(resp).to.eql([]);
         });
     });
@@ -261,44 +253,44 @@ module.exports = function(knex) {
       const err = new Error('error message');
       if (knex.client.driverName === 'pg') {
         return knex
-          .transaction(function(trx) {
+          .transaction(function (trx) {
             return trx.schema
-              .createTable('test_schema_transactions', function(table) {
+              .createTable('test_schema_transactions', function (table) {
                 table.increments();
                 table.string('name');
                 table.timestamps();
               })
-              .then(function() {
+              .then(function () {
                 return trx('test_schema_transactions').insert({ name: 'bob' });
               })
-              .then(function() {
+              .then(function () {
                 return trx('test_schema_transactions').count('*');
               })
-              .then(function(resp) {
+              .then(function (resp) {
                 const _count = parseInt(resp[0].count, 10);
                 expect(_count).to.equal(1);
                 throw err;
               });
           })
-          .on('query', function(obj) {
+          .on('query', function (obj) {
             count++;
             if (!__knexUid) __knexUid = obj.__knexUid;
             expect(__knexUid).to.equal(obj.__knexUid);
           })
-          .catch(function(msg) {
+          .catch(function (msg) {
             expect(msg).to.equal(err);
             expect(count).to.equal(5);
             return knex('test_schema_migrations').count('*');
           })
           .then(() => expect.fail('should never reach this line'))
-          .catch(function(e) {
+          .catch(function (e) {
             // https://www.postgresql.org/docs/8.2/static/errcodes-appendix.html
             expect(e.code).to.equal('42P01');
           });
       } else {
         let id = null;
         const promise = knex
-          .transaction(function(trx) {
+          .transaction(function (trx) {
             return trx('accounts')
               .returning('id')
               .insert({
@@ -310,17 +302,17 @@ module.exports = function(knex) {
                 created_at: new Date(),
                 updated_at: new Date(),
               })
-              .then(function(resp) {
+              .then(function (resp) {
                 return trx('test_table_two').insert({
                   account_id: constid ? ++fkid : (id = resp[0]),
                   details: '',
                   status: 1,
                 });
               })
-              .then(function() {
+              .then(function () {
                 return trx.schema.createTable(
                   'test_schema_transactions',
-                  function(table) {
+                  function (table) {
                     table.increments();
                     table.string('name');
                     table.timestamps();
@@ -328,12 +320,12 @@ module.exports = function(knex) {
                 );
               });
           })
-          .on('query', function(obj) {
+          .on('query', function (obj) {
             count++;
             if (!__knexUid) __knexUid = obj.__knexUid;
             expect(__knexUid).to.equal(obj.__knexUid);
           })
-          .then(function() {
+          .then(function () {
             if (knex.client.driverName === 'mssql') {
               expect(count).to.equal(3);
             } else if (knex.client.driverName === 'oracledb') {
@@ -341,11 +333,9 @@ module.exports = function(knex) {
             } else {
               expect(count).to.equal(5);
             }
-            return knex('accounts')
-              .where('id', id)
-              .select('first_name');
+            return knex('accounts').where('id', id).select('first_name');
           })
-          .then(function(resp) {
+          .then(function (resp) {
             if (!constid) {
               expect(resp).to.have.length(1);
             }
@@ -359,13 +349,13 @@ module.exports = function(knex) {
       }
     });
 
-    it('should resolve with the correct value, #298', function() {
+    it('should resolve with the correct value, #298', function () {
       return knex
-        .transaction(function(trx) {
+        .transaction(function (trx) {
           trx.debugging = true;
           return Promise.resolve(null);
         })
-        .then(function(result) {
+        .then(function (result) {
           expect(result).to.equal(null);
         });
     });
@@ -378,60 +368,60 @@ module.exports = function(knex) {
       await trx.executionPromise;
     });
 
-    it('should allow for nested transactions', function() {
+    it('should allow for nested transactions', function () {
       if (/redshift/i.test(knex.client.driverName)) {
         return Promise.resolve();
       }
-      return knex.transaction(function(trx) {
+      return knex.transaction(function (trx) {
         return trx
           .select('*')
           .from('accounts')
-          .then(function() {
-            return trx.transaction(function() {
+          .then(function () {
+            return trx.transaction(function () {
               return trx.select('*').from('accounts');
             });
           });
       });
     });
 
-    it('#2213 - should wait for sibling transactions to finish', function() {
+    it('#2213 - should wait for sibling transactions to finish', function () {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
       const first = delay(50);
       const second = first.then(() => delay(50));
-      return knex.transaction(function(trx) {
+      return knex.transaction(function (trx) {
         return Promise.all([
-          trx.transaction(function(trx2) {
+          trx.transaction(function (trx2) {
             return first;
           }),
-          trx.transaction(function(trx3) {
+          trx.transaction(function (trx3) {
             return second;
           }),
         ]);
       });
     });
 
-    it('#2213 - should not evaluate a Transaction container until all previous siblings have completed', async function() {
+    it('#2213 - should not evaluate a Transaction container until all previous siblings have completed', async function () {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
       const TABLE_NAME = 'test_sibling_transaction_order';
       await knex.schema.dropTableIfExists(TABLE_NAME);
-      await knex.schema.createTable(TABLE_NAME, function(t) {
+      await knex.schema.createTable(TABLE_NAME, function (t) {
         t.string('username');
       });
 
-      await knex.transaction(async function(trx) {
+      await knex.transaction(async function (trx) {
         await Promise.all([
-          trx.transaction(async function(trx1) {
+          trx.transaction(async function (trx1) {
             // This delay provides `trx2` with an opportunity to run first.
             await delay(200);
             await trx1(TABLE_NAME).insert({ username: 'bob' });
           }),
-          trx.transaction(async function(trx2) {
+          trx.transaction(async function (trx2) {
             const rows = await trx2(TABLE_NAME);
 
             // Even though `trx1` was delayed, `trx2` waited patiently for `trx1`
@@ -442,10 +432,10 @@ module.exports = function(knex) {
       });
     });
 
-    it('#855 - Query Event should trigger on Transaction Client AND main Client', function() {
+    it('#855 - Query Event should trigger on Transaction Client AND main Client', function () {
       let queryEventTriggered = false;
 
-      knex.once('query', function(queryData) {
+      knex.once('query', function (queryData) {
         queryEventTriggered = true;
         return queryData;
       });
@@ -455,18 +445,14 @@ module.exports = function(knex) {
       }
 
       return knex
-        .transaction(function(trx) {
-          trx
-            .select('*')
-            .from('accounts')
-            .then(trx.commit)
-            .catch(trx.rollback);
+        .transaction(function (trx) {
+          trx.select('*').from('accounts').then(trx.commit).catch(trx.rollback);
         })
         .then(expectQueryEventToHaveBeenTriggered)
         .catch(expectQueryEventToHaveBeenTriggered);
     });
 
-    it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function() {
+    it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function () {
       //To make this test easier, I'm changing the pool settings to max 1.
       const knexConfig = _.clone(knex.client.config);
       knexConfig.pool.min = 0;
@@ -477,7 +463,7 @@ module.exports = function(knex) {
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
 
-      return knexDb.transaction(function(trx) {
+      return knexDb.transaction(function (trx) {
         let sql = 'SELECT 1';
         if (knex.client.driverName === 'oracledb') {
           sql = 'SELECT 1 FROM DUAL';
@@ -485,18 +471,18 @@ module.exports = function(knex) {
 
         trx
           .raw(sql)
-          .then(function() {
+          .then(function () {
             //No connection is available, so try issuing a query without transaction.
             //Since there is no available connection, it should throw a timeout error based on `aquireConnectionTimeout` from the knex config.
             return knexDb.raw('select * FROM accounts WHERE username = ?', [
               'Test',
             ]);
           })
-          .then(function() {
+          .then(function () {
             //Should never reach this point
             expect(false).to.be.ok();
           })
-          .catch(function(error) {
+          .catch(function (error) {
             expect(error.bindings).to.be.an('array');
             expect(error.bindings[0]).to.equal('Test');
             expect(error.sql).to.equal(
@@ -510,7 +496,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', async function() {
+    it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', async function () {
       const knexConfig = _.clone(knex.client.config);
       knexConfig.pool = {
         min: 0,
@@ -533,18 +519,15 @@ module.exports = function(knex) {
      * a foreign key that references a non-existent table.
      */
     if (knex.client.driverName === 'mssql') {
-      it('should rollback when transaction aborts', function() {
+      it('should rollback when transaction aborts', function () {
         let insertedId = null;
         let originalError = null;
 
         function transactionAbortingQuery(transaction) {
           return transaction.schema.createTable(
             'test_schema_transaction_fails',
-            function(table) {
-              table
-                .string('name')
-                .references('id')
-                .on('non_exist_table');
+            function (table) {
+              table.string('name').references('id').on('non_exist_table');
             }
           );
         }
@@ -561,15 +544,13 @@ module.exports = function(knex) {
               created_at: new Date(),
               updated_at: new Date(),
             })
-            .then(function(res0) {
+            .then(function (res0) {
               insertedId = res0[0];
             });
         }
 
         function querySampleRow() {
-          return knex('accounts')
-            .where('id', insertedId)
-            .select('first_name');
+          return knex('accounts').where('id', insertedId).select('first_name');
         }
 
         function captureAndRethrowOriginalError(err) {
@@ -578,37 +559,37 @@ module.exports = function(knex) {
         }
 
         return knex
-          .transaction(function(t) {
+          .transaction(function (t) {
             return insertSampleRow(t)
-              .then(function() {
+              .then(function () {
                 return transactionAbortingQuery(t);
               })
               .catch(captureAndRethrowOriginalError);
           })
-          .then(function() {
+          .then(function () {
             //Should never reach this point
             expect(false).to.be.ok;
           })
-          .catch(function(err) {
+          .catch(function (err) {
             expect(err).to.exist;
             expect(err.originalError).to.equal(originalError);
             // confirm transaction rolled back
-            return querySampleRow().then(function(resp) {
+            return querySampleRow().then(function (resp) {
               expect(resp).to.be.empty;
             });
           });
       });
     }
 
-    it('Rollback without an error should not reject with undefined #1966', function() {
+    it('Rollback without an error should not reject with undefined #1966', function () {
       return knex
-        .transaction(function(tr) {
+        .transaction(function (tr) {
           tr.rollback();
         })
-        .then(function() {
+        .then(function () {
           expect(true).to.equal(false, 'Transaction should not have commited');
         })
-        .catch(function(error) {
+        .catch(function (error) {
           expect(error instanceof Error).to.equal(true);
           expect(error.message).to.equal(
             'Transaction rejected with non-error: undefined'
@@ -616,8 +597,8 @@ module.exports = function(knex) {
         });
     });
 
-    it('#1052 - transaction promise mutating', function() {
-      const transactionReturning = knex.transaction(function(trx) {
+    it('#1052 - transaction promise mutating', function () {
+      const transactionReturning = knex.transaction(function (trx) {
         return trx
           .insert({
             first_name: 'foo',
@@ -638,7 +619,7 @@ module.exports = function(knex) {
       );
     });
 
-    it('should pass the query context to wrapIdentifier', function() {
+    it('should pass the query context to wrapIdentifier', function () {
       const originalWrapIdentifier = knex.client.config.wrapIdentifier;
       const spy = sinon.spy().named('calledWithContext');
 
@@ -652,34 +633,31 @@ module.exports = function(knex) {
       };
 
       return knex
-        .transaction(function(trx) {
-          return trx
-            .select()
-            .from('accounts')
-            .queryContext({ foo: 'bar' });
+        .transaction(function (trx) {
+          return trx.select().from('accounts').queryContext({ foo: 'bar' });
         })
-        .then(function() {
+        .then(function () {
           expect(spy.callCount).to.equal(1);
           expect(spy.calledWith({ foo: 'bar' })).to.equal(true);
         })
-        .then(function() {
+        .then(function () {
           restoreWrapIdentifier();
         })
-        .catch(function(e) {
+        .catch(function (e) {
           restoreWrapIdentifier();
           throw e;
         });
     });
 
-    it('connection should contain __knexTxId which is also exposed in query event', function() {
-      return knex.transaction(function(trx) {
+    it('connection should contain __knexTxId which is also exposed in query event', function () {
+      return knex.transaction(function (trx) {
         const builder = trx.select().from('accounts');
 
-        trx.on('query', function(obj) {
+        trx.on('query', function (obj) {
           expect(typeof obj.__knexTxId).to.equal(typeof '');
         });
 
-        builder.on('query', function(obj) {
+        builder.on('query', function (obj) {
           expect(typeof obj.__knexTxId).to.equal(typeof '');
         });
 
@@ -687,7 +665,7 @@ module.exports = function(knex) {
       });
     });
 
-    it('#3690 does not swallow exception when error during transaction occurs', async function() {
+    it('#3690 does not swallow exception when error during transaction occurs', async function () {
       const mysqlKillConnection = async (connection) =>
         knex.raw('KILL ?', [connection.threadId]);
       const killConnectionMap = {
@@ -729,11 +707,11 @@ module.exports = function(knex) {
     });
   });
 
-  it('handles promise rejections in nested Transactions (#3706)', async function() {
+  it('handles promise rejections in nested Transactions (#3706)', async function () {
     const fn = sinon.stub();
     process.on('unhandledRejection', fn);
     try {
-      await knex.transaction(async function(trx1) {
+      await knex.transaction(async function (trx1) {
         // These two lines together will cause the underlying Transaction
         // to be rejected.  Prior to #3706, this rejection would be unhandled.
         const trx2 = await trx1.transaction(undefined, {
@@ -750,21 +728,21 @@ module.exports = function(knex) {
     }
   });
 
-  context('when a `connection` is passed in explicitly', function() {
-    beforeEach(function() {
+  context('when a `connection` is passed in explicitly', function () {
+    beforeEach(function () {
       this.sandbox = sinon.createSandbox();
     });
 
-    afterEach(function() {
+    afterEach(function () {
       this.sandbox.restore();
     });
 
-    it('assumes the caller will release the connection', async function() {
+    it('assumes the caller will release the connection', async function () {
       this.sandbox.spy(knex.client, 'releaseConnection');
       const conn = await knex.client.acquireConnection();
       try {
         await knex.transaction(
-          async function(trx) {
+          async function (trx) {
             // Do nothing!
           },
           { connection: conn }

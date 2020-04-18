@@ -4,8 +4,8 @@ const path = require('path');
 const child_process = require('child_process');
 const _ = require('lodash');
 
-const exec = function(cmd, args) {
-  return new Promise(function(resolve, reject) {
+const exec = function (cmd, args) {
+  return new Promise(function (resolve, reject) {
     // Execute command
     const child = child_process.exec(cmd, {
       cwd: process.cwd(),
@@ -13,14 +13,14 @@ const exec = function(cmd, args) {
     });
 
     // Pass stdout and stderr
-    child.stdout.on('data', function(data) {
+    child.stdout.on('data', function (data) {
       process.stdout.write(data.toString());
     });
-    child.stderr.on('data', function(data) {
+    child.stderr.on('data', function (data) {
       process.stderr.write(data.toString());
     });
     // Handle result
-    child.on('exit', function(code) {
+    child.on('exit', function (code) {
       if (code) reject(code);
       else resolve();
     });
@@ -43,7 +43,7 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
   const BUILD_ARTIFACT = process.argv[2];
   const BUILD_COMMAND = process.argv[3];
 
-  fs.stat(BUILD_ARTIFACT, function(err, stats) {
+  fs.stat(BUILD_ARTIFACT, function (err, stats) {
     if (err || !(stats.isFile() || stats.isDirectory())) {
       // This script will run again after we run `npm install` below. Set an
       // environment variable to tell it to skip the check. Really we just want
@@ -70,7 +70,7 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
         // "dependency@semver dependency@semver ..." string that can be used
         // for `npm install` command
         const installArgs = _(buildDependencies)
-          .pickBy(function(semver, dep) {
+          .pickBy(function (semver, dep) {
             // Check if the dependency is already installed
             try {
               require(dep);
@@ -79,7 +79,7 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
               return true;
             }
           })
-          .map(function(semver, dep) {
+          .map(function (semver, dep) {
             // Format installable dependencies
             return dep + '@' + semver;
           })
@@ -90,7 +90,7 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
           ? exec('npm install ' + installArgs, opts)
           : Promise.resolve();
         dependenciesInstalledQ
-          .then(function() {
+          .then(function () {
             console.log('✓');
             // Don't need the flag anymore as `postinstall` was already run.
             // Change it back so the environment is minimally changed for the
@@ -99,11 +99,11 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
             console.log('Building compiled files (' + BUILD_COMMAND + ')');
             return exec(BUILD_COMMAND, opts);
           })
-          .catch(function(err) {
+          .catch(function (err) {
             console.error(err);
             process.exit(1);
           })
-          .then(function() {
+          .then(function () {
             if (process.env.NODE_ENV === 'production') {
               console.log('✓');
               console.log('Pruning dev dependencies for production build');
@@ -112,10 +112,10 @@ if (POSTINSTALL_BUILD_CWD !== CWD) {
               console.log('Skipping npm prune');
             }
           })
-          .then(function() {
+          .then(function () {
             console.log('✓');
           })
-          .catch(function(err) {
+          .catch(function (err) {
             console.error(err);
             process.exit(1);
           });

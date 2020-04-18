@@ -4,8 +4,8 @@ const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const MySQL2_Client = require('../../../lib/dialects/mysql2');
 
-module.exports = function(dialect) {
-  describe(dialect + ' SchemaBuilder', function() {
+module.exports = function (dialect) {
+  describe(dialect + ' SchemaBuilder', function () {
     let client;
     switch (dialect) {
       case 'mysql':
@@ -19,10 +19,10 @@ module.exports = function(dialect) {
     let tableSql;
     const equal = require('assert').equal;
 
-    it('basic create table with column collate', function() {
+    it('basic create table with column collate', function () {
       tableSql = client
         .schemaBuilder()
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id');
           table.string('email').collate('utf8_unicode_ci');
         })
@@ -34,8 +34,8 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test basic create table with charset and collate', function() {
-      tableSql = client.schemaBuilder().createTable('users', function(table) {
+    it('test basic create table with charset and collate', function () {
+      tableSql = client.schemaBuilder().createTable('users', function (table) {
         table.increments('id');
         table.string('email');
         table.charset('utf8');
@@ -51,10 +51,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('basic create table without charset or collate', function() {
+    it('basic create table without charset or collate', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.increments('id');
           this.string('email');
         })
@@ -66,10 +66,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('adding json', function() {
+    it('adding json', function () {
       tableSql = client
         .schemaBuilder()
-        .table('user', function(t) {
+        .table('user', function (t) {
           t.json('preferences');
         })
         .toSQL();
@@ -78,10 +78,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('adding jsonb', function() {
+    it('adding jsonb', function () {
       tableSql = client
         .schemaBuilder()
-        .table('user', function(t) {
+        .table('user', function (t) {
           t.jsonb('preferences');
         })
         .toSQL();
@@ -90,30 +90,24 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test drop table', function() {
-      tableSql = client
-        .schemaBuilder()
-        .dropTable('users')
-        .toSQL();
+    it('test drop table', function () {
+      tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('drop table `users`');
     });
 
-    it('test drop table if exists', function() {
-      tableSql = client
-        .schemaBuilder()
-        .dropTableIfExists('users')
-        .toSQL();
+    it('test drop table if exists', function () {
+      tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('drop table if exists `users`');
     });
 
-    it('test drop column', function() {
+    it('test drop column', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropColumn('foo');
         })
         .toSQL();
@@ -122,10 +116,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop `foo`');
     });
 
-    it('drops multiple columns with an array', function() {
+    it('drops multiple columns with an array', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropColumn(['foo', 'bar']);
         })
         .toSQL();
@@ -136,10 +130,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('drops multiple columns as multiple arguments', function() {
+    it('drops multiple columns as multiple arguments', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropColumn('foo', 'bar');
         })
         .toSQL();
@@ -150,10 +144,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test drop primary', function() {
+    it('test drop primary', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropPrimary();
         })
         .toSQL();
@@ -162,10 +156,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop primary key');
     });
 
-    it('test drop unique', function() {
+    it('test drop unique', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropUnique('foo');
         })
         .toSQL();
@@ -176,10 +170,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test drop unique, custom', function() {
+    it('test drop unique, custom', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropUnique(null, 'foo');
         })
         .toSQL();
@@ -188,10 +182,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
     });
 
-    it('test drop index', function() {
+    it('test drop index', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropIndex('foo');
         })
         .toSQL();
@@ -202,10 +196,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test drop index, custom', function() {
+    it('test drop index, custom', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropIndex(null, 'foo');
         })
         .toSQL();
@@ -214,10 +208,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
     });
 
-    it('test drop foreign', function() {
+    it('test drop foreign', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropForeign('foo');
         })
         .toSQL();
@@ -228,10 +222,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test drop foreign, custom', function() {
+    it('test drop foreign, custom', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropForeign(null, 'foo');
         })
         .toSQL();
@@ -242,10 +236,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test drop timestamps', function() {
+    it('test drop timestamps', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.dropTimestamps();
         })
         .toSQL();
@@ -256,20 +250,17 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test rename table', function() {
-      tableSql = client
-        .schemaBuilder()
-        .renameTable('users', 'foo')
-        .toSQL();
+    it('test rename table', function () {
+      tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('rename table `users` to `foo`');
     });
 
-    it('test adding primary key', function() {
+    it('test adding primary key', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.primary('foo', 'bar');
         })
         .toSQL();
@@ -280,10 +271,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding unique key', function() {
+    it('test adding unique key', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.unique('foo', 'bar');
         })
         .toSQL();
@@ -294,10 +285,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding index', function() {
+    it('test adding index', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.index(['foo', 'bar'], 'baz');
         })
         .toSQL();
@@ -308,10 +299,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding index with an index type', function() {
+    it('test adding index with an index type', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.index(['foo', 'bar'], 'baz', 'FULLTEXT');
         })
         .toSQL();
@@ -322,13 +313,11 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding foreign key', function() {
+    it('test adding foreign key', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.foreign('foo_id')
-            .references('id')
-            .on('orders');
+        .table('users', function () {
+          this.foreign('foo_id').references('id').on('orders');
         })
         .toSQL();
 
@@ -339,10 +328,8 @@ module.exports = function(dialect) {
 
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.integer('foo_id')
-            .references('id')
-            .on('orders');
+        .table('users', function () {
+          this.integer('foo_id').references('id').on('orders');
         })
         .toSQL();
 
@@ -353,13 +340,11 @@ module.exports = function(dialect) {
       );
     });
 
-    it('adding foreign key with specific identifier', function() {
+    it('adding foreign key with specific identifier', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.foreign('foo_id', 'fk_foo')
-            .references('id')
-            .on('orders');
+        .table('users', function () {
+          this.foreign('foo_id', 'fk_foo').references('id').on('orders');
         })
         .toSQL();
 
@@ -370,7 +355,7 @@ module.exports = function(dialect) {
 
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.integer('foo_id')
             .references('id')
             .on('orders')
@@ -385,10 +370,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('adds foreign key with onUpdate and onDelete', function() {
+    it('adds foreign key with onUpdate and onDelete', function () {
       tableSql = client
         .schemaBuilder()
-        .createTable('person', function(table) {
+        .createTable('person', function (table) {
           table
             .integer('user_id')
             .notNull()
@@ -411,10 +396,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding incrementing id', function() {
+    it('test adding incrementing id', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.increments('id');
         })
         .toSQL();
@@ -425,10 +410,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding big incrementing id', function() {
+    it('test adding big incrementing id', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.bigIncrements('id');
         })
         .toSQL();
@@ -439,10 +424,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding column after another column', function() {
+    it('test adding column after another column', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.string('name').after('foo');
         })
         .toSQL();
@@ -453,13 +438,11 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding column after another column with comment', function() {
+    it('test adding column after another column with comment', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.string('name')
-            .after('foo')
-            .comment('bar');
+        .table('users', function () {
+          this.string('name').after('foo').comment('bar');
         })
         .toSQL();
 
@@ -469,10 +452,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding column on the first place', function() {
+    it('test adding column on the first place', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.string('first_name').first();
         })
         .toSQL();
@@ -483,13 +466,11 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding column on the first place with comment', function() {
+    it('test adding column on the first place with comment', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.string('first_name')
-            .first()
-            .comment('bar');
+        .table('users', function () {
+          this.string('first_name').first().comment('bar');
         })
         .toSQL();
 
@@ -499,10 +480,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding string', function() {
+    it('test adding string', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.string('foo');
         })
         .toSQL();
@@ -513,10 +494,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('uses the varchar column constraint', function() {
+    it('uses the varchar column constraint', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.string('foo', 100);
         })
         .toSQL();
@@ -527,13 +508,11 @@ module.exports = function(dialect) {
       );
     });
 
-    it('chains notNull and defaultTo', function() {
+    it('chains notNull and defaultTo', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
-          this.string('foo', 100)
-            .notNull()
-            .defaultTo('bar');
+        .table('users', function () {
+          this.string('foo', 100).notNull().defaultTo('bar');
         })
         .toSQL();
       equal(1, tableSql.length);
@@ -542,10 +521,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('allows for raw values in the default field', function() {
+    it('allows for raw values in the default field', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.string('foo', 100)
             .nullable()
             .defaultTo(client.raw('CURRENT TIMESTAMP'));
@@ -558,10 +537,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding text', function() {
+    it('test adding text', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.text('foo');
         })
         .toSQL();
@@ -570,10 +549,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` text');
     });
 
-    it('test adding big integer', function() {
+    it('test adding big integer', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.bigInteger('foo');
         })
         .toSQL();
@@ -582,10 +561,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` bigint');
     });
 
-    it('test adding integer', function() {
+    it('test adding integer', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.integer('foo');
         })
         .toSQL();
@@ -594,10 +573,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` int');
     });
 
-    it('test adding medium integer', function() {
+    it('test adding medium integer', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.mediumint('foo');
         })
         .toSQL();
@@ -608,10 +587,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding small integer', function() {
+    it('test adding small integer', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.smallint('foo');
         })
         .toSQL();
@@ -622,10 +601,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding tiny integer', function() {
+    it('test adding tiny integer', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.tinyint('foo');
         })
         .toSQL();
@@ -634,10 +613,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` tinyint');
     });
 
-    it('test adding float', function() {
+    it('test adding float', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.float('foo', 5, 2);
         })
         .toSQL();
@@ -648,10 +627,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding double', function() {
+    it('test adding double', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.double('foo');
         })
         .toSQL();
@@ -660,10 +639,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` double');
     });
 
-    it('test adding double specifying precision', function() {
+    it('test adding double specifying precision', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.double('foo', 15, 8);
         })
         .toSQL();
@@ -674,10 +653,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding decimal', function() {
+    it('test adding decimal', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.decimal('foo', 5, 2);
         })
         .toSQL();
@@ -688,11 +667,11 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding decimal, no precision', function() {
+    it('test adding decimal, no precision', function () {
       expect(() => {
         tableSql = client
           .schemaBuilder()
-          .table('users', function() {
+          .table('users', function () {
             this.decimal('foo', null);
           })
           .toSQL();
@@ -701,10 +680,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding boolean', function() {
+    it('test adding boolean', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.boolean('foo');
         })
         .toSQL();
@@ -713,10 +692,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` boolean');
     });
 
-    it('test adding enum', function() {
+    it('test adding enum', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.enum('foo', ['bar', 'baz']);
         })
         .toSQL();
@@ -819,10 +798,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding time stamps', function() {
+    it('test adding time stamps', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.timestamps();
         })
         .toSQL();
@@ -833,10 +812,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding precise timestamp', function() {
+    it('test adding precise timestamp', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.timestamp('foo', 6);
         })
         .toSQL();
@@ -846,10 +825,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding precise datetime', function() {
+    it('test adding precise datetime', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.datetime('foo', 6);
         })
         .toSQL();
@@ -859,10 +838,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test adding binary', function() {
+    it('test adding binary', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.binary('foo');
         })
         .toSQL();
@@ -871,10 +850,10 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` blob');
     });
 
-    it('test adding decimal', function() {
+    it('test adding decimal', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.decimal('foo', 2, 6);
         })
         .toSQL();
@@ -885,10 +864,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test set comment', function() {
+    it('test set comment', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function(t) {
+        .table('users', function (t) {
           t.comment('Custom comment');
         })
         .toSQL();
@@ -899,10 +878,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('test set empty comment', function() {
+    it('test set empty comment', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function(t) {
+        .table('users', function (t) {
           t.comment('');
         })
         .toSQL();
@@ -911,32 +890,32 @@ module.exports = function(dialect) {
       expect(tableSql[0].sql).to.equal("alter table `users` comment = ''");
     });
 
-    it('set comment to undefined', function() {
-      expect(function() {
+    it('set comment to undefined', function () {
+      expect(function () {
         client
           .schemaBuilder()
-          .table('user', function(t) {
+          .table('user', function (t) {
             t.comment();
           })
           .toSQL();
       }).to.throw(TypeError);
     });
 
-    it('set comment to null', function() {
-      expect(function() {
+    it('set comment to null', function () {
+      expect(function () {
         client
           .schemaBuilder()
-          .table('user', function(t) {
+          .table('user', function (t) {
             t.comment(null);
           })
           .toSQL();
       }).to.throw(TypeError);
     });
 
-    it('should alter columns with the alter flag', function() {
+    it('should alter columns with the alter flag', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.string('foo').alter();
           this.string('bar');
         })
@@ -951,10 +930,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('is possible to set raw statements in defaultTo, #146', function() {
+    it('is possible to set raw statements in defaultTo, #146', function () {
       tableSql = client
         .schemaBuilder()
-        .createTable('default_raw_test', function(t) {
+        .createTable('default_raw_test', function (t) {
           t.timestamp('created_at').defaultTo(client.raw('CURRENT_TIMESTAMP'));
         })
         .toSQL();
@@ -965,10 +944,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('allows dropping a unique compound index', function() {
+    it('allows dropping a unique compound index', function () {
       tableSql = client
         .schemaBuilder()
-        .table('composite_key_test', function(t) {
+        .table('composite_key_test', function (t) {
           t.dropUnique(['column_a', 'column_b']);
         })
         .toSQL();
@@ -979,10 +958,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('allows default as alias for defaultTo', function() {
+    it('allows default as alias for defaultTo', function () {
       tableSql = client
         .schemaBuilder()
-        .createTable('default_raw_test', function(t) {
+        .createTable('default_raw_test', function (t) {
           t.timestamp('created_at').default(client.raw('CURRENT_TIMESTAMP'));
         })
         .toSQL();
@@ -993,10 +972,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('sets myISAM engine', function() {
+    it('sets myISAM engine', function () {
       tableSql = client
         .schemaBuilder()
-        .createTable('users', function(t) {
+        .createTable('users', function (t) {
           t.string('username');
           t.engine('myISAM');
         })
@@ -1006,10 +985,10 @@ module.exports = function(dialect) {
       );
     });
 
-    it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+    it('#1430 - .primary & .dropPrimary takes columns and constraintName', function () {
       tableSql = client
         .schemaBuilder()
-        .table('users', function(t) {
+        .table('users', function (t) {
           t.primary(['test1', 'test2'], 'testconstraintname');
         })
         .toSQL();
@@ -1019,7 +998,7 @@ module.exports = function(dialect) {
 
       tableSql = client
         .schemaBuilder()
-        .createTable('users', function(t) {
+        .createTable('users', function (t) {
           t.string('test').primary('testconstraintname');
         })
         .toSQL();
@@ -1029,32 +1008,32 @@ module.exports = function(dialect) {
       );
     });
 
-    describe('queryContext', function() {
+    describe('queryContext', function () {
       let spy;
       let originalWrapIdentifier;
 
-      before(function() {
+      before(function () {
         spy = sinon.spy();
         originalWrapIdentifier = client.config.wrapIdentifier;
-        client.config.wrapIdentifier = function(value, wrap, queryContext) {
+        client.config.wrapIdentifier = function (value, wrap, queryContext) {
           spy(value, queryContext);
           return wrap(value);
         };
       });
 
-      beforeEach(function() {
+      beforeEach(function () {
         spy.resetHistory();
       });
 
-      after(function() {
+      after(function () {
         client.config.wrapIdentifier = originalWrapIdentifier;
       });
 
-      it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function() {
+      it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
         client
           .schemaBuilder()
           .queryContext('schema context')
-          .createTable('users', function(table) {
+          .createTable('users', function (table) {
             table.increments('id');
             table.string('email');
           })
@@ -1066,10 +1045,10 @@ module.exports = function(dialect) {
         expect(spy.thirdCall.args).to.deep.equal(['users', 'schema context']);
       });
 
-      it('TableCompiler passes queryContext to wrapIdentifier', function() {
+      it('TableCompiler passes queryContext to wrapIdentifier', function () {
         client
           .schemaBuilder()
-          .createTable('users', function(table) {
+          .createTable('users', function (table) {
             table.increments('id').queryContext('id context');
             table.string('email').queryContext('email context');
           })
@@ -1081,11 +1060,11 @@ module.exports = function(dialect) {
         expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
       });
 
-      it('TableCompiler allows overwriting queryContext from SchemaCompiler', function() {
+      it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
         client
           .schemaBuilder()
           .queryContext('schema context')
-          .createTable('users', function(table) {
+          .createTable('users', function (table) {
             table.queryContext('table context');
             table.increments('id');
             table.string('email');
@@ -1098,11 +1077,11 @@ module.exports = function(dialect) {
         expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
       });
 
-      it('ColumnCompiler allows overwriting queryContext from TableCompiler', function() {
+      it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
         client
           .schemaBuilder()
           .queryContext('schema context')
-          .createTable('users', function(table) {
+          .createTable('users', function (table) {
             table.queryContext('table context');
             table.increments('id').queryContext('id context');
             table.string('email').queryContext('email context');
