@@ -96,7 +96,8 @@ function invoke(env) {
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
     )
-    .option('--esm', 'Enable ESM interop.');
+    .option('--esm', 'Enable ESM interop.')
+    .option('--specific [path]', 'Specify one seed file to execute.');
 
   commander
     .command('init')
