@@ -280,7 +280,7 @@ export default [
   {
     type: "text",
     content:
-      "A knexfile.js or knexfile.coffee generally contains all of the configuration for your database. It can optionally provide different configuration for different environments. You may pass a `--knexfile` option to any of the command line statements to specify an alternate path to your knexfile."
+      "A knexfile.js generally contains all of the configuration for your database. It can optionally provide different configuration for different environments. You may pass a `--knexfile` option to any of the command line statements to specify an alternate path to your knexfile."
   },
   {
     type: "heading",
@@ -385,6 +385,21 @@ export default [
         }
       };
     `
+  },
+  {
+    type: "heading",
+    size: "sm",
+    content: "Knexfile in other languages"
+  },
+  {
+    type: "text",
+    size: "sm",
+    content: [
+      "Knex uses [Liftoff](https://github.com/js-cli/js-liftoff) to support knexfile written in other compile-to-js languages.",
+      "Depending on the language, this may require you to install additional dependencies. The complete list of dependencies for each supported language can be found [here](https://github.com/gulpjs/interpret#extensions).",
+      "Most common cases are typescript (for which [typescript](https://www.npmjs.com/package/typescript) and [ts-node](https://www.npmjs.com/package/ts-node) packages are recommended), and coffeescript (for which [coffeescript](https://www.npmjs.com/package/coffeescript) dependency is required).",
+      "If you don't specify the extension explicitly, the extension of generated migrations/seed files will be inferred from the knexfile extension"
+    ]
   },
   {
     type: "heading",
