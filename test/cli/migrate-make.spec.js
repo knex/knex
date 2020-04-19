@@ -138,10 +138,11 @@ module.exports = {
 
     it('Create new migration with default ts knexfile', async () => {
       fileHelper.registerGlobForCleanup(
-        'test/jake-util/knexfile_migrations/*_somename.ts'
+        'test/jake-util/knexfile_migrations/*_somename1.ts'
       );
+      const filePath = path.join(process.cwd(), '/knexfile.ts');
       fileHelper.createFile(
-        process.cwd() + '/knexfile.ts',
+        filePath,
         `
 module.exports = {
   client: 'sqlite3',
@@ -156,14 +157,49 @@ module.exports = {
         { isPathAbsolute: true }
       );
       await execCommand(
-        `node ${KNEX} migrate:make somename --knexpath=../knex.js`,
+        `node ${KNEX} migrate:make somename1 --knexpath=../knex.js`,
         {
           expectedOutput: 'Created Migration',
         }
       );
 
       const fileCount = fileHelper.fileGlobExists(
-        'test/jake-util/knexfile_migrations/*_somename.ts'
+        'test/jake-util/knexfile_migrations/*_somename1.ts'
+      );
+      expect(fileCount).to.equal(1);
+    });
+
+    it('Create new migration with default ts knexfile when knexfile has per-env configurations', async () => {
+      fileHelper.registerGlobForCleanup(
+        'test/jake-util/knexfile_migrations/*_somename2.ts'
+      );
+      const filePath = path.join(process.cwd(), '/knexfile.ts');
+      fileHelper.createFile(
+        filePath,
+        `
+module.exports = {
+  development: {
+    client: 'sqlite3',
+    connection: {
+      filename: __dirname + '/test/jake-util/test.sqlite3',
+    },
+    migrations: {
+      directory: __dirname + '/test/jake-util/knexfile_migrations',
+    }
+  }
+};    
+    `,
+        { isPathAbsolute: true }
+      );
+      await execCommand(
+        `node ${KNEX} migrate:make somename2 --knexpath=../knex.js`,
+        {
+          expectedOutput: 'Created Migration',
+        }
+      );
+
+      const fileCount = fileHelper.fileGlobExists(
+        'test/jake-util/knexfile_migrations/*_somename2.ts'
       );
       expect(fileCount).to.equal(1);
     });

@@ -27,12 +27,6 @@ async function openKnexfile(configPath) {
   if (typeof config === 'function') {
     config = await config();
   }
-
-  // FYI: By default, the extension for the migration files is inferred
-  //      from the knexfile's extension. So, the following lines are in
-  //      place for backwards compatibility purposes.
-  config.ext = config.ext || path.extname(configPath).replace('.', '');
-
   return config;
 }
 
@@ -55,7 +49,7 @@ async function initKnex(env, opts) {
     ? await openKnexfile(env.configPath)
     : mkConfigObj(opts);
 
-  const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration);
+  const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration, env.configPath);
   const knex = require(env.modulePath);
   return knex(resolvedConfig);
 }
@@ -240,7 +234,6 @@ function invoke(env) {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
           }
-
           success(
             color.green(
               `Batch ${batchNo} rolled back the following migrations:\n${log.join(
