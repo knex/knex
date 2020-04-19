@@ -30,7 +30,7 @@ function mkConfigObj(opts) {
   };
 }
 
-function resolveEnvironmentConfig(opts, allConfigs) {
+function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
   const environment = opts.env || process.env.NODE_ENV || 'development';
   const result = allConfigs[environment] || allConfigs;
 
@@ -45,6 +45,12 @@ function resolveEnvironmentConfig(opts, allConfigs) {
 
   if (argv.debug !== undefined) {
     result.debug = argv.debug;
+  }
+
+  // It is safe to assume that unless explicitly specified, we would want
+  // migrations, seeds etc. to be generated with same extension
+  if (configFilePath) {
+    result.ext = result.ext || path.extname(configFilePath).replace('.', '');
   }
 
   return result;
@@ -77,7 +83,7 @@ function checkLocalModule(env) {
 }
 
 function getMigrationExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
+  const config = resolveEnvironmentConfig(opts, env.configuration, env.configPath);
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
@@ -91,7 +97,7 @@ function getMigrationExtension(env, opts) {
 }
 
 function getSeedExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
+  const config = resolveEnvironmentConfig(opts, env.configuration, env.configPath);
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
