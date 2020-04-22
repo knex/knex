@@ -273,6 +273,24 @@ function invoke(env) {
     });
 
   commander
+    .command('migrate:unlock')
+    .description(
+      '        Forcibly unlocks the migrations lock table.'
+    )
+    .action(() => {
+      pending = initKnex(env, commander.opts())
+        .migrate.forceFreeMigrationsLock()
+        .then(() => {
+          success(
+            color.green(
+              `Succesfully unlocked the migrations lock table`
+            )
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('seed:make <name>')
     .description('        Create a named seed file.')
     .option(

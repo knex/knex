@@ -717,6 +717,40 @@ test('migrate runs "esm" modules', (temp) => {
   });
 });
 
+test('migrate:unlock restores lock table to one row with is_locked=0', (temp) => {
+  const db = new sqlite3.Database(`${temp}/db`);
+  // Seed multiple rows into the lock table
+  return new Promise((resolve, reject) =>
+    db.run('INSERT INTO knex_migrations_lock(is_locked) VALUES (?),(?),(?)', [1, 0, 1], (err) => {
+      err ? reject(err) : resolve();
+    })
+  )
+    .then(() => {
+      return assertExec(
+        `node ${KNEX} migrate:unlock \
+      --client=sqlite3 \
+      --connection=${temp}/db \
+      --migrations-directory=${temp}/migrations`
+        )
+    })
+    .then(({ stdout }) => {
+      assert.include(
+        stdout,
+        `Succesfully unlocked the migrations lock table`
+      );
+      return new Promise((resolve, reject) => {
+        db.all('SELECT * FROM knex_migrations_lock', (err, rows) => {
+          assert.deepEqual(rows, [
+            {
+              "is_locked": 0,
+            },
+          ]);
+          err ? reject(err) : resolve();
+        });
+      });
+    });
+});
+
 module.exports = {
   taskList,
 };
