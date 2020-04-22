@@ -58,7 +58,6 @@ function invoke(env) {
   env.modulePath = env.modulePath || env.knexpath || process.env.KNEX_PATH;
 
   const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
-  let pending = null;
 
   const cliVersion = [
     color.blue('Knex CLI version:'),
@@ -110,7 +109,7 @@ function invoke(env) {
       }
       checkLocalModule(env);
       const stubPath = `./knexfile.${type}`;
-      pending = readFile(
+      readFile(
         path.dirname(env.modulePath) +
           '/lib/migrate/stub/knexfile-' +
           type +
@@ -148,7 +147,7 @@ function invoke(env) {
         configOverrides.stub = stub;
       }
 
-      pending = instance.migrate
+      instance.migrate
         .make(name, configOverrides)
         .then((name) => {
           success(color.green(`Created Migration: ${name}`));
@@ -161,7 +160,7 @@ function invoke(env) {
     .description('        Run all migrations that have not yet been run.')
     .option('--verbose', 'verbose')
     .action(() => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.latest())
         .then(([batchNo, log]) => {
           if (log.length === 0) {
@@ -181,7 +180,7 @@ function invoke(env) {
       '        Run the next or the specified migration that has not yet been run.'
     )
     .action((name) => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.up({ name }))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
@@ -207,7 +206,7 @@ function invoke(env) {
     .action((cmd) => {
       const { all } = cmd;
 
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.rollback(null, all))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
@@ -228,7 +227,7 @@ function invoke(env) {
       '        Undo the last or the specified migration that was already run.'
     )
     .action((name) => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.down({ name }))
         .then(([batchNo, log]) => {
           if (log.length === 0) {
@@ -249,7 +248,7 @@ function invoke(env) {
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
     .action(() => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.migrate.currentVersion())
         .then((version) => {
           success(color.green('Current Version: ') + color.blue(version));
@@ -262,7 +261,7 @@ function invoke(env) {
     .alias('migrate:status')
     .description('        List all migrations files with status.')
     .action(() => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => {
           return instance.migrate.list();
         })
@@ -278,8 +277,8 @@ function invoke(env) {
       '        Forcibly unlocks the migrations lock table.'
     )
     .action(() => {
-      pending = initKnex(env, commander.opts())
-        .migrate.forceFreeMigrationsLock()
+      initKnex(env, commander.opts())
+        .then((instance) => instance.migrate.forceFreeMigrationsLock())
         .then(() => {
           success(
             color.green(
@@ -312,7 +311,7 @@ function invoke(env) {
         configOverrides.stub = stub;
       }
 
-      pending = instance.seed
+      instance.seed
         .make(name, configOverrides)
         .then((name) => {
           success(color.green(`Created seed file: ${name}`));
@@ -326,7 +325,7 @@ function invoke(env) {
     .option('--verbose', 'verbose')
     .option('--specific', 'run specific seed file')
     .action(() => {
-      pending = initKnex(env, commander.opts())
+      initKnex(env, commander.opts())
         .then((instance) => instance.seed.run({ specific: argv.specific }))
         .then(([log]) => {
           if (log.length === 0) {
