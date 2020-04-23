@@ -291,6 +291,7 @@ export default class Sidebar extends Component {
             <ii>- <a href="#Migrations-down">down</a></ii>
             <li>– <a href="#Migrations-currentVersion">currentVersion</a></li>
             <li>– <a href="#Migrations-list">list</a></li>
+            <li>– <a href="#Migrations-unlock">unlock</a></li>
           <li><a href="#Notes-about-locks"><b>Notes about locks</b></a></li>
           <li><a href="#Seeds-API"><b>Seed API</b></a></li>
             <li>– <a href="#Seeds-make">make</a></li>

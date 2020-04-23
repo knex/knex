@@ -543,6 +543,13 @@ export default [
     children: []
   },
   {
+    type: "method",
+    method: "unlock",
+    example: "knex.migrate.forceFreeMigrationsLock([config])",
+    description: "Forcibly unlocks the migrations lock table, and ensures that there is only one row in it.",
+    children: []
+  },
+  {
     type: "heading",
     size: "md",
     content: "Notes about locks",
@@ -556,7 +563,12 @@ export default [
   {
     type: "text",
     content:
-      'Please note that if your process unfortunately crashes, the lock will have to be *manually* removed in order to let migrations run again. The locks are saved in a table called "`tableName`_lock"; it has a column called `is_locked` that you need to set to `0` in order to release the lock. The `index` column in the lock table exists for compatibility with some database clusters that require a primary key, but is otherwise unused.'
+      'Please note that if your process unfortunately crashes, the lock will have to be *manually* removed with `knex migrate:unlock` in order to let migrations run again.'
+  },
+  {
+    type: "text",
+    content:
+      'The locks are saved in a table called "`tableName`_lock"; it has a column called `is_locked` that `knex migrate:unlock` sets to `0` in order to release the lock. The `index` column in the lock table exists for compatibility with some database clusters that require a primary key, but is otherwise unused. There must be only one row in this table, or an error will be thrown when running migrations: "Migration table is already locked". Run `knex migrate:unlock` to ensure that there is only one row in the table.'
   },
   {
     type: "heading",
