@@ -10,7 +10,7 @@ cache:
 matrix:
   fast_finish: true
   include:
-    - node_js: '13'
+    - node_js: '14'
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
     - node_js: '12'
       env: TESTSCRIPT=test:everything DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
