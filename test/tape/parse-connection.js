@@ -5,15 +5,15 @@ const test = require('tape');
 
 test('parses standard connections', function (t) {
   t.plan(1);
-  t.deepEqual(
+  t.deepLooseEqual(
     parseConnection('postgres://username:pass@path.to.some-url:6000/testdb'),
     {
       client: 'postgres',
       connection: {
         user: 'username',
         password: 'pass',
-        host: 'path.to.some-url',
         port: '6000',
+        host: 'path.to.some-url',
         database: 'testdb',
       },
     }
@@ -105,7 +105,7 @@ test('assume a path is mysql', function (t) {
 
 test('#852, ssl param with PG query string', function (t) {
   t.plan(1);
-  t.deepEqual(
+  t.deepLooseEqual(
     parseConnection('postgres://user:password@host:0000/database?ssl=true')
       .connection,
     {
@@ -121,7 +121,7 @@ test('#852, ssl param with PG query string', function (t) {
 
 test('support postgresql connection protocol', function (t) {
   t.plan(1);
-  t.deepEqual(
+  t.deepLooseEqual(
     parseConnection('postgresql://user:password@host:0000/database?ssl=true')
       .connection,
     {
