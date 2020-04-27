@@ -1,5 +1,21 @@
 # Master (Unreleased)
 
+# 0.21.1 - 28 April, 2020
+
+### New features:
+
+- CLI: Add migrate:unlock command, truncate on forceFreeMigrationsLock #3822
+- CLI: Add support for cjs files by default #3829
+
+### Bug fixes:
+
+- CLI: Fix inference of seed/migration extension from knexfile extension #3814
+- rewrite delay to not node-only version. Fixes compatibility with browsers #3820
+
+### Test / internal changes:
+
+- Update dependencies. Explicitly support Node.js 14 #3825 #3830
+
 # 0.21.0 - 18 April, 2020
 
 ### Improvements
