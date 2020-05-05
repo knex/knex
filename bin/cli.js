@@ -49,7 +49,11 @@ async function initKnex(env, opts) {
     ? await openKnexfile(env.configPath)
     : mkConfigObj(opts);
 
-  const resolvedConfig = resolveEnvironmentConfig(opts, env.configuration, env.configPath);
+  const resolvedConfig = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
   const knex = require(env.modulePath);
   return knex(resolvedConfig);
 }
@@ -273,17 +277,13 @@ function invoke(env) {
 
   commander
     .command('migrate:unlock')
-    .description(
-      '        Forcibly unlocks the migrations lock table.'
-    )
+    .description('        Forcibly unlocks the migrations lock table.')
     .action(() => {
       initKnex(env, commander.opts())
         .then((instance) => instance.migrate.forceFreeMigrationsLock())
         .then(() => {
           success(
-            color.green(
-              `Succesfully unlocked the migrations lock table`
-            )
+            color.green(`Succesfully unlocked the migrations lock table`)
           );
         })
         .catch(exit);

@@ -83,7 +83,11 @@ function checkLocalModule(env) {
 }
 
 function getMigrationExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration, env.configPath);
+  const config = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
@@ -97,7 +101,11 @@ function getMigrationExtension(env, opts) {
 }
 
 function getSeedExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration, env.configPath);
+  const config = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
