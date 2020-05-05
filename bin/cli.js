@@ -163,19 +163,20 @@ function invoke(env) {
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
     .option('--verbose', 'verbose')
-    .action(() => {
-      initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.latest())
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already up to date'));
-          }
-          success(
-            color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
-              (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
-          );
-        })
-        .catch(exit);
+    .action(async () => {
+      try {
+        const instance = await initKnex(env, commander.opts());
+        const [batchNo, log] = await instance.migrate.latest();
+        if (log.length === 0) {
+          success(color.cyan('Already up to date'));
+        }
+        success(
+          color.green(`Batch ${batchNo} run: ${log.length} migrations`) +
+            (argv.verbose ? `\n${color.cyan(log.join('\n'))}` : '')
+        );
+      } catch (err) {
+        exit(err);
+      }
     });
 
   commander
