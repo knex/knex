@@ -978,7 +978,7 @@ module.exports = function (knex) {
 
   describe('migrationSource config as class', function () {
     const migrations = {
-      migration: {
+      migration1: {
         up(knex) {
           return knex.schema.createTable('migration_source_test_1', function (
             t
