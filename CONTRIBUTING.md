@@ -115,6 +115,9 @@ and stopped with:
 npm run db:stop
 ```
 
+In case you don't need all of the databases, you can use simplified dev Docker configuration, by running `npm run db:start:dev` and `npm run db:stop:dev` accordingly.
+By default it comes setup with PostgreSQL database, but you can copy over database configuration that you need from the main docker-compose file.
+
 ### Installing support for oracledb
 
 Oracle has started providing precompiled driver libs for all the platforms, which makes it viable to run oracle tests also locally against oracledb running in docker.

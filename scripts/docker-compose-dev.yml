@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:alpine
+    # see https://www.postgresql.org/docs/current/non-durability.html
+    command: '-c full_page_writes=off -c fsync=off -c synchronous_commit=off'
+    ports:
+      - '25432:5432'
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=knextest
+      - POSTGRES_DB=knex_test
+  waitpostgres:
+    image: postgres:alpine
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    entrypoint:
+      - bash
+      - -c
+      - 'until /usr/local/bin/psql postgres://testuser:knextest@postgres/knex_test -c "SELECT 1"; do sleep 5; done'
