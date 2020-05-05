@@ -976,6 +976,57 @@ module.exports = function (knex) {
     });
   });
 
+  describe('migrationSource config as class', function () {
+    const migrations = {
+      migration: {
+        up(knex) {
+          return knex.schema.createTable('migration_source_test_1', function (
+            t
+          ) {
+            t.increments();
+            t.string('name');
+          });
+        },
+        down(knex) {
+          return knex.schema.dropTable('migration_source_test_1');
+        },
+      },
+    };
+
+    class MigrationSource {
+      getMigrations() {
+        return Promise.resolve(Object.keys(migrations));
+      }
+      getMigrationName(migration) {
+        return 'migration1';
+      }
+      getMigration(migration) {
+        return migrations[migration];
+      }
+    }
+    const migrationSource = new MigrationSource();
+
+    before(() => {
+      return knex.migrate.latest({
+        migrationSource,
+      });
+    });
+
+    after(() => {
+      return knex.migrate.rollback({
+        migrationSource,
+      });
+    });
+
+    it('can accept a custom migration source', function () {
+      return knex.schema
+        .hasColumn('migration_source_test_1', 'name')
+        .then(function (exists) {
+          expect(exists).to.equal(true);
+        });
+    });
+  });
+
   describe('knex.migrate.latest with custom config parameter for table name', function () {
     before(function () {
       return knex

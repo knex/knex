@@ -14,7 +14,7 @@ module.exports = function (knex) {
     });
 
     require('./schema')(knex);
-    require('./migrate')(knex);
+    require('./migrate/migration-integration-tests')(knex);
 
     require('./seed')(knex);
     require('./builder/inserts')(knex);
