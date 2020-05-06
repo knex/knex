@@ -115,8 +115,7 @@ and stopped with:
 npm run db:stop
 ```
 
-In case you don't need all of the databases, you can use simplified dev Docker configuration, by running `npm run db:start:dev` and `npm run db:stop:dev` accordingly.
-By default it comes setup with PostgreSQL database, but you can copy over database configuration that you need from the main docker-compose file.
+In case you don't need all of the databases, you can use simplified dev Docker configuration that only runs PostgreSQL, by running `npm run db:start:postgres` and `npm run db:stop:postgres` accordingly.
 
 ### Installing support for oracledb
 
