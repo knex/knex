@@ -115,6 +115,8 @@ and stopped with:
 npm run db:stop
 ```
 
+In case you don't need all of the databases, you can use simplified dev Docker configuration that only runs PostgreSQL, by running `npm run db:start:postgres` and `npm run db:stop:postgres` accordingly.
+
 ### Installing support for oracledb
 
 Oracle has started providing precompiled driver libs for all the platforms, which makes it viable to run oracle tests also locally against oracledb running in docker.
