@@ -81,10 +81,12 @@ knex.schema
       .select('users.user_name as user', 'accounts.account_name as account')
   )
 
-  // .map over the results
-  .map(row => {
-    console.log(row)
-  })
+  // map over the results
+  .then(rows =>
+    rows.map(row => {
+      console.log(row)
+    })
+  )
 
   // Finally, add a .catch handler for the promise chain
   .catch(e => {
