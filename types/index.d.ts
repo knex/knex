@@ -1353,11 +1353,7 @@ declare namespace Knex {
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
     <TResult2 = TResult>(
       sql: string,
-      ...bindings: readonly RawBinding[]
-    ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = TResult>(
-      sql: string,
-      bindings: readonly RawBinding[] | ValueDict
+      bindings?: readonly RawBinding[] | ValueDict | RawBinding
     ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = TResult>(raw: Raw<TResult2>): QueryBuilder<
       TRecord,
