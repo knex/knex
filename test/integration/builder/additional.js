@@ -633,6 +633,7 @@ module.exports = function (knex) {
               ]);
               //tester('oracledb', ['alter table "accounts" drop ("first_name")']);
               tester('mssql', [
+                "\n              DECLARE @constraint varchar(100) = (SELECT default_constraints.name\n                                                  FROM sys.all_columns\n                                                  INNER JOIN sys.tables\n                                                    ON all_columns.object_id = tables.object_id\n                                                  INNER JOIN sys.schemas\n                                                    ON tables.schema_id = schemas.schema_id\n                                                  INNER JOIN sys.default_constraints\n                                                    ON all_columns.default_object_id = default_constraints.object_id\n                                                  WHERE schemas.name = 'dbo'\n                                                  AND tables.name = 'accounts'\n                                                  AND all_columns.name = 'first_name')\n\n              IF @constraint IS NOT NULL EXEC('ALTER TABLE accounts DROP CONSTRAINT ' + @constraint)",
                 'ALTER TABLE [accounts] DROP COLUMN [first_name]',
               ]);
             });
