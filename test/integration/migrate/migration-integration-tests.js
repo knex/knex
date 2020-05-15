@@ -649,6 +649,19 @@ module.exports = function (knex) {
               });
           });
       });
+
+      it('should drop a column with a default constraint (mssql)', function () {
+        return knex.migrate
+          .latest({
+            directory: 'test/integration/migrate/drop-with-default-constraint',
+          })
+          .then(() => {
+            return knex.migrate.rollback({
+              directory:
+                'test/integration/migrate/drop-with-default-constraint',
+            });
+          });
+      });
     });
 
     describe('knex.migrate.down', () => {
