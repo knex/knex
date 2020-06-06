@@ -1944,6 +1944,7 @@ declare namespace Knex {
     directory?: string;
     loadExtensions?: readonly string[];
     specific?: string;
+    timestampFilenamePrefix?: boolean;
   }
 
   class Seeder {
