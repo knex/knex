@@ -5,7 +5,6 @@ const path = require('path');
 const { execCommand } = require('cli-testlab');
 const { expect } = require('chai');
 const { createTemp } = require('../../lib/util/fs');
-const { yyyymmddhhmmss } = require('../../lib/util/timestamp');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -385,6 +384,7 @@ development: {
      * @type FileTestHelper
      */
     let fileHelper;
+
     beforeEach(() => {
       fileHelper = setupFileHelper();
     });
@@ -393,17 +393,12 @@ development: {
       fileHelper.cleanup();
     });
 
-    before(() => {
-      process.env.KNEX_PATH = '../knex.js';
-    });
-
     it('Creates a new seed using --timestamp-filename-prefix CLI flag', async () => {
-      const testFileName = `somename-${yyyymmddhhmmss()}`;
-      const seedGlobPath = `${process.cwd()}/seeds/*_${testFileName}.js`;
+      const seedGlobPath = `${process.cwd()}/seeds/*_somename.js`;
       fileHelper.registerGlobForCleanup(seedGlobPath);
 
       await execCommand(
-        `${NODE} ${KNEX} seed:make ${testFileName} --timestamp-filename-prefix --knexpath=../knex.js`,
+        `${NODE} ${KNEX} seed:make somename --timestamp-filename-prefix --knexpath=../knex.js`,
         {
           expectedOutput: 'Created seed file',
         }
@@ -416,8 +411,7 @@ development: {
 
     it('Creates a new seed using timestampFilenamePrefix parameter in knexfile', async () => {
       const seedsDirectory = `${process.cwd()}/seeds`;
-      const testFileName = `somename-${yyyymmddhhmmss()}`;
-      const seedGlobPath = `${seedsDirectory}/*_${testFileName}.js`;
+      const seedGlobPath = `${seedsDirectory}/*_somename.js`;
       fileHelper.registerGlobForCleanup(seedGlobPath);
 
       const knexfileContents = `
@@ -439,7 +433,7 @@ development: {
       );
 
       await execCommand(
-        `${NODE} ${KNEX} seed:make ${testFileName} --knexpath=../knex.js`,
+        `${NODE} ${KNEX} seed:make somename --knexpath=../knex.js`,
         {
           expectedOutput: 'Created seed file',
         }
