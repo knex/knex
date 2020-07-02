@@ -23,6 +23,12 @@ module.exports = function (knex) {
           largeDecimal: testDecimal,
         });
       })
+      .then(function () {
+        return knex(tableName).select('*');
+      })
+      .then(function (result) {
+        expect(result[0].largeDecimal).to.equal(testDecimal);
+      })
       .catch(function (err) {
         throw new Error('Test should not throw an error');
       });
