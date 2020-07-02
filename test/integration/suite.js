@@ -27,6 +27,7 @@ module.exports = function (knex) {
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
     require('./datatype/bigint')(knex);
+    require('./datatype/decimal')(knex);
 
     describe('knex.destroy', function () {
       it('should allow destroying the pool with knex.destroy', function () {
