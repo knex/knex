@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 
 module.exports = function (knex) {
-  it('#test decimal mssql should not allow large numbers', function () {
+  it('#test decimal mssql should allow large numbers', function () {
     // https://github.com/tediousjs/tedious/issues/1058
     if (!/mssql/i.test(knex.client.driverName)) {
       return Promise.resolve();
@@ -23,14 +23,8 @@ module.exports = function (knex) {
           largeDecimal: testDecimal,
         });
       })
-      .then(function () {
-        throw new Error('Test should throw an error');
-      })
       .catch(function (err) {
-        expect(err).to.be.an.instanceof(Error);
-        expect(err.message).to.contain(
-          'cannot be stored by mssql driver, see https://github.com/tediousjs/tedious/issues/1058'
-        );
+        throw new Error('Test should not throw an error');
       });
   });
 };
