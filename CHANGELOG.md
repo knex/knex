@@ -1,5 +1,21 @@
 # Master (Unreleased)
 
+# 0.21.2 - 10 July, 2020
+
+### New features:
+
+- Warn user if custom migration source is being reset #3839
+- Prefer `void` as return type on migration generator ts stub #3865
+- MSSQL: Added the removal of a columns default constraint, before dropping the column #3855
+
+### Typings:
+
+- Fix definition for raw querybuilders #3846
+
+### Test / internal changes:
+
+- Refactor migration logic to use async/await #3838
+
 # 0.21.1 - 28 April, 2020
 
 ### New features:
