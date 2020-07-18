@@ -1378,7 +1378,24 @@ declare namespace Knex {
     <TResult2 = TResult>(sql: string, bindings: readonly RawBinding[] | ValueDict): Raw<TResult2>;
   }
 
+  const RefMemberTag: unique symbol;
+
   interface Ref<TSrc extends string, TMapping extends {}> extends Raw<string> {
+      // TypeScript can behave weirdly if type parameters are not
+      // actually used in the members of type.
+      //
+      // See: https://github.com/knex/knex/issues/3932
+      //
+      // We simply need to propagate the type context so that we can extract
+      // them later, but we just add a "phantom" property so that typescript
+      // doesn't think that these parameters are unused
+      //
+      // Because unique symbol is used here, there is no way to actually
+      // access this at runtime
+      [RefMemberTag]: {
+        src: TSrc,
+        mapping: TMapping
+      };
       withSchema(schema: string): this;
       as<TAlias extends string>(alias: TAlias): Ref<TSrc, {[K in TAlias]: TSrc}>;
   }
