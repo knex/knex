@@ -717,6 +717,29 @@ test('migrate runs "esm" modules', (temp) => {
   });
 });
 
+test('migrate runs "esm" modules from a "module"', async (temp) => {
+  const db = knexfile.connection.filename;
+  if (fs.existsSync(db)) {
+    fs.unlinkSync(db);
+  }
+  const { stdout } = await assertExec(
+    `node ${KNEX} --esm migrate:latest --cwd=test/jake-util/knexfile-esm-module --knexfile=./knexfile.js --knexpath=../knex.js`
+  );
+  assert.include(stdout, 'Batch 1 run: 1 migrations');
+  assert.include(stdout, 'one.js');
+});
+
+test('migrate "esm" module without --esm flag from a "module", throws error', async (temp) => {
+  const db = knexfile.connection.filename;
+  if (fs.existsSync(db)) {
+    fs.unlinkSync(db);
+  }
+  const stderr = await assertExecError(
+    `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile-esm-module --knexfile=./knexfile.js --knexpath=../knex.js`
+  );
+  assert.include(stderr, 'Must use import to load ES Module');
+});
+
 module.exports = {
   taskList,
 };

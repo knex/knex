@@ -2,6 +2,7 @@
 
 const path = require('path');
 const { execCommand } = require('cli-testlab');
+const { assert } = require('console');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -58,7 +59,7 @@ describe('seed:run', () => {
     );
   });
 
-  it('seed:run runs "esm" files', () => {
+  it('runs "esm" files', () => {
     return execCommand(
       `node ${KNEX} --esm seed:run --knexfile=test/jake-util/knexfile-esm/knexfile.js`,
       {
@@ -66,5 +67,27 @@ describe('seed:run', () => {
         notExpectedOutput: ['first.js', 'second.js'],
       }
     );
+  });
+
+  it('runs "esm" files from "module"', () => {
+    const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm-module');
+    return execCommand(
+      `node ${KNEX} --cwd=${cwd} --esm seed:run --knexfile=./knexfile.js`,
+      {
+        expectedOutput: 'Ran 1 seed files',
+        notExpectedOutput: ['first.js', 'second.js'],
+      }
+    );
+  });
+
+  it('throws when runs "esm" files from "module" without --esm flag', () => {
+    const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm-module');
+    return execCommand(
+      `node ${KNEX} --cwd=${cwd} seed:run --knexfile=./knexfile.js`,
+      {
+        expectedErrorMessage: 'Must use import to load ES Module',
+      }
+    );
+    // assert.include(err.message, 'Must use import to load ES Module')
   });
 });
