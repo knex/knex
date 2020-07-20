@@ -737,7 +737,13 @@ test('migrate "esm" module without --esm flag from a "module", throws error', as
   const stderr = await assertExecError(
     `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile-esm-module --knexfile=./knexfile.js --knexpath=../knex.js`
   );
-  assert.include(stderr, 'Must use import to load ES Module');
+  const version = Number((/v(\d+)/i.exec(process.version) || [])[1]);
+  assert.include(
+    stderr,
+    version === 10
+      ? 'Unexpected token export'
+      : 'Must use import to load ES Module'
+  );
 });
 
 module.exports = {

@@ -81,10 +81,14 @@ describe('seed:run', () => {
 
   it('throws when runs "esm" files from "module" without --esm flag', () => {
     const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm-module');
+    const version = Number((/v(\d+)/i.exec(process.version) || [])[1]);
     return execCommand(
       `node ${KNEX} --cwd=${cwd} seed:run --knexfile=./knexfile.js`,
       {
-        expectedErrorMessage: 'Must use import to load ES Module',
+        expectedErrorMessage:
+          version === 10
+            ? 'Unexpected token export'
+            : 'Must use import to load ES Module',
       }
     );
   });
