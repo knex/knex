@@ -2,7 +2,6 @@
 
 const path = require('path');
 const { execCommand } = require('cli-testlab');
-const { assert } = require('console');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -88,6 +87,5 @@ describe('seed:run', () => {
         expectedErrorMessage: 'Must use import to load ES Module',
       }
     );
-    // assert.include(err.message, 'Must use import to load ES Module')
   });
 });
