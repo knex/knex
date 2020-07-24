@@ -201,6 +201,12 @@ const main = async () => {
           [true, false]
       ]
   );
+  
+  // $ExpectType Article[]
+  await knex.raw<Article[]>(
+      'select * from articles where authorId = ?',
+      [ null ]
+  );
 
   // $ExpectType User[]
   await knex<User>('user').where('name', ['a', 'b', 'c']);
