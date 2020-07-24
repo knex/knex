@@ -201,7 +201,7 @@ const main = async () => {
           [true, false]
       ]
   );
-  
+
   // $ExpectType Article[]
   await knex.raw<Article[]>(
       'select * from articles where authorId = ?',
