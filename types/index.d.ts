@@ -379,6 +379,7 @@ declare namespace Knex {
     | string
     | number
     | boolean
+    | null
     | Date
     | Array<string>
     | Array<number>
