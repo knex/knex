@@ -86,11 +86,32 @@ module.exports = function (knex) {
       });
 
       it('should process response done through a stream', (done) => {
+        let response;
         const stream = knex('accounts').limit(1).stream();
+        
         stream.on('data', (res) => {
-          expect(res.callCount).to.equal(1);
+          response = res;
         });
-        stream.on('finish', () => done());
+        stream.on('finish', () => {
+          expect(response.callCount).to.equal(1);
+          done();
+        });
+      });
+
+      it('should pass query context for responses through a stream', (done) => {
+        let response;
+        const stream = knex('accounts')
+          .queryContext('the context')
+          .limit(1)
+          .stream();
+
+        stream.on('data', (res) => {
+          response = res;
+        });
+        stream.on('finish', () => {
+          expect(response.queryContext).to.equal('the context');
+          done();
+        });
       });
 
       it('should process response for each row done through a stream', (done) => {
@@ -103,16 +124,6 @@ module.exports = function (knex) {
         });
       });
 
-      it('should pass query context for responses through a stream', (done) => {
-        const stream = knex('accounts')
-          .queryContext('the context')
-          .limit(1)
-          .stream();
-        stream.on('data', (res) => {
-          expect(res.queryContext).to.equal('the context');
-        });
-        stream.on('finish', () => done());
-      });
     });
 
     describe('columnInfo with wrapIdentifier and postProcessResponse', () => {
