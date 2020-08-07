@@ -199,6 +199,13 @@ module.exports = {
         {
           expectedOutput: 'Batch 1 run: 2 migrations',
         }
+      ).then(() =>
+        execCommand(
+          `node ${KNEX} migrate:rollback --all --knexfile=test/jake-util/knexfile-custom-migration-source/knexfile.js --knexpath=../knex.js`,
+          {
+            expectedOutput: 'Batch 1 rolled back: 2 migrations',
+          }
+        )
       );
     });
 
