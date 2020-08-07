@@ -20,6 +20,16 @@ describe('seed:run', () => {
     );
   });
 
+  it('find recursively files', () => {
+    return execCommand(
+      `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directory.js`,
+      {
+        expectedOutput: 'Ran 3 seed files',
+        notExpectedOutput: ['first.js', 'second.js'],
+      }
+    );
+  });
+
   it('supports async configuration', () => {
     return execCommand(
       `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-async.js`,
@@ -42,6 +52,16 @@ describe('seed:run', () => {
   it('runs specific file', () => {
     return execCommand(
       `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile.js --specific=second.js`,
+      {
+        expectedOutput: 'Ran 1 seed files',
+        notExpectedOutput: ['first.js', 'second.js'],
+      }
+    );
+  });
+
+  it('runs specific file in a recursive folder', () => {
+    return execCommand(
+      `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories.js --specific=second.js`,
       {
         expectedOutput: 'Ran 1 seed files',
         notExpectedOutput: ['first.js', 'second.js'],
