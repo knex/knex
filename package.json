@@ -113,7 +113,7 @@
     "tape": "^5.0.1",
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^8.10.2",
-    "typescript": "3.8.3",
+    "typescript": "3.9.2",
     "webpack-cli": "^3.3.12"
   },
   "buildDependencies": [
