@@ -1568,6 +1568,11 @@ declare namespace Knex {
       precision?: number,
       scale?: number
     ): ColumnBuilder;
+    double(
+      columnName: string,
+      precision?: number,
+      scale?: number
+    ): ColumnBuilder;
     decimal(
       columnName: string,
       precision?: number | null,
