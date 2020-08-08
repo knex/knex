@@ -43,6 +43,10 @@ async function initKnex(env, opts) {
   if (opts.esm) {
     // enable esm interop via 'esm' module
     require = require('esm')(module);
+    // https://github.com/standard-things/esm/issues/868
+    // complete the hack: enabling requiring esm from 'module' type package
+    require.extensions['.js'] = (m, fileName) =>
+      m._compile(require('fs').readFileSync(fileName, 'utf8'), fileName);
   }
 
   env.configuration = env.configPath
