@@ -13,6 +13,7 @@
     "paths": {
       "knex": ["."]
     },
-    "esModuleInterop": false
+    "esModuleInterop": false,
+    "skipLibCheck": true
   }
 }

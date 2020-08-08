@@ -1,0 +1,6 @@
+{
+  "name": "knexfile-esm-module",
+  "version": "1.0.0",
+  "type": "module",
+  "license": "MIT"
+}
