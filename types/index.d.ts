@@ -1367,6 +1367,7 @@ declare namespace Knex {
   interface Raw<TResult = any>
     extends events.EventEmitter,
       ChainableInterface<ResolveResult<TResult>> {
+    timeout(ms: number, options?: {cancel?: boolean}): Raw<TResult>;
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
