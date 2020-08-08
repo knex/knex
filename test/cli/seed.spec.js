@@ -25,7 +25,21 @@ describe('seed:run', () => {
       `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories.js`,
       {
         expectedOutput: 'Ran 3 seed files',
-        notExpectedOutput: ['first.js', 'second.js'],
+        notExpectedOutput: ['first.js', 'second.js', 'before-second.js'],
+      }
+    );
+  });
+
+  it('find recursively files and print verbose logs', () => {
+    return execCommand(
+      `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories.js --verbose`,
+      {
+        expectedOutput: [
+          'Ran 3 seed files',
+          'first.js',
+          'second.js',
+          'before-second.js',
+        ],
       }
     );
   });
