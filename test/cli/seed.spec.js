@@ -60,7 +60,12 @@ describe('seed:run', () => {
 
   it('runs "esm" files', () => {
     return execCommand(
-      `node ${KNEX} --esm seed:run --knexfile=test/jake-util/knexfile-esm/knexfile.js`,
+      [
+        `node ${KNEX}`,
+        '--esm',
+        'seed:run',
+        `--knexfile=test/jake-util/knexfile-esm/knexfile.js`,
+      ].join(' '),
       {
         expectedOutput: 'Ran 1 seed files',
         notExpectedOutput: ['first.js', 'second.js'],
@@ -71,7 +76,13 @@ describe('seed:run', () => {
   it('runs "esm" files from "module"', () => {
     const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm-module');
     return execCommand(
-      `node ${KNEX} --cwd=${cwd} --esm seed:run --knexfile=./knexfile.js`,
+      [
+        `node ${KNEX}`,
+        `--cwd=${cwd}`,
+        '--esm',
+        'seed:run',
+        '--knexfile=./knexfile.js',
+      ].join(' '),
       {
         expectedOutput: 'Ran 1 seed files',
         notExpectedOutput: ['first.js', 'second.js'],
@@ -83,7 +94,12 @@ describe('seed:run', () => {
     const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm-module');
     const version = Number((/v(\d+)/i.exec(process.version) || [])[1]);
     return execCommand(
-      `node ${KNEX} --cwd=${cwd} seed:run --knexfile=./knexfile.js`,
+      [
+        `node ${KNEX}`,
+        ` --cwd=${cwd}`,
+        ' seed:run',
+        '--knexfile=./knexfile.js',
+      ].join(' '),
       {
         expectedErrorMessage:
           version === 10
