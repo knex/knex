@@ -85,10 +85,17 @@ module.exports = function (knex) {
           });
       });
 
+      it('should handle error correctly in a stream', (done) => {
+        const stream = knex('wrongtable').limit(1).stream();
+        stream.on('error', () => {
+          done();
+        });
+      });
+
       it('should process response done through a stream', (done) => {
         let response;
         const stream = knex('accounts').limit(1).stream();
-        
+
         stream.on('data', (res) => {
           response = res;
         });
@@ -123,7 +130,6 @@ module.exports = function (knex) {
           done();
         });
       });
-
     });
 
     describe('columnInfo with wrapIdentifier and postProcessResponse', () => {
