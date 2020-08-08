@@ -1,1 +1,1 @@
-exports.seed = (knex, Promise) => {};
+exports.seed = (knex) => {};
