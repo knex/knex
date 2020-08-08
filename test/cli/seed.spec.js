@@ -92,12 +92,73 @@ describe('seed:run', () => {
     );
   });
 
-  it('seed:run runs "esm" files', () => {
+  it('runs "esm" files', async () => {
+    const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm');
+    const { Database } = new require('sqlite3');
+    const db = new Database(path.resolve(cwd, 'test.sqlite3'));
+    await new Promise((resolve, reject) =>
+      db.exec(`create TABLE if not exists xyz (name TEXT);`, (err) => {
+        if (err) reject(err);
+        else resolve();
+      })
+    );
+    await new Promise((resolve) => db.close(() => resolve()));
     return execCommand(
-      `node ${KNEX} --esm seed:run --knexfile=test/jake-util/knexfile-esm/knexfile.js`,
+      [
+        `node ${KNEX}`,
+        'seed:run',
+        '--esm',
+        `--cwd=${cwd}`,
+        `--knexfile=./knexfile.js`,
+      ].join(' '),
       {
         expectedOutput: 'Ran 1 seed files',
         notExpectedOutput: ['first.js', 'second.js'],
+      }
+    );
+  });
+
+  it('runs "esm" files from "module"', async () => {
+    const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm-module');
+    const { Database } = new require('sqlite3');
+    const db = new Database(path.resolve(cwd, 'test.sqlite3'));
+    await new Promise((resolve, reject) =>
+      db.exec(`create TABLE if not exists xyz (name TEXT);`, (err) => {
+        if (err) reject(err);
+        else resolve();
+      })
+    );
+    await new Promise((resolve) => db.close(() => resolve()));
+    return execCommand(
+      [
+        `node ${KNEX}`,
+        `--cwd=${cwd}`,
+        '--esm',
+        'seed:run',
+        '--knexfile=./knexfile.js',
+      ].join(' '),
+      {
+        expectedOutput: 'Ran 1 seed files',
+        notExpectedOutput: ['first.js', 'second.js'],
+      }
+    );
+  });
+
+  it('throws when runs "esm" files from "module" without --esm flag', () => {
+    const cwd = path.resolve(__dirname, '../jake-util/knexfile-esm-module');
+    const version = Number((/v(\d+)/i.exec(process.version) || [])[1]);
+    return execCommand(
+      [
+        `node ${KNEX}`,
+        ` --cwd=${cwd}`,
+        ' seed:run',
+        '--knexfile=./knexfile.js',
+      ].join(' '),
+      {
+        expectedErrorMessage:
+          version === 10
+            ? 'Unexpected token export'
+            : 'Must use import to load ES Module',
       }
     );
   });
