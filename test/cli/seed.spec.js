@@ -20,9 +20,19 @@ describe('seed:run', () => {
     );
   });
 
-  it('find recursively files', () => {
+  it('find files not recursively by default', () => {
     return execCommand(
       `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories.js`,
+      {
+        expectedOutput: 'Ran 2 seed files',
+        notExpectedOutput: ['before-second.js', 'second.js'],
+      }
+    );
+  });
+
+  it('find files recursively if option is set', () => {
+    return execCommand(
+      `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories-recursive.js`,
       {
         expectedOutput: 'Ran 3 seed files',
         notExpectedOutput: ['first.js', 'second.js', 'before-second.js'],
@@ -30,9 +40,18 @@ describe('seed:run', () => {
     );
   });
 
-  it('find recursively files and print verbose logs', () => {
+  it('find files not recursively by default and print verbose logs', () => {
     return execCommand(
       `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories.js --verbose`,
+      {
+        expectedOutput: ['Ran 2 seed files', 'before-second.js', 'second.js'],
+      }
+    );
+  });
+
+  it('find recursively files if option recursive is set and print verbose logs', () => {
+    return execCommand(
+      `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories-recursive.js --verbose`,
       {
         expectedOutput: [
           'Ran 3 seed files',

@@ -126,27 +126,40 @@ describe('Seeder._listAll', function () {
 
   before(function () {
     mockFs({
-      'test/integration/seed/2-seeds': {
-        'co-seed.co': 'co seed content',
-        'coffee-seed.coffee': 'coffee seed content',
-        'eg-seed.eg': 'eg seed content',
-        'iced-seed.iced': 'iced seed content',
-        'js-seed.js': 'js seed content',
-        'litcoffee-seed.litcoffee': 'litcoffee seed content',
-        'ls-seed.ls': 'ls seed content',
-        'ts-seed.ts': 'ts seed content',
-        'useless.txt': 'i am not a seed',
-      },
-      'test/integration/seed/1-seeds': {
-        'co-seed.co': 'co seed content',
-        'coffee-seed.coffee': 'coffee seed content',
-        'eg-seed.eg': 'eg seed content',
-        'iced-seed.iced': 'iced seed content',
-        'js-seed.js': 'js seed content',
-        'litcoffee-seed.litcoffee': 'litcoffee seed content',
-        'ls-seed.ls': 'ls seed content',
-        'ts-seed.ts': 'ts seed content',
-        'useless.txt': 'i am not a seed',
+      'test/integration/seed/': {
+        '2-seeds': {
+          'co-seed.co': 'co seed content',
+          'coffee-seed.coffee': 'coffee seed content',
+          'eg-seed.eg': 'eg seed content',
+          'iced-seed.iced': 'iced seed content',
+          'js-seed.js': 'js seed content',
+          'litcoffee-seed.litcoffee': 'litcoffee seed content',
+          'ls-seed.ls': 'ls seed content',
+          'ts-seed.ts': 'ts seed content',
+          'useless.txt': 'i am not a seed',
+          'recursive-folder': {
+            'co-seed.co': 'co seed content',
+            'coffee-seed.coffee': 'coffee seed content',
+            'eg-seed.eg': 'eg seed content',
+            'iced-seed.iced': 'iced seed content',
+            'js-seed.js': 'js seed content',
+            'litcoffee-seed.litcoffee': 'litcoffee seed content',
+            'ls-seed.ls': 'ls seed content',
+            'ts-seed.ts': 'ts seed content',
+            'useless.txt': 'i am not a seed',
+          },
+        },
+        '1-seeds': {
+          'co-seed.co': 'co seed content',
+          'coffee-seed.coffee': 'coffee seed content',
+          'eg-seed.eg': 'eg seed content',
+          'iced-seed.iced': 'iced seed content',
+          'js-seed.js': 'js seed content',
+          'litcoffee-seed.litcoffee': 'litcoffee seed content',
+          'ls-seed.ls': 'ls seed content',
+          'ts-seed.ts': 'ts seed content',
+          'useless.txt': 'i am not a seed',
+        },
       },
     });
   });
@@ -199,6 +212,95 @@ describe('Seeder._listAll', function () {
             '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
           process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
           process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
+          process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
+          process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
+          process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
+          process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
+          process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
+          process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
+          process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
+        ]);
+      });
+  });
+  it('should include all supported files and files in subfolders', function () {
+    return seeder
+      ._listAll({
+        recursive: true,
+      })
+      .then(function (list) {
+        expect(list).to.eql([
+          process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
+          process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
+          process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
+          process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
+          process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
+          process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
+          process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
+          process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
+          process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
+          process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
+          process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
+          process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
+          process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/co-seed.co',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/coffee-seed.coffee',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/eg-seed.eg',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/iced-seed.iced',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/litcoffee-seed.litcoffee',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/ls-seed.ls',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/ts-seed.ts',
+          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
+        ]);
+      });
+  });
+  it('should include all supported files and files in subfolders, sorted by directories', function () {
+    return seeder
+      ._listAll({
+        recursive: true,
+        sortDirsSeparately: true,
+      })
+      .then(function (list) {
+        expect(list).to.eql([
+          process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
+          process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
+          process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
+          process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
+          process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
+          process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
+          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/co-seed.co',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/coffee-seed.coffee',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/eg-seed.eg',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/iced-seed.iced',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/litcoffee-seed.litcoffee',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/ls-seed.ls',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/recursive-folder/ts-seed.ts',
           process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
           process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
           process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',

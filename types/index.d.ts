@@ -1965,9 +1965,11 @@ declare namespace Knex {
 
   interface SeederConfig {
     extension?: string;
-    directory?: string;
+    directory?: string | string[];
     loadExtensions?: readonly string[];
     specific?: string;
+    recursive?: boolean;
+    sortDirsSeparately?: boolean;
   }
 
   class Seeder {
