@@ -1,17 +1,27 @@
 # Master (Unreleased)
 
+# 0.21.4 - 10 August, 2020
+
+### New features:
+
+- CLI: Add new option for seed: recursive #3974
+
+### Bug fixes:
+
+- CLI: Do not load seeds from subfolders recursively by default #3974
+
 # 0.21.3 - 08 August, 2020
 
 ### New features:
 
-- Support multiple directories for seeds #3967
+- CLI: Support multiple directories for seeds #3967
 
 ### Bug fixes:
 
 - Ensure DB stream is destroyed when the PassThrough is destroyed #2324
 - Support postProcessResponse for streams #3931
 - Fix ESM module interop for calling module/package of type 'module' #3938
-- Fix migration source name in rollback all #3956
+- CLI: Fix migration source name in rollback all #3956
 - Fix getMergedConfig calls to include client logger #3920
 - Escape single quoted values passed to defaultTo function #3899
 
