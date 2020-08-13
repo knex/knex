@@ -796,6 +796,40 @@ test('migrate "esm" module without --esm flag from a "module", throws error', as
   );
 });
 
+test('migrate runs "mjs" modules', async (temp) => {
+  const cwd = path.resolve(
+    path.dirname(KNEX),
+    '../test/jake-util/knexfile-mjs'
+  );
+  const dbPath = path.resolve(cwd, 'test.sqlite3');
+  if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+  const { stdout } = await assertExec(
+    [
+      `node ${KNEX}`,
+      `--cwd=${cwd}`,
+      `--knexfile=${path.resolve(cwd, 'knexfile.mjs')}`,
+      `--knexpath=${KNEX}`,
+      'migrate:latest',
+    ].join(' ')
+  );
+  assert.include(stdout, 'Batch 1 run: 1 migrations');
+  const db = new sqlite3.Database(dbPath);
+  const result = await new Promise((resolve, reject) => {
+    db.all('SELECT name from SQLITE_MASTER', (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows.map(({ name }) => name));
+    });
+  });
+  await new Promise((resolve) => db.close(resolve));
+  // migration performed
+  assert.deepEqual(result, [
+    'knex_migrations',
+    'sqlite_sequence',
+    'knex_migrations_lock',
+    'xyz',
+  ]);
+});
+
 module.exports = {
   taskList,
 };

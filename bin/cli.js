@@ -22,8 +22,17 @@ const { readFile, writeFile } = require('./../lib/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
 
+function importFile(configPath) {
+  if (configPath.endsWith('.mjs')) {
+    return import(require('url').pathToFileURL(configPath));
+  }
+  return require(configPath);
+}
+
 async function openKnexfile(configPath) {
-  let config = require(configPath);
+  let config = await importFile(configPath);
+  // needs more testing
+  // config = config.default || config; //Allow default export || named exports
   if (typeof config === 'function') {
     config = await config();
   }
