@@ -149,6 +149,12 @@ const main = async () => {
   // $ExpectType { identifier: number; } | undefined
   await knex<User>('users').first(knex.ref('id').as('identifier'));
 
+  // $ExpectType { id: number; name: string; }[]
+  await knex<User>('users').select([
+    knex.ref('name'),
+    knex.ref('id')
+  ]);
+
   // $ExpectType Pick<User, "id"> | undefined
   await knex.first('id').from<User>('users');
 
@@ -200,6 +206,12 @@ const main = async () => {
           knex<Department>('departments').select('name'),
           [true, false]
       ]
+  );
+
+  // $ExpectType Article[]
+  await knex.raw<Article[]>(
+      'select * from articles where authorId = ?',
+      [ null ]
   );
 
   // $ExpectType User[]

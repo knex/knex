@@ -33,7 +33,7 @@ For an Object Relational Mapper, see:
 - http://bookshelfjs.org
 - https://github.com/Vincit/objection.js
 
-To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](http://michaelavila.com/knex-querylab/)
+To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](https://michaelavila.com/knex-querylab/)
 
 ## Examples
 

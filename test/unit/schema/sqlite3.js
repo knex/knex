@@ -397,6 +397,20 @@ describe('SQLite SchemaBuilder', function () {
     );
   });
 
+  it('correctly escape singleQuotes passed to defaultTo()', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.string('foo').defaultTo("single 'quoted' value");
+      })
+      .toSQL();
+
+    equal(
+      tableSql[0].sql,
+      "alter table `users` add column `foo` varchar(255) default 'single ''quoted'' value'"
+    );
+  });
+
   it('chains notNull and defaultTo', function () {
     tableSql = client
       .schemaBuilder()
