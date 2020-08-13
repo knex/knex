@@ -182,3 +182,27 @@ describe('seed:run', () => {
     );
   });
 });
+
+it('runs mjs files', async () => {
+  const cwd = path.resolve(__dirname, '../jake-util/knexfile-mjs');
+  const { Database } = new require('sqlite3');
+  const db = new Database(path.resolve(cwd, 'test.sqlite3'));
+  await new Promise((resolve, reject) =>
+    db.exec(`create TABLE if not exists xyz (name TEXT);`, (err) => {
+      if (err) reject(err);
+      else resolve();
+    })
+  );
+  await new Promise((resolve) => db.close(() => resolve()));
+  return execCommand(
+    [
+      `node ${KNEX}`,
+      `--cwd=${cwd}`,
+      'seed:run',
+      '--knexfile=./knexfile.mjs',
+    ].join(' '),
+    {
+      expectedOutput: 'Ran 1 seed files',
+    }
+  );
+});
