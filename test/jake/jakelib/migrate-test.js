@@ -803,14 +803,25 @@ test('migrate runs "mjs" modules', async (temp) => {
   );
   const dbPath = path.resolve(cwd, 'test.sqlite3');
   if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+
+  const version = Number((/v(\d+)/i.exec(process.version) || [])[1]);
+
   const { stdout } = await assertExec(
     [
-      `node ${KNEX}`,
+      `node`,
+      // TODO: document this !
+      version === 10 && '--experimental-modules',
+      version === 10 && '--no-warnings',
+      `${KNEX}`,
+      // TODO: document this !
+      version === 10 && `--esm`,
       `--cwd=${cwd}`,
       `--knexfile=${path.resolve(cwd, 'knexfile.mjs')}`,
       `--knexpath=${KNEX}`,
       'migrate:latest',
-    ].join(' ')
+    ]
+      .filter(Boolean)
+      .join(' ')
   );
   assert.include(stdout, 'Batch 1 run: 1 migrations');
   const db = new sqlite3.Database(dbPath);
