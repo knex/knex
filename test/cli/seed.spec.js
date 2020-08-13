@@ -194,13 +194,22 @@ it('runs mjs files', async () => {
     })
   );
   await new Promise((resolve) => db.close(() => resolve()));
+  const version = Number((/v(\d+)/i.exec(process.version) || [])[1]);
   return execCommand(
     [
-      `node ${KNEX}`,
+      `node`,
+      // TODO: document this !
+      version === 10 && '--experimental-modules',
+      version === 10 && '--no-warnings',
+      `${KNEX}`,
+      // TODO: document this !
+      version === 10 && `--esm`,
       `--cwd=${cwd}`,
       'seed:run',
       '--knexfile=./knexfile.mjs',
-    ].join(' '),
+    ]
+      .filter(Boolean)
+      .join(' '),
     {
       expectedOutput: 'Ran 1 seed files',
     }
