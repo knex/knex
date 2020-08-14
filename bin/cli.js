@@ -19,11 +19,14 @@ const {
   getStubPath,
 } = require('./utils/cli-config-utils');
 const { readFile, writeFile } = require('./../lib/util/fs');
+const url = require('url');
 
 const { listMigrations } = require('./utils/migrationsLister');
 
-async function openKnexfile(configPath) {
-  let config = require(configPath);
+async function openKnexfile(configPath, esm) {
+  let config = esm
+    ? await import(url.pathToFileURL(configPath))
+    : require(configPath);
   if (typeof config === 'function') {
     config = await config();
   }
@@ -50,7 +53,7 @@ async function initKnex(env, opts) {
   }
 
   env.configuration = env.configPath
-    ? await openKnexfile(env.configPath)
+    ? await openKnexfile(env.configPath, opts.esm)
     : mkConfigObj(opts);
 
   const resolvedConfig = resolveEnvironmentConfig(
