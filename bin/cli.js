@@ -23,7 +23,8 @@ const { readFile, writeFile } = require('./../lib/util/fs');
 const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
-  let config = require(configPath);
+  const importFile = require('../lib/util/import-file'); // require me late!
+  let config = await importFile(configPath);
   if (typeof config === 'function') {
     config = await config();
   }
