@@ -25,6 +25,9 @@ const { listMigrations } = require('./utils/migrationsLister');
 async function openKnexfile(configPath) {
   const importFile = require('../lib/util/import-file'); // require me late!
   let config = await importFile(configPath);
+  if (config && config.default) {
+    config = config.default;
+  }
   if (typeof config === 'function') {
     config = await config();
   }
