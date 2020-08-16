@@ -498,6 +498,7 @@ const fixture = [
      * FIXME?
      * knexfile specifies loadExtension ['.js]
      * with or without --esm
+     * this is WITH 'esm'
      *  */
     title:
       "mjs knexfile CAN'T provides ESM/js migrations when specified to load 'js' extension",
@@ -508,17 +509,28 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest', '--esm'],
+    // Fails on NODE 12 & 14
     expectedErrorMessage:
-      'Cannot create proxy with a non-object as target or handler',
+      !isNode10 && 'Cannot create proxy with a non-object as target or handler',
+    // Doesn't error on NODE10
+    expectedOutput: isNode10 && 'Batch 1 run: 1 migrations',
+    expectedSchema: isNode10 && [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
   },
   {
     /**
      * FIXME?
      * knexfile specifies loadExtension ['.js]
      * with or without --esm
+     * without esm can;t parse esm .js files
      *  */
     title:
-      "mjs knexfile CAN'T provides ESM/js migrations when specified to load 'js' extension",
+      "mjs knexfile CAN'T provides ESM/js migrations when specified to load 'js' extension #2",
     testCase: 'knexfile-imports',
     knexfile: 'knexfile18.mjs',
     nodeArgs: [
@@ -526,7 +538,46 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest'],
-    expectedErrorMessage: "Unexpected token 'export'",
+    // Fails on NODE 12 & 14
+    expectedErrorMessage:
+      (!isNode10 && "Unexpected token 'export'") || 'Unexpected token export',
+    dropDb: true,
+  },
+  {
+    title: 'ESM/js knexfile provides cjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile19.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', '--esm'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'ESM/js knexfile provides mjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile20.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', '--esm'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
   },
 ];
 
