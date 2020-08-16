@@ -241,7 +241,42 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest', `--esm`],
-    // expectedErrorMessage:      isNode10 && 'TypeError: module.createRequire is not a function',
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'Importing js ESM from js ESM with --esm interop',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile7.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'Dynamic importing js ESM from js ESM with --esm interop',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile8.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
       'knex_migrations',
