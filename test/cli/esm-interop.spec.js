@@ -53,15 +53,10 @@ const fixture = [
     testCase: 'knexfile-mjs',
     knexfile: 'knexfile.mjs',
     nodeArgs: [
-      // TODO: document this !
       isNode10 && '--experimental-modules',
       isNode10 && '--no-warnings',
     ],
-    knexArgs: [
-      'migrate:latest',
-      // TODO: document this !
-      isNode10 && `--esm`,
-    ],
+    knexArgs: ['migrate:latest', isNode10 && `--esm`],
     dropDb: true,
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -110,15 +105,10 @@ const fixture = [
     testCase: 'knexfile-mjs',
     knexfile: 'knexfile.mjs',
     nodeArgs: [
-      // TODO: document this !
       isNode10 && '--experimental-modules',
       isNode10 && '--no-warnings',
     ],
-    knexArgs: [
-      'seed:run',
-      // TODO: document this !
-      isNode10 && `--esm`,
-    ],
+    knexArgs: ['seed:run', isNode10 && `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
     /** before assert */
@@ -429,6 +419,114 @@ const fixture = [
       'xyz',
     ],
     dropDb: true,
+  },
+  {
+    title: 'mjs knexfile provides cjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile16.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', isNode10 && '--esm'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    /**
+     * FIXME?
+     * This is Standard NODEJS resolution
+     * no 'esm' involved, knexfile is 'imported'
+     * WHY: 'Requiring external module .../node_modules/interpret/mjs-stub' ?
+     *  */
+    title: "mjs knexfile CAN'T provides ESM/js migrations ('interpret' issue?)",
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile17.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: [
+      'migrate:latest',
+      // isNode10 && '--esm'
+    ],
+    /** Migration DOESN'T RUN?, files aren't found? */
+    expectedOutput: 'Already up to date',
+    /** confirmation, migration didn't run */
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+    ], //schema is default knex schema
+    dropDb: true,
+  },
+  {
+    /**
+     * FIXME?
+     * This is Standard NODEJS resolution
+     * even with the 'esm' module loader, AKA --esm
+     * no 'esm' involved, knexfile.mjs is navite/'imported'
+     * WHY: 'Requiring external module .../node_modules/interpret/mjs-stub' ?
+     *  */
+    title:
+      "mjs knexfile CAN'T provides ESM/js migrations ('interpret' issue?) with --esm interop",
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile17.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', isNode10 && '--esm'],
+    /** Migration DOESN'T RUN?, files aren't found? */
+    expectedOutput: 'Already up to date',
+    /** confirmation, migration didn't run */
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+    ], //schema is default knex schema
+    dropDb: true,
+  },
+  {
+    /**
+     * FIXME?
+     * knexfile specifies loadExtension ['.js]
+     * with or without --esm
+     *  */
+    title:
+      "mjs knexfile CAN'T provides ESM/js migrations when specified to load 'js' extension",
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile18.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', '--esm'],
+    expectedErrorMessage:
+      'Cannot create proxy with a non-object as target or handler',
+  },
+  {
+    /**
+     * FIXME?
+     * knexfile specifies loadExtension ['.js]
+     * with or without --esm
+     *  */
+    title:
+      "mjs knexfile CAN'T provides ESM/js migrations when specified to load 'js' extension",
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile18.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest'],
+    expectedErrorMessage: "Unexpected token 'export'",
   },
 ];
 
