@@ -304,6 +304,24 @@ const fixture = [
     ],
     dropDb: true,
   },
+  {
+    title: 'Dynamic ESM js import from commonjs/js with esm migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile10.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
 ];
 
 describe('esm interop and mjs support', () => {
