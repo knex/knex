@@ -70,12 +70,6 @@ const fixture = [
       'knex_migrations_lock',
       'xyz',
     ],
-    expectedSchema: [
-      'knex_migrations',
-      'sqlite_sequence',
-      'knex_migrations_lock',
-      'xyz',
-    ],
   },
   /** SEEDS */
   {
@@ -218,29 +212,6 @@ const fixture = [
     ],
     dropDb: true,
   },
-  // {
-  //     title: 'Import 5 (BUG)',
-  //     testCase: 'knexfile-imports',
-  //     knexfile: 'knexfile5.mjs',
-  //     nodeArgs: [
-  //         // TODO: document this !
-  //         isNode10 && '--experimental-modules',
-  //         isNode10 && '--no-warnings',
-  //     ],
-  //     knexArgs: [
-  //         'migrate:latest',
-  //         // TODO: document this !
-  //         isNode10 && `--esm`,
-  //     ],
-  //     dropDb: true,
-  //     expectedOutput: 'Batch 1 run: 1 migrations',
-  //     expectedSchema: [
-  //         'knex_migrations',
-  //         'sqlite_sequence',
-  //         'knex_migrations_lock',
-  //         'xyz',
-  //     ],
-  // },
 ];
 
 describe('esm interop and mjs support', () => {
