@@ -161,7 +161,9 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage: `Error [ERR_UNSUPPORTED_DIR_IMPORT]`,
+    expectedErrorMessage: isNode10
+      ? 'Error: Cannot find module'
+      : `Error [ERR_UNSUPPORTED_DIR_IMPORT]`,
   },
   {
     title: 'dynamic importing js file from NON module package is not supported',
@@ -172,13 +174,17 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage: "Unexpected token 'export'",
+    expectedErrorMessage: isNode10
+      ? 'Error: Cannot load module from .mjs'
+      : "Unexpected token 'export'",
   },
   {
     /**
      * NodeJS's module-resolution algorithm limitations
      */
-    title: 'static importing js file from NON module package is not supported',
+    title: isNode10
+      ? "NODE10 can't static impor js from .mjs"
+      : 'static importing js file from NON module package is not supported',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile2.mjs',
     nodeArgs: [
@@ -186,11 +192,15 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage: "Unexpected token 'export'",
+    expectedErrorMessage: isNode10
+      ? 'Error: Cannot load module from .mjs'
+      : "Unexpected token 'export'",
   },
   {
     //Example:  external module.type='module' by url 'packane-name/index.js'
-    title: 'can dynamically import external ESM module package by URL',
+    title: isNode10
+      ? "NODE10 can't dynamically import external ESM module package by URL"
+      : 'can dynamically import external ESM module package by URL',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile4.mjs',
     nodeArgs: [
@@ -203,8 +213,9 @@ const fixture = [
       // TODO: document this !
       isNode10 && `--esm`,
     ],
-    expectedOutput: 'Batch 1 run: 1 migrations',
-    expectedSchema: [
+    expectedErrorMessage: isNode10 && 'Error: Cannot load module from .mjs',
+    expectedOutput: !isNode10 && 'Batch 1 run: 1 migrations',
+    expectedSchema: !isNode10 && [
       'knex_migrations',
       'sqlite_sequence',
       'knex_migrations_lock',
