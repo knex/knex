@@ -174,9 +174,6 @@ const fixture = [
       : "Unexpected token 'export'",
   },
   {
-    /**
-     * NodeJS's module-resolution algorithm limitations
-     */
     title: isNode10
       ? "NODE10 can't static impor js from .mjs"
       : 'static importing js file from NON module package is not supported',
@@ -204,6 +201,28 @@ const fixture = [
     ],
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10 && 'Error: Cannot load module from .mjs',
+    expectedOutput: !isNode10 && 'Batch 1 run: 1 migrations',
+    expectedSchema: !isNode10 && [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: isNode10
+      ? "NODE10 can't create require"
+      : 'Importing commonjs from a mjs module',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile5.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', isNode10 && `--esm`],
+    expectedErrorMessage:
+      isNode10 && 'TypeError: module.createRequire is not a function',
     expectedOutput: !isNode10 && 'Batch 1 run: 1 migrations',
     expectedSchema: !isNode10 && [
       'knex_migrations',
