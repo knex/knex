@@ -25,6 +25,9 @@ const { listMigrations } = require('./utils/migrationsLister');
 async function openKnexfile(configPath) {
   const importFile = require('../lib/util/import-file'); // require me late!
   let config = await importFile(configPath);
+  if (config && config.default) {
+    config = config.default;
+  }
   if (typeof config === 'function') {
     config = await config();
   }
@@ -45,9 +48,22 @@ async function initKnex(env, opts) {
     // enable esm interop via 'esm' module
     require = require('esm')(module);
     // https://github.com/standard-things/esm/issues/868
-    // complete the hack: enabling requiring esm from 'module' type package
-    require.extensions['.js'] = (m, fileName) =>
-      m._compile(require('fs').readFileSync(fileName, 'utf8'), fileName);
+    const ext = require.extensions['.js'];
+    require.extensions['.js'] = (m, fileName) => {
+      try {
+        // default to the original extension
+        // this fails if target file parent is of type='module'
+        return ext(m, fileName);
+      } catch (err) {
+        if (err && err.code === 'ERR_REQUIRE_ESM') {
+          return m._compile(
+            require('fs').readFileSync(fileName, 'utf8'),
+            fileName
+          );
+        }
+        throw err;
+      }
+    };
   }
 
   env.configuration = env.configPath

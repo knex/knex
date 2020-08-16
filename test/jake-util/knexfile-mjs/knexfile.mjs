@@ -14,5 +14,7 @@ const config = {
     loadExtensions: ['.mjs']
   }
 };
+/** ignored by knex */
+export default config;
 /** Named exports: or knex won't find them */
 export const { client, connection, useNullAsDefault, migrations , seeds } = config;
