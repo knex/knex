@@ -133,15 +133,10 @@ const fixture = [
     testCase: 'knexfile-imports',
     knexfile: 'knexfile.mjs',
     nodeArgs: [
-      // TODO: document this !
       isNode10 && '--experimental-modules',
       isNode10 && '--no-warnings',
     ],
-    knexArgs: [
-      'migrate:latest',
-      // TODO: document this !
-      isNode10 && `--esm`,
-    ],
+    knexArgs: ['migrate:latest', isNode10 && `--esm`],
     dropDb: true,
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -204,15 +199,10 @@ const fixture = [
     testCase: 'knexfile-imports',
     knexfile: 'knexfile4.mjs',
     nodeArgs: [
-      // TODO: document this !
       isNode10 && '--experimental-modules',
       isNode10 && '--no-warnings',
     ],
-    knexArgs: [
-      'migrate:latest',
-      // TODO: document this !
-      isNode10 && `--esm`,
-    ],
+    knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10 && 'Error: Cannot load module from .mjs',
     expectedOutput: !isNode10 && 'Batch 1 run: 1 migrations',
     expectedSchema: !isNode10 && [
