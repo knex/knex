@@ -3,7 +3,7 @@ import module from "module";
  *  Importing commonjs from a mjs module
  * @returns {Promise<import("../../../").Config>}
  * */
-export default async () => {  
+export default async () => {
   const require = module.createRequire(
     import.meta.url
   )
@@ -16,7 +16,7 @@ export default async () => {
       loadExtensions: ['.mjs']
     },
     seeds: {
-      directory: './mjs/seeds', // re-dir
+      directory: './mjs/seeds',
       extension: "mjs",
       loadExtensions: ['.mjs']
     }

@@ -10,11 +10,11 @@ export default async () => {
     ...config,
     migrations: {
       ...config.migrations,
-      directory: './mjs/migrations', // re-dir
+      directory: './mjs/migrations',
     },
     seeds: {
       ...config.seeds,
-      directory: './mjs/seeds', // re-dir
+      directory: './mjs/seeds',
     }
   };
 }

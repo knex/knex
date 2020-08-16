@@ -3,8 +3,8 @@ const isNode10 = NODE_VERSION === 10;
 /** @returns {Promise<import("../../../").Config>}*/
 export default async () => {
   const { default: config } = await import(
-    isNode10 
-      ? '../knexfile-esm-module/knexfile' 
+    isNode10
+      ? '../knexfile-esm-module/knexfile'
       : '../knexfile-esm-module/knexfile.js'
   );
   return ({
@@ -15,7 +15,7 @@ export default async () => {
       loadExtensions: ['.mjs']
     },
     seeds: {
-      directory: './mjs/seeds', // re-dir
+      directory: './mjs/seeds',
       extension: "mjs",
       loadExtensions: ['.mjs']
     }
