@@ -54,4 +54,5 @@ describe('CLI tests', function () {
   require('./cli/seed.spec');
   require('./cli/seed-make.spec');
   require('./cli/version.spec');
+  require('./cli/esm-interop.spec');
 });
