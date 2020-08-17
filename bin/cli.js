@@ -375,6 +375,7 @@ if (argv.cwd) {
 // Initialize 'esm' before cli.launch
 if (argv.esm) {
   // enable esm interop via 'esm' module
+  // eslint-disable-next-line no-global-assign
   require = require('esm')(module);
   // https://github.com/standard-things/esm/issues/868
   const ext = require.extensions['.js'];
