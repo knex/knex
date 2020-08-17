@@ -440,12 +440,9 @@ const fixture = [
   },
   {
     /**
-     * FIXME?
      * This is Standard NODEJS resolution
-     * no 'esm' involved, knexfile is 'imported'
-     * WHY: 'Requiring external module .../node_modules/interpret/mjs-stub' ?
      *  */
-    title: "mjs knexfile CAN'T provides ESM/js migrations ('interpret' issue?)",
+    title: 'mjs knexfile provides ESM/js migrations #1',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile17.mjs',
     nodeArgs: [
@@ -456,7 +453,10 @@ const fixture = [
       'migrate:latest',
       // isNode10 && '--esm'
     ],
-    /** Migration DOESN'T RUN?, files aren't found? */
+    /**
+     * Migration DOESN'T RUN?, files aren't found
+     * config.migrations.loadExtensions defaults to ['.mjs']
+     */
     expectedOutput: 'Already up to date',
     /** confirmation, migration didn't run */
     expectedSchema: [
@@ -468,14 +468,11 @@ const fixture = [
   },
   {
     /**
-     * FIXME?
      * This is Standard NODEJS resolution
      * even with the 'esm' module loader, AKA --esm
      * no 'esm' involved, knexfile.mjs is navite/'imported'
-     * WHY: 'Requiring external module .../node_modules/interpret/mjs-stub' ?
-     *  */
-    title:
-      "mjs knexfile CAN'T provides ESM/js migrations ('interpret' issue?) with --esm interop",
+     */
+    title: 'mjs knexfile provides ESM/js migrations #2',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile17.mjs',
     nodeArgs: [
@@ -483,14 +480,18 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest', isNode10 && '--esm'],
-    /** Migration DOESN'T RUN?, files aren't found? */
+    /**
+     * Migration DOESN'T RUN, files aren't found
+     * config.migrations.loadExtensions defaults to ['.mjs']
+     */
     expectedOutput: 'Already up to date',
     /** confirmation, migration didn't run */
     expectedSchema: [
+      //schema is default knex schema
       'knex_migrations',
       'sqlite_sequence',
       'knex_migrations_lock',
-    ], //schema is default knex schema
+    ],
     dropDb: true,
   },
   {
