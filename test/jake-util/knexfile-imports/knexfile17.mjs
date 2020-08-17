@@ -6,10 +6,11 @@ export default {
     ...config,
     migrations: {
         ...config.migrations,
-        directory: './esm/migrations',        
+        directory: './esm/migrations',
     },
     seeds: {
         ...config.seeds,
         directory: './esm/seeds',
+        loadExtensions: ['.js']
     }
 }

@@ -73,7 +73,7 @@ const fixture = [
     expectedOutput: 'Ran 1 seed files',
     knexArgs: ['seed:run', '--esm'],
     dropDb: true,
-    /** before assert */
+
     before: async ({ dbPath }) => {
       const db = new sqlite3.Database(dbPath);
       await createTable(db, `xyz (name TEXT)`);
@@ -84,7 +84,7 @@ const fixture = [
     testCase: 'knexfile-esm-module',
     expectedOutput: 'Ran 1 seed files',
     knexArgs: ['seed:run', '--esm'],
-    /** before assert */
+
     before: async ({ dbPath }) => {
       const db = new sqlite3.Database(dbPath);
       await createTable(db, `xyz (name TEXT)`);
@@ -111,7 +111,7 @@ const fixture = [
     knexArgs: ['seed:run', isNode10 && `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
-    /** before assert */
+
     before: async ({ dbPath }) => {
       const db = new sqlite3.Database(dbPath);
       await createTable(db, `xyz (name TEXT)`);
@@ -563,6 +563,286 @@ const fixture = [
       'xyz',
     ],
     dropDb: true,
+  },
+  /**
+   * Seed tests for the above cases
+   */
+  {
+    title: `Seeds knexfile20.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile20.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile19.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile19.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile18.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile18.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile17.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile17.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile16.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile16.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile15.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile15.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile14.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile14.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile13.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile13.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile12.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile12.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile11.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile11.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile10.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile10.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile9.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile9.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile8.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile8.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile7.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile7.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile6.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile6.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile5.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile5.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile4.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile4.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', isNode10 && `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
   },
 ];
 

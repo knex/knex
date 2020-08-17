@@ -13,6 +13,7 @@ module.exports = async () => {
     },
     seeds: {
       directory: './cjs/seeds',
+      loadExtensions: ['.cjs']
     },
   };
 };

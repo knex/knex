@@ -9,6 +9,7 @@ export default async () => {
     },
     seeds: {
       directory: './cjs/seeds',
+      loadExtensions: ['.cjs'],
     },
   };
 };
