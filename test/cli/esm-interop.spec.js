@@ -495,14 +495,7 @@ const fixture = [
     dropDb: true,
   },
   {
-    /**
-     * FIXME?
-     * knexfile specifies loadExtension ['.js]
-     * with or without --esm
-     * this is WITH 'esm'
-     *  */
-    title:
-      "mjs knexfile CAN'T provides ESM/js migrations when specified to load 'js' extension",
+    title: 'mjs knexfile provides ESM/js migrations if .js in loadExtensions',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile18.mjs',
     nodeArgs: [
@@ -510,9 +503,6 @@ const fixture = [
       isNode10 && '--no-warnings',
     ],
     knexArgs: ['migrate:latest', '--esm'],
-    // Fails on NODE 12 & 14
-    expectedErrorMessage:
-      !isNode10 && 'Cannot create proxy with a non-object as target or handler',
     // Doesn't error on NODE10
     expectedOutput: isNode10 && 'Batch 1 run: 1 migrations',
     expectedSchema: isNode10 && [
@@ -524,14 +514,8 @@ const fixture = [
     dropDb: true,
   },
   {
-    /**
-     * FIXME?
-     * knexfile specifies loadExtension ['.js]
-     * with or without --esm
-     * without esm can;t parse esm .js files
-     *  */
     title:
-      "mjs knexfile CAN'T provides ESM/js migrations when specified to load 'js' extension #2",
+      "mjs knexfile CAN'T provide ESM/js migrations if .js in loadExtensions without --esm",
     testCase: 'knexfile-imports',
     knexfile: 'knexfile18.mjs',
     nodeArgs: [
