@@ -44,28 +44,6 @@ async function initKnex(env, opts) {
     );
   }
 
-  if (opts.esm) {
-    // enable esm interop via 'esm' module
-    require = require('esm')(module);
-    // https://github.com/standard-things/esm/issues/868
-    const ext = require.extensions['.js'];
-    require.extensions['.js'] = (m, fileName) => {
-      try {
-        // default to the original extension
-        // this fails if target file parent is of type='module'
-        return ext(m, fileName);
-      } catch (err) {
-        if (err && err.code === 'ERR_REQUIRE_ESM') {
-          return m._compile(
-            require('fs').readFileSync(fileName, 'utf8'),
-            fileName
-          );
-        }
-        throw err;
-      }
-    };
-  }
-
   env.configuration = env.configPath
     ? await openKnexfile(env.configPath)
     : mkConfigObj(opts);
@@ -393,6 +371,29 @@ cli.on('requireFail', function (name) {
 //      ensures that Liftoff will then resolve the path to `--knexfile` correctly.
 if (argv.cwd) {
   process.chdir(argv.cwd);
+}
+// Initialize 'esm' before cli.launch
+if (argv.esm) {
+  // enable esm interop via 'esm' module
+  // eslint-disable-next-line no-global-assign
+  require = require('esm')(module);
+  // https://github.com/standard-things/esm/issues/868
+  const ext = require.extensions['.js'];
+  require.extensions['.js'] = (m, fileName) => {
+    try {
+      // default to the original extension
+      // this fails if target file parent is of type='module'
+      return ext(m, fileName);
+    } catch (err) {
+      if (err && err.code === 'ERR_REQUIRE_ESM') {
+        return m._compile(
+          require('fs').readFileSync(fileName, 'utf8'),
+          fileName
+        );
+      }
+      throw err;
+    }
+  };
 }
 
 cli.launch(

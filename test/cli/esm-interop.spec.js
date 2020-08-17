@@ -53,15 +53,10 @@ const fixture = [
     testCase: 'knexfile-mjs',
     knexfile: 'knexfile.mjs',
     nodeArgs: [
-      // TODO: document this !
       isNode10 && '--experimental-modules',
       isNode10 && '--no-warnings',
     ],
-    knexArgs: [
-      'migrate:latest',
-      // TODO: document this !
-      isNode10 && `--esm`,
-    ],
+    knexArgs: ['migrate:latest', isNode10 && `--esm`],
     dropDb: true,
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -78,7 +73,7 @@ const fixture = [
     expectedOutput: 'Ran 1 seed files',
     knexArgs: ['seed:run', '--esm'],
     dropDb: true,
-    /** before assert */
+
     before: async ({ dbPath }) => {
       const db = new sqlite3.Database(dbPath);
       await createTable(db, `xyz (name TEXT)`);
@@ -89,7 +84,7 @@ const fixture = [
     testCase: 'knexfile-esm-module',
     expectedOutput: 'Ran 1 seed files',
     knexArgs: ['seed:run', '--esm'],
-    /** before assert */
+
     before: async ({ dbPath }) => {
       const db = new sqlite3.Database(dbPath);
       await createTable(db, `xyz (name TEXT)`);
@@ -110,18 +105,13 @@ const fixture = [
     testCase: 'knexfile-mjs',
     knexfile: 'knexfile.mjs',
     nodeArgs: [
-      // TODO: document this !
       isNode10 && '--experimental-modules',
       isNode10 && '--no-warnings',
     ],
-    knexArgs: [
-      'seed:run',
-      // TODO: document this !
-      isNode10 && `--esm`,
-    ],
+    knexArgs: ['seed:run', isNode10 && `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
-    /** before assert */
+
     before: async ({ dbPath }) => {
       const db = new sqlite3.Database(dbPath);
       await createTable(db, `xyz (name TEXT)`);
@@ -304,7 +294,559 @@ const fixture = [
     ],
     dropDb: true,
   },
-];
+  {
+    title: 'Dynamic ESM js import from commonjs/js with esm migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile10.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'Imports commonjs/cjs provides js/esm migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile11.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'Imports commonjs/cjs provides cjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile11.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'cjs knexfile Imports commonjs/cjs provides cjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile12.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'cjs knexfile Imports commonjs/js provides js migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile13.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'cjs knexfile provides esm migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile14.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', `--esm`],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'cjs knexfile provides mjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile15.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', '--esm'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'mjs knexfile provides cjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile16.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', isNode10 && '--esm'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    /**
+     * This is Standard NODEJS resolution
+     *  */
+    title: 'mjs knexfile provides ESM/js migrations #1',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile17.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: [
+      'migrate:latest',
+      // isNode10 && '--esm'
+    ],
+    /**
+     * Migration DOESN'T RUN?, files aren't found
+     * config.migrations.loadExtensions defaults to ['.mjs']
+     */
+    expectedOutput: 'Already up to date',
+    /** confirmation, migration didn't run */
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+    ], //schema is default knex schema
+    dropDb: true,
+  },
+  {
+    /**
+     * This is Standard NODEJS resolution
+     * even with the 'esm' module loader, AKA --esm
+     * no 'esm' involved, knexfile.mjs is navite/'imported'
+     */
+    title: 'mjs knexfile provides ESM/js migrations #2',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile17.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', isNode10 && '--esm'],
+    /**
+     * Migration DOESN'T RUN, files aren't found
+     * config.migrations.loadExtensions defaults to ['.mjs']
+     */
+    expectedOutput: 'Already up to date',
+    /** confirmation, migration didn't run */
+    expectedSchema: [
+      //schema is default knex schema
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'mjs knexfile provides ESM/js migrations if .js in loadExtensions',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile18.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', '--esm'],
+    // Doesn't error on NODE10
+    expectedOutput: isNode10 && 'Batch 1 run: 1 migrations',
+    expectedSchema: isNode10 && [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title:
+      "mjs knexfile CAN'T provide ESM/js migrations if .js in loadExtensions without --esm",
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile18.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest'],
+    // Fails on NODE 12 & 14
+    expectedErrorMessage:
+      (!isNode10 && "Unexpected token 'export'") || 'Unexpected token export',
+    dropDb: true,
+  },
+  {
+    title: 'ESM/js knexfile provides cjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile19.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', '--esm'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  {
+    title: 'ESM/js knexfile provides mjs migrations',
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile20.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['migrate:latest', '--esm'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
+    dropDb: true,
+  },
+  /**
+   * Seed tests for the above cases
+   */
+  {
+    title: `Seeds knexfile20.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile20.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile19.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile19.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile18.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile18.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile17.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile17.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile16.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile16.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile15.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile15.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile14.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile14.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile13.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile13.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile12.cjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile12.cjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile11.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile11.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile10.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile10.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile9.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile9.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile8.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile8.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile7.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile7.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  {
+    title: `Seeds knexfile6.js`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile6.js',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  !isNode10 && {
+    // This case failure on Node10 is already documented
+    title: `Seeds knexfile5.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile5.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+  !isNode10 && {
+    // This case failure on Node10 is already documented
+    title: `Seeds knexfile4.mjs`,
+    testCase: 'knexfile-imports',
+    knexfile: 'knexfile4.mjs',
+    nodeArgs: [
+      isNode10 && '--experimental-modules',
+      isNode10 && '--no-warnings',
+    ],
+    knexArgs: ['seed:run', isNode10 && `--esm`],
+    expectedOutput: 'Ran 1 seed files',
+    dropDb: true,
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+  },
+].filter(Boolean);
 
 describe('esm interop and mjs support', () => {
   before(() => {

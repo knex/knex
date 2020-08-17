@@ -1,6 +1,6 @@
 import config from '../knexfile-esm/knexfile.default.js';
 /**
- * @returns {Promise<import("../../../").Config>}
+ * @returns {import("../../../").Config}
  * */
 export default {
   ...config,
