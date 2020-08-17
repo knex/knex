@@ -1,7 +1,7 @@
 /**
  * Dynamic ESM 'js' import from commonjs
  * esm: migrations/seeds
- * @returns {import("../../../").Config}
+ * @returns {Promise<import("../../../").Config>}
  * */
 module.exports = async () => {
   const { default: config } = await import(

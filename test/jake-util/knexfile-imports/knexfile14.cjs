@@ -1,7 +1,7 @@
 /**
- * static cjs import
+ * cjs import
  * esm: migrations/seeds
- * @returns {import("../../../").Config}
+ * @returns {Promise<import("../../../").Config>}
  * */
 module.exports = async () => {
     return {

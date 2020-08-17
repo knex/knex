@@ -1,6 +1,6 @@
 import config from '../knexfile-mjs/knexfile.mjs'
 /**
- * mjs knexfile provides cjs migrations
+ * mjs knexfile provides esm/js migrations
  */
 export default {
     ...config,

@@ -1,5 +1,5 @@
 /**
- * static cjs import
+ * cjs import
  * mjs: migrations/seeds
  * @returns {Promise<import("../../../").Config>}
  * */

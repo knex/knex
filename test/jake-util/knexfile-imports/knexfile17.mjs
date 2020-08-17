@@ -1,13 +1,12 @@
 import config from '../knexfile-mjs/knexfile.mjs'
 /**
- * mjs knexfile provides cjs migrations
+ * mjs knexfile provides esm/js migrations
  */
 export default {
     ...config,
     migrations: {
         ...config.migrations,
-        directory: './esm/migrations',
-        // loadExtensions defaults to ['.mjs']
+        directory: './esm/migrations',        
     },
     seeds: {
         ...config.seeds,

@@ -2,7 +2,7 @@ const config = require('../knexfile-esm/knexfile.cjs');
 /**
  * static cjs import
  * cjs: migrations/seeds
- * @returns {import("../../../").Config}
+ * @returns {Promise<import("../../../").Config>}
  * */
 module.exports = async () => {
 
