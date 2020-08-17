@@ -812,7 +812,8 @@ const fixture = [
       await createTable(db, `xyz (name TEXT)`);
     },
   },
-  {
+  !isNode10 && {
+    // This case failure on Node10 is already documented
     title: `Seeds knexfile5.mjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile5.mjs',
@@ -828,7 +829,8 @@ const fixture = [
       await createTable(db, `xyz (name TEXT)`);
     },
   },
-  {
+  !isNode10 && {
+    // This case failure on Node10 is already documented
     title: `Seeds knexfile4.mjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile4.mjs',
@@ -844,7 +846,7 @@ const fixture = [
       await createTable(db, `xyz (name TEXT)`);
     },
   },
-];
+].filter(Boolean);
 
 describe('esm interop and mjs support', () => {
   before(() => {
