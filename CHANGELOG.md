@@ -1,5 +1,17 @@
 # Master (Unreleased)
 
+# 0.21.5 - 17 August, 2020
+
+### New features:
+
+- CLI: Improve Esm interop #3985
+- CLI: Improve mjs module support #3980
+
+### Test / internal changes:
+
+- Bump version of dtslint #3984
+- Test/document esm interop mixed formats (knexfile/migrations/seeds) #3986
+
 # 0.21.4 - 10 August, 2020
 
 ### New features:
