@@ -282,6 +282,7 @@ export default class Sidebar extends Component {
             <li>– <a href="#Migrations-CLI">Migrations</a></li>
             <li>– <a href="#Seeds-CLI">Seed files</a></li>
             <li>– <a href="#knexfile">knexfile.js</a></li>
+            <li>– <a href="#esm-interop">esm</a></li>
           <li><a href="#Migrations-API"><b>Migration API</b></a></li>
             <li>– <a href="#Migrations-make">make</a></li>
             <li>– <a href="#Migrations-latest">latest</a></li>

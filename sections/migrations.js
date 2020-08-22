@@ -1,3 +1,4 @@
+import esmInterop from "./esm-interop"
 export default [
   {
     type: "heading",
@@ -45,7 +46,7 @@ export default [
       "`--migrations-table-name`: Set the migration table name without a knexfile",
       "`--migrations-directory`: Set the migrations directory without a knexfile",
       "`--env`: environment, default: process.env.NODE_ENV || development",
-      "`--esm`: Enables ESM module interoperability",
+      "`--esm`: [Enables ESM module interoperability](#esm-interop)",
       "`--help`: Display help text for a particular command and exit."
     ]
   },
@@ -652,67 +653,6 @@ export default [
     })
     `
   },
-  {
-    type: "heading",
-    size: "md",
-    content: "ECMAScript modules (ESM) Interoperability",
-    href: "esm-module-interop"
-  },
-  {
-
-    type: "text",
-    content: `[**ESM**](https://nodejs.org/api/esm.html) Module interop is enabled by the cli's \`--esm\` flag.  
-    ESM Interop is provided by the [*'esm'*](https://github.com/standard-things/esm) module.  
-    Please note that Knex doesn't expect a \`default\` export.  
-    Expose instead 'named' exports for Knex to find the configuration, seed, or migration members.`
-  }, {
-    type: "code",
-    language: "js",
-    content: `
-    /**
-     * Note: The absence of 'default' exports
-     * Knex needs mamed exports
-     * Knex doesn't expect a 'default' export.
-     *  */
-    const config = {
-      client: 'sqlite3',
-      connection: {
-        filename: '../test.sqlite3',
-      },
-      migrations: {
-        directory: './migrations',
-      },
-      seeds: {
-        directory: './seeds',
-      },
-    };
-    /** Named exports */
-    export const { client, connection, migrations, seeds } = config;    
-    `
-  },
-  {
-    type: "code",
-    language: "js",
-    content: `
-    // file: seed.js
-    /** 
-     * NOTE the 'named' exports 
-     * instead of a 'default' export */
-    export function seed(next) {
-      // ... seed logic here
-    }`
-  },
-  {
-    type: "code",
-    language: "js",
-    content: `
-    // file: migration.js
-    /** NOTE the 'named' exports instead of a 'default' export */
-    export function up(knex) {
-      // ... migration logic here
-    }
-    export function down(knex) {
-    // ... migration logic here
-    }`
-  },
+  // esm interop
+  ...esmInterop
 ]
