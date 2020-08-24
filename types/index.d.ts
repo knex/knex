@@ -1816,6 +1816,7 @@ declare namespace Knex {
       appName?: string;
       abortTransactionOnError?: boolean;
       trustedConnection?: boolean;
+      trustServerCertificate?: boolean;
     };
     pool?: {
       min?: number;
