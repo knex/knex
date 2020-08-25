@@ -7,4 +7,8 @@ module.exports = {
     directory: __dirname + '/../knexfile-stubs',
     stub: 'table.stub',
   },
+  seeds: {
+    directory: __dirname + '/../knexfile-stubs',
+    stub: 'seed.stub',
+  },
 };

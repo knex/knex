@@ -5,7 +5,7 @@ const { Migrator } = require('../../lib/migrate/Migrator');
 const mergeConfig = require('../../lib/migrate/configuration-merger')
   .getMergedConfig;
 
-tape('migrate: constructor uses config.migrations', function(t) {
+tape('migrate: constructor uses config.migrations', function (t) {
   t.plan(1);
   const migrator = new Migrator({
     client: { config: { migrations: { directory: '/some/dir' } } },
@@ -13,7 +13,7 @@ tape('migrate: constructor uses config.migrations', function(t) {
   t.equal(migrator.config.directory, '/some/dir');
 });
 
-tape('migrate: setConfig() overrides configs given in constructor', function(
+tape('migrate: setConfig() overrides configs given in constructor', function (
   t
 ) {
   t.plan(1);

@@ -1,5 +1,9 @@
 ## Upgrading to new knex.js versions
 
+### Upgrading to version 0.21.0+
+
+* Node.js older than 10 is no longer supported, make sure to update your environment; 
+
 ### Upgrading to version 0.19.0+
 
 * Passing unknown properties to connection pool configuration now throws errors (see https://github.com/Vincit/tarn.js/issues/19 for details);

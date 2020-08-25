@@ -18,6 +18,7 @@ module.exports = {
     'no-debugger': warning,
     'prefer-const': warning,
     'no-fallthrough': warning,
+    'require-atomic-updates': 0,
   },
   env: {
     node: true,

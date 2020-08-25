@@ -5,14 +5,14 @@ const omit = require('lodash/omit');
 const QueryBuilder = require('../../lib/query/builder');
 const Client = require('../../lib/client');
 
-tape('accumulates multiple update calls #647', function(t) {
+tape('accumulates multiple update calls #647', function (t) {
   t.plan(1);
   const qb = new QueryBuilder({});
   qb.update('a', 1).update('b', 2);
   t.deepEqual(qb._single.update, { a: 1, b: 2 });
 });
 
-tape('allows for object syntax in join', function(t) {
+tape('allows for object syntax in join', function (t) {
   t.plan(1);
   const qb = new QueryBuilder(new Client({ client: 'mysql' }));
   const sql = qb
@@ -28,15 +28,12 @@ tape('allows for object syntax in join', function(t) {
   );
 });
 
-tape('clones correctly', function(t) {
+tape('clones correctly', function (t) {
   const qb = new QueryBuilder(new Client({ client: 'mysql' }));
-  const original = qb
-    .table('users')
-    .debug()
-    .innerJoin('accounts', {
-      'accounts.id': 'users.account_id',
-      'accounts.owner_id': 'users.id',
-    });
+  const original = qb.table('users').debug().innerJoin('accounts', {
+    'accounts.id': 'users.account_id',
+    'accounts.owner_id': 'users.id',
+  });
 
   const cloned = original.clone();
 

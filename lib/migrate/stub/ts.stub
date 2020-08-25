@@ -8,7 +8,7 @@ export async function up(knex: Knex): Promise<Knex.SchemaBuilder> {
     });
 }
 <% } else { %>
-export async function up(knex: Knex): Promise<any> {
+export async function up(knex: Knex): Promise<void> {
 }
 <% } %>
 <% if (d.tableName) { %>
@@ -16,6 +16,6 @@ export async function down(knex: Knex): Promise<Knex.SchemaBuilder> {
     return knex.schema.dropTable("<%= d.tableName %>");
 }
 <% } else { %>
-export async function down(knex: Knex): Promise<any> {
+export async function down(knex: Knex): Promise<void> {
 }
 <% } %>

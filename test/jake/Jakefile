@@ -4,11 +4,9 @@
 /* eslint-disable no-console */
 
 const migrateTests = require('./jakelib/migrate-test').taskList;
-const seedTests = require('./jakelib/seed-test').taskList;
 
 const tests = [
-  ...migrateTests,
-  ...seedTests
+  ...migrateTests
 ];
 
 task('default', tests, () => {

@@ -1,14 +1,16 @@
-/*global expect, d*/
-
 'use strict';
+
+const { expect } = require('chai');
 
 const uuid = require('uuid');
 const _ = require('lodash');
-const bluebird = require('bluebird');
+const sinon = require('sinon');
 
-module.exports = function(knex) {
-  describe('Inserts', function() {
-    it('should handle simple inserts', function() {
+const { TEST_TIMESTAMP } = require('../../util/constants');
+
+module.exports = function (knex) {
+  describe('Inserts', function () {
+    it('should handle simple inserts', function () {
       return knex('accounts')
         .insert(
           {
@@ -17,23 +19,23 @@ module.exports = function(knex) {
             email: 'test@example.com',
             logins: 1,
             about: 'Lorem ipsum Dolore labore incididunt enim.',
-            created_at: d,
-            updated_at: d,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
           },
           'id'
         )
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             [1]
           );
@@ -42,12 +44,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['1']
           );
@@ -56,12 +58,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             1
           );
@@ -70,12 +72,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             [1]
           );
@@ -84,13 +86,13 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
-              function(v) {
+              TEST_TIMESTAMP,
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
@@ -101,19 +103,19 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['1']
           );
         });
     });
 
-    it('should handle multi inserts', function() {
+    it('should handle multi inserts', function () {
       return knex('accounts')
         .insert(
           [
@@ -123,8 +125,8 @@ module.exports = function(knex) {
               email: 'test2@example.com',
               logins: 1,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
             },
             {
               first_name: 'Test',
@@ -132,31 +134,31 @@ module.exports = function(knex) {
               email: 'test3@example.com',
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               logins: 2,
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
             },
           ],
           'id'
         )
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [2]
           );
@@ -165,19 +167,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['2', '3']
           );
@@ -186,19 +188,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             2
           );
@@ -207,19 +209,19 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [3]
           );
@@ -228,23 +230,23 @@ module.exports = function(knex) {
             'begin execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?;end;',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
-              function(v) {
+              TEST_TIMESTAMP,
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
-              function(v) {
+              TEST_TIMESTAMP,
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
@@ -255,26 +257,26 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test2@example.com',
               'Test',
               'User',
               1,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test3@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['2', '3']
           );
         });
     });
 
-    it('should allow for using the `asCallback` interface', function(ok) {
+    it('should allow for using the `asCallback` interface', function (ok) {
       knex('test_table_two')
         .insert(
           [
@@ -298,7 +300,7 @@ module.exports = function(knex) {
           ],
           'id'
         )
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'oracledb',
             'begin execute immediate \'insert into "test_table_two" ("account_id", "details", "status") values (:1, :2, :3) returning "id" into :4\' using ?, ?, ?, out ?; execute immediate \'insert into "test_table_two" ("account_id", "details", "status") values (:1, :2, :3) returning "id" into :4\' using ?, ?, ?, out ?; execute immediate \'insert into "test_table_two" ("account_id", "details", "status") values (:1, :2, :3) returning "id" into :4\' using ?, ?, ?, out ?;end;',
@@ -306,32 +308,32 @@ module.exports = function(knex) {
               1,
               'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
               0,
-              function(v) {
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
               2,
               'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
               1,
-              function(v) {
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
               3,
               '',
               1,
-              function(v) {
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
             ['1', '2', '3']
           );
         })
-        .asCallback(function(err) {
+        .asCallback(function (err) {
           if (err) return ok(err);
           ok();
         });
     });
 
-    it('should take hashes passed into insert and keep them in the correct order', function() {
+    it('should take hashes passed into insert and keep them in the correct order', function () {
       return knex('accounts')
         .insert(
           [
@@ -341,40 +343,40 @@ module.exports = function(knex) {
               email: 'test4@example.com',
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               logins: 2,
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
             },
             {
               first_name: 'Test',
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               logins: 2,
-              created_at: d,
-              updated_at: d,
+              created_at: TEST_TIMESTAMP,
+              updated_at: TEST_TIMESTAMP,
               last_name: 'User',
               email: 'test5@example.com',
             },
           ],
           'id'
         )
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [4]
           );
@@ -383,19 +385,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['4', '5']
           );
@@ -404,19 +406,19 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             2
           );
@@ -425,19 +427,19 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [5]
           );
@@ -446,23 +448,23 @@ module.exports = function(knex) {
             'begin execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?;end;',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
-              function(v) {
+              TEST_TIMESTAMP,
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
-              function(v) {
+              TEST_TIMESTAMP,
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
@@ -473,28 +475,28 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test4@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['4', '5']
           );
         });
     });
 
-    it('will fail when multiple inserts are made into a unique column', function() {
+    it('will fail when multiple inserts are made into a unique column', function () {
       if (/redshift/i.test(knex.client.driverName)) {
-        return;
+        return this.skip();
       }
       return knex('accounts')
         .where('id', '>', 1)
@@ -506,23 +508,23 @@ module.exports = function(knex) {
             email: 'test5@example.com',
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             logins: 2,
-            created_at: d,
-            updated_at: d,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
           },
           'id'
         )
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
           tester(
@@ -530,12 +532,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
           tester(
@@ -543,12 +545,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
           tester(
@@ -556,13 +558,13 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
-              function(v) {
+              TEST_TIMESTAMP,
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ]
@@ -572,26 +574,26 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test5@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ]
           );
         })
         .then(
-          function() {
+          function () {
             throw new Error(
               'There should be a fail when multi-insert are made in unique col.'
             );
           },
-          function() {}
+          function () {}
         );
     });
 
-    it('should drop any where clause bindings', function() {
+    it('should drop any where clause bindings', function () {
       return knex('accounts')
         .where('id', '>', 1)
         .orWhere('x', 2)
@@ -602,23 +604,23 @@ module.exports = function(knex) {
             email: 'test6@example.com',
             about: 'Lorem ipsum Dolore labore incididunt enim.',
             logins: 2,
-            created_at: d,
-            updated_at: d,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
           },
           'id'
         )
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [7]
           );
@@ -627,12 +629,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id"',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['7']
           );
@@ -641,12 +643,12 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             1
           );
@@ -655,12 +657,12 @@ module.exports = function(knex) {
             'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             [6]
           );
@@ -669,13 +671,13 @@ module.exports = function(knex) {
             'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
-              function(v) {
+              TEST_TIMESTAMP,
+              function (v) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
@@ -686,22 +688,22 @@ module.exports = function(knex) {
             'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
-              d,
+              TEST_TIMESTAMP,
               'test6@example.com',
               'Test',
               'User',
               2,
-              d,
+              TEST_TIMESTAMP,
             ],
             ['7']
           );
         });
     });
 
-    it('should not allow inserting invalid values into enum fields', function() {
+    it('should not allow inserting invalid values into enum fields', function () {
       return knex('datatype_test')
         .insert({ enum_value: 'd' })
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `datatype_test` (`enum_value`) values (?)',
@@ -735,7 +737,7 @@ module.exports = function(knex) {
           );
         })
         .then(
-          function() {
+          function () {
             // No errors happen in sqlite3, which doesn't have native support
             // for the enum type.
             if (knex.client.driverName !== 'sqlite3') {
@@ -744,25 +746,25 @@ module.exports = function(knex) {
               );
             }
           },
-          function() {}
+          function () {}
         );
     });
 
-    it('should not allow invalid uuids in postgresql', function() {
+    it('should not allow invalid uuids in postgresql', function () {
       return knex('datatype_test')
         .insert({
           enum_value: 'c',
           uuid: uuid.v4(),
         })
-        .then(function() {
+        .then(function () {
           return knex('datatype_test').insert({
             enum_value: 'c',
             uuid: 'test',
           });
         })
         .then(
-          function() {
-            // No errors happen in sqlite3 or mysql, which dont have native support
+          function () {
+            // No errors happen in sqlite3 or mysql, which don't have native support
             // for the uuid type.
             if (
               knex.client.driverName === 'pg' ||
@@ -773,34 +775,34 @@ module.exports = function(knex) {
               );
             }
           },
-          function() {}
+          function () {}
         );
     });
 
-    it('should not mutate the array passed in', function() {
+    it('should not mutate the array passed in', function () {
       const a = { enum_value: 'a', uuid: uuid.v4() };
       const b = { enum_value: 'c', uuid: uuid.v4() };
       const x = [a, b];
 
       return knex('datatype_test')
         .insert(x)
-        .then(function() {
+        .then(function () {
           expect(x).to.eql([a, b]);
         });
     });
 
-    it('should handle empty inserts', function() {
+    it('should handle empty inserts', function () {
       return knex.schema
-        .createTable('test_default_table', function(qb) {
+        .createTable('test_default_table', function (qb) {
           qb.increments().primary();
           qb.string('string').defaultTo('hello');
           qb.tinyint('tinyint').defaultTo(0);
           qb.text('text').nullable();
         })
-        .then(function() {
+        .then(function () {
           return knex('test_default_table')
             .insert({}, 'id')
-            .testSql(function(tester) {
+            .testSql(function (tester) {
               tester(
                 'mysql',
                 'insert into `test_default_table` () values ()',
@@ -829,7 +831,7 @@ module.exports = function(knex) {
                 'oracledb',
                 'insert into "test_default_table" ("id") values (default) returning "id" into ?',
                 [
-                  function(v) {
+                  function (v) {
                     return v.toString() === '[object ReturningHelper:id]';
                   },
                 ],
@@ -845,18 +847,18 @@ module.exports = function(knex) {
         });
     });
 
-    it('should handle empty arrays inserts', function() {
+    it('should handle empty arrays inserts', function () {
       return knex.schema
-        .createTable('test_default_table2', function(qb) {
+        .createTable('test_default_table2', function (qb) {
           qb.increments().primary();
           qb.string('string').defaultTo('hello');
           qb.tinyint('tinyint').defaultTo(0);
           qb.text('text').nullable();
         })
-        .then(function() {
+        .then(function () {
           return knex('test_default_table2')
             .insert([{}], 'id')
-            .testSql(function(tester) {
+            .testSql(function (tester) {
               tester(
                 'mysql',
                 'insert into `test_default_table2` () values ()',
@@ -885,7 +887,7 @@ module.exports = function(knex) {
                 'oracledb',
                 'insert into "test_default_table2" ("id") values (default) returning "id" into ?',
                 [
-                  function(v) {
+                  function (v) {
                     return v.toString() === '[object ReturningHelper:id]';
                   },
                 ],
@@ -901,7 +903,7 @@ module.exports = function(knex) {
         });
     });
 
-    it('should take an array of columns to return in oracle or postgres', function() {
+    it('should take an array of columns to return in oracle or postgres', function () {
       const insertData = {
         account_id: 10,
         details:
@@ -910,7 +912,7 @@ module.exports = function(knex) {
       };
       return knex('test_table_two')
         .insert(insertData, ['account_id', 'details'])
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
@@ -964,10 +966,10 @@ module.exports = function(knex) {
               10,
               'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
               0,
-              function(v) {
+              function (v) {
                 return v.toString() === '[object ReturningHelper:account_id]';
               },
-              function(v) {
+              function (v) {
                 return v.toString() === '[object ReturningHelper:details]';
               },
             ],
@@ -996,7 +998,7 @@ module.exports = function(knex) {
             ]
           );
         })
-        .then(function(rows) {
+        .then(function (rows) {
           if (/redshift/.test(knex.client.driverName)) {
             return expect(rows).to.equal(1);
           }
@@ -1009,9 +1011,9 @@ module.exports = function(knex) {
         });
     });
 
-    it('should allow a * for returning in postgres and oracle', function() {
+    it('should allow a * for returning in postgres and oracle', function () {
       if (/redshift/i.test(knex.client.driverName)) {
-        return;
+        return this.skip();
       }
       const insertData = {
         account_id: 10,
@@ -1023,7 +1025,7 @@ module.exports = function(knex) {
       const returningColumn = '*';
       return knex('test_table_two')
         .insert(insertData, returningColumn)
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'pg',
             'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
@@ -1050,7 +1052,7 @@ module.exports = function(knex) {
               10,
               'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
               0,
-              function(v) {
+              function (v) {
                 return v.toString() === '[object ReturningHelper:ROWID]';
               },
             ],
@@ -1085,7 +1087,7 @@ module.exports = function(knex) {
             ]
           );
         })
-        .then(function(rows) {
+        .then(function (rows) {
           expect(rows.length).to.equal(1);
           if (knex.client.driverName === 'pg') {
             expect(_.keys(rows[0]).length).to.equal(5);
@@ -1097,11 +1099,7 @@ module.exports = function(knex) {
         });
     });
 
-    describe('batchInsert (TODO: fix random oracle fail)', function() {
-      if (knex.client.driverName == 'oracledb') {
-        return;
-      }
-
+    describe('batchInsert', function () {
       const driverName = knex.client.driverName;
       const fiftyLengthString =
         'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
@@ -1116,9 +1114,9 @@ module.exports = function(knex) {
         items.push(item);
       }
 
-      beforeEach(function() {
-        return knex.schema.dropTableIfExists('BatchInsert').then(function() {
-          return knex.schema.createTable('BatchInsert', function(table) {
+      beforeEach(function () {
+        return knex.schema.dropTableIfExists('BatchInsert').then(function () {
+          return knex.schema.createTable('BatchInsert', function (table) {
             for (let i = 0; i < amountOfColumns; i++) {
               table.string('Col' + i, 50);
             }
@@ -1126,66 +1124,68 @@ module.exports = function(knex) {
         });
       });
 
-      it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function() {
+      it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function () {
         this.timeout(30000);
         return knex
           .batchInsert('BatchInsert', items, 30)
           .returning(['Col1', 'Col2'])
-          .then(function(result) {
+          .then(function (result) {
             //Returning only supported by some dialects.
             if (['pg', 'oracledb'].indexOf(driverName) !== -1) {
-              result.forEach(function(item) {
+              result.forEach(function (item) {
                 expect(item.Col1).to.equal(fiftyLengthString);
                 expect(item.Col2).to.equal(fiftyLengthString);
               });
             }
             return knex('BatchInsert').select();
           })
-          .then(function(result) {
+          .then(function (result) {
             const count = result.length;
             expect(count).to.equal(amountOfItems);
           });
       });
 
-      it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', function() {
+      it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', async function () {
         if (/redshift/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
-        return new bluebird(function(resolve, reject) {
-          return knex.schema
-            .dropTableIfExists('batchInsertDuplicateKey')
-            .then(function() {
-              return knex.schema.createTable(
-                'batchInsertDuplicateKey',
-                function(table) {
-                  table.string('col');
-                  table.primary('col');
-                }
-              );
-            })
-            .then(function() {
-              const rows = [{ col: 'a' }, { col: 'a' }];
-              return knex.batchInsert(
-                'batchInsertDuplicateKey',
-                rows,
-                rows.length
-              );
-            })
-            .then(function() {
-              return reject(new Error('Should not reach this point'));
-            })
-            .catch(function(error) {
-              //Should reach this point before timeout of 10s
-              expect(error.message.toLowerCase()).to.include(
-                'batchinsertduplicatekey'
-              );
-              resolve(error);
+        this.timeout(10000);
+
+        const fn = sinon.stub();
+        process.on('unhandledRejection', fn);
+        await knex.schema
+          .dropTableIfExists('batchInsertDuplicateKey')
+          .then(function () {
+            return knex.schema.createTable('batchInsertDuplicateKey', function (
+              table
+            ) {
+              table.string('col');
+              table.primary('col');
             });
-        }).timeout(10000);
+          })
+          .then(function () {
+            const rows = [{ col: 'a' }, { col: 'a' }];
+            return knex.batchInsert(
+              'batchInsertDuplicateKey',
+              rows,
+              rows.length
+            );
+          })
+          .then(function () {
+            expect.fail('Should not reach this point');
+          })
+          .catch(function (error) {
+            //Should reach this point before timeout of 10s
+            expect(error.message.toLowerCase()).to.include(
+              'batchinsertduplicatekey'
+            );
+          });
+        expect(fn).have.not.been.called;
+        process.removeListener('unhandledRejection', fn);
       });
 
-      it('knex.batchInsert with specified transaction', function() {
-        return knex.transaction(function(tr) {
+      it('knex.batchInsert with specified transaction', function () {
+        return knex.transaction(function (tr) {
           knex
             .batchInsert('BatchInsert', items, 30)
             .returning(['Col1', 'Col2'])
@@ -1195,8 +1195,8 @@ module.exports = function(knex) {
         });
       });
 
-      it('transaction.batchInsert using specified transaction', function() {
-        return knex.transaction(function(tr) {
+      it('transaction.batchInsert using specified transaction', function () {
+        return knex.transaction(function (tr) {
           return tr
             .batchInsert('BatchInsert', items, 30)
             .returning(['Col1', 'Col2']);
@@ -1204,34 +1204,34 @@ module.exports = function(knex) {
       });
     });
 
-    it('should validate batchInsert batchSize parameter', function() {
+    it('should validate batchInsert batchSize parameter', function () {
       //Should not throw, batchSize default
       return knex
         .batchInsert('test', [])
-        .then(function() {
+        .then(function () {
           //Should throw, null not valid
           return knex.batchInsert('test', [], null);
         })
-        .catch(function(error) {
+        .catch(function (error) {
           expect(error.message).to.equal('Invalid chunkSize: null');
 
           //Should throw, 0 is not a valid chunkSize
           return knex.batchInsert('test', [], 0);
         })
-        .catch(function(error) {
+        .catch(function (error) {
           expect(error.message).to.equal('Invalid chunkSize: 0');
 
           //Also faulty
           return knex.batchInsert('test', [], 'still no good');
         })
-        .catch(function(error) {
+        .catch(function (error) {
           expect(error.message).to.equal('Invalid chunkSize: still no good');
 
           return true;
         });
     });
 
-    it('should replace undefined keys in multi insert with DEFAULT', function() {
+    it('should replace undefined keys in multi insert with DEFAULT', function () {
       if (knex.client.driverName === 'sqlite3') {
         return true;
       }
@@ -1255,7 +1255,7 @@ module.exports = function(knex) {
           ],
           '*'
         )
-        .then(function() {
+        .then(function () {
           return knex('accounts')
             .whereIn('email', [
               'single-test1@example.com',
@@ -1263,7 +1263,7 @@ module.exports = function(knex) {
             ])
             .orderBy('email', 'desc');
         })
-        .then(function(results) {
+        .then(function (results) {
           expect(results[0].logins).to.equal(1);
           expect(results[1].about).to.equal(null);
           // cleanup to prevent needs for too much changes to other tests
@@ -1271,18 +1271,18 @@ module.exports = function(knex) {
             .delete()
             .whereIn(
               'id',
-              results.map(function(row) {
+              results.map(function (row) {
                 return row.id;
               })
             );
         });
     });
 
-    it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function() {
+    it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function () {
       if (knex.client.driverName === 'sqlite3') {
         return true;
       }
-      return knex.transaction(function(trx) {
+      return knex.transaction(function (trx) {
         return trx('accounts')
           .insert({
             last_name: 'First Item',
@@ -1292,15 +1292,13 @@ module.exports = function(knex) {
             created_at: new Date(),
             updated_at: new Date(),
           })
-          .then(function(results) {
+          .then(function (results) {
             return trx('accounts').where('email', 'findme@example.com');
           })
-          .then(function(results) {
+          .then(function (results) {
             expect(results[0].logins).to.equal(1);
             // cleanup to prevent needs for too much changes to other tests
-            return trx('accounts')
-              .delete()
-              .where('id', results[0].id);
+            return trx('accounts').delete().where('id', results[0].id);
           });
       });
     });

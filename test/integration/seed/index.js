@@ -1,10 +1,11 @@
-/*global expect*/
 'use strict';
+
+const { expect } = require('chai');
 
 const path = require('path');
 const rimraf = require('rimraf');
 
-module.exports = function(knex) {
+module.exports = function (knex) {
   describe('knex.seed.make', () => {
     it('should create a new seed file with the make method', async () => {
       const name = await knex.seed.make('test');

@@ -10,7 +10,7 @@ function raw(sql, bindings) {
   return new Raw(client).set(sql, bindings);
 }
 
-test('allows for ?? to interpolate identifiers', function(t) {
+test('allows for ?? to interpolate identifiers', function (t) {
   t.plan(1);
   t.equal(
     raw('select * from ?? where id = ? and ?? = ??', [
@@ -23,7 +23,7 @@ test('allows for ?? to interpolate identifiers', function(t) {
   );
 });
 
-test('allows for object bindings', function(t) {
+test('allows for object bindings', function (t) {
   t.plan(1);
   t.equal(
     raw('select * from users where user_id = :userId and name = :name', {
@@ -34,7 +34,7 @@ test('allows for object bindings', function(t) {
   );
 });
 
-test('allows for :val: for interpolated identifiers', function(t) {
+test('allows for :val: for interpolated identifiers', function (t) {
   t.plan(1);
   t.equal(
     raw('select * from :table: where user_id = :userId and name = :name', {
@@ -46,7 +46,7 @@ test('allows for :val: for interpolated identifiers', function(t) {
   );
 });
 
-test('allows use :val: in start of raw query', function(t) {
+test('allows use :val: in start of raw query', function (t) {
   t.plan(1);
   t.equal(
     raw(':userIdCol: = :userId', { userIdCol: 'table', userId: 1 }).toString(),
@@ -54,12 +54,12 @@ test('allows use :val: in start of raw query', function(t) {
   );
 });
 
-test('allows use :val in start of raw query', function(t) {
+test('allows use :val in start of raw query', function (t) {
   t.plan(1);
   t.equal(raw(':userId', { userId: 1 }).toString(), '1');
 });
 
-test('allows for :val: to be interpolated when identifiers with dots', function(t) {
+test('allows for :val: to be interpolated when identifiers with dots', function (t) {
   t.plan(1);
   t.equal(
     raw('select * from "table" join "chair" on :tableCol: = :chairCol:', {
@@ -70,11 +70,9 @@ test('allows for :val: to be interpolated when identifiers with dots', function(
   );
 });
 
-test('allows for options in raw queries, #605', function(t) {
+test('allows for options in raw queries, #605', function (t) {
   t.plan(1);
-  const x = raw("select 'foo', 'bar';")
-    .options({ rowMode: 'array' })
-    .toSQL();
+  const x = raw("select 'foo', 'bar';").options({ rowMode: 'array' }).toSQL();
 
   t.deepEqual(_.pick(x, ['sql', 'options', 'method', 'bindings']), {
     sql: "select 'foo', 'bar';",
@@ -84,7 +82,7 @@ test('allows for options in raw queries, #605', function(t) {
   });
 });
 
-test('raw bindings are optional, #853', function(t) {
+test('raw bindings are optional, #853', function (t) {
   t.plan(2);
 
   const sql = raw('select * from ? where id=?', [raw('foo'), 4]).toSQL();
