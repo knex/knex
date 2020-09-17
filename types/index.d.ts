@@ -1076,7 +1076,7 @@ declare namespace Knex {
       WhereNull<TRecord, TResult> {
     (raw: Raw): QueryBuilder<TRecord, TResult>;
 
-    (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
+    (callback: QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult>;
 
     (object: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
 
@@ -1130,7 +1130,7 @@ declare namespace Knex {
   }
 
   interface WhereWrapped<TRecord = any, TResult = unknown[]> {
-    (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
+    (callback: QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereNull<TRecord = any, TResult = unknown[]> {
@@ -1147,7 +1147,7 @@ declare namespace Knex {
   }
 
   interface WhereExists<TRecord = any, TResult = unknown[]> {
-    (callback: QueryCallback): QueryBuilder<TRecord, TResult>;
+    (callback: QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
       query: QueryBuilder<TRecordInner, TResultInner>
     ): QueryBuilder<TRecord, TResult>;
