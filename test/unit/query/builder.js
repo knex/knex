@@ -952,6 +952,34 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('where not should throw warning when used with "in" or "between"', function () {
+    try {
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'in', [1, 2, 3]);
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'whereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.'
+      );
+    }
+
+    try {
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'between', [1, 3]);
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'whereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.'
+      );
+    }
+  });
+
   it('where bool', () => {
     testquery(qb().select('*').from('users').where(true), {
       mysql: 'select * from `users` where 1 = 1',
