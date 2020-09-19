@@ -1944,7 +1944,7 @@ declare namespace Knex {
   }
 
   interface SeedsConfig<V extends {} = any> {
-    directory?: string;
+    directory?: string | string[];
     extension?: string;
     loadExtensions?: readonly string[];
     stub?: string;
