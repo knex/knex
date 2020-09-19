@@ -1,1 +1,4 @@
 *.stub
+# 
+lib/util/import-file.js
+test/jake-util/knexfile-imports

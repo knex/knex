@@ -1,5 +1,69 @@
 # Master (Unreleased)
 
+# 0.21.5 - 17 August, 2020
+
+### New features:
+
+- CLI: Improve Esm interop #3985
+- CLI: Improve mjs module support #3980
+
+### Test / internal changes:
+
+- Bump version of dtslint #3984
+- Test/document esm interop mixed formats (knexfile/migrations/seeds) #3986
+
+# 0.21.4 - 10 August, 2020
+
+### New features:
+
+- CLI: Add new option for seed: recursive #3974
+
+### Bug fixes:
+
+- CLI: Do not load seeds from subfolders recursively by default #3974
+
+# 0.21.3 - 08 August, 2020
+
+### New features:
+
+- CLI: Support multiple directories for seeds #3967
+
+### Bug fixes:
+
+- Ensure DB stream is destroyed when the PassThrough is destroyed #2324
+- Support postProcessResponse for streams #3931
+- Fix ESM module interop for calling module/package of type 'module' #3938
+- CLI: Fix migration source name in rollback all #3956
+- Fix getMergedConfig calls to include client logger #3920
+- Escape single quoted values passed to defaultTo function #3899
+
+### Typings:
+
+- Add .timeout(ms) to .raw()'s typescript typings #3885
+- Add typing for double table column builder #3950
+- Add a phantom tag to Ref type to mark received type parameters as used #3934
+- Add `null` as valid binding type #3946
+
+### Test / internal changes:
+
+- Change query lab link to https #3933
+
+# 0.21.2 - 10 July, 2020
+
+### New features:
+
+- Warn user if custom migration source is being reset #3839
+- Prefer `void` as return type on migration generator ts stub #3865
+- MSSQL: Added the removal of a columns default constraint, before dropping the column #3855
+
+### Typings:
+
+- Fix definition for raw querybuilders #3846
+
+### Test / internal changes:
+
+- Refactor migration logic to use async/await #3838
+
 # 0.21.1 - 28 April, 2020
 
 ### New features:
