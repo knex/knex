@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { FileTestHelper } = require('cli-testlab');
 
 const equal = require('assert').equal;
 const fs = require('fs');
@@ -1034,6 +1035,33 @@ module.exports = function (knex) {
         .then(function (exists) {
           expect(exists).to.equal(true);
         });
+    });
+  });
+
+  describe('migrationSource config as class for migrate:make', function () {
+    class MigrationSource {
+      getMigrations() {
+        return Promise.resolve([]);
+      }
+      getMigrationName(migration) {
+        return undefined;
+      }
+      getMigration(migration) {
+        return {};
+      }
+    }
+
+    it('can accept a custom migration source', async () => {
+      const migrationSource = new MigrationSource();
+      const fileHelper = new FileTestHelper();
+
+      await knex.migrate.make('testMigration', {
+        migrationSource,
+      });
+
+      fileHelper.deleteFileGlob(
+        `test/integration/migrate/migration/*testMigration.js`
+      );
     });
   });
 
