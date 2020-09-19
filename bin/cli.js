@@ -93,7 +93,11 @@ function invoke(env) {
       'environment, default: process.env.NODE_ENV || development'
     )
     .option('--esm', 'Enable ESM interop.')
-    .option('--specific [path]', 'Specify one seed file to execute.');
+    .option('--specific [path]', 'Specify one seed file to execute.')
+    .option(
+      '--timestamp-filename-prefix',
+      'Enable a timestamp prefix on name of generated seed files.'
+    );
 
   commander
     .command('init')
@@ -300,6 +304,11 @@ function invoke(env) {
       `--stub [<relative/path/from/knexfile>|<name>]`,
       'Specify the seed stub to use. If using <name> the file must be located in config.seeds.directory'
     )
+    .option(
+      '--timestamp-filename-prefix',
+      'Enable a timestamp prefix on name of generated seed files.',
+      false
+    )
     .action(async (name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
@@ -309,6 +318,10 @@ function invoke(env) {
       const stub = getStubPath('seeds', env, opts);
       if (stub) {
         configOverrides.stub = stub;
+      }
+
+      if (opts.timestampFilenamePrefix) {
+        configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
       }
 
       instance.seed

@@ -1968,6 +1968,7 @@ declare namespace Knex {
     directory?: string | string[];
     loadExtensions?: readonly string[];
     specific?: string;
+    timestampFilenamePrefix?: boolean;
     recursive?: boolean;
     sortDirsSeparately?: boolean;
   }
