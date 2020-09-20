@@ -1051,7 +1051,15 @@ module.exports = function (knex) {
       }
     }
 
-    it('can accept a custom migration source', async () => {
+    it('does not reset a custom migration source', async () => {
+      const oldLogger = knex.client.logger;
+      const warnMessages = [];
+      knex.client.logger = {
+        warn: (msg) => {
+          warnMessages.push(msg);
+        },
+      };
+
       const migrationSource = new MigrationSource();
       const fileHelper = new FileTestHelper();
 
@@ -1062,6 +1070,8 @@ module.exports = function (knex) {
       fileHelper.deleteFileGlob(
         `test/integration/migrate/migration/*testMigration.js`
       );
+      knex.client.logger = oldLogger;
+      expect(warnMessages.length).equal(0);
     });
   });
 
