@@ -28,10 +28,10 @@ describe('migrate:latest', () => {
     fileHelper.createFile(
       'migrations/000_create_rule_table.js',
       `
-            exports.up = (knex)=> knex.schema.createTable('rules', (table)=> {
+            exports.up = (knex) => knex.schema.createTable('rules', (table)=> {
                 table.string('name');
             });
-            exports.down = (knex)=> knex.schema.dropTable('rules');
+            exports.down = (knex) => knex.schema.dropTable('rules');
         `,
       { willBeCleanedUp: true, isPathAbsolute: false }
     );

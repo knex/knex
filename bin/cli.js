@@ -35,11 +35,6 @@ async function openKnexfile(configPath) {
   return config;
 }
 
-const fsPromised = {
-  readFile: promisify(fs.readFile),
-  writeFile: promisify(fs.writeFile),
-};
-
 const initKnex = async (env, opts) => {
   if (opts.esm) {
     console.warn(
@@ -64,7 +59,8 @@ const initKnex = async (env, opts) => {
     env.configuration,
     env.configPath
   );
-  const knex = await import(env.modulePath);
+  console.log(env.modulePath);
+  const knex = require(env.modulePath);
   return knex(resolvedConfig);
 };
 
@@ -103,7 +99,7 @@ function invoke(env) {
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
     )
-    .option('--esm', 'Enable ESM interop. (Deprecated)');
+    .option('--esm', 'Enable ESM interop. (Deprecated)')
     .option('--specific [path]', 'Specify one seed file to execute.')
     .option(
       '--timestamp-filename-prefix',
@@ -181,6 +177,7 @@ function invoke(env) {
         success(color.green(`Created Migration: ${createdName}`));
       } catch (error) {
         console.log(error);
+        throw error;
         exit();
       }
     });
@@ -349,7 +346,8 @@ function invoke(env) {
           configOverrides.stub = stub;
         }
         if (opts.timestampFilenamePrefix) {
-          configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
+          configOverrides.timestampFilenamePrefix =
+            opts.timestampFilenamePrefix;
         }
         const createdName = await knex.seed.make(name, configOverrides);
         success(color.green(`Created seed file: ${createdName}`));
