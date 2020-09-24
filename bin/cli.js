@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* eslint no-console:0, no-var:0 */
 const Liftoff = require('liftoff');
+const merge = require('lodash/merge');
 const interpret = require('interpret');
 const path = require('path');
 const tildify = require('tildify');
@@ -9,6 +10,7 @@ const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 const cliPkg = require('../package');
 const {
+  parseConfigObj,
   mkConfigObj,
   resolveEnvironmentConfig,
   exit,
@@ -44,17 +46,24 @@ async function initKnex(env, opts) {
     );
   }
 
-  env.configuration = env.configPath
+  const knexFileConfig = env.configPath
     ? await openKnexfile(env.configPath)
     : mkConfigObj(opts);
+
+  env.configuration = knexFileConfig;
 
   const resolvedConfig = resolveEnvironmentConfig(
     opts,
     env.configuration,
     env.configPath
   );
+
+  const optionsConfig = parseConfigObj(opts);
+
+  const config = merge(resolvedConfig, optionsConfig);
+
   const knex = require(env.modulePath);
-  return knex(resolvedConfig);
+  return knex(config);
 }
 
 function invoke(env) {
