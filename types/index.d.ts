@@ -1699,7 +1699,7 @@ declare namespace Knex {
       origImpl: (value: string) => string,
       queryContext: any
     ) => string;
-    seeds?: SeedsConfig<SV>;
+    seeds?: SeederConfig<SV>;
     acquireConnectionTimeout?: number;
     useNullAsDefault?: boolean;
     searchPath?: string | readonly string[];
@@ -1943,14 +1943,6 @@ declare namespace Knex {
     migrationSource?: MigrationSource<unknown>;
   }
 
-  interface SeedsConfig<V extends {} = any> {
-    directory?: string | string[];
-    extension?: string;
-    loadExtensions?: readonly string[];
-    stub?: string;
-    variables?: V;
-  }
-
   interface Migrator {
     make(name: string, config?: MigratorConfig): Promise<string>;
     latest(config?: MigratorConfig): Promise<any>;
@@ -1963,14 +1955,16 @@ declare namespace Knex {
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
-  interface SeederConfig {
+  interface SeederConfig<V extends {} = any> {
     extension?: string;
-    directory?: string | string[];
+    directory?: string | readonly string[];
     loadExtensions?: readonly string[];
     specific?: string;
     timestampFilenamePrefix?: boolean;
     recursive?: boolean;
     sortDirsSeparately?: boolean;
+    stub?: string;
+    variables?: V;
   }
 
   class Seeder {
