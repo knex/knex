@@ -743,6 +743,45 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('clear by statements', () => {
+    testsql(
+      qb()
+      .table('users')
+      .select(['id'])
+      .where('id', '<', 10)
+      .groupBy('id')
+      .limit(100)
+      .offset(100)
+      .having('id', '>', 100)
+      .clear('columns')
+      .select(['id'])
+      .clear('select')
+      .clear('where')
+      .clear('group')
+      .clear('limit')
+      .clear('offset')
+      .clear('having'),
+      {
+        mysql: {
+          sql: 'select * from `users`',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users]',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "users"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users"',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('basic wheres', () => {
     testsql(qb().select('*').from('users').where('id', '=', 1), {
       mysql: {
