@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.21.6 - 27 September, 2020
+
+### New features:
+
+- CLI: New config parameter / CLI flag to prefixing seed filename with timestamp #3873
+- CLI: throw an error when specific seed file cannot be found #4011
+- Warn if whereNot is used with 'in' or 'between' #4038
+
+### Bug fixes:
+
+- CLI: Fix double merging of config for migrator #4040
+
+### Typings:
+
+- Unify SeedsConfig and SeederConfig #4003
+- Allow string[] type for directory in SeedsConfig #4033
+
 # 0.21.5 - 17 August, 2020
 
 ### New features:
