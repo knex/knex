@@ -62,7 +62,7 @@ async function initKnex(env, opts) {
   const config = merge(resolvedConfig, optionsConfig);
 
   // Migrations directory gets defaulted if it is undefined.
-  if (!config.migrations.directory) {
+  if (!env.configPath && !config.migrations.directory) {
     config.migrations.directory = null;
   }
 
