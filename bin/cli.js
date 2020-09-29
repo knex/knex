@@ -23,7 +23,11 @@ const { readFile, writeFile } = require('./../lib/util/fs');
 const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
-  let config = require(configPath);
+  const importFile = require('../lib/util/import-file'); // require me late!
+  let config = await importFile(configPath);
+  if (config && config.default) {
+    config = config.default;
+  }
   if (typeof config === 'function') {
     config = await config();
   }
@@ -38,11 +42,6 @@ async function initKnex(env, opts) {
       'Working directory changed to',
       color.magenta(tildify(env.cwd))
     );
-  }
-
-  if (opts.esm) {
-    // enable esm interop via 'esm' module
-    require = require('esm')(module);
   }
 
   env.configuration = env.configPath
@@ -94,7 +93,11 @@ function invoke(env) {
       'environment, default: process.env.NODE_ENV || development'
     )
     .option('--esm', 'Enable ESM interop.')
-    .option('--specific [path]', 'Specify one seed file to execute.');
+    .option('--specific [path]', 'Specify one seed file to execute.')
+    .option(
+      '--timestamp-filename-prefix',
+      'Enable a timestamp prefix on name of generated seed files.'
+    );
 
   commander
     .command('init')
@@ -301,6 +304,11 @@ function invoke(env) {
       `--stub [<relative/path/from/knexfile>|<name>]`,
       'Specify the seed stub to use. If using <name> the file must be located in config.seeds.directory'
     )
+    .option(
+      '--timestamp-filename-prefix',
+      'Enable a timestamp prefix on name of generated seed files.',
+      false
+    )
     .action(async (name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
@@ -310,6 +318,10 @@ function invoke(env) {
       const stub = getStubPath('seeds', env, opts);
       if (stub) {
         configOverrides.stub = stub;
+      }
+
+      if (opts.timestampFilenamePrefix) {
+        configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
       }
 
       instance.seed
@@ -372,6 +384,29 @@ cli.on('requireFail', function (name) {
 //      ensures that Liftoff will then resolve the path to `--knexfile` correctly.
 if (argv.cwd) {
   process.chdir(argv.cwd);
+}
+// Initialize 'esm' before cli.launch
+if (argv.esm) {
+  // enable esm interop via 'esm' module
+  // eslint-disable-next-line no-global-assign
+  require = require('esm')(module);
+  // https://github.com/standard-things/esm/issues/868
+  const ext = require.extensions['.js'];
+  require.extensions['.js'] = (m, fileName) => {
+    try {
+      // default to the original extension
+      // this fails if target file parent is of type='module'
+      return ext(m, fileName);
+    } catch (err) {
+      if (err && err.code === 'ERR_REQUIRE_ESM') {
+        return m._compile(
+          require('fs').readFileSync(fileName, 'utf8'),
+          fileName
+        );
+      }
+      throw err;
+    }
+  };
 }
 
 cli.launch(

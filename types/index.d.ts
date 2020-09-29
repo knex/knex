@@ -379,6 +379,7 @@ declare namespace Knex {
     | string
     | number
     | boolean
+    | null
     | Date
     | Array<string>
     | Array<number>
@@ -1366,6 +1367,7 @@ declare namespace Knex {
   interface Raw<TResult = any>
     extends events.EventEmitter,
       ChainableInterface<ResolveResult<TResult>> {
+    timeout(ms: number, options?: {cancel?: boolean}): Raw<TResult>;
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
@@ -1378,7 +1380,24 @@ declare namespace Knex {
     <TResult2 = TResult>(sql: string, bindings: readonly RawBinding[] | ValueDict): Raw<TResult2>;
   }
 
+  const RefMemberTag: unique symbol;
+
   interface Ref<TSrc extends string, TMapping extends {}> extends Raw<string> {
+      // TypeScript can behave weirdly if type parameters are not
+      // actually used in the members of type.
+      //
+      // See: https://github.com/knex/knex/issues/3932
+      //
+      // We simply need to propagate the type context so that we can extract
+      // them later, but we just add a "phantom" property so that typescript
+      // doesn't think that these parameters are unused
+      //
+      // Because unique symbol is used here, there is no way to actually
+      // access this at runtime
+      [RefMemberTag]: {
+        src: TSrc,
+        mapping: TMapping
+      };
       withSchema(schema: string): this;
       as<TAlias extends string>(alias: TAlias): Ref<TSrc, {[K in TAlias]: TSrc}>;
   }
@@ -1550,6 +1569,11 @@ declare namespace Knex {
       precision?: number,
       scale?: number
     ): ColumnBuilder;
+    double(
+      columnName: string,
+      precision?: number,
+      scale?: number
+    ): ColumnBuilder;
     decimal(
       columnName: string,
       precision?: number | null,
@@ -1675,7 +1699,7 @@ declare namespace Knex {
       origImpl: (value: string) => string,
       queryContext: any
     ) => string;
-    seeds?: SeedsConfig<SV>;
+    seeds?: SeederConfig<SV>;
     acquireConnectionTimeout?: number;
     useNullAsDefault?: boolean;
     searchPath?: string | readonly string[];
@@ -1919,14 +1943,6 @@ declare namespace Knex {
     migrationSource?: MigrationSource<unknown>;
   }
 
-  interface SeedsConfig<V extends {} = any> {
-    directory?: string;
-    extension?: string;
-    loadExtensions?: readonly string[];
-    stub?: string;
-    variables?: V;
-  }
-
   interface Migrator {
     make(name: string, config?: MigratorConfig): Promise<string>;
     latest(config?: MigratorConfig): Promise<any>;
@@ -1939,11 +1955,16 @@ declare namespace Knex {
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
-  interface SeederConfig {
+  interface SeederConfig<V extends {} = any> {
     extension?: string;
-    directory?: string;
+    directory?: string | readonly string[];
     loadExtensions?: readonly string[];
     specific?: string;
+    timestampFilenamePrefix?: boolean;
+    recursive?: boolean;
+    sortDirsSeparately?: boolean;
+    stub?: string;
+    variables?: V;
   }
 
   class Seeder {

@@ -1,14 +1,10 @@
+/** @type {import("../../../").Config} */
 const config = {
   client: 'sqlite3',
   connection: {
-    filename: '../test.sqlite3',
+    filename: './test.sqlite3',
   },
-  migrations: {
-    directory: './migrations',
-  },
-  seeds: {
-    directory: './seeds',
-  },
+  useNullAsDefault: true,
 };
-/** Named exports */
-export const { client, connection, migrations, seeds } = config;
+/** Named export */
+export const { client, connection, useNullAsDefault } = config;
