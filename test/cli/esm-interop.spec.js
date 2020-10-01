@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { execCommand } = require('cli-testlab');
 const sqlite3 = require('sqlite3');
+const semver = require('semver');
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 const NODE_VERSION = Number((/v(\d+)/i.exec(process.version) || [])[1]);
 const isNode10 = NODE_VERSION === 10;
@@ -161,6 +162,8 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
+      : semver.gte(process.version, 'v14.13.0')
+      ? 'Unexpected export statement in CJS module'
       : "Unexpected token 'export'",
   },
   {
@@ -176,6 +179,8 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
+      : semver.gte(process.version, 'v14.13.0')
+      ? 'Unexpected export statement in CJS module'
       : "Unexpected token 'export'",
   },
   {
