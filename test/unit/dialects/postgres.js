@@ -11,7 +11,7 @@ describe('Postgres Unit Tests', function () {
     const fakeConnection = {
       query: (...args) => {
         const cb = args.find((arg) => {
-          return _.isFunction(arg);
+          return typeof arg === 'function';
         });
         cb();
       },
