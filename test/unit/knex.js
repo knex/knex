@@ -1,10 +1,10 @@
+const { inherits } = require('util');
 const Knex = require('../../lib/index');
 const QueryBuilder = require('../../lib/query/builder');
 const { expect } = require('chai');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
-const inherits = require('inherits');
 
 describe('knex', () => {
   describe('supports passing existing connection', () => {
