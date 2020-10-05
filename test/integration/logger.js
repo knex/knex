@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const _ = require('lodash');
-const isObject = require('../../lib/util/isObject.js');
+const { isObject } = require('../../lib/util/is');
 
 const { TEST_TIMESTAMP } = require('../util/constants');
 

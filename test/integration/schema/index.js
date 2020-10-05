@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 
 const _ = require('lodash');
-const isObject = require('../../../lib/util/isObject.js');
+const { isString, isObject } = require('../../../lib/util/is');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -558,7 +558,7 @@ module.exports = (knex) => {
             if (knex.client.driverName === 'pg') {
               expect(result.metadata).to.eql(defaultMetadata);
               expect(result.details).to.eql(defaultDetails);
-            } else if (typeof result.metadata === 'string') {
+            } else if (isString(result.metadata)) {
               expect(JSON.parse(result.metadata)).to.eql(defaultMetadata);
             } else {
               expect(result.metadata).to.eql(defaultMetadata);
