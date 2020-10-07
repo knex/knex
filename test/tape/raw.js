@@ -91,3 +91,15 @@ test('raw bindings are optional, #853', function (t) {
 
   t.deepEqual(sql.bindings, [4]);
 });
+
+test('Allows retrieval of raw query through toNative', function (t) {
+  t.plan(2);
+  t.equal(raw('count(*) as user_count, status').toSQL().toNative(), {
+    sql: 'count(*) as user_count, status',
+    bindings: []
+  });
+  t.equal(raw('select * from users where id = ?', [1]).toSQL().toNative(), {
+    sql: 'select * from users where id = ?',
+    bindings: [1]
+  });
+});
