@@ -1895,16 +1895,12 @@ declare namespace Knex {
     priorityRange?: number;
     log?: (message: string, logLevel: string) => void;
 
-    // generic-pool v3 configs
-    maxWaitingClients?: number;
-    testOnBorrow?: boolean;
+    // tarn configs
+    propagateCreateError?: boolean;
+    createRetryIntervalMillis?: number;
+    createTimeoutMillis?: number;
+    destroyTimeoutMillis?: number;
     acquireTimeoutMillis?: number;
-    fifo?: boolean;
-    autostart?: boolean;
-    evictionRunIntervalMillis?: number;
-    numTestsPerRun?: number;
-    softIdleTimeoutMillis?: number;
-    Promise?: any;
   }
 
   type LogFn = (message: any) => void;
