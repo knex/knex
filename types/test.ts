@@ -89,6 +89,14 @@ type _T8 = ExtendsWitness<Knex.QueryBuilder<User, number[]>, Knex.QueryBuilder>;
 type _T9 = ExtendsWitness<Knex.QueryBuilder<any, any[]>, Knex.QueryBuilder>;
 type _T10 = ExtendsWitness<Knex.QueryBuilder<User, number>, Knex.QueryBuilder>;
 
+declare module './tables' {
+  interface Tables {
+    users_inferred: User;
+    departments_inferred: Department;
+    articles_inferred: Article;
+  }
+}
+
 const main = async () => {
   // # Select:
 
@@ -104,6 +112,9 @@ const main = async () => {
 
   // $ExpectType User[]
   await knex<User>('users');
+
+  // $ExpectType User[]
+  await knex('users_inferred');
 
   // $ExpectType any[]
   await knex('users').select('id');
@@ -143,6 +154,9 @@ const main = async () => {
   // $ExpectType Pick<User, "id"> | undefined
   await knex<User>('users').first('id');
 
+  // $ExpectType Pick<User, "id"> | undefined
+  await knex.first('id').from('users_inferred');
+
   // $ExpectType Pick<User, "id" | "name"> | undefined
   await knex<User>('users').first('id', 'name');
 
@@ -151,6 +165,12 @@ const main = async () => {
 
   // $ExpectType { id: number; name: string; }[]
   await knex<User>('users').select([
+    knex.ref('name'),
+    knex.ref('id')
+  ]);
+
+  // $ExpectType { id: number; name: string; }[]
+  await knex('users_inferred').select([
     knex.ref('name'),
     knex.ref('id')
   ]);
@@ -166,6 +186,9 @@ const main = async () => {
 
   // $ExpectType Pick<User, "id">[]
   await knex<User>('users').select('id');
+
+  // $ExpectType Pick<User, "id">[]
+  await knex('users_inferred').select('id');
 
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
@@ -828,6 +851,13 @@ const main = async () => {
     'departments.id'
   );
 
+  // $ExpectType (User & Department)[]
+  await knex('users_inferred').innerJoin(
+    'departments_inferred',
+    'users_inferred.departmentid',
+    'departments_inferred.id'
+  );
+
   // $ExpectType (User & Department & Article)[]
   await knex<User>('users')
     .innerJoin<Department>(
@@ -837,10 +867,24 @@ const main = async () => {
     )
     .innerJoin<Article>('articles', 'articles.authorId', 'users.id');
 
+  // $ExpectType (User & Department & Article)[]
+  await knex('users_inferred')
+    .innerJoin(
+      'departments_inferred',
+      'users_inferred.departmentid',
+      'departments_inferred.id'
+    )
+    .innerJoin('articles_inferred', 'articles_inferred.authorId', 'users_inferred.id');
+
   // $ExpectType any[]
   await knex<User>('users')
     .innerJoin('departments', 'users.departmentid', 'departments.id')
     .innerJoin<Article>('articles', 'articles.authorId', 'users.id');
+
+  // $ExpectType any[]
+  await knex('users_inferred')
+    .innerJoin('departments', 'users_inferred.departmentid', 'departments.id')
+    .innerJoin('articles_inferred', 'articles_inferred.authorId', 'users.id');
 
   // $ExpectType (User & Department)[]
   await knex<User>('users').innerJoin<Department>(
@@ -848,6 +892,14 @@ const main = async () => {
     'users.departmentid',
     '=',
     'departments.id'
+  );
+
+  // $ExpectType (User & Department)[]
+  await knex('users_inferred').innerJoin(
+    'departments_inferred',
+    'users_inferred.departmentid',
+    '=',
+    'departments_inferred.id'
   );
 
   // $ExpectType { username: any; }[]
@@ -865,6 +917,19 @@ const main = async () => {
       'departments',
       'users.departmentid',
       'departments.id'
+    ))
+    .map(function(joined) {
+      return {
+        username: joined.name,
+      };
+    });
+
+  // $ExpectType { username: string; }[]
+  (await knex('users_inferred')
+    .innerJoin(
+      'departments_inferred',
+      'users_inferred.departmentid',
+      'departments_inferred.id'
     ))
     .map(function(joined) {
       return {
@@ -938,6 +1003,11 @@ const main = async () => {
     this.on('users.id', '=', 'departments.id');
   });
 
+  // $ExpectType (User & Department)[]
+  await knex('users_inferred').innerJoin('departments_inferred', function() {
+    this.on('users_inferred.id', '=', 'departments_inferred.id');
+  });
+
   // $ExpectType any[]
   await knex<User>('users')
     .innerJoin<Department>(
@@ -958,6 +1028,17 @@ const main = async () => {
       });
     });
 
+  // $ExpectType (User & Department)[]
+  await knex
+    .select('*')
+    .from('users_inferred')
+    .join('departments_inferred', function() {
+      this.on(function() {
+        this.on('departments_inferred.id', '=', 'users_inferred.department_id');
+        this.orOn('departments_inferred.owner_id', '=', 'users_inferred.id');
+      });
+    });
+
   // # Insertion
 
   // $ExpectType number[]
@@ -965,6 +1046,9 @@ const main = async () => {
 
   // $ExpectType number[]
   await knex<User>('users').insert({ id: 10 });
+
+  // $ExpectType number[]
+  await knex('users_inferred').insert({ id: 10 });
 
   const qb2 = knex<User>('users');
   qb2.returning(['id', 'name']);
@@ -997,6 +1081,11 @@ const main = async () => {
     .insert({ id: 10 })
     .returning('id');
 
+  // $ExpectType number[]
+  await knex('users_inferred')
+    .insert({ id: 10 })
+    .returning('id');
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
     .insert({ id: 10 })
@@ -1008,8 +1097,14 @@ const main = async () => {
   // $ExpectType User[]
   await knex<User>('users').insert({ id: 10 }, '*');
 
+  // $ExpectType User[]
+  await knex('users_inferred').insert({ id: 10 }, '*');
+
   // $ExpectType number[]
   await knex.insert({ id: 10 }, 'id').into<User>('users');
+
+  // $ExpectType number[]
+  await knex.insert({ id: 10 }, 'id').into('users_inferred');
 
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
@@ -1041,6 +1136,12 @@ const main = async () => {
   await knex
     .insert({id: 10})
     .into<User>('users')
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex
+    .insert({id: 10})
+    .into('users_inferred')
     .returning('*');
 
   // $ExpectType User[]

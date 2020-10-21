@@ -13,6 +13,8 @@ import events = require('events');
 import stream = require('stream');
 import ResultTypes = require('./result');
 
+import { Tables } from './tables';
+
 import { ConnectionOptions } from "tls";
 
 // # Generic type-level utilities
@@ -325,6 +327,14 @@ interface PgTableOptions {
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
+  <
+    TTable extends keyof Tables,
+    TRecord2 = Tables[TTable],
+    TResult2 = DeferredKeySelection<TRecord2, never>[]
+  >(
+    tableName: TTable,
+    options?: TableOptions
+  ): Knex.QueryBuilder<TRecord2, TResult2>;
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: Knex.TableDescriptor | Knex.AliasDict,
     options?: TableOptions
@@ -886,6 +896,14 @@ declare namespace Knex {
 
   interface Table<TRecord extends {} = any, TResult extends {} = any> {
     <
+      TTable extends keyof Tables,
+      TRecord2 = Tables[TTable],
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
+    >(
+      tableName: TTable,
+      options?: TableOptions
+    ): QueryBuilder<TRecord2, TResult2>;
+    <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
@@ -937,6 +955,14 @@ declare namespace Knex {
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
+      TTable extends keyof Tables,
+      TRecord2 = TRecord & Tables[TTable],
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
+    >(
+      tableName: TTable,
+      clause: JoinCallback
+    ): QueryBuilder<TRecord2, TResult2>;
+    <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
@@ -961,6 +987,15 @@ declare namespace Knex {
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
+      TTable extends keyof Tables,
+      TRecord2 = TRecord & Tables[TTable],
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
+    >(
+      tableName: TTable,
+      column1: string,
+      column2: string
+    ): QueryBuilder<TRecord2, TResult2>;
+    <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
@@ -977,6 +1012,16 @@ declare namespace Knex {
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       raw: Raw
+    ): QueryBuilder<TRecord2, TResult2>;
+    <
+      TTable extends keyof Tables,
+      TRecord2 = TRecord & Tables[TTable],
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
+    >(
+      tableName: TTable,
+      column1: string,
+      operator: string,
+      column2: string
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
