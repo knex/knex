@@ -30,4 +30,26 @@ describe('MSSQL unit tests', () => {
       'select * from [projects] where [id" = 1 UNION SELECT 1, @@version -- --] = ?'
     );
   });
+
+  it('should include "?" in statement', async () => {
+    // const sql = knexInstance.select(knexInstance.raw('mssql insert \\?'))
+    //   .toSQL().toNative();
+    const sql = knexInstance('projects')
+      .whereRaw(`notes = 'Testing question marks\\?\\?'`)
+      .toSQL()
+      .toNative();
+    expect(sql.sql).to.equal(
+      `select * from [projects] where notes = 'Testing question marks??'`
+    );
+  });
+
+  it('should exclude "?" in statement', async () => {
+    const sql = knexInstance('projects')
+      .whereRaw(`notes = 'Testing question marks??'`)
+      .toSQL()
+      .toNative();
+    expect(sql.sql).to.equal(
+      "select * from [projects] where notes = 'Testing question marks@p0@p1'"
+    );
+  });
 });
