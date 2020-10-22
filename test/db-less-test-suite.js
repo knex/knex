@@ -27,6 +27,13 @@ describe('Query Building Tests', function () {
 });
 
 const config = require('./knexfile');
+if (config.mssql) {
+  describe('MSSQL driver tests', function () {
+    this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+    require('./unit/dialects/mssql');
+  });
+}
+
 if (config.oracledb) {
   describe('Oracledb driver tests', function () {
     this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
