@@ -31,9 +31,7 @@ describe('MSSQL unit tests', () => {
     );
   });
 
-  it('should include "?" in statement', async () => {
-    // const sql = knexInstance.select(knexInstance.raw('mssql insert \\?'))
-    //   .toSQL().toNative();
+  it('should not convert escaped "?" -marks in raw SQL to native parameter bindings', async () => {
     const sql = knexInstance('projects')
       .whereRaw(`notes = 'Testing question marks\\?\\?'`)
       .toSQL()
@@ -43,7 +41,7 @@ describe('MSSQL unit tests', () => {
     );
   });
 
-  it('should exclude "?" in statement', async () => {
+  it('should convert "?" -marks in raw SQL to native parameter binding', async () => {
     const sql = knexInstance('projects')
       .whereRaw(`notes = 'Testing question marks??'`)
       .toSQL()
