@@ -164,7 +164,7 @@ const fixture = [
       ? 'Error: Cannot load module from .mjs'
       : semver.eq(process.version, 'v14.13.0')
       ? 'Unexpected export statement in CJS module'
-      : semver.satisfies(process.version, '^14.14.0')
+      : semver.gte(process.version, 'v14.14.0')
       ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
@@ -183,7 +183,7 @@ const fixture = [
       ? 'Error: Cannot load module from .mjs'
       : semver.eq(process.version, 'v14.13.0')
       ? 'Unexpected export statement in CJS module'
-      : semver.satisfies(process.version, '^14.14.0')
+      : semver.gte(process.version, 'v14.14.0')
       ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
