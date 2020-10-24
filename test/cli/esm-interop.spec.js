@@ -859,7 +859,7 @@ describe('esm interop and mjs support', () => {
   });
 
   for (const spec of fixture) {
-    it.only(spec.title, async function () {
+    it(spec.title, async function () {
       const {
         testCase,
         knexfile = 'knexfile.js',
