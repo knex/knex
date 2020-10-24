@@ -162,8 +162,8 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
-      : semver.gte(process.version, 'v14.13.0')
-      ? 'Unexpected export statement in CJS module'
+      : semver.major(process.version) === 14
+      ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
   {
@@ -179,8 +179,8 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
-      : semver.gte(process.version, 'v14.13.0')
-      ? 'Unexpected export statement in CJS module'
+      : semver.major(process.version) === 14
+      ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
   {
@@ -859,7 +859,7 @@ describe('esm interop and mjs support', () => {
   });
 
   for (const spec of fixture) {
-    it(spec.title, async function () {
+    it.only(spec.title, async function () {
       const {
         testCase,
         knexfile = 'knexfile.js',
