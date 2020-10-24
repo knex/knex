@@ -162,8 +162,10 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
-      : semver.gte(process.version, 'v14.13.0')
+      : semver.eq(process.version, 'v14.13.0')
       ? 'Unexpected export statement in CJS module'
+      : semver.gte(process.version, 'v14.14.0')
+      ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
   {
@@ -179,8 +181,10 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
-      : semver.gte(process.version, 'v14.13.0')
+      : semver.eq(process.version, 'v14.13.0')
       ? 'Unexpected export statement in CJS module'
+      : semver.gte(process.version, 'v14.14.0')
+      ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
   {
