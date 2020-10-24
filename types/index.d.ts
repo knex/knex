@@ -533,6 +533,7 @@ declare namespace Knex {
     clearOrder(): QueryBuilder<TRecord, TResult>;
     clearHaving(): QueryBuilder<TRecord, TResult>;
     clearCounters(): QueryBuilder<TRecord, TResult>;
+    clear(statement: string): QueryBuilder<TRecord, TResult>;
 
     // Paging
     offset(offset: number): QueryBuilder<TRecord, TResult>;
