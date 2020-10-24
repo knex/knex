@@ -1129,7 +1129,7 @@ node --experimental-modules ./node_modules/.bin/knex $@</code></pre><p data-reac
   },
 };
 <span class="hljs-comment">/** this will be used, it has precedence over named export */</span>
-<span class="hljs-keyword">export</span> deefault config;
+<span class="hljs-keyword">export</span> default config;
 <span class="hljs-comment">/** Named exports, will be used if you didn't provide a default export */</span>
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> { client, connection, migrations, seeds } = config;</code></pre><p data-reactid="3223">Seed an migration files need to follow Knex conventions</p><pre data-reactid="3224"><code class="hljs js" data-reactid="3225"><span class="hljs-comment">// file: seed.js</span>
 <span class="hljs-comment">/** 
