@@ -81,9 +81,9 @@ knex.schema
       .select('users.user_name as user', 'accounts.account_name as account')
   )
 
-  // map over the results
+  // Display the results
   .then(rows =>
-    rows.map(row => {
+    rows.forEach(row => {
       console.log(row)
     })
   )
