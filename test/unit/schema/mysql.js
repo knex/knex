@@ -890,6 +890,20 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal("alter table `users` comment = ''");
     });
 
+    it('test comment with quotes', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (t) {
+          t.comment("The table's first column");
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        "alter table `users` comment = 'The table's first column'"
+      );
+    });
+
     it('set comment to undefined', function () {
       expect(function () {
         client
