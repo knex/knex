@@ -424,7 +424,7 @@ declare namespace Knex {
   //
   // QueryInterface
   //
-  type ClearStatements = "with" | "select" | "columns" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset";
+  type ClearStatements = "with" | "select" | "columns" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
 
   interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
