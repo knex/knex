@@ -424,7 +424,7 @@ declare namespace Knex {
   //
   // QueryInterface
   //
-  type Statements = "with" | "select" | "columns" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset";
+  type ClearStatements = "with" | "select" | "columns" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset";
 
   interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
@@ -534,7 +534,7 @@ declare namespace Knex {
     clearOrder(): QueryBuilder<TRecord, TResult>;
     clearHaving(): QueryBuilder<TRecord, TResult>;
     clearCounters(): QueryBuilder<TRecord, TResult>;
-    clear(statement: Statements): QueryBuilder<TRecord, TResult>;
+    clear(statement: ClearStatements): QueryBuilder<TRecord, TResult>;
 
     // Paging
     offset(offset: number): QueryBuilder<TRecord, TResult>;
