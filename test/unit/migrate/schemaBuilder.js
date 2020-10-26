@@ -3,14 +3,27 @@ const Knex = require('../../../lib/index');
 const sqliteConfig = require('../../knexfile').sqlite3;
 
 describe('schemaBuilder', () => {
-  it('correctly converts empty value with toQuery', async () => {
-    const knex = Knex({
+  let knex;
+  beforeEach(() => {
+    knex = Knex({
       ...sqliteConfig,
       connection: ':memory:',
     });
+  });
 
-    let builder = knex.schema;
+  afterEach(() => {
+    return knex.destroy();
+  });
+
+  it('correctly converts empty value with toQuery', async () => {
+    const builder = knex.schema;
     const convertedValue = builder.toQuery();
     expect(convertedValue).to.eql('');
+  });
+
+  it('correctly converts non-empty value with toQuery', async () => {
+    const builder = knex.schema.dropTableIfExists('dummy_table');
+    const convertedValue = builder.toQuery();
+    expect(convertedValue).to.eql('drop table if exists `dummy_table`');
   });
 });
