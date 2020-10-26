@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const pgDialect = require('../../../lib/dialects/postgres/index.js');
 const pg = require('pg');
 const _ = require('lodash');
+const { isFunction } = require('../../../lib/util/is');
 
 describe('Postgres Unit Tests', function () {
   let checkVersionStub, querySpy;
@@ -11,7 +12,7 @@ describe('Postgres Unit Tests', function () {
     const fakeConnection = {
       query: (...args) => {
         const cb = args.find((arg) => {
-          return _.isFunction(arg);
+          return isFunction(arg);
         });
         cb();
       },

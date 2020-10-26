@@ -963,4 +963,12 @@ describe('OracleDb SchemaBuilder', function () {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
   });
+
+  it('test converting a sql wrapped with catch to string, #4045', function () {
+    tableSql = client.schemaBuilder().dropTableIfExists('book');
+
+    expect(tableSql.toQuery()).to.equal(
+      'begin execute immediate \'drop table "book"\'; exception when others then if sqlcode != -942 then raise; end if; end;\nbegin execute immediate \'drop sequence "book_seq"\'; exception when others then if sqlcode != -2289 then raise; end if; end;'
+    );
+  });
 });
