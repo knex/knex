@@ -343,14 +343,10 @@ type ResolveTableType<TCompositeTableType, TScope extends TableInterfaceScope = 
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
-  <
-    TTable extends TableNames,
-    TRecord2 = TableType<TTable>,
-    TResult2 = DeferredKeySelection<ResolveTableType<TRecord2>, never>[]
-  >(
+  <TTable extends TableNames>(
     tableName: TTable,
     options?: TableOptions
-  ): Knex.QueryBuilder<TRecord2, TResult2>;
+  ): Knex.QueryBuilder<TableType<TTable>, DeferredKeySelection<ResolveTableType<TableType<TTable>>, never>[]>;
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: Knex.TableDescriptor | Knex.AliasDict,
     options?: TableOptions
@@ -601,7 +597,7 @@ declare namespace Knex {
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
     insert(
-      data: DbRecordArr<ResolveTableType<TRecord, 'insert'>>,
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
@@ -612,7 +608,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<ResolveTableType<TRecord, 'insert'>>,
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -623,7 +619,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<ResolveTableType<TRecord, 'insert'>>,
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -634,7 +630,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -645,11 +641,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<TResult2 = number[]>(
-      data: DbRecordArr<ResolveTableType<TRecord, 'insert'>>
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
 
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
@@ -703,7 +699,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<ResolveTableType<TRecord, 'update'>>,
+      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -714,7 +710,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<ResolveTableType<TRecord, 'update'>>,
+      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -725,7 +721,7 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<ResolveTableType<TRecord, 'update'>>,
+      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
       returning: TKey | readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<
@@ -736,11 +732,11 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(
-      data: DbRecordArr<ResolveTableType<TRecord, 'update'>>
+      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
 
     update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;

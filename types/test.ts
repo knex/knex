@@ -1989,6 +1989,9 @@ const main = async () => {
   // $ExpectError
   await knex('users_composite').insert({ id: 10 });
 
+  // $ExpectError
+  await knex('users_composite').insert({});
+
   // $ExpectType number[]
   await knex('users_composite').insert({ insert: 'insert' });
 
@@ -2033,6 +2036,17 @@ const main = async () => {
     .insert({ insert: 'insert' })
     .returning('id');
 
+  await knex('users_composite')
+    // $ExpectError
+    .insert({ id: 10 })
+    .returning('id');
+
+  // Require insert argument to satisfy "insert" interface fully when composite type is available.
+  await knex('users_composite')
+    // $ExpectError
+    .insert({})
+    .returning('id');
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
     .insert({ id: 10 })
@@ -2049,6 +2063,9 @@ const main = async () => {
 
   // $ExpectError
   await knex('users_composite').insert({ id: 10 }, '*');
+
+  // $ExpectError
+  await knex('users_composite').insert({}, '*');
 
   // $ExpectType User[]
   await knex('users_composite').insert({ insert: 'insert' }, '*');
@@ -2077,6 +2094,11 @@ const main = async () => {
     .insert({ id: 10 })
     .returning(['id', 'age']);
 
+  await knex('users_composite')
+    // $ExpectError
+    .insert({})
+    .returning(['id', 'age']);
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex('users_composite')
     .insert({ insert: 'insert' })
@@ -2095,6 +2117,11 @@ const main = async () => {
   await knex('users_composite')
     // $ExpectError
     .insert({ id: 10 }, 'id')
+    .returning(['id', 'age']);
+
+  await knex('users_composite')
+    // $ExpectError
+    .insert({}, 'id')
     .returning(['id', 'age']);
 
   // $ExpectType Pick<User, "id" | "age">[]
@@ -2120,6 +2147,11 @@ const main = async () => {
   await knex('users_composite')
     // $ExpectError
     .insert({id: 10})
+    .returning('*');
+
+  await knex('users_composite')
+    // $ExpectError
+    .insert({})
     .returning('*');
 
   // $ExpectType User[]
@@ -2184,6 +2216,11 @@ const main = async () => {
     .insert({id: 10}, 'id')
     .returning('*');
 
+  await knex('users_composite')
+    // $ExpectError
+    .insert({}, 'id')
+    .returning('*');
+
   // $ExpectType User[]
   await knex('users_composite')
     .insert({insert: 'insert'}, 'id')
@@ -2239,6 +2276,14 @@ const main = async () => {
     .where('id', 10)
     .update({ update: 'update' });
 
+  await knex('users_composite')
+    // $ExpectError
+    .update({ id: 10 });
+
+  await knex('users_composite')
+    // $ExpectError
+    .update({});
+
   // $ExpectType number
   await knex
     .where('id', 10)
@@ -2269,6 +2314,13 @@ const main = async () => {
   await knex('users_inferred')
     .where('id', 10)
     .update({ active: true })
+    .returning('*');
+
+  // $ExpectType User[]
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({})
     .returning('*');
 
   // $ExpectType User[]
@@ -2323,6 +2375,18 @@ const main = async () => {
     .update({ update: 'update' })
     .returning(['id', 'age']);
 
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({ id: 11 })
+    .returning(['id', 'age']);
+
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({})
+    .returning(['id', 'age']);
+
   // $ExpectType number[]
   await knex<User>('users')
     .where('id', 10)
@@ -2337,6 +2401,16 @@ const main = async () => {
   await knex('users_composite')
     .where('id', 10)
     .update({ update: 'update' }, 'id');
+
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({ id: 11 }, 'id');
+
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({}, 'id');
 
   // $ExpectType number[]
   await knex<User>('users')
@@ -2368,6 +2442,16 @@ const main = async () => {
     .where('id', 10)
     .update({ update: 'update' }, ['id', 'age']);
 
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({ id: 11 }, ['id', 'age']);
+
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({}, ['id', 'age']);
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
     .where('id', 10)
@@ -2398,6 +2482,16 @@ const main = async () => {
   await knex('users_composite')
     .where('id', 10)
     .update({ update: 'update' }, userUpdateReturnCols);
+
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({ id: 11 }, userUpdateReturnCols);
+
+  await knex('users_composite')
+    .where('id', 10)
+    // $ExpectError
+    .update({}, userUpdateReturnCols);
 
   // TODO: .update('active', true', ['id', 'age']) does not works correctly
   // $ExpectType Pick<User, "id" | "age">[]
