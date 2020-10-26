@@ -747,17 +747,32 @@ describe('QueryBuilder', () => {
     testsql(
       qb()
       .table('users')
+      .with('testWith', queryBuilder => {
+        return queryBuilder.table('user_info').where('a', 'b');
+      })
+      .join('tableJoin','id', 'id')
       .select(['id'])
       .where('id', '<', 10)
       .groupBy('id')
+      .groupBy('id', 'desc')
       .limit(100)
       .offset(100)
       .having('id', '>', 100)
+      .union(function() {
+        this.select('*').from('users').whereNull('first_name')
+      })
+      .unionAll(function() {
+        this.select('*').from('users').whereNull('first_name');
+      })
+      .clear('with')
+      .clear('join')
+      .clear('union')
       .clear('columns')
       .select(['id'])
       .clear('select')
       .clear('where')
       .clear('group')
+      .clear('order')
       .clear('limit')
       .clear('offset')
       .clear('having'),
@@ -777,6 +792,42 @@ describe('QueryBuilder', () => {
         'pg-redshift': {
           sql: 'select * from "users"',
           bindings: [],
+        },
+      }
+    );
+  });
+
+  it('Can clear increment/decrement calls via .clear()', () => {
+    testsql(
+      qb()
+      .into('users')
+      .where('id', '=', 1)
+      .update({ email: 'foo@bar.com' })
+      .increment({
+        balance: 10,
+      })
+      .clear('counter')
+      .decrement({
+        value: 50,
+      })
+      .clear('counters'),
+      {
+        pg: {
+          sql: 'update "users" set "email" = ? where "id" = ?',
+          bindings: ['foo@bar.com', 1],
+        },
+        mysql: {
+          sql: 'update `users` set `email` = ? where `id` = ?',
+          bindings: ['foo@bar.com', 1],
+        },
+        mssql: {
+          sql:
+            'update [users] set [email] = ? where [id] = ?;select @@rowcount',
+          bindings: ['foo@bar.com', 1],
+        },
+        'pg-redshift': {
+          sql: 'update "users" set "email" = ? where "id" = ?',
+          bindings: ['foo@bar.com', 1],
         },
       }
     );
