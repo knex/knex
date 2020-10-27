@@ -258,5 +258,9 @@ export default [
       await trx2.rollback();
       trx2.isCompleted(); // true
     `
-  }
+  },
+  {
+    type: "text",
+    content: "You can check the property `knex.isTransaction` to see if the current knex instance you are working with is a transaction."
+  },
 ]
