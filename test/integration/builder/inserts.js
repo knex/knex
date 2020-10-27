@@ -1278,7 +1278,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('will silently do nothing when multiple inserts are made into a unique column and ignore is specified', async function() {
+    it('will silently do nothing when multiple inserts are made into a unique column and ignore is specified', async function () {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
@@ -1302,7 +1302,7 @@ module.exports = function (knex) {
         .insert({ email: 'ignoretest@example.com', name: 'AFTER' }, 'email')
         .onConflict('email')
         .ignore()
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
@@ -1328,7 +1328,7 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('BEFORE');
     });
 
-    it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function() {
+    it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function () {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
@@ -1357,7 +1357,7 @@ module.exports = function (knex) {
         )
         .onConflict(['org', 'email'])
         .ignore()
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert ignore into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?)',
@@ -1383,7 +1383,7 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('BEFORE');
     });
 
-    it('updates columns when inserting a duplicate key to unique column and merge is specified', async function() {
+    it('updates columns when inserting a duplicate key to unique column and merge is specified', async function () {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
@@ -1404,16 +1404,10 @@ module.exports = function (knex) {
 
       // Perform insert..merge (upsert)
       await knex('upsert_tests')
-        .insert(
-          {
-            email: 'mergetest@example.com',
-            name: 'AFTER',
-          },
-          'email'
-        )
+        .insert({ email: 'mergetest@example.com', name: 'AFTER' }, 'email')
         .onConflict('email')
         .merge()
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
@@ -1439,7 +1433,7 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('AFTER');
     });
 
-    it('updates and inserts columns when inserting multiple rows merge is specified', async function() {
+    it('updates and inserts columns when inserting multiple rows merge is specified', async function () {
       if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
@@ -1453,21 +1447,23 @@ module.exports = function (knex) {
       });
 
       // Setup: Create row to conflict against
-      await knex('upsert_tests').insert(
+      await knex('upsert_tests').insert([
         { email: 'one@example.com', name: 'BEFORE' },
-        { email: 'two@example.com', name: 'BEFORE' }
-      );
+        { email: 'two@example.com', name: 'BEFORE' },
+      ]);
 
       // Perform insert..merge (upsert)
       await knex('upsert_tests')
         .insert(
-          { email: 'two@example.com', name: 'AFTER' },
-          { email: 'three@example.com', name: 'AFTER' },
+          [
+            { email: 'two@example.com', name: 'AFTER' },
+            { email: 'three@example.com', name: 'AFTER' },
+          ],
           'email'
         )
         .onConflict('email')
         .merge()
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
@@ -1480,7 +1476,7 @@ module.exports = function (knex) {
           );
           tester(
             'sqlite3',
-            'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+            'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
             ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
           );
         });
