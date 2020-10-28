@@ -1279,7 +1279,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when multiple inserts are made into a unique column and ignore is specified', async function () {
-      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1298,27 +1298,36 @@ module.exports = function (knex) {
       });
 
       // Test: Insert..ignore with same email as existing row
-      await knex('upsert_tests')
-        .insert({ email: 'ignoretest@example.com', name: 'AFTER' }, 'email')
-        .onConflict('email')
-        .ignore()
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
-            ['ignoretest@example.com', 'AFTER']
-          );
-          tester(
-            'pg',
-            'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do nothing returning "email"',
-            ['ignoretest@example.com', 'AFTER']
-          );
-          tester(
-            'sqlite3',
-            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
-            ['ignoretest@example.com', 'AFTER']
-          );
-        });
+      try {
+        await knex('upsert_tests')
+          .insert({ email: 'ignoretest@example.com', name: 'AFTER' }, 'email')
+          .onConflict('email')
+          .ignore()
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
+              ['ignoretest@example.com', 'AFTER']
+            );
+            tester(
+              'pg',
+              'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do nothing returning "email"',
+              ['ignoretest@example.com', 'AFTER']
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
+              ['ignoretest@example.com', 'AFTER']
+            );
+          });
+      } catch (err) {
+        if (/oracle|mssql/i.test(knex.client.driverName)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
 
       // Assert: there is still only 1 row, and that it HAS NOT been updated
       const rows = await knex('upsert_tests')
@@ -1329,7 +1338,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function () {
-      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1350,30 +1359,39 @@ module.exports = function (knex) {
       });
 
       // Test: Insert..ignore with same email as existing row
-      await knex('upsert_composite_key_tests')
-        .insert(
-          { org: 'acme-inc', email: 'ignoretest@example.com', name: 'AFTER' },
-          'email'
-        )
-        .onConflict(['org', 'email'])
-        .ignore()
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            'insert ignore into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?)',
-            ['ignoretest@example.com', 'AFTER', 'acme-inc']
-          );
-          tester(
-            'pg',
-            'insert into "upsert_composite_key_tests" ("email", "name", "org") values (?, ?, ?) on conflict ("org", "email") do nothing returning "email"',
-            ['ignoretest@example.com', 'AFTER', 'acme-inc']
-          );
-          tester(
-            'sqlite3',
-            'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
-            ['ignoretest@example.com', 'AFTER', 'acme-inc']
-          );
-        });
+      try {
+        await knex('upsert_composite_key_tests')
+          .insert(
+            { org: 'acme-inc', email: 'ignoretest@example.com', name: 'AFTER' },
+            'email'
+          )
+          .onConflict(['org', 'email'])
+          .ignore()
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert ignore into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?)',
+              ['ignoretest@example.com', 'AFTER', 'acme-inc']
+            );
+            tester(
+              'pg',
+              'insert into "upsert_composite_key_tests" ("email", "name", "org") values (?, ?, ?) on conflict ("org", "email") do nothing returning "email"',
+              ['ignoretest@example.com', 'AFTER', 'acme-inc']
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
+              ['ignoretest@example.com', 'AFTER', 'acme-inc']
+            );
+          });
+      } catch (err) {
+        if (/oracle|mssql/i.test(knex.client.driverName)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
 
       // Assert: there is still only 1 row, and that it HAS NOT been updated
       const rows = await knex('upsert_composite_key_tests')
@@ -1384,7 +1402,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns when inserting a duplicate key to unique column and merge is specified', async function () {
-      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1403,27 +1421,36 @@ module.exports = function (knex) {
       });
 
       // Perform insert..merge (upsert)
-      await knex('upsert_tests')
-        .insert({ email: 'mergetest@example.com', name: 'AFTER' }, 'email')
-        .onConflict('email')
-        .merge()
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
-            ['mergetest@example.com', 'AFTER']
-          );
-          tester(
-            'pg',
-            'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
-            ['mergetest@example.com', 'AFTER']
-          );
-          tester(
-            'sqlite3',
-            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
-            ['mergetest@example.com', 'AFTER']
-          );
-        });
+      try {
+        await knex('upsert_tests')
+          .insert({ email: 'mergetest@example.com', name: 'AFTER' }, 'email')
+          .onConflict('email')
+          .merge()
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+              ['mergetest@example.com', 'AFTER']
+            );
+            tester(
+              'pg',
+              'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
+              ['mergetest@example.com', 'AFTER']
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+              ['mergetest@example.com', 'AFTER']
+            );
+          });
+      } catch (err) {
+        if (/oracle|mssql/i.test(knex.client.driverName)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
 
       // Check that row HAS been updated
       const rows = await knex('upsert_tests')
@@ -1434,7 +1461,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
-      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1453,35 +1480,44 @@ module.exports = function (knex) {
       ]);
 
       // Perform insert..merge (upsert)
-      await knex('upsert_tests')
-        .insert(
-          {
-            email: 'mergedest@example.com',
-            name: knex.raw(
-              "(SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')"
-            ),
-          },
-          'email'
-        )
-        .onConflict('email')
-        .merge()
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on duplicate key update `email` = values(`email`), `name` = values(`name`)",
-            ['mergedest@example.com']
-          );
-          tester(
-            'pg',
-            'insert into "upsert_tests" ("email", "name") values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = \'mergesource@example.com\')) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
-            ['mergedest@example.com']
-          );
-          tester(
-            'sqlite3',
-            "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`",
-            ['mergedest@example.com']
-          );
-        });
+      try {
+        await knex('upsert_tests')
+          .insert(
+            {
+              email: 'mergedest@example.com',
+              name: knex.raw(
+                "(SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')"
+              ),
+            },
+            'email'
+          )
+          .onConflict('email')
+          .merge()
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on duplicate key update `email` = values(`email`), `name` = values(`name`)",
+              ['mergedest@example.com']
+            );
+            tester(
+              'pg',
+              'insert into "upsert_tests" ("email", "name") values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = \'mergesource@example.com\')) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
+              ['mergedest@example.com']
+            );
+            tester(
+              'sqlite3',
+              "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`",
+              ['mergedest@example.com']
+            );
+          });
+      } catch (err) {
+        if (/oracle|mssql/i.test(knex.client.driverName)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
 
       // Check that row HAS been updated
       const rows = await knex('upsert_tests')
@@ -1492,7 +1528,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns with raw value when inserting a duplicate key to unique column and merge with updates is specified', async function () {
-      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1517,30 +1553,39 @@ module.exports = function (knex) {
       ]);
 
       // Perform insert..merge (upsert)
-      await knex('upsert_tests')
-        .insert(
-          { email: 'mergedest@example.com', name: 'SHOULD NOT BE USED' },
-          'email'
-        )
-        .onConflict('email')
-        .merge({ name: knex.raw('(SELECT name FROM upsert_value_source)') })
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `name` = (SELECT name FROM upsert_value_source)',
-            ['mergedest@example.com', 'SHOULD NOT BE USED']
-          );
-          tester(
-            'pg',
-            'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "name" = (SELECT name FROM upsert_value_source) returning "email"',
-            ['mergedest@example.com', 'SHOULD NOT BE USED']
-          );
-          tester(
-            'sqlite3',
-            'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = (SELECT name FROM upsert_value_source)',
-            ['mergedest@example.com', 'SHOULD NOT BE USED']
-          );
-        });
+      try {
+        await knex('upsert_tests')
+          .insert(
+            { email: 'mergedest@example.com', name: 'SHOULD NOT BE USED' },
+            'email'
+          )
+          .onConflict('email')
+          .merge({ name: knex.raw('(SELECT name FROM upsert_value_source)') })
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `name` = (SELECT name FROM upsert_value_source)',
+              ['mergedest@example.com', 'SHOULD NOT BE USED']
+            );
+            tester(
+              'pg',
+              'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "name" = (SELECT name FROM upsert_value_source) returning "email"',
+              ['mergedest@example.com', 'SHOULD NOT BE USED']
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = (SELECT name FROM upsert_value_source)',
+              ['mergedest@example.com', 'SHOULD NOT BE USED']
+            );
+          });
+      } catch (err) {
+        if (/oracle|mssql/i.test(knex.client.driverName)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
 
       // Check that row HAS been updated
       const rows = await knex('upsert_tests')
@@ -1551,7 +1596,7 @@ module.exports = function (knex) {
     });
 
     it('updates and inserts columns when inserting multiple rows merge is specified', async function () {
-      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1570,33 +1615,42 @@ module.exports = function (knex) {
       ]);
 
       // Perform insert..merge (upsert)
-      await knex('upsert_tests')
-        .insert(
-          [
-            { email: 'two@example.com', name: 'AFTER' },
-            { email: 'three@example.com', name: 'AFTER' },
-          ],
-          'email'
-        )
-        .onConflict('email')
-        .merge()
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
-            ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
-          );
-          tester(
-            'pg',
-            'insert into "upsert_tests" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
-            ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
-          );
-          tester(
-            'sqlite3',
-            'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
-            ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
-          );
-        });
+      try {
+        await knex('upsert_tests')
+          .insert(
+            [
+              { email: 'two@example.com', name: 'AFTER' },
+              { email: 'three@example.com', name: 'AFTER' },
+            ],
+            'email'
+          )
+          .onConflict('email')
+          .merge()
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+              ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+            );
+            tester(
+              'pg',
+              'insert into "upsert_tests" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
+              ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+              ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+            );
+          });
+      } catch (err) {
+        if (/oracle|mssql/i.test(knex.client.driverName)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
 
       // Check that row HAS been updated
       const rows = await knex('upsert_tests').select();
