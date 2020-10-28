@@ -1279,7 +1279,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when multiple inserts are made into a unique column and ignore is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1329,7 +1329,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
