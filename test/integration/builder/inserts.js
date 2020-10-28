@@ -1384,7 +1384,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns when inserting a duplicate key to unique column and merge is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1434,7 +1434,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1492,7 +1492,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns with raw value when inserting a duplicate key to unique column and merge with updates is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1551,7 +1551,7 @@ module.exports = function (knex) {
     });
 
     it('updates and inserts columns when inserting multiple rows merge is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (/redshift|oracle|mssql/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
