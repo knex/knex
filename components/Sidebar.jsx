@@ -102,10 +102,11 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-havingRaw">havingRaw</a></li>
 
           <li><b><a href="#Builder-clear">Clear Methods:</a></b></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearSelect">clearSelect</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearWhere">clearWhere</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearOrder">clearOrder</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearHaving">clearHaving</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clear">clear</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearSelect">clearSelect (deprecated)</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearWhere">clearWhere (deprecated)</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearOrder">clearOrder (deprecated)</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearHaving">clearHaving (deprecated)</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-clearCounters">clearCounters</a></li>
 
           <li>– <a href="#Builder-distinct">distinct</a></li>

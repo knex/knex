@@ -1105,9 +1105,23 @@ export default [
   },
   {
     type: "method",
+    method: "clear",
+    example: ".clear(statement)",
+    description: "Clears the specified operator from the query. Avalilables: 'select' alias 'columns', 'with', 'select', 'columns', 'where', 'union', 'join', 'group', 'order', 'having', 'limit', 'offset', 'counter', 'counters'. Counter(s) alias for method .clearCounter()",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex.select('email', 'name').from('users').where('id', '<', 10).clear('select').clear('where')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "clearSelect",
     example: ".clearSelect()",
-    description: "Clears all select clauses from the query, excluding subqueries.",
+    description: "Deprecated, use clear('select'). Clears all select clauses from the query, excluding subqueries.",
     children: [
       {
         type: "runnable",
@@ -1121,7 +1135,7 @@ export default [
     type: "method",
     method: "clearWhere",
     example: ".clearWhere()",
-    description: "Clears all where clauses from the query, excluding subqueries.",
+    description: "Deprecated, use clear('where'). Clears all where clauses from the query, excluding subqueries.",
     children: [
       {
         type: "runnable",
@@ -1135,7 +1149,7 @@ export default [
     type: "method",
     method: "clearGroup",
     example: ".clearGroup()",
-    description: "Clears all group clauses from the query, excluding subqueries.",
+    description: "Deprecated, use clear('group'). Clears all group clauses from the query, excluding subqueries.",
     children: [
       {
         type: "runnable",
@@ -1149,7 +1163,7 @@ export default [
     type: "method",
     method: "clearOrder",
     example: ".clearOrder()",
-    description: "Clears all order clauses from the query, excluding subqueries.",
+    description: "Deprecated, use clear('order'). Clears all order clauses from the query, excluding subqueries.",
     children: [
       {
         type: "runnable",
@@ -1163,7 +1177,7 @@ export default [
     type: "method",
     method: "clearHaving",
     example: ".clearHaving()",
-    description: "Clears all having clauses from the query, excluding subqueries.",
+    description: "Deprecated, use clear('having'). Clears all having clauses from the query, excluding subqueries.",
     children: [
       {
         type: "runnable",
