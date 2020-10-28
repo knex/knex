@@ -761,10 +761,7 @@ declare namespace Knex {
       >[]
     >(
       columns: readonly TKey[]
-    ): QueryBuilder<TRecord, TResult2>;
-    returning<TResult2 = SafePartial<TRecord>[]>(
-      column: string | readonly string[]
-    ): QueryBuilder<TRecord, TResult2>;
+    ): QueryBuilder<TRecord, TResult2>;    
 
     ignore(): QueryBuilder<TRecord, TResult>;
     merge(data?: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
