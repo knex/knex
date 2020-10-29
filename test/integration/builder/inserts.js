@@ -2,10 +2,10 @@
 
 const { expect } = require('chai');
 
-const uuid = require('uuid');
 const _ = require('lodash');
 const sinon = require('sinon');
 
+const { nanoid } = require('../../../lib/util/nanoid');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 
 module.exports = function (knex) {
@@ -754,7 +754,7 @@ module.exports = function (knex) {
       return knex('datatype_test')
         .insert({
           enum_value: 'c',
-          uuid: uuid.v4(),
+          uuid: nanoid(),
         })
         .then(function () {
           return knex('datatype_test').insert({
@@ -780,8 +780,8 @@ module.exports = function (knex) {
     });
 
     it('should not mutate the array passed in', function () {
-      const a = { enum_value: 'a', uuid: uuid.v4() };
-      const b = { enum_value: 'c', uuid: uuid.v4() };
+      const a = { enum_value: 'a', uuid: nanoid() };
+      const b = { enum_value: 'c', uuid: nanoid() };
       const x = [a, b];
 
       return knex('datatype_test')

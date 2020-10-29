@@ -43,7 +43,6 @@
     "pg-connection-string": "2.3.0",
     "tarn": "^3.0.1",
     "tildify": "2.0.0",
-    "uuid": "^7.0.3",
     "v8flags": "^3.2.0"
   },
   "peerDependencies": {
