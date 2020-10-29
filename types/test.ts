@@ -1161,7 +1161,6 @@ const main = async () => {
     .update({ active: true }, ['id', 'age'])
     .into<User>('users');
 
-
   // # Insert onConflict
   await knex
     .table<User>('users')
