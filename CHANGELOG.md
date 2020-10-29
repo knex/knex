@@ -1,5 +1,17 @@
 # Master (Unreleased)
 
+# 0.21.9 - 27 October, 2020
+
+### New features:
+
+- add method clear(statement) to QueryBuilder #4051
+
+### Bug fixes:
+
+- CLI: fix help text being printed twice #4072
+- Oracle: columnInfo() no longer requires an Owner User #4053
+- Add missing "start" event propagation from transaction #4087
+
 # 0.21.8 - 27 October, 2020
 
 ### Bug fixes:
