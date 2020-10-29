@@ -43,7 +43,6 @@ const fixture = [
     testCase: 'knexfile-esm-module',
     knexArgs: ['migrate:latest'],
     dropDb: true,
-    expectedOutput: 'Batch 1 run: 1 migrations',
     expectedErrorMessage: isNode10
       ? 'Unexpected token export'
       : 'Must use import to load ES Module',

@@ -352,10 +352,6 @@ function invoke(env) {
         .catch(exit);
     });
 
-  if (!process.argv.slice(2).length) {
-    commander.outputHelp();
-  }
-
   commander.parse(process.argv);
 }
 

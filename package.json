@@ -82,7 +82,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^2.1.4",
-    "cli-testlab": "^2.0.0",
+    "cli-testlab": "^2.1.1",
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.2",
     "dtslint": "3.6.14",
