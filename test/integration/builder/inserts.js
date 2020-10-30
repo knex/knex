@@ -5,7 +5,6 @@ const { expect } = require('chai');
 const _ = require('lodash');
 const sinon = require('sinon');
 
-const { nanoid } = require('../../../lib/util/nanoid');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 
 module.exports = function (knex) {
@@ -754,7 +753,7 @@ module.exports = function (knex) {
       return knex('datatype_test')
         .insert({
           enum_value: 'c',
-          uuid: nanoid(),
+          uuid: 'c39d8fcf-68a0-4902-b192-1ebb6310d9ad',
         })
         .then(function () {
           return knex('datatype_test').insert({
