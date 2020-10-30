@@ -2,7 +2,6 @@
 
 const { expect } = require('chai');
 
-const uuid = require('uuid');
 const _ = require('lodash');
 const sinon = require('sinon');
 
@@ -754,7 +753,7 @@ module.exports = function (knex) {
       return knex('datatype_test')
         .insert({
           enum_value: 'c',
-          uuid: uuid.v4(),
+          uuid: 'c39d8fcf-68a0-4902-b192-1ebb6310d9ad',
         })
         .then(function () {
           return knex('datatype_test').insert({
@@ -780,8 +779,14 @@ module.exports = function (knex) {
     });
 
     it('should not mutate the array passed in', function () {
-      const a = { enum_value: 'a', uuid: uuid.v4() };
-      const b = { enum_value: 'c', uuid: uuid.v4() };
+      const a = {
+        enum_value: 'a',
+        uuid: '00419fc1-7eed-442c-9c01-cf757e74b8f0',
+      };
+      const b = {
+        enum_value: 'c',
+        uuid: '13ac5acd-c5d7-41a0-8db0-dacf64d0e4e2',
+      };
       const x = [a, b];
 
       return knex('datatype_test')
