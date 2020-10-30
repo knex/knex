@@ -780,8 +780,14 @@ module.exports = function (knex) {
     });
 
     it('should not mutate the array passed in', function () {
-      const a = { enum_value: 'a', uuid: nanoid() };
-      const b = { enum_value: 'c', uuid: nanoid() };
+      const a = {
+        enum_value: 'a',
+        uuid: '00419fc1-7eed-442c-9c01-cf757e74b8f0',
+      };
+      const b = {
+        enum_value: 'c',
+        uuid: '13ac5acd-c5d7-41a0-8db0-dacf64d0e4e2',
+      };
       const x = [a, b];
 
       return knex('datatype_test')
