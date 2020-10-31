@@ -187,7 +187,8 @@
     "CHANGELOG.md",
     "scripts/*",
     "types/index.d.ts",
-    "types/result.d.ts"
+    "types/result.d.ts",
+    "types/tables.d.ts"
   ],
   "license": "MIT",
   "tonicExampleFilename": "scripts/runkit-example.js",
