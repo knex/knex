@@ -1270,12 +1270,12 @@ const main = async () => {
   // Transactions:
 
   // $ExpectType any[]
-  await knex.transaction(async (trx) => {
+  await knex.transaction((trx) => {
     return trx.insert({ name: 'Old Books' }, 'id').into('articles');
   });
 
   // $ExpectType Pick<Article, "id" | "subject">[]
-  await knex.transaction(async (trx) => {
+  await knex.transaction((trx) => {
     const articles: Article[] = [
       { id: 1, subject: 'Canterbury Tales' },
       { id: 2, subject: 'Moby Dick' },
@@ -1288,7 +1288,7 @@ const main = async () => {
   });
 
   // $ExpectType Pick<Article, "id" | "subject">[]
-  await knex.transaction(async (trx) => {
+  await knex.transaction((trx) => {
     const articles = [
       { id: 1, subject: 'Canterbury Tales' },
       { id: 2, subject: 'Moby Dick' },
