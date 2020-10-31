@@ -1,3 +1,4 @@
+dist: focal
 language: node_js
 sudo: required
 
@@ -10,6 +11,8 @@ cache:
 matrix:
   fast_finish: true
   include:
+    - node_js: '15'
+      env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
     - node_js: '14'
       env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
     - node_js: '12'
