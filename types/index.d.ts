@@ -421,6 +421,11 @@ declare namespace Knex {
 
   type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
 
+  interface OnConflictQueryBuilder<TRecord, TResult> {
+    ignore(): QueryInterface<TRecord, TResult>;
+    merge(data?: DbRecord<TRecord>): QueryInterface<TRecord, TResult>;
+  }
+
   //
   // QueryInterface
   //
@@ -744,6 +749,26 @@ declare namespace Knex {
     returning<TResult2 = SafePartial<TRecord>[]>(
       column: string | readonly string[]
     ): QueryBuilder<TRecord, TResult2>;
+
+    onConflict<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
+      column: TKey
+    ): OnConflictQueryBuilder<TRecord, TResult2>;
+    onConflict<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.SetSingle<
+        DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, TRecord, TKey>,
+        false
+      >[]
+    >(
+      columns: readonly TKey[]
+    ): OnConflictQueryBuilder<TRecord, TResult2>;
 
     del(
       returning: '*'
