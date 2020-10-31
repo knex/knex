@@ -1664,35 +1664,96 @@ export default [
   },
   {
     type: "method",
-    method: "returning",
-    example: ".returning(column) / .returning([column1, column2, ...])",
-    description: "Utilized by PostgreSQL, MSSQL, and Oracle databases, the returning method specifies which column should be returned by the insert and update methods. Passed column parameter may be a string or an array of strings. When passed in a string, makes the SQL result be reported as an array of values from the specified column. When passed in an array of strings, makes the SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is not supported on Amazon Redshift.",
+    method: "onConflict",
+    example: "insert(..).onConflict(column) / insert(..).onConflict([column1, column2, ...])",
+    description: "Implemented for the PostgreSQL, MySQL, and Sqlite databases. A modifier for insert queries that specifies alternative behaviour in the case of a conflict. A conflict occurs when a table has a PRIMARY KEY or a UNIQUE index on a column (or a composite index on a set of columns) and a row being inserted has the same value as a row which already exists in the table in those column(s). The default behaviour in case of conflict is to raise an error and abort the query. Using this method you can change this behaviour to either silently ignore the error by using .onConflict().ignore() or to update the existing row with new data (perform an \"UPSERT\") by using .onConflict().merge().",
+    children: [
+      {
+        type: "text",
+        content: "Note: For PostgreSQL and Sqlite, the column(s) specified by this method must either be the table's PRIMARY KEY or have a UNIQUE index on them or the query will fail to execute. When specifying multiple columns, they must be a composite PRIMARY KEY or have composite UNIQUE index. MySQL will ignore the specified columns and always use the table's PRIMARY KEY. For cross-platform support across PostgreSQL, MySQL, and Sqlite you must both explicitly specifiy the columns in .onConflict() and those column(s) must be the table's PRIMARY KEY."
+      },
+      {
+        type: "text",
+        content: "See documentation on .ignore() and .merge() methods for more details."
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "ignore",
+    example: "insert(..).onConflict(..).ignore()",
+    description: "Implemented for the PostgreSQL, MySQL, and Sqlite databases. Modifies an insert query, and causes it to be silently dropped without an error if a conflict occurs. Uses INSERT IGNORE in MySQL, and adds an ON CONFLICT (columns) DO NOTHING clause to the insert statement in PostgreSQL and Sqlite.",
     children: [
       {
         type: "runnable",
         content: `
-          // Returns [1]
-          knex('books')
-            .returning('id')
-            .insert({title: 'Slaughterhouse Five'})
+          knex('tableName')
+            .insert({
+              email: "ignore@example.com",
+              name: "John Doe"
+            })
+            .onConflict('email')
+            .ignore()
         `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "merge",
+    example: "insert(..).onConflict(..).merge() / insert(..).onConflict(..).merge(updates)",
+    description: "Implemented for the PostgreSQL, MySQL, and Sqlite databases. Modifies an insert query, to turn it into an 'upsert' operation. Uses ON DUPLICATE KEY UPDATE in MySQL, and adds an ON CONFLICT (columns) DO UPDATE clause to the insert statement in PostgreSQL and Sqlite.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('tableName')
+            .insert({
+              email: "ignore@example.com",
+              name: "John Doe"
+            })
+            .onConflict('email')
+            .merge()
+        `
+      },
+      {
+        type: "text",
+        content: "This also works with batch inserts:"
       },
       {
         type: "runnable",
         content: `
-          // Returns [2] in \"mysql\", \"sqlite\"; [2, 3] in \"postgresql\"
-          knex('books')
-            .returning('id')
-            .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
+          knex('tableName')
+            .insert(
+              { email: "john@example.com", name: "John Doe" },
+              { email: "jane@example.com", name: "Jane Doe" },
+              { email: "alex@example.com", name: "Alex Doe" },
+            )
+            .onConflict('email')
+            .merge()
         `
       },
       {
-        type: "runnable",
+        type: "text",
+        content: "It is also possible to specify data to update seperately from the data to insert. This is useful if you only want to update a subset of the columns. For example, you may want to set a 'created_at' column when inserting but would prefer not to update it if the row already exists:"
+      },
+      {
+        type: "code",
+        language: "js",
         content: `
-          // Returns [ { id: 1, title: 'Slaughterhouse Five' } ]
-          knex('books')
-            .returning(['id','title'])
-            .insert({title: 'Slaughterhouse Five'})
+          const timestamp = Date.now();
+          knex('tableName')
+            .insert({
+              email: "ignore@example.com",
+              name: "John Doe",
+              created_at: timestamp,
+              updated_at: timestamp,
+            })
+            .onConflict('email')
+            .merge({
+              name: "John Doe",
+              updated_at: timestamp,
+            })
         `
       }
     ]
@@ -1744,6 +1805,41 @@ export default [
           knex('accounts')
             .where('activated', false)
             .del()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "returning",
+    example: ".returning(column) / .returning([column1, column2, ...])",
+    description: "Utilized by PostgreSQL, MSSQL, and Oracle databases, the returning method specifies which column should be returned by the insert, update and delete methods. Passed column parameter may be a string or an array of strings. When passed in a string, makes the SQL result be reported as an array of values from the specified column. When passed in an array of strings, makes the SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is not supported on Amazon Redshift.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          // Returns [1]
+          knex('books')
+            .returning('id')
+            .insert({title: 'Slaughterhouse Five'})
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          // Returns [2] in \"mysql\", \"sqlite\"; [2, 3] in \"postgresql\"
+          knex('books')
+            .returning('id')
+            .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          // Returns [ { id: 1, title: 'Slaughterhouse Five' } ]
+          knex('books')
+            .returning(['id','title'])
+            .insert({title: 'Slaughterhouse Five'})
         `
       }
     ]
