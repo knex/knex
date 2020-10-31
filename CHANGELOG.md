@@ -1,5 +1,19 @@
 # Master (Unreleased)
 
+# 0.21.10 - 31 October, 2020
+
+### New features:
+
+- Upsert support (Postgres/MySQL/Sqlite) #3763
+
+### Typings:
+
+- Allow to globally define table/record mapping #4071
+
+### Test / internal changes:
+
+- Populate knexQueryUid without using uuid, making this logic more easily mockable #4089
+
 # 0.21.9 - 27 October, 2020
 
 ### New features:
