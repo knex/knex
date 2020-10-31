@@ -2512,6 +2512,15 @@ const main = async () => {
     .update({ update: 'update' }, ['id', 'age'])
     .into('users_composite');
 
+  // # Insert onConflict
+  await knex
+    .table<User>('users')
+    .insert({ id: 10, active: true })
+    .onConflict('id')
+    .merge({ active: true })
+    .returning('*');
+    
+    
   // # Deletion
 
   // $ExpectType number

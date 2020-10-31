@@ -890,6 +890,38 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal("alter table `users` comment = ''");
     });
 
+    it('test column comment with quotes', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('test', (t) => {
+          t.text('column1').comment(
+            "The table's first column and it's escaped"
+          );
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        "create table `test` (`column1` text comment 'The table\\'s first column and it\\'s escaped')"
+      );
+    });
+
+    it('test column comment with pre-escaped quotes', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('test', (t) => {
+          t.text('column1').comment(
+            "The table\\'s first column and it\\'s escaped"
+          );
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        "create table `test` (`column1` text comment 'The table\\'s first column and it\\'s escaped')"
+      );
+    });
+
     it('set comment to undefined', function () {
       expect(function () {
         client

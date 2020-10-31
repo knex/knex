@@ -443,9 +443,15 @@ declare namespace Knex {
 
   type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
 
+  interface OnConflictQueryBuilder<TRecord, TResult> {
+    ignore(): QueryInterface<TRecord, TResult>;
+    merge(data?: DbRecord<TRecord>): QueryInterface<TRecord, TResult>;
+  }
+
   //
   // QueryInterface
   //
+  type ClearStatements = "with" | "select" | "columns" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
 
   interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
@@ -555,6 +561,7 @@ declare namespace Knex {
     clearOrder(): QueryBuilder<TRecord, TResult>;
     clearHaving(): QueryBuilder<TRecord, TResult>;
     clearCounters(): QueryBuilder<TRecord, TResult>;
+    clear(statement: ClearStatements): QueryBuilder<TRecord, TResult>;
 
     // Paging
     offset(offset: number): QueryBuilder<TRecord, TResult>;
@@ -764,6 +771,26 @@ declare namespace Knex {
     returning<TResult2 = SafePartial<TRecord>[]>(
       column: string | readonly string[]
     ): QueryBuilder<TRecord, TResult2>;
+
+    onConflict<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+      >[]
+    >(
+      column: TKey
+    ): OnConflictQueryBuilder<TRecord, TResult2>;
+    onConflict<
+      TKey extends StrKey<TRecord>,
+      TResult2 = DeferredKeySelection.SetSingle<
+        DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, TRecord, TKey>,
+        false
+      >[]
+    >(
+      columns: readonly TKey[]
+    ): OnConflictQueryBuilder<TRecord, TResult2>;
 
     del(
       returning: '*'

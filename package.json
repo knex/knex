@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.21.7",
+  "version": "0.21.9",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
   "types": "types/index.d.ts",
@@ -43,7 +43,6 @@
     "pg-connection-string": "2.3.0",
     "tarn": "^3.0.1",
     "tildify": "2.0.0",
-    "uuid": "^7.0.3",
     "v8flags": "^3.2.0"
   },
   "peerDependencies": {
@@ -82,7 +81,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^2.1.4",
-    "cli-testlab": "^2.0.0",
+    "cli-testlab": "^2.1.1",
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.2",
     "dtslint": "3.6.14",
