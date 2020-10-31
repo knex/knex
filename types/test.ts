@@ -2519,10 +2519,8 @@ const main = async () => {
     .onConflict('id')
     .merge({ active: true })
     .returning('*');
-    
-    
-  // # Deletion
 
+  // # Deletion
   // $ExpectType number
   await knex<User>('users')
     .where('id', 10)
