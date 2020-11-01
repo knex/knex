@@ -1,0 +1,5 @@
+// This is primarily used by dtslint to run tests against type definitions
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["test.ts"]
+}
