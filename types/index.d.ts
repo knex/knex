@@ -1840,6 +1840,10 @@ declare namespace Knex {
       abortTransactionOnError?: boolean;
       trustedConnection?: boolean;
       enableArithAbort?: boolean;
+      isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE' | 'SNAPSHOT';
+      maxRetriesOnTransientErrors?: number;
+      multiSubnetFailover?: boolean;
+      packetSize?: number;
     }>;
     pool?: Readonly<{
       min?: number;
