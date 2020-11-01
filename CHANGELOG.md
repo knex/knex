@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.21.11 - 01 November, 2020
+
+### Typings:
+
+- Revert support for globally defining table/record mapping #4099
+
 # 0.21.10 - 31 October, 2020
 
 ### New features:
@@ -12,7 +18,7 @@
 
 ### Typings:
 
-- Allow to globally define table/record mapping (#4071
+- Allow to globally define table/record mapping #4071
 
 # 0.21.9 - 27 October, 2020
 
