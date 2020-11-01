@@ -13,7 +13,7 @@ import events = require('events');
 import stream = require('stream');
 import ResultTypes = require('./result');
 
-import { Tables } from './tables';
+import { CompositeTableType, Tables } from './tables';
 
 import { ConnectionOptions } from "tls";
 
@@ -324,12 +324,6 @@ type TableOptions = PgTableOptions;
 interface PgTableOptions {
   only?: boolean;
 }
-
-export type CompositeTableType<TBase, TInsert = TBase, TUpdate = Partial<TInsert>> = {
-  base: TBase,
-  insert: TInsert,
-  update: TUpdate,
-};
 
 type TableNames = keyof Tables;
 

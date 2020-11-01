@@ -94,9 +94,9 @@ declare module './tables' {
     users_inferred: User;
     departments_inferred: Department;
     articles_inferred: Article;
-    users_composite: Knex.CompositeTableType<User, { insert: 'insert' }, { update: 'update' }>;
-    departments_composite: Knex.CompositeTableType<Department, { insert: 'insert' }, { update: 'update' }>;
-    articles_composite: Knex.CompositeTableType<Article, { insert: 'insert' }, { update: 'update' }>;
+    users_composite: CompositeTableType<User, { insert: 'insert' }, { update: 'update' }>;
+    departments_composite: CompositeTableType<Department, { insert: 'insert' }, { update: 'update' }>;
+    articles_composite: CompositeTableType<Article, { insert: 'insert' }, { update: 'update' }>;
   }
 }
 
