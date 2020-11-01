@@ -1,4 +1,4 @@
-// This is primarily used by dtslint to run tests against type definitions
+// This is used for smoke-test tsc build
 {
   "extends": "./tsconfig.json",
   "exclude": ["test.ts"]
