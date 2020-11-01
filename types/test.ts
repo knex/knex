@@ -1178,9 +1178,7 @@ const main = async () => {
     .merge({ active: true })
     .debug(true);
 
-
   // # Deletion
-
   // $ExpectType number
   await knex<User>('users')
     .where('id', 10)
