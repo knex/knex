@@ -335,7 +335,7 @@ type TableNames = keyof Tables;
 
 type TableInterfaceScope = keyof CompositeTableType<unknown>;
 
-type TableType<TTable> = Tables[TTable];
+type TableType<TTable extends keyof Tables> = Tables[TTable];
 
 type ResolveTableType<TCompositeTableType, TScope extends TableInterfaceScope = 'base'> = TCompositeTableType extends CompositeTableType<unknown>
   ? TCompositeTableType[TScope]
@@ -364,7 +364,7 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
     config?: any
   ): Promise<Knex.Transaction>;
   transaction<T>(
-    transactionScope: (trx: Knex.Transaction) => Promise<T> | Promise<T> | void,
+    transactionScope: (trx: Knex.Transaction) => Promise<T> | void,
     config?: any
   ): Promise<T>;
   initialize(config?: Knex.Config): void;
@@ -1240,7 +1240,7 @@ declare namespace Knex {
   interface WhereIn<TRecord = any, TResult = unknown[]> {
     <K extends keyof ResolveTableType<TRecord>>(
       columnName: K,
-      values: readonly DbColumn<TRecord[K]>[] | QueryCallback
+      values: readonly DbColumn<ResolveTableType<TRecord>[K]>[] | QueryCallback
     ): QueryBuilder<TRecord, TResult>;
     (columnName: string, values: readonly Value[] | QueryCallback): QueryBuilder<
       TRecord,
@@ -1248,7 +1248,7 @@ declare namespace Knex {
     >;
     <K extends keyof ResolveTableType<TRecord>>(
       columnNames: readonly K[],
-      values: readonly (readonly DbColumn<TRecord[K]>[])[] | QueryCallback
+      values: readonly (readonly DbColumn<ResolveTableType<TRecord>[K]>[])[] | QueryCallback
     ): QueryBuilder<TRecord, TResult>;
     (columnNames: readonly string[], values: readonly Value[][] | QueryCallback): QueryBuilder<
       TRecord,
