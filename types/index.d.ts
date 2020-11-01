@@ -13,7 +13,7 @@ import events = require('events');
 import stream = require('stream');
 import ResultTypes = require('./result');
 
-import { CompositeTableType, Tables } from './tables';
+import { Tables } from './tables';
 
 import { ConnectionOptions } from "tls";
 
@@ -260,12 +260,12 @@ declare namespace DeferredKeySelection {
     : TSelection;
 
   type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
-      ? ResolveTableType<ResolveOne<TSelection>>
+      ? Knex.ResolveTableType<ResolveOne<TSelection>>
       : TSelection extends DeferredKeySelection.Any[]
-      ? ResolveTableType<ResolveOne<TSelection[0]>>[]
+      ? Knex.ResolveTableType<ResolveOne<TSelection[0]>>[]
       : TSelection extends (infer I)[]
-      ? UnknownToAny<ResolveTableType<I>>[]
-      : UnknownToAny<ResolveTableType<TSelection>>;
+      ? UnknownToAny<Knex.ResolveTableType<I>>[]
+      : UnknownToAny<Knex.ResolveTableType<TSelection>>;
 }
 
 type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
@@ -325,22 +325,12 @@ interface PgTableOptions {
   only?: boolean;
 }
 
-type TableNames = keyof Tables;
-
-type TableInterfaceScope = keyof CompositeTableType<unknown>;
-
-type TableType<TTable extends keyof Tables> = Tables[TTable];
-
-type ResolveTableType<TCompositeTableType, TScope extends TableInterfaceScope = 'base'> = TCompositeTableType extends CompositeTableType<unknown>
-  ? TCompositeTableType[TScope]
-  : TCompositeTableType;
-
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
-  <TTable extends TableNames>(
+  <TTable extends Knex.TableNames>(
     tableName: TTable,
     options?: TableOptions
-  ): Knex.QueryBuilder<TableType<TTable>, DeferredKeySelection<ResolveTableType<TableType<TTable>>, never>[]>;
+  ): Knex.QueryBuilder<Knex.TableType<TTable>, DeferredKeySelection<Knex.ResolveTableType<Knex.TableType<TTable>>, never>[]>;
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
     tableName?: Knex.TableDescriptor | Knex.AliasDict,
     options?: TableOptions
@@ -436,6 +426,22 @@ declare namespace Knex {
   type DbRecord<TRecord> = Readonly<SafePartial<MaybeRawRecord<TRecord>>>;
 
   type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
+
+  export type CompositeTableType<TBase, TInsert = TBase, TUpdate = Partial<TInsert>> = {
+    base: TBase,
+    insert: TInsert,
+    update: TUpdate,
+  };
+
+  type TableNames = keyof Tables;
+
+  type TableInterfaceScope = keyof CompositeTableType<unknown>;
+
+  type TableType<TTable extends keyof Tables> = Tables[TTable];
+
+  type ResolveTableType<TCompositeTableType, TScope extends TableInterfaceScope = 'base'> = TCompositeTableType extends CompositeTableType<unknown>
+    ? TCompositeTableType[TScope]
+    : TCompositeTableType;
 
   interface OnConflictQueryBuilder<TRecord, TResult> {
     ignore(): QueryInterface<TRecord, TResult>;
