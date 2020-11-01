@@ -422,8 +422,8 @@ declare namespace Knex {
   type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
 
   interface OnConflictQueryBuilder<TRecord, TResult> {
-    ignore(): QueryInterface<TRecord, TResult>;
-    merge(data?: DbRecord<TRecord>): QueryInterface<TRecord, TResult>;
+    ignore(): QueryBuilder<TRecord, TResult>;
+    merge(data?: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
   }
 
   //
