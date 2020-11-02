@@ -604,7 +604,9 @@ declare namespace Knex {
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
     insert(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: '*'
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
@@ -615,7 +617,9 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -626,7 +630,9 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -637,7 +643,9 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: TKey
     ): QueryBuilder<TRecord, TResult2>;
     insert<
@@ -648,11 +656,15 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     insert<TResult2 = number[]>(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'insert'> : DbRecordArr<TRecord>
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>
     ): QueryBuilder<TRecord, TResult2>;
 
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
