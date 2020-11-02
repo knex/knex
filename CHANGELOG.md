@@ -1,5 +1,14 @@
 # Master (Unreleased)
 
+# 0.21.12 - 02 November, 2020
+
+### Typings:
+
+- Reintroduce support for globally defining table/record mapping #4100
+- Add a few missing types for MSSQL Connection #4103
+- Make .ignore() and .merge() return QueryBuilder rather than QueryInterface #4102
+- Use tarn config TS types instead of generic-pool #4064
+
 # 0.21.11 - 01 November, 2020
 
 ### Typings:
