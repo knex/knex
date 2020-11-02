@@ -2520,6 +2520,15 @@ const main = async () => {
     .merge({ active: true })
     .returning('*');
 
+  // # Regression test (https://github.com/knex/knex/issues/4101)
+  // # Ensure that .debug() can be called on a query containing an onConflict clause.
+  await knex
+    .table<User>('users')
+    .insert({ id: 10, active: true })
+    .onConflict('id')
+    .merge({ active: true })
+    .debug(true);
+
   // # Deletion
   // $ExpectType number
   await knex<User>('users')

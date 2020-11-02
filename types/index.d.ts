@@ -444,8 +444,8 @@ declare namespace Knex {
     : TCompositeTableType;
 
   interface OnConflictQueryBuilder<TRecord, TResult> {
-    ignore(): QueryInterface<TRecord, TResult>;
-    merge(data?: DbRecord<TRecord>): QueryInterface<TRecord, TResult>;
+    ignore(): QueryBuilder<TRecord, TResult>;
+    merge(data?: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
   }
 
   //
