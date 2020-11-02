@@ -1979,6 +1979,24 @@ const main = async () => {
   // $ExpectType number[]
   await knex('users_composite').insert({ insert: 'insert' });
 
+  // $ExpectType number[]
+  await knex('users').insert([{ id: 10 }]);
+
+  // $ExpectType number[]
+  await knex<User>('users').insert([{ id: 10 }]);
+
+  // $ExpectType number[]
+  await knex('users_inferred').insert([{ id: 10 }]);
+
+  // $ExpectError
+  await knex('users_composite').insert([{ id: 10 }]);
+
+  // $ExpectError
+  await knex('users_composite').insert([{}]);
+
+  // $ExpectType number[]
+  await knex('users_composite').insert([{ insert: 'insert' }]);
+
   const qb2 = knex<User>('users');
   qb2.returning(['id', 'name']);
 
@@ -2031,6 +2049,47 @@ const main = async () => {
     .insert({})
     .returning('id');
 
+  // $ExpectType any[]
+  await knex('users')
+    .insert([{ id: 10 }])
+    .returning('id');
+
+  // $ExpectType number[]
+  await knex('users')
+    .insert([{ id: 10 }])
+    .returning<number[]>('id');
+
+  // $ExpectType string[]
+  await knex<User>('users')
+    .insert([{ id: 10 }])
+    .returning<string[]>('id');
+
+  // $ExpectType number[]
+  await knex<User>('users')
+    .insert([{ id: 10 }])
+    .returning('id');
+
+  // $ExpectType number[]
+  await knex('users_inferred')
+    .insert([{ id: 10 }])
+    .returning('id');
+
+  // $ExpectType number[]
+  await knex('users_composite')
+    .insert([{ insert: 'insert' }])
+    .returning('id');
+
+  await knex('users_composite')
+    // $ExpectError
+    .insert([{ id: 10 }])
+    .returning('id');
+
+  // Require insert argument to satisfy "insert" interface fully when composite type is available.
+  await knex('users_composite')
+    // $ExpectError
+    .insert({})
+    .returning('id');
+
   // $ExpectType Pick<User, "id" | "age">[]
   await knex<User>('users')
     .insert({ id: 10 })
@@ -2053,6 +2112,21 @@ const main = async () => {
 
   // $ExpectType User[]
   await knex('users_composite').insert({ insert: 'insert' }, '*');
+
+  // $ExpectType User[]
+  await knex<User>('users').insert([{ id: 10 }], '*');
+
+  // $ExpectType User[]
+  await knex('users_inferred').insert([{ id: 10 }], '*');
+
+  // $ExpectError
+  await knex('users_composite').insert([{ id: 10 }], '*');
+
+  // $ExpectError
+  await knex('users_composite').insert([{}], '*');
+
+  // $ExpectType User[]
+  await knex('users_composite').insert([{ insert: 'insert' }], '*');
 
   // $ExpectType number[]
   await knex.insert({ id: 10 }, 'id').into<User>('users');
