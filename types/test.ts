@@ -1,5 +1,11 @@
 import * as Knex from 'knex';
 
+//////////////////////////////////////////////////////////////////////////////////////
+//                                                                                  //
+//dtslint tests are deprecated, please add new tests for tsd instead (see /test-tsd)//
+//                                                                                  //
+//////////////////////////////////////////////////////////////////////////////////////
+
 const clientConfig = {
   client: 'sqlite3',
   connection: {
@@ -91,7 +97,6 @@ const main = async () => {
 
   // $ExpectType any[]
   await knex('users');
-
 
   // This test (others similar to it) may seem useless but they are needed
   // to test for left-to-right inference issues eg: #3260

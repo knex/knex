@@ -1,5 +1,0 @@
-// This is used for smoke-test tsc build
-{
-  "extends": "./tsconfig.json",
-  "exclude": ["test.ts"]
-}

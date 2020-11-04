@@ -13,7 +13,7 @@
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\"",
-    "lint:types": "tsc --project types/tsconfig-tsc.json && tsd && dtslint types",
+    "lint:types": "tsc --project tsconfig.json && tsd && dtslint types",
     "lint:everything": "npm run lint:types && npm run lint",
     "test:unit": "mocha --exit -t 10000 test/db-less-test-suite.js && npm run test:tape && npm run test:cli",
     "test:db": "mocha --exit -t 10000 test/integration-test-suite.js",
