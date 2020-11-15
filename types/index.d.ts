@@ -370,6 +370,8 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   seed: Knex.Seeder;
   fn: Knex.FunctionHelper;
   ref: Knex.RefBuilder;
+  userParams: Record<string, any>;
+  withUserParams(params: Record<string, any>): Knex;
 }
 
 declare function Knex<TRecord extends {} = any, TResult = unknown[]>(
