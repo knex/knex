@@ -14,7 +14,7 @@ const knex = Knex(clientConfig);
 // import Knex from 'knex'
 // when "esModuleInterop": true
 
-declare module 'knex' {
+declare module '../types' {
   interface QueryBuilder {
     customSelect<TRecord, TResult>(value: number): QueryBuilder<TRecord, TResult>;
   }
