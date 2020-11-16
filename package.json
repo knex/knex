@@ -209,6 +209,10 @@
     }
   },
   "tsd": {
-    "directory": "test-tsd"
+    "directory": "test-tsd",
+    "compilerOptions": {
+      "esModuleInterop": true,
+      "module": "commonjs"
+    }
   }
 }
