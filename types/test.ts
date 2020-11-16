@@ -1,18 +1,10 @@
 import * as Knex from 'knex';
 
-// Use:
-// import Knex from 'knex'
-// when "esModuleInterop": true
-
-declare module 'knex' {
-  interface QueryBuilder {
-    customSelect<TRecord, TResult>(value: number): QueryBuilder<TRecord, TResult>;
-  }
-}
-
-Knex.QueryBuilder.extend('customSelect', function(value: number) {
-  return this.select(this.client.raw(`${value} as value`));
-});
+////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                    //
+// dtslint tests are deprecated, please add new tests for tsd instead (see /test-tsd) //
+//                                                                                    //
+////////////////////////////////////////////////////////////////////////////////////////
 
 const clientConfig = {
   client: 'sqlite3',
@@ -105,9 +97,6 @@ const main = async () => {
 
   // $ExpectType any[]
   await knex('users');
-
-  // $ExpectType number[]
-  await knex('users').customSelect<any, number[]>(42);
 
   // This test (others similar to it) may seem useless but they are needed
   // to test for left-to-right inference issues eg: #3260
