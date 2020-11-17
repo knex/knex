@@ -2,7 +2,6 @@
 const rechoir = require('rechoir');
 const interpret = require('interpret');
 const resolveFrom = require('resolve-from');
-const escalade = require('escalade/sync');
 const path = require('path');
 const tildify = require('tildify');
 const commander = require('commander');
@@ -18,6 +17,8 @@ const {
   getMigrationExtension,
   getSeedExtension,
   getStubPath,
+  findUpModulePath,
+  findUpConfig,
 } = require('./utils/cli-config-utils');
 const { existsSync, readFile, writeFile } = require('./../lib/util/fs');
 
@@ -56,36 +57,6 @@ async function initKnex(env, opts) {
   );
   const knex = require(env.modulePath);
   return knex(resolvedConfig);
-}
-
-function findUpModulePath(cwd, packageName) {
-  const modulePackagePath = escalade(cwd, (dir, names) => {
-    if (names.includes('package.json')) {
-      return 'package.json';
-    }
-    return false;
-  });
-  try {
-    const modulePackage = require(modulePackagePath);
-    if (modulePackage.name === packageName) {
-      return path.join(
-        path.dirname(modulePackagePath),
-        modulePackage.main || 'index.js'
-      );
-    }
-  } catch (e) {}
-}
-
-function findUpConfig(cwd, name, extensions) {
-  return escalade(cwd, (dir, names) => {
-    for (const ext of extensions) {
-      const filename = `${name}.${ext}`;
-      if (names.includes(filename)) {
-        return filename;
-      }
-    }
-    return false;
-  });
 }
 
 function invoke() {
