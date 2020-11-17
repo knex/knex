@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-const Liftoff = require('liftoff');
+const rechoir = require('rechoir');
 const interpret = require('interpret');
+const resolveFrom = require('resolve-from');
+const escalade = require('escalade/sync');
 const path = require('path');
 const tildify = require('tildify');
 const commander = require('commander');
@@ -17,7 +19,7 @@ const {
   getSeedExtension,
   getStubPath,
 } = require('./utils/cli-config-utils');
-const { readFile, writeFile } = require('./../lib/util/fs');
+const { existsSync, readFile, writeFile } = require('./../lib/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
 
@@ -56,10 +58,94 @@ async function initKnex(env, opts) {
   return knex(resolvedConfig);
 }
 
-function invoke(env) {
-  env.modulePath = env.modulePath || env.knexpath || process.env.KNEX_PATH;
+function findUpModulePath(cwd, packageName) {
+  const modulePackagePath = escalade(cwd, (dir, names) => {
+    if (names.includes('package.json')) {
+      return 'package.json';
+    }
+    return false;
+  });
+  try {
+    const modulePackage = require(modulePackagePath);
+    if (modulePackage.name === packageName) {
+      return path.join(
+        path.dirname(modulePackagePath),
+        modulePackage.main || 'index.js'
+      );
+    }
+  } catch (e) {}
+}
 
+function findUpConfig(cwd, name, extensions) {
+  return escalade(cwd, (dir, names) => {
+    for (const ext of extensions) {
+      const filename = `${name}.${ext}`;
+      if (names.includes(filename)) {
+        return filename;
+      }
+    }
+    return false;
+  });
+}
+
+function invoke() {
   const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
+
+  const cwd = argv.knexfile
+    ? path.dirname(path.resolve(argv.knexfile))
+    : process.cwd();
+
+  // TODO add knexpath here eventually
+  const modulePath =
+    resolveFrom.silent(cwd, 'knex') ||
+    findUpModulePath(cwd, 'knex') ||
+    process.env.KNEX_PATH;
+
+  const configPath =
+    argv.knexfile && existsSync(argv.knexfile)
+      ? path.resolve(argv.knexfile)
+      : findUpConfig(cwd, 'knexfile', filetypes);
+
+  if (configPath) {
+    const autoloads = rechoir.prepare(
+      interpret.jsVariants,
+      configPath,
+      cwd,
+      true
+    );
+    if (autoloads instanceof Error) {
+      // Only errors
+      autoloads.failures.forEach(function (failed) {
+        console.log(
+          color.red('Failed to load external module'),
+          color.magenta(failed.moduleName)
+        );
+      });
+    } else if (Array.isArray(autoloads)) {
+      const succeeded = autoloads[autoloads.length - 1];
+      console.log(
+        'Requiring external module',
+        color.magenta(succeeded.moduleName)
+      );
+    }
+  }
+
+  const env = {
+    cwd,
+    modulePath,
+    configPath,
+    configuration: null,
+  };
+
+  // rechoir.prepare(interpret.jsVariants, configPath, cwd);
+
+  let modulePackage = {};
+  try {
+    modulePackage = require(path.join(
+      path.dirname(env.modulePath),
+      'package.json'
+    ));
+  } catch (e) {}
 
   const cliVersion = [
     color.blue('Knex CLI version:'),
@@ -68,7 +154,7 @@ function invoke(env) {
 
   const localVersion = [
     color.blue('Knex Local version:'),
-    color.green(env.modulePackage.version || 'None'),
+    color.green(modulePackage.version || 'None'),
   ].join(' ');
 
   commander
@@ -354,21 +440,6 @@ function invoke(env) {
   commander.parse(process.argv);
 }
 
-const cli = new Liftoff({
-  name: 'knex',
-  extensions: interpret.jsVariants,
-  v8flags: require('v8flags'),
-  moduleName: require('../package.json').name,
-});
-
-cli.on('require', function (name) {
-  console.log('Requiring external module', color.magenta(name));
-});
-
-cli.on('requireFail', function (name) {
-  console.log(color.red('Failed to load external module'), color.magenta(name));
-});
-
 // FYI: The handling for the `--cwd` and `--knexfile` arguments is a bit strange,
 //      but we decided to retain the behavior for backwards-compatibility.  In
 //      particular: if `--knexfile` is a relative path, then it will be resolved
@@ -376,7 +447,7 @@ cli.on('requireFail', function (name) {
 //
 //      So, the easiest way to replicate this behavior is to have the CLI change
 //      its CWD to `--cwd` immediately before initializing everything else.  This
-//      ensures that Liftoff will then resolve the path to `--knexfile` correctly.
+//      ensures that path.resolve will then resolve the path to `--knexfile` correctly.
 if (argv.cwd) {
   process.chdir(argv.cwd);
 }
@@ -404,11 +475,4 @@ if (argv.esm) {
   };
 }
 
-cli.launch(
-  {
-    configPath: argv.knexfile,
-    require: argv.require,
-    completion: argv.completion,
-  },
-  invoke
-);
+invoke();
