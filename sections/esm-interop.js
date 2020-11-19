@@ -136,7 +136,7 @@ export default [
           },
         };
         /** this will be used, it has precedence over named export */
-        export deefault config;
+        export default config;
         /** Named exports, will be used if you didn't provide a default export */
         export const { client, connection, migrations, seeds } = config;       
         `
