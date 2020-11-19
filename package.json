@@ -20,7 +20,7 @@
     "test": "mocha --exit -t 10000 test/all-tests-suite.js && npm run test:tape && npm run test:cli",
     "test:coverage": "nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 test/all-tests-suite.js && npm run test:tape && npm run test:cli",
     "test:everything": "npm run lint:everything && npm run test:coverage",
-    "test:sqlite": "cross-env DB=sqlite3 npm test",
+    "test:sqlite": "cross-env DB=sqlite3 npm run test:db",
     "test:tape": "node test/tape/index.js | tap-spec",
     "test:cli": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
     "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql; docker-compose -f scripts/docker-compose.yml up initmssqlknexdb waitmysql waitpostgres waitoracledbxe",
