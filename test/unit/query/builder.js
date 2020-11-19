@@ -6184,6 +6184,170 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('insert method respects raw bindings', () => {
+    testsql(
+      qb()
+        .insert({ email: raw('CURRENT TIMESTAMP') })
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert into `users` (`email`) values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'insert into [users] ([email]) values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        pg: {
+          sql: 'insert into "users" ("email") values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'insert into "users" ("email") values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('insert ignore', () => {
+    testsql(
+      qb()
+        .insert({ email: 'foo' })
+        .onConflict('email')
+        .ignore()
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`) values (?)',
+          bindings: ['foo'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email") values (?) on conflict ("email") do nothing',
+          bindings: ['foo'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`) values (?) on conflict (`email`) do nothing',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('insert ignore multiple', () => {
+    testsql(
+      qb()
+        .insert([{ email: 'foo' }, { email: 'bar' }])
+        .onConflict('email')
+        .ignore()
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`) values (?), (?)',
+          bindings: ['foo', 'bar'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email") values (?), (?) on conflict ("email") do nothing',
+          bindings: ['foo', 'bar'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (`email`) do nothing',
+          bindings: ['foo', 'bar'],
+        },
+      }
+    );
+  });
+
+  it('insert ignore with composite unique keys', () => {
+    testsql(
+      qb()
+        .insert([{ org: 'acme-inc', email: 'foo' }])
+        .onConflict(['org', 'email'])
+        .ignore()
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`, `org`) values (?, ?)',
+          bindings: ['foo', 'acme-inc'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "org") values (?, ?) on conflict ("org", "email") do nothing',
+          bindings: ['foo', 'acme-inc'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `org`) values (?, ?) on conflict (`org`, `email`) do nothing',
+          bindings: ['foo', 'acme-inc'],
+        },
+      }
+    );
+  });
+
+  it('insert merge with explicit updates', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'dayle' },
+        ])
+        .onConflict('email')
+        .merge({ name: 'overidden' }),
+      {
+        mysql: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `name` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `name` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "name" = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+      }
+    );
+  });
+
+  it('insert merge multiple with implicit updates', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'dayle' },
+        ])
+        .onConflict('email')
+        .merge(),
+      {
+        mysql: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name"',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+      }
+    );
+  });
+
   it('Calling decrement and then increment will overwrite the previous value', () => {
     testsql(
       qb()
