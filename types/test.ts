@@ -93,134 +93,6 @@ declare module './tables' {
 }
 
 const main = async () => {
-  // # Select:
-
-  // $ExpectType any[]
-  await knex('users');
-
-  // This test (others similar to it) may seem useless but they are needed
-  // to test for left-to-right inference issues eg: #3260
-  const u1: User[] = await knex('users');
-
-  // $ExpectType User[]
-  await knex<User>('users');
-
-  // $ExpectType User[]
-  await knex('users_inferred');
-
-  // $ExpectType User[]
-  await knex('users_composite');
-
-  // $ExpectType any[]
-  await knex('users').select('id');
-
-  const u2: Partial<User>[] = await knex('users').select('id');
-
-  // $ExpectType any[]
-  await knex('users')
-    .select('id')
-    .select('age');
-
-  // $ExpectType any
-  await knex('users')
-    .select('id')
-    .select('age')
-    .first();
-
-  // $ExpectType any
-  await knex('users').first('id');
-
-  // $ExpectType any
-  await knex
-    .first('*')
-    .from('table')
-    .where({
-      whatever: 'whatever'
-    });
-
-  // $ExpectType any
-  await knex('users').first('id', 'name');
-
-  const u3: User = await knex('users').first('id', 'name');
-
-  // $ExpectType any
-  await knex('users').first(knex.ref('id').as('identifier'));
-
-  // $ExpectType Pick<User, "id"> | undefined
-  await knex<User>('users').first('id');
-
-  // $ExpectType Pick<User, "id"> | undefined
-  await knex.first('id').from('users_inferred');
-
-  // $ExpectType Pick<User, "id"> | undefined
-  await knex.first('id').from('users_composite');
-
-  // $ExpectType Pick<User, "id" | "name"> | undefined
-  await knex<User>('users').first('id', 'name');
-
-  // $ExpectType { identifier: number; } | undefined
-  await knex<User>('users').first(knex.ref('id').as('identifier'));
-
-  // $ExpectType { id: number; name: string; }[]
-  await knex<User>('users').select([
-    knex.ref('name'),
-    knex.ref('id')
-  ]);
-
-  // $ExpectType { id: number; name: string; }[]
-  await knex('users_inferred').select([
-    knex.ref('name'),
-    knex.ref('id')
-  ]);
-
-  // $ExpectType { id: number; name: string; }[]
-  await knex('users_composite').select([
-    knex.ref('name'),
-    knex.ref('id')
-  ]);
-
-  // $ExpectType Pick<User, "id"> | undefined
-  await knex.first('id').from<User>('users');
-
-  // $ExpectType Pick<User, "id" | "name"> | undefined
-  await knex.first('id', 'name').from<User>('users');
-
-  // $ExpectType { identifier: number; } | undefined
-  await knex.first(knex.ref('id').as('identifier')).from<User>('users');
-
-  // $ExpectType Pick<User, "id">[]
-  await knex<User>('users').select('id');
-
-  // $ExpectType Pick<User, "id">[]
-  await knex('users_inferred').select('id');
-
-  // $ExpectType Pick<User, "id">[]
-  await knex('users_composite').select('id');
-
-  // $ExpectType Pick<User, "id" | "age">[]
-  await knex<User>('users')
-    .select('id')
-    .select('age');
-
-  // $ExpectType Pick<User, "id" | "age">[]
-  await knex('users_inferred')
-    .select('id')
-    .select('age');
-
-  // $ExpectType Pick<User, "id" | "age">[]
-  await knex('users_composite')
-    .select('id')
-    .select('age');
-
-  // $ExpectType Pick<User, "id" | "age">[]
-  await knex<User>('users').select('id', 'age');
-
-  // $ExpectType Pick<User, "id" | "age">[]
-  await knex('users_inferred').select('id', 'age');
-
-  // $ExpectType Pick<User, "id" | "age">[]
-  await knex('users_composite').select('id', 'age');
-
   // $ExpectType any
   await knex.raw('select * from users');
 
@@ -702,22 +574,22 @@ const main = async () => {
   // $ExpectType any[]
   await knex('users').distinct('name', 'age');
 
-  // $ExpectType Pick<User, "age" | "name">[]
+  // $ExpectType Pick<User, "name" | "age">[]
   await knex<User>('users').distinct('name', 'age');
 
-  // $ExpectType Pick<User, "age" | "name">[]
+  // $ExpectType Pick<User, "name" | "age">[]
   await knex('users_inferred').distinct('name', 'age');
 
-  // $ExpectType Pick<User, "age" | "name">[]
+  // $ExpectType Pick<User, "name" | "age">[]
   await knex('users_composite').distinct('name', 'age');
 
-  // $ExpectType Pick<User, "id" | "age" | "name" | "active" | "departmentId">[]
+  // $ExpectType Pick<User, "name" | "id" | "age" | "active" | "departmentId">[]
   await knex<User>('users').distinct();
 
-  // $ExpectType Pick<User, "id" | "age" | "name" | "active" | "departmentId">[]
+  // $ExpectType Pick<User, "name" | "id" | "age" | "active" | "departmentId">[]
   await knex('users_inferred').distinct();
 
-  // $ExpectType Pick<User, "id" | "age" | "name" | "active" | "departmentId">[]
+  // $ExpectType Pick<User, "name" | "id" | "age" | "active" | "departmentId">[]
   await knex('users_composite').distinct();
 
   // $ExpectType User[]
@@ -788,17 +660,17 @@ const main = async () => {
   // $ExpectType User[]
   await knex('users_composite').where({ id: 10 });
 
-  // $ExpectType Pick<User, "id" | "name">[]
+  // $ExpectType Pick<User, "name" | "id">[]
   await knex<User>('users')
     .select('id', 'name')
     .where({ id: 10 });
 
-  // $ExpectType Pick<User, "id" | "name">[]
+  // $ExpectType Pick<User, "name" | "id">[]
   await knex('users_inferred')
     .select('id', 'name')
     .where({ id: 10 });
 
-  // $ExpectType Pick<User, "id" | "name">[]
+  // $ExpectType Pick<User, "name" | "id">[]
   await knex('users_composite')
     .select('id', 'name')
     .where({ id: 10 });
@@ -1402,7 +1274,7 @@ const main = async () => {
       .as('colName')
   );
 
-  // $ExpectType Pick<User, "age" | "name">[]
+  // $ExpectType Pick<User, "name" | "age">[]
   await knex<User>('users').select<Pick<User, 'name' | 'age'>[]>(
     knex('foo')
       .select('bar')
@@ -2953,7 +2825,7 @@ const main = async () => {
     .select('*')
     .from<User>('ancestors');
 
-  // $ExpectType Pick<User, "id" | "name">[]
+  // $ExpectType Pick<User, "name" | "id">[]
   await knex
     .withRecursive('ancestors', (qb) => {
       qb.select('*')
