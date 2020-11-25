@@ -169,6 +169,11 @@ Once this is done, check it works by attempting to login:
 psql -h localhost -U postgres -d knex_test
 ```
 
+### Running mssql from Docker on Windows machine
+
+You might need to delete `database` parameter from mssql configuration in
+`test/knexfile.js` if you are getting `Login failed for user 'sa'.` error.
+
 ## Want to be Collaborator?
 
 There is always room for more collaborators. Be active on resolving github issues / sending pull requests / reviewing code and we will ask you to join.
