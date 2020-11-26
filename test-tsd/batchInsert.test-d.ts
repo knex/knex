@@ -34,11 +34,10 @@ const main = async () => {
   );
 
   // assert any bad column from returning list gives error
-  // tsd gives error on this, lol
-  /*expectError(
+  expectError(
     knex.batchInsert('table', [{aa2: 'string', b: false, c: 12}], 12)
-      .returning(['aa2', 'bad_column'])
-  );*/
+      .returning(['aa2', 'bad_column'] as const)
+  );
 
   // validates insert data
   expectError(knex.batchInsert<{aa2: string, c: number}>('table', [{aa2: 'string', b: false, c: 12}], 12));
