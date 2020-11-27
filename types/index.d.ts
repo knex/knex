@@ -1278,7 +1278,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
       columnName: string,
-      values: QueryBuilder<TRecordInner, TResultInner>
+      values: Value[] | QueryBuilder<TRecordInner, TResultInner>
     ): QueryBuilder<TRecord, TResult>;
     <K extends keyof TRecord, TRecordInner, TResultInner>(
       columnNames: readonly K[],
