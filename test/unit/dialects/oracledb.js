@@ -144,6 +144,42 @@ describe('OracleDb parameters', function () {
   });
 });
 
+describe('OracleDb combined name tests', function () {
+  const Logger = require('../../../lib/logger');
+  const logger = new Logger();
+  const postfix = 'seq';
+  const name = 'test';
+
+  it('Should not base64 encode a string below 128 characters', function () {
+    const utils = require('../../../lib/dialects/oracle/utils');
+    expect(
+      utils.generateCombinedName(logger, postfix, name, [
+        'supercalifragilistic',
+        'expialadocious',
+        'antidisestablishmentarianism',
+        'submandibular',
+        'Pseudopseudohypoparathyroidism',
+      ])
+    ).to.equal(
+      'test_supercalifragilistic_expialadocious_antidisestablishmentarianism_submandibular_pseudopseudohypoparathyroidism_seq'
+    );
+  });
+
+  it('Should base64 encode a string above 128 character', function () {
+    const utils = require('../../../lib/dialects/oracle/utils');
+    expect(
+      utils.generateCombinedName(logger, postfix, name, [
+        'supercalifragilistic',
+        'expialadocious',
+        'antidisestablishmentarianism',
+        'submandibular',
+        'Pseudopseudohypoparathyroidism',
+        'Floccinaucinihilipilification',
+      ])
+    ).to.equal('rqo6pEjFfE9VOIX39GKFdPvNPrE');
+  });
+});
+
 describe('OracleDb unit tests', function () {
   let knexClient;
 
