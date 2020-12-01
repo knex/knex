@@ -11,11 +11,14 @@ node_modules
 test.sqlite3
 npm-debug.log
 tmp
-lib
 
 # Testing for the knex cli:
 bin/migrations-folder
 bin/db.sqlite3
+
+# Other artifacts created during testing
+/knexfile.js
+
 
 # Bench stuff
 test/bench/temp

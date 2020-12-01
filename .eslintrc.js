@@ -1,7 +1,9 @@
 const warning = process.env['CI'] ? 2 : 1;
 
 module.exports = {
-  parser: 'babel-eslint',
+  parserOptions: {
+    ecmaVersion: 2018,
+  },
   extends: [
     'eslint:recommended',
     'plugin:import/errors',
@@ -16,12 +18,11 @@ module.exports = {
     'no-debugger': warning,
     'prefer-const': warning,
     'no-fallthrough': warning,
-  },
-  settings: {
-    'import/parser': 'babel-eslint',
+    'require-atomic-updates': 0,
   },
   env: {
     node: true,
     mocha: true,
+    es6: true,
   },
 };

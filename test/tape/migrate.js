@@ -1,10 +1,11 @@
 'use strict';
 
 const tape = require('tape');
-const Migrator = require('../../lib/migrate/Migrator').default;
-const mergeConfig = require('../../lib/migrate/Migrator').getMergedConfig;
+const { Migrator } = require('../../lib/migrate/Migrator');
+const mergeConfig = require('../../lib/migrate/configuration-merger')
+  .getMergedConfig;
 
-tape('migrate: constructor uses config.migrations', function(t) {
+tape('migrate: constructor uses config.migrations', function (t) {
   t.plan(1);
   const migrator = new Migrator({
     client: { config: { migrations: { directory: '/some/dir' } } },
@@ -12,12 +13,13 @@ tape('migrate: constructor uses config.migrations', function(t) {
   t.equal(migrator.config.directory, '/some/dir');
 });
 
-tape('migrate: setConfig() overrides configs given in constructor', function(
-  t
-) {
-  t.plan(1);
+tape(
+  'migrate: setConfig() overrides configs given in constructor',
+  function (t) {
+    t.plan(1);
 
-  const config = mergeConfig({ directory: './custom/path' });
+    const config = mergeConfig({ directory: './custom/path' });
 
-  t.equal(config.directory, './custom/path');
-});
+    t.equal(config.directory, './custom/path');
+  }
+);

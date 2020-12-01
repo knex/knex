@@ -6,7 +6,14 @@
 
 ```
       npm run build
-      npm test
+
+      # run bunch of tests, but skipping coverage which doesn't really work locally at least
+      npm plaintest
+      npm bin_test
+      npm oracledb:test
+      npm mssql:init
+      npm mssql:test
+      npm mssql:destroy
 ```
 
 4. Update package.json version to be e.g. 0.16.0-next1 or 0.16.0-next2 and commit yo master

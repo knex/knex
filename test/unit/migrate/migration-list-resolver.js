@@ -1,12 +1,11 @@
-/*global after, before, beforeEach, describe, it*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
 const { expect } = require('chai');
+const sinon = require('sinon');
 const mockFs = require('mock-fs');
 const migrationListResolver = require('../../../lib/migrate/migration-list-resolver');
-const FsMigrations = require('../../../lib/migrate/sources/fs-migrations')
-  .default;
+const { FsMigrations } = require('../../../lib/migrate/sources/fs-migrations');
 
 describe('migration-list-resolver', () => {
   describe('listAll', () => {
@@ -15,6 +14,7 @@ describe('migration-list-resolver', () => {
       migrationSource = new FsMigrations('test/integration/migrate/migration');
       mockFs({
         'test/integration/migrate/migration': {
+          'cjs-migration.cjs': 'cjs migration content',
           'co-migration.co': 'co migation content',
           'coffee-migration.coffee': 'coffee migation content',
           'eg-migration.eg': 'eg migation content',
@@ -35,6 +35,10 @@ describe('migration-list-resolver', () => {
     it('should include all supported extensions by default', () => {
       return migrationListResolver.listAll(migrationSource).then((list) => {
         expect(list).to.eql([
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'cjs-migration.cjs',
+          },
           {
             directory: 'test/integration/migrate/migration',
             file: 'co-migration.co',
@@ -71,7 +75,7 @@ describe('migration-list-resolver', () => {
       });
     });
 
-    it('should include only files with specified extensions', function() {
+    it('should include only files with specified extensions', function () {
       return migrationListResolver
         .listAll(migrationSource, ['.ts', '.js'])
         .then((list) => {
@@ -183,6 +187,25 @@ describe('migration-list-resolver', () => {
               file: '004_migration.js',
             },
           ]);
+        });
+    });
+  });
+
+  describe('listAllAndCompleted', () => {
+    it('should pass loadExtensions param to listAll', () => {
+      after(() => {
+        sinon.restore();
+      });
+
+      const migrationSource = new FsMigrations([], true);
+
+      const stub = sinon
+        .stub(migrationSource, 'getMigrations')
+        .callsFake(async () => true);
+      return migrationListResolver
+        .listAll(migrationSource, ['.ts'])
+        .then(() => {
+          sinon.assert.calledWith(stub, ['.ts']);
         });
     });
   });

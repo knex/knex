@@ -9,12 +9,14 @@ function assertExec(cmd, desc) {
   desc = desc || 'Run ' + cmd;
   return new Promise((resolve, reject) => {
     let stderr = '';
-    console.log(`Executing: ${cmd}`);
+    let stdout = '';
+    // console.log(`Executing: ${cmd}`);
     const bin = jake.createExec([cmd]);
     bin.addListener('error', (msg, code) =>
       reject(Error(desc + ' FAIL. ' + stderr))
     );
-    bin.addListener('cmdEnd', resolve);
+    bin.addListener('cmdEnd', (cmd) => resolve({ cmd, stdout, stderr }));
+    bin.addListener('stdout', (data) => (stdout += data.toString()));
     bin.addListener('stderr', (data) => (stderr += data.toString()));
     bin.run();
   });
@@ -24,7 +26,7 @@ function assertExecError(cmd, desc) {
   desc = desc || 'Run ' + cmd;
   return new Promise((resolve, reject) => {
     let stderr = '';
-    console.log(`Executing: ${cmd}`);
+    // console.log(`Executing: ${cmd}`);
     const bin = jake.createExec([cmd]);
     bin.addListener('error', (msg, code) => {
       resolve(stderr);

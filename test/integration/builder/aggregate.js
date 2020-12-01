@@ -1,13 +1,11 @@
-/*global describe, it*/
-
 'use strict';
 
-module.exports = function(knex) {
-  describe('Aggregate', function() {
-    it('has a sum', function() {
+module.exports = function (knex) {
+  describe('Aggregate', function () {
+    it('has a sum', function () {
       return knex('accounts')
         .sum('logins')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select sum(`logins`) from `accounts`',
@@ -81,10 +79,171 @@ module.exports = function(knex) {
         });
     });
 
-    it('has an avg', function() {
+    it('supports sum with an alias', function () {
+      return knex('accounts')
+        .sum('logins', { as: 'login_sum' })
+        .testSql(function (tester) {
+          tester(
+            'mysql',
+            'select sum(`logins`) as `login_sum` from `accounts`',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mysql2',
+            'select sum(`logins`) as `login_sum` from `accounts`',
+            [],
+            [
+              {
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg',
+            'select sum("logins") as "login_sum" from "accounts"',
+            [],
+            [
+              {
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg-redshift',
+            'select sum("logins") as "login_sum" from "accounts"',
+            [],
+            [
+              {
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'sqlite3',
+            'select sum(`logins`) as `login_sum` from `accounts`',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'oracledb',
+            'select sum("logins") "login_sum" from "accounts"',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mssql',
+            'select sum([logins]) as [login_sum] from [accounts]',
+            [],
+            [
+              {
+                login_sum: 10,
+              },
+            ]
+          );
+        });
+    });
+
+    it('supports sum through object containing multiple aliases', function () {
+      return knex('accounts')
+        .sum({ login_sum: 'logins', balance_sum: 'balance' })
+        .testSql(function (tester) {
+          tester(
+            'mysql',
+            'select sum(`logins`) as `login_sum`, sum(`balance`) as `balance_sum` from `accounts`',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mysql2',
+            'select sum(`logins`) as `login_sum`, sum(`balance`) as `balance_sum` from `accounts`',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg',
+            'select sum("logins") as "login_sum", sum("balance") as "balance_sum" from "accounts"',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'pg-redshift',
+            'select sum("logins") as "login_sum", sum("balance") as "balance_sum" from "accounts"',
+            [],
+            [
+              {
+                balance_sum: '0',
+                login_sum: '10',
+              },
+            ]
+          );
+          tester(
+            'sqlite3',
+            'select sum(`logins`) as `login_sum`, sum(`balance`) as `balance_sum` from `accounts`',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'oracledb',
+            'select sum("logins") "login_sum", sum("balance") "balance_sum" from "accounts"',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
+              },
+            ]
+          );
+          tester(
+            'mssql',
+            'select sum([logins]) as [login_sum], sum([balance]) as [balance_sum] from [accounts]',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 10,
+              },
+            ]
+          );
+        });
+    });
+
+    it('has an avg', function () {
       return knex('accounts')
         .avg('logins')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           function checkResRange(key, resp) {
             return Math.abs(10 / 6 - +resp[0][key]) < 0.001;
           }
@@ -137,10 +296,10 @@ module.exports = function(knex) {
         });
     });
 
-    it('has a count', function() {
+    it('has a count', function () {
       return knex('accounts')
         .count('id')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select count(`id`) from `accounts`',
@@ -204,12 +363,12 @@ module.exports = function(knex) {
         });
     });
 
-    it('supports multiple aggregate functions', function() {
+    it('supports multiple aggregate functions', function () {
       return knex('accounts')
         .count('id')
         .max('logins')
         .min('logins')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select count(`id`), max(`logins`), min(`logins`) from `accounts`',
@@ -283,12 +442,12 @@ module.exports = function(knex) {
         });
     });
 
-    it('has distinct modifier for aggregates', function() {
+    it('has distinct modifier for aggregates', function () {
       return knex('accounts')
         .countDistinct('id')
         .sumDistinct('logins')
         .avgDistinct('logins')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select count(distinct `id`), sum(distinct `logins`), avg(distinct `logins`) from `accounts`',
@@ -365,14 +524,14 @@ module.exports = function(knex) {
     const testWithMultipleColumns =
       knex.client.driverName === 'mysql' || knex.client.driverName === 'pg';
 
-    it('supports countDistinct with multiple columns', function() {
+    it('supports countDistinct with multiple columns', function () {
       if (!testWithMultipleColumns) {
         return this.skip();
       }
 
       return knex('accounts')
         .countDistinct('id', 'logins')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select count(distinct `id`, `logins`) from `accounts`',
@@ -396,14 +555,14 @@ module.exports = function(knex) {
         });
     });
 
-    it('supports countDistinct with multiple columns with alias', function() {
+    it('supports countDistinct with multiple columns with alias', function () {
       if (!testWithMultipleColumns) {
         return this.skip();
       }
 
       return knex('accounts')
         .countDistinct({ count: ['id', 'logins'] })
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select count(distinct `id`, `logins`) as `count` from `accounts`',
@@ -427,12 +586,12 @@ module.exports = function(knex) {
         });
     });
 
-    it('support the groupBy function', function() {
+    it('support the groupBy function', function () {
       return knex('accounts')
         .count('id')
         .groupBy('logins')
         .orderBy('logins', 'asc')
-        .testSql(function(tester) {
+        .testSql(function (tester) {
           tester(
             'mysql',
             'select count(`id`) from `accounts` group by `logins` order by `logins` asc',
@@ -512,11 +671,11 @@ module.exports = function(knex) {
             ]
           );
         })
-        .then(function() {
+        .then(function () {
           return knex('accounts')
             .count('id')
             .groupBy('first_name')
-            .testSql(function(tester) {
+            .testSql(function (tester) {
               tester(
                 'mysql',
                 'select count(`id`) from `accounts` group by `first_name`',

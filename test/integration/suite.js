@@ -1,20 +1,20 @@
-/*global expect, describe, it*/
-
 'use strict';
 
-module.exports = function(knex) {
+const { expect } = require('chai');
+
+module.exports = function (knex) {
   const sinon = require('sinon');
 
-  describe(knex.client.dialect + ' | ' + knex.client.driverName, function() {
+  describe(knex.client.dialect + ' | ' + knex.client.driverName, function () {
     this.client = knex.client.dialect;
     this.driverName = knex.client.driverName;
 
-    after(function() {
+    after(function () {
       return knex.destroy();
     });
 
     require('./schema')(knex);
-    require('./migrate')(knex);
+    require('./migrate/migration-integration-tests')(knex);
 
     require('./seed')(knex);
     require('./builder/inserts')(knex);
@@ -27,30 +27,28 @@ module.exports = function(knex) {
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
     require('./datatype/bigint')(knex);
+    require('./datatype/decimal')(knex);
+    require('./datatype/double')(knex);
 
-    describe('knex.destroy', function() {
-      it('should allow destroying the pool with knex.destroy', function() {
+    describe('knex.destroy', function () {
+      it('should allow destroying the pool with knex.destroy', function () {
         const spy = sinon.spy(knex.client.pool, 'destroy');
         return knex
           .destroy()
-          .then(function() {
+          .then(function () {
             expect(spy).to.have.callCount(1);
             expect(knex.client.pool).to.equal(undefined);
             return knex.destroy();
           })
-          .then(function() {
+          .then(function () {
             expect(spy).to.have.callCount(1);
           });
       });
     });
   });
 
-  describe('knex.initialize', function() {
-    it('should allow initialize the pool with knex.initialize', function() {
-      // TODO: fix to work with oracle too
-      if (knex.client.driverName === 'oracledb') {
-        return;
-      }
+  describe('knex.initialize', function () {
+    it('should allow initialize the pool with knex.initialize', function () {
       expect(knex.client.pool).to.equal(undefined);
       knex.initialize();
       expect(knex.client.pool.destroyed).to.equal(false);
