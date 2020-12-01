@@ -7171,8 +7171,8 @@ describe('QueryBuilder', () => {
   });
 
   it('does an update with join on mysql and postgresql, #191', function () {
-    var setObj = { 'tblPerson.City': 'Boonesville' };
-    var query = qb()
+    const setObj = { 'tblPerson.City': 'Boonesville' };
+    const query = qb()
       .table('tblPerson')
       .update(setObj)
       .join(

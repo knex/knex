@@ -23,6 +23,7 @@ module.exports = function (knex) {
     require('./builder/joins')(knex);
     require('./builder/aggregate')(knex);
     require('./builder/updates')(knex);
+    require('./builder/updates-with-join')(knex);
     require('./builder/transaction')(knex);
     require('./builder/deletes')(knex);
     require('./builder/additional')(knex);
