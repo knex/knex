@@ -16,6 +16,7 @@ import ResultTypes = require('./result');
 import { Tables } from './tables';
 
 import { ConnectionOptions } from "tls";
+import { Stream } from "stream";
 
 // # Generic type-level utilities
 
@@ -1843,6 +1844,7 @@ declare namespace Knex {
     | ConnectionConfig
     | MariaSqlConnectionConfig
     | MySqlConnectionConfig
+    | MySql2ConnectionConfig
     | MsSqlConnectionConfig
     | OracleDbConnectionConfig
     | PgConnectionConfig
@@ -1970,6 +1972,25 @@ declare namespace Knex {
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
     expirationChecker?(): boolean;
+  }
+
+  // Config object for mysql2: https://github.com/sidorares/node-mysql2/blob/master/lib/connection_config.js
+  // Some options for connection pooling and MySQL server API are excluded.
+  interface MySql2ConnectionConfig extends MySqlConnectionConfig {
+    authPlugins?: {[pluginName: string]: (pluginMetadata: any) => ((pluginData: any) => any)};
+    authSwitchHandler?: (data: any, callback: () => void) => any;
+    charsetNumber?: number;
+    compress?: boolean;
+    connectAttributes?: {[attrNames: string]: any};
+    enableKeepAlive?: boolean;
+    keepAliveInitialDelay?: number;
+    maxPreparedStatements?: number;
+    namedPlaceholders?: boolean;
+    nestTables?: boolean | string;
+    passwordSha1?: string;
+    rowsAsArray?: boolean;
+    stream?: boolean | ((opts: any) => Stream) | Stream;
+    uri?: string;
   }
 
   interface OracleDbConnectionConfig {
