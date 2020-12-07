@@ -1182,8 +1182,8 @@ module.exports = (knex) => {
 
         after(async () => {
           await knex.schema
-            .dropTable('rename_column_test')
             .dropTable('rename_column_foreign_test')
+            .dropTable('rename_column_test')
             .dropTable('rename_col_test');
         });
 
