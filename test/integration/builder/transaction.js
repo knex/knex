@@ -452,7 +452,7 @@ module.exports = function (knex) {
         .catch(expectQueryEventToHaveBeenTriggered);
     });
 
-    it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', function () {
+    it('#1040, #1171 - When pool is filled with transaction connections, Non-transaction queries should not hang the application, but instead throw a timeout error', async () => {
       //To make this test easier, I'm changing the pool settings to max 1.
       const knexConfig = _.clone(knex.client.config);
       knexConfig.pool.min = 0;
@@ -463,7 +463,7 @@ module.exports = function (knex) {
 
       //Create a transaction that will occupy the only available connection, and avoid trx.commit.
 
-      return knexDb.transaction(function (trx) {
+      await knexDb.transaction(function (trx) {
         let sql = 'SELECT 1';
         if (knex.client.driverName === 'oracledb') {
           sql = 'SELECT 1 FROM DUAL';
@@ -494,6 +494,8 @@ module.exports = function (knex) {
             trx.commit(); //Test done
           });
       });
+
+      await knexDb.destroy();
     });
 
     it('#1694, #1703 it should return connections to pool if acquireConnectionTimeout is triggered', async function () {
@@ -509,6 +511,8 @@ module.exports = function (knex) {
       await expect(
         db.transaction(() => db.transaction(() => ({})))
       ).to.be.rejectedWith(KnexTimeoutError);
+
+      await db.destroy();
     });
 
     /**

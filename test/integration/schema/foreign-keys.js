@@ -4,6 +4,12 @@ module.exports = (knex) => {
   describe('Schema', () => {
     beforeEach(async () => {
       await knex.schema
+        .createTable('foreign_keys_table_two', (table) => {
+          table.increments();
+        })
+        .createTable('foreign_keys_table_three', (table) => {
+          table.increments();
+        })
         .createTable('foreign_keys_table_one', (table) => {
           table.increments();
           table.integer('fkey_two').unsigned().notNull();
@@ -13,12 +19,6 @@ module.exports = (knex) => {
             .foreign('fkey_three')
             .references('foreign_keys_table_three.id')
             .withKeyName('fk_fkey_threeee');
-        })
-        .createTable('foreign_keys_table_two', (table) => {
-          table.increments();
-        })
-        .createTable('foreign_keys_table_three', (table) => {
-          table.increments();
         });
     });
     afterEach(async () => {
