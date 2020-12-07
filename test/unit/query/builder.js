@@ -6348,6 +6348,24 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('insert merge with where clause', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert({ email: 'foo', name: 'taylor' })
+        .onConflict('email')
+        .merge()
+        .where('email', 'foo2'),
+      {
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "email" = ?',
+          bindings: ['foo', 'taylor', 'foo2'],
+        },
+      }
+    );
+  });
+
   it('Calling decrement and then increment will overwrite the previous value', () => {
     testsql(
       qb()
