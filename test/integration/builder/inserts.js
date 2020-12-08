@@ -1466,7 +1466,7 @@ module.exports = function (knex) {
     });
 
     it('conditionally updates rows when inserting a duplicate key to unique column and merge with where clause matching row(s) is specified', async function () {
-      if (/redshift|mysql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
@@ -1528,7 +1528,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when inserting a duplicate key to unique column and merge with where clause matching no rows is specified', async function () {
-      if (/redshift|mysql/i.test(knex.client.driverName)) {
+      if (/redshift/i.test(knex.client.driverName)) {
         return this.skip();
       }
 
