@@ -6369,6 +6369,16 @@ describe('QueryBuilder', () => {
         },
       }
     );
+
+    expect(() => {
+      clients.mysql
+        .queryBuilder()
+        .insert({ email: 'foo', name: 'taylor' })
+        .onConflict('email')
+        .merge()
+        .where('email', 'foo2')
+        .toString();
+    }).to.throw('onConflict().merge().where() is not supported for mysql');
   });
 
   it('Calling decrement and then increment will overwrite the previous value', () => {
