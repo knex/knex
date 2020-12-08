@@ -6348,7 +6348,7 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it('insert merge with where clause', () => {
+  it.only('insert merge with where clause', () => {
     testsql(
       qb()
         .from('users')
@@ -6360,6 +6360,11 @@ describe('QueryBuilder', () => {
         pg: {
           sql:
             'insert into "users" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "email" = ?',
+          bindings: ['foo', 'taylor', 'foo2'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `email` = ?',
           bindings: ['foo', 'taylor', 'foo2'],
         },
       }
