@@ -1,5 +1,27 @@
 # Master (Unreleased)
 
+### New features:
+
+- SQLite: Add support for `dropForeign` #4092
+
+### Bug fixes:
+
+- Oracle: Support specifying non-default DB port #4147
+- Oracle: Support inserts with only default values (empty body) #4092
+
+### Typings:
+
+- Fix types for insert to allow array #4105
+- Add types for userParams and withUserParams #4119
+- Added type for withKeyName #4139
+- Fix batchInsert definitions #4131
+- Fix types for WhereIn signature (value or query builder) #3863
+- Add types for connection config of mysql2 driver #4144
+
+### Test / internal changes:
+
+- Move TS tests to tsd (WIP) #4109 #4110
+
 # 0.21.12 - 02 November, 2020
 
 ### Typings:
