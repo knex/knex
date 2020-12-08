@@ -6348,7 +6348,7 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it.only('insert merge with where clause', () => {
+  it('insert merge with where clause', () => {
     testsql(
       qb()
         .from('users')
