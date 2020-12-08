@@ -1501,7 +1501,7 @@ module.exports = function (knex) {
             );
             tester(
               'sqlite3',
-              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
               ['mergetest@example.com', 'AFTER', 'tester']
             );
           });
@@ -1511,7 +1511,7 @@ module.exports = function (knex) {
           if (err.message.includes('.onConflict() is not supported for'))
             return;
         }
-        if (knex.client.driverName === 'mysql') {
+        if (/mysql|mysql2/i.test(knex.client.driverName)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict().merge().where() is not supported for'))
             return;
@@ -1563,7 +1563,7 @@ module.exports = function (knex) {
             );
             tester(
               'sqlite3',
-              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
               ['mergetest@example.com', 'AFTER', 'fake-role']
             );
           });
@@ -1573,7 +1573,7 @@ module.exports = function (knex) {
           if (err.message.includes('.onConflict() is not supported for'))
             return;
         }
-        if (knex.client.driverName === 'mysql') {
+        if (/mysql|mysql2/i.test(knex.client.driverName)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict().merge().where() is not supported for'))
             return;
