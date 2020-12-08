@@ -28,9 +28,4 @@ describe('formatter', () => {
     const columns = formatter.columnize([]);
     expect(columns).to.equal('');
   });
-
-  it('correctly handles undefined', () => {
-    const columns = formatter.columnize(undefined);
-    expect(columns).to.equal('');
-  });
 });
