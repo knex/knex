@@ -12,6 +12,8 @@ describe('Query Building Tests', function () {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
 
   require('./unit/query/builder');
+  require('./unit/query/formatter');
+  require('./unit/query/string');
   require('./unit/schema/mysql')('mysql');
   require('./unit/schema/mysql')('mysql2');
   require('./unit/schema/postgres');
