@@ -14,6 +14,7 @@ module.exports = function (knex) {
     });
 
     require('./schema')(knex);
+    require('./schema/foreign-keys')(knex);
     require('./migrate/migration-integration-tests')(knex);
 
     require('./seed')(knex);
