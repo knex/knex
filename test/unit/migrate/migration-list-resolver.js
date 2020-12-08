@@ -14,6 +14,7 @@ describe('migration-list-resolver', () => {
       migrationSource = new FsMigrations('test/integration/migrate/migration');
       mockFs({
         'test/integration/migrate/migration': {
+          'cjs-migration.cjs': 'cjs migration content',
           'co-migration.co': 'co migation content',
           'coffee-migration.coffee': 'coffee migation content',
           'eg-migration.eg': 'eg migation content',
@@ -34,6 +35,10 @@ describe('migration-list-resolver', () => {
     it('should include all supported extensions by default', () => {
       return migrationListResolver.listAll(migrationSource).then((list) => {
         expect(list).to.eql([
+          {
+            directory: 'test/integration/migrate/migration',
+            file: 'cjs-migration.cjs',
+          },
           {
             directory: 'test/integration/migrate/migration',
             file: 'co-migration.co',

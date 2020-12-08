@@ -2,6 +2,7 @@
 
 const { expect } = require('chai');
 const _ = require('lodash');
+const { isObject } = require('../../lib/util/is');
 
 const { TEST_TIMESTAMP } = require('../util/constants');
 
@@ -91,7 +92,7 @@ module.exports = function (knex) {
   }
 
   function stripDates(resp) {
-    if (!_.isObject(resp[0])) return resp;
+    if (!isObject(resp[0])) return resp;
     return _.map(resp, function (val) {
       return _.reduce(
         val,

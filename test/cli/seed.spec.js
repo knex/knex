@@ -92,6 +92,15 @@ describe('seed:run', () => {
     );
   });
 
+  it('handles non existing specific seed file errors correctly', () => {
+    return execCommand(
+      `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile.js --specific=intentionally-non-existing-404-seed.js`,
+      {
+        expectedErrorMessage: ['Invalid argument provided', 'does not exist'],
+      }
+    );
+  });
+
   it('runs specific file in a recursive folder', () => {
     return execCommand(
       `node ${KNEX} seed:run --knexfile=test/jake-util/seeds-knexfile-directories.js --specific=second.js`,

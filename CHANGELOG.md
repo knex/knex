@@ -1,5 +1,93 @@
 # Master (Unreleased)
 
+# 0.21.12 - 02 November, 2020
+
+### Typings:
+
+- Reintroduce support for globally defining table/record mapping #4100
+- Add a few missing types for MSSQL Connection #4103
+- Make .ignore() and .merge() return QueryBuilder rather than QueryInterface #4102
+- Use tarn config TS types instead of generic-pool #4064
+
+# 0.21.11 - 01 November, 2020
+
+### Typings:
+
+- Revert support for globally defining table/record mapping #4099
+
+# 0.21.10 - 31 October, 2020
+
+### New features:
+
+- Upsert support (Postgres/MySQL/Sqlite) #3763
+
+### Bug fixes:
+
+- Switch to non-uuid knexQueryUids to avoid issues when mocking global date #4089
+
+### Typings:
+
+- Allow to globally define table/record mapping #4071
+
+# 0.21.9 - 27 October, 2020
+
+### New features:
+
+- add method clear(statement) to QueryBuilder #4051
+
+### Bug fixes:
+
+- CLI: fix help text being printed twice #4072
+- Oracle: columnInfo() no longer requires an Owner User #4053
+- Add missing "start" event propagation from transaction #4087
+
+# 0.21.8 - 27 October, 2020
+
+### Bug fixes:
+
+- MSSQL: Escape properly if literal '?' is needed #4053
+- Make toQuery behavior consistent with pre-0.21.7 (do not break on empty builder) #4083
+- Fix comment escaping for MySQL and PostgreSQL #4084
+
+# 0.21.7 - 25 October, 2020
+
+### New features:
+
+- CLI: Add migration stub for .cjs extension #4065
+
+### Bug fixes:
+
+- MSSQL: Add dynamic scaling for decimal values and prevents a UInt64 overflow #3910
+- MSSQL: Fix apostrophe escaping #4077
+- Ensure that semicolon is not appended to statements that already end with a semicolon #4052
+
+### Typings:
+
+- Add arguments to QueryCallback in Where #4034
+
+### Test / internal changes:
+
+- Replace lodash type-checks with native solutions #4056
+- Replace mkdirp with native recursive flag #4060
+- Replace inherits package with builtin utility #4059
+
+# 0.21.6 - 27 September, 2020
+
+### New features:
+
+- CLI: New config parameter / CLI flag to prefixing seed filename with timestamp #3873
+- CLI: throw an error when specific seed file cannot be found #4011
+- Warn if whereNot is used with 'in' or 'between' #4038
+
+### Bug fixes:
+
+- CLI: Fix double merging of config for migrator #4040
+
+### Typings:
+
+- Unify SeedsConfig and SeederConfig #4003
+- Allow string[] type for directory in SeedsConfig #4033
+
 # 0.21.5 - 17 August, 2020
 
 ### New features:

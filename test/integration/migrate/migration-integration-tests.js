@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { FileTestHelper } = require('cli-testlab');
 
 const equal = require('assert').equal;
 const fs = require('fs');
@@ -14,7 +15,7 @@ const _ = require('lodash');
 const testMemoryMigrations = require('./memory-migrations');
 
 module.exports = function (knex) {
-  require('rimraf').sync(path.join(__dirname, './migration'));
+  rimraf.sync(path.join(__dirname, './migration'));
 
   before(function () {
     // make sure lock was not left from previous failed test run
@@ -83,11 +84,12 @@ module.exports = function (knex) {
               'test/integration/migrate/rename-and-drop-column-with-multiline-sql-from-legacy-db',
           },
         });
-
-        const db = logger(knexLib(knexConfig));
+        const knexInstance = knexLib(knexConfig);
+        const db = logger(knexInstance);
 
         await db.migrate.latest();
         await db.migrate.rollback();
+        await knexInstance.destroy();
       });
     }
 
@@ -188,8 +190,8 @@ module.exports = function (knex) {
           });
       });
 
-      it('should return a positive number if the DB is ahead', function () {
-        return Promise.all([
+      it('should return a positive number if the DB is ahead', async () => {
+        const [migration1, migration2, migration3] = await Promise.all([
           knex('knex_migrations').returning('id').insert({
             name: 'foobar',
             batch: 5,
@@ -205,26 +207,25 @@ module.exports = function (knex) {
             batch: 6,
             migration_time: new Date(),
           }),
-        ]).then(([migration1, migration2, migration3]) => {
-          return knex.migrate
-            .status({ directory: 'test/integration/migrate/test' })
-            .then(function (migrationLevel) {
-              expect(migrationLevel).to.equal(3);
-            })
-            .then(function () {
-              // Cleanup the added migrations
-              if (/redshift/.test(knex.client.driverName)) {
-                return knex('knex_migrations')
-                  .where('name', 'like', '%foobar%')
-                  .del();
-              }
+        ]);
+        return knex.migrate
+          .status({ directory: 'test/integration/migrate/test' })
+          .then(function (migrationLevel) {
+            expect(migrationLevel).to.equal(3);
+          })
+          .then(function () {
+            // Cleanup the added migrations
+            if (/redshift/.test(knex.client.driverName)) {
               return knex('knex_migrations')
-                .where('id', migration1[0])
-                .orWhere('id', migration2[0])
-                .orWhere('id', migration3[0])
+                .where('name', 'like', '%foobar%')
                 .del();
-            });
-        });
+            }
+            return knex('knex_migrations')
+              .where('id', migration1[0])
+              .orWhere('id', migration2[0])
+              .orWhere('id', migration3[0])
+              .del();
+          });
       });
     });
 
@@ -990,12 +991,13 @@ module.exports = function (knex) {
     const migrations = {
       migration1: {
         up(knex) {
-          return knex.schema.createTable('migration_source_test_1', function (
-            t
-          ) {
-            t.increments();
-            t.string('name');
-          });
+          return knex.schema.createTable(
+            'migration_source_test_1',
+            function (t) {
+              t.increments();
+              t.string('name');
+            }
+          );
         },
         down(knex) {
           return knex.schema.dropTable('migration_source_test_1');
@@ -1034,6 +1036,43 @@ module.exports = function (knex) {
         .then(function (exists) {
           expect(exists).to.equal(true);
         });
+    });
+  });
+
+  describe('migrationSource config as class for migrate:make', function () {
+    class MigrationSource {
+      getMigrations() {
+        return Promise.resolve([]);
+      }
+      getMigrationName(migration) {
+        return undefined;
+      }
+      getMigration(migration) {
+        return {};
+      }
+    }
+
+    it('does not reset a custom migration source', async () => {
+      const oldLogger = knex.client.logger;
+      const warnMessages = [];
+      knex.client.logger = {
+        warn: (msg) => {
+          warnMessages.push(msg);
+        },
+      };
+
+      const migrationSource = new MigrationSource();
+      const fileHelper = new FileTestHelper();
+
+      await knex.migrate.make('testMigration', {
+        migrationSource,
+      });
+
+      fileHelper.deleteFileGlob(
+        `test/integration/migrate/migration/*testMigration.js`
+      );
+      knex.client.logger = oldLogger;
+      expect(warnMessages.length).equal(0);
     });
   });
 

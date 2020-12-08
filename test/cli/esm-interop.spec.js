@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { execCommand } = require('cli-testlab');
 const sqlite3 = require('sqlite3');
+const semver = require('semver');
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 const NODE_VERSION = Number((/v(\d+)/i.exec(process.version) || [])[1]);
 const isNode10 = NODE_VERSION === 10;
@@ -42,7 +43,6 @@ const fixture = [
     testCase: 'knexfile-esm-module',
     knexArgs: ['migrate:latest'],
     dropDb: true,
-    expectedOutput: 'Batch 1 run: 1 migrations',
     expectedErrorMessage: isNode10
       ? 'Unexpected token export'
       : 'Must use import to load ES Module',
@@ -161,6 +161,10 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
+      : semver.eq(process.version, 'v14.13.0')
+      ? 'Unexpected export statement in CJS module'
+      : semver.gte(process.version, 'v14.14.0')
+      ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
   {
@@ -176,6 +180,10 @@ const fixture = [
     knexArgs: ['migrate:latest', isNode10 && `--esm`],
     expectedErrorMessage: isNode10
       ? 'Error: Cannot load module from .mjs'
+      : semver.eq(process.version, 'v14.13.0')
+      ? 'Unexpected export statement in CJS module'
+      : semver.gte(process.version, 'v14.14.0')
+      ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
   {

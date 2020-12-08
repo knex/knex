@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 
 const _ = require('lodash');
+const { isString, isObject } = require('../../../lib/util/is');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -22,7 +23,7 @@ const postProcessResponse = (response) => {
   if (Array.isArray(response)) {
     return response.map(mapObject);
   } else {
-    if (_.isObject(response)) {
+    if (isObject(response)) {
       return mapObject(response);
     }
     return response;
@@ -159,23 +160,25 @@ module.exports = (knex) => {
           return Promise.resolve();
         }
 
-        before(() =>
-          Promise.all([
-            knex.schema.createTable('increments_columns_1_test', (table) => {
+        before(async () => {
+          await knex.schema.createTable(
+            'increments_columns_1_test',
+            (table) => {
               table.increments().comment('comment_1');
-            }),
-            knex.schema.createTable('increments_columns_2_test', (table) => {
+            }
+          );
+          await knex.schema.createTable(
+            'increments_columns_2_test',
+            (table) => {
               table.increments('named_2').comment('comment_2');
-            }),
-          ])
-        );
+            }
+          );
+        });
 
-        after(() =>
-          Promise.all([
-            knex.schema.dropTable('increments_columns_1_test'),
-            knex.schema.dropTable('increments_columns_2_test'),
-          ])
-        );
+        after(async () => {
+          await knex.schema.dropTable('increments_columns_1_test');
+          await knex.schema.dropTable('increments_columns_2_test');
+        });
 
         it('#2210 - creates an incrementing column with a comment', () => {
           const table_name = 'increments_columns_1_test';
@@ -557,7 +560,7 @@ module.exports = (knex) => {
             if (knex.client.driverName === 'pg') {
               expect(result.metadata).to.eql(defaultMetadata);
               expect(result.details).to.eql(defaultDetails);
-            } else if (_.isString(result.metadata)) {
+            } else if (isString(result.metadata)) {
               expect(JSON.parse(result.metadata)).to.eql(defaultMetadata);
             } else {
               expect(result.metadata).to.eql(defaultMetadata);
@@ -1153,8 +1156,8 @@ module.exports = (knex) => {
 
     describe('renameColumn', () => {
       describe('without mappers', () => {
-        before(() =>
-          knex.schema
+        before(async () => {
+          await knex.schema
             .createTable('rename_column_test', (tbl) => {
               tbl.increments('id_test').unsigned().primary();
               tbl
@@ -1174,31 +1177,26 @@ module.exports = (knex) => {
             .createTable('rename_col_test', (tbl) => {
               tbl.integer('colnameint').defaultTo(1);
               tbl.string('colnamestring').defaultTo('knex').notNullable();
-            })
-            .then(() => {
-              // without data, the column isn't found??
-              return knex
-                .insert({ parent_id_test: 1 })
-                .into('rename_column_test');
-            })
-        );
+            });
+        });
 
-        after(() =>
-          knex.schema
+        after(async () => {
+          await knex.schema
             .dropTable('rename_column_foreign_test')
             .dropTable('rename_column_test')
-            .dropTable('rename_col_test')
-        );
+            .dropTable('rename_col_test');
+        });
 
-        it('renames the column', () =>
-          knex.schema
-            .table('rename_column_test', (tbl) =>
-              tbl.renameColumn('id_test', 'id')
-            )
-            .then(() => knex.schema.hasColumn('rename_column_test', 'id'))
-            .then((exists) => {
-              expect(exists).to.equal(true);
-            }));
+        it('renames the column', async () => {
+          await knex.schema.table('rename_column_test', (tbl) =>
+            tbl.renameColumn('id_test', 'id')
+          );
+          const exists = await knex.schema.hasColumn(
+            'rename_column_test',
+            'id'
+          );
+          expect(exists).to.equal(true);
+        });
 
         it('successfully renames a column referenced in a foreign key', () =>
           knex.schema.table('rename_column_test', (tbl) => {

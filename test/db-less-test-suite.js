@@ -12,6 +12,8 @@ describe('Query Building Tests', function () {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
 
   require('./unit/query/builder');
+  require('./unit/query/formatter');
+  require('./unit/query/string');
   require('./unit/schema/mysql')('mysql');
   require('./unit/schema/mysql')('mysql2');
   require('./unit/schema/postgres');
@@ -27,6 +29,13 @@ describe('Query Building Tests', function () {
 });
 
 const config = require('./knexfile');
+if (config.mssql) {
+  describe('MSSQL driver tests', function () {
+    this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+    require('./unit/dialects/mssql');
+  });
+}
+
 if (config.oracledb) {
   describe('Oracledb driver tests', function () {
     this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);

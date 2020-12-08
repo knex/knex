@@ -25,7 +25,7 @@ const poolSqlite = {
   acquireTimeoutMillis: 1000,
   afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
-    callback(null, connection);
+    connection.run('PRAGMA foreign_keys = ON', callback);
   },
 };
 
