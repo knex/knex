@@ -1511,6 +1511,11 @@ module.exports = function (knex) {
           if (err.message.includes('.onConflict() is not supported for'))
             return;
         }
+        if (knex.client.driverName === 'mysql') {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict().merge().where() is not supported for'))
+            return;
+        }
         throw err;
       }
 
@@ -1566,6 +1571,11 @@ module.exports = function (knex) {
         if (/oracle|mssql/i.test(knex.client.driverName)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        if (knex.client.driverName === 'mysql') {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict().merge().where() is not supported for'))
             return;
         }
         throw err;
