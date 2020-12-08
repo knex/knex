@@ -1499,6 +1499,11 @@ module.exports = function (knex) {
               'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "upsert_tests"."role" = ? returning "email"',
               ['mergetest@example.com', 'AFTER', 'tester']
             );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
+              ['mergetest@example.com', 'AFTER', 'tester']
+            );
           });
       } catch (err) {
         if (/oracle|mssql/i.test(knex.client.driverName)) {
@@ -1549,6 +1554,11 @@ module.exports = function (knex) {
             tester(
               'pg',
               'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "upsert_tests"."role" = ? returning "email"',
+              ['mergetest@example.com', 'AFTER', 'fake-role']
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
               ['mergetest@example.com', 'AFTER', 'fake-role']
             );
           });
