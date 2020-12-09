@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 module.exports = function (knex) {
     describe('Triggers', function () {
+
         // Reused variables
         // Table Names
         const primaryTable = 'test_return_with_trigger_primary';
@@ -15,6 +16,9 @@ module.exports = function (knex) {
 
         // Create proper environment for tests
         before(async function () {
+            if (knex.client.driverName !== 'mssql') {
+                this.skip();
+            }
             // Create tables
             await knex.schema.createTable(primaryTable, function (table) {
                 table.increments();
