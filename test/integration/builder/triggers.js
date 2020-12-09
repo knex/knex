@@ -2,11 +2,6 @@
 
 const { expect } = require('chai');
 
-const _ = require('lodash');
-const sinon = require('sinon');
-
-const { TEST_TIMESTAMP } = require('../../util/constants');
-
 module.exports = function (knex) {
     describe('Triggers', function () {
         // Reused variables
