@@ -4,7 +4,6 @@ const { expect } = require('chai');
 
 module.exports = function (knex) {
     describe('Triggers', function () {
-
         // Reused variables
         // Table Names
         const primaryTable = 'test_return_with_trigger_primary';
@@ -19,22 +18,34 @@ module.exports = function (knex) {
             if (knex.client.driverName !== 'mssql') {
                 this.skip();
             }
-            // Create tables
-            await knex.schema.createTable(primaryTable, function (table) {
-                table.increments();
-                table.string("data");
-                table.integer(primaryLink);
-            });
 
-            await knex.schema.createTable(secondaryTable, function (table) {
-                table.increments();
-                table.string("data");
-                table.integer(secondaryLink);
+            await knex.schema.hasTable('users').then(async function (exists) {
+                if (exists) {
+                    await knex.schema.dropTable(primaryTable);
+                    await knex.schema.dropTable(secondaryTable);
+                }
+
+                // Create tables
+                await knex.schema.createTable(primaryTable, function (table) {
+                    table.increments();
+                    table.string("data");
+                    table.integer(primaryLink);
+                });
+
+                await knex.schema.createTable(secondaryTable, function (table) {
+                    table.increments();
+                    table.string("data");
+                    table.integer(secondaryLink);
+                });
             });
         });
 
         // Clean-up test specific tables
         after(async function () {
+            if (knex.client.driverName !== 'mssql') {
+                return;
+            }
+
             // Drop table (Trigger is removed with table)
             await knex.schema.dropTable(primaryTable);
             await knex.schema.dropTable(secondaryTable);
@@ -64,25 +75,17 @@ module.exports = function (knex) {
 
                 // Create trigger
                 await knex.raw(`
-                    GO
-                    /****** Object:  Trigger [dbo].[${triggerName}]    Script Date: 12/9/2020 10:52:56 AM ******/
-                    SET ANSI_NULLS ON
-                    GO
-                    SET QUOTED_IDENTIFIER ON
-                    GO
-                    CREATE TRIGGER [dbo].[${triggerName}] ON [dbo].[${secondaryTable}]
+                    CREATE TRIGGER [${triggerName}] ON [${secondaryTable}]
                     AFTER INSERT
                     AS 
                     BEGIN
-                        -- SET NOCOUNT ON added to prevent extra result sets from
-                        -- interfering with SELECT statements.
                         SET NOCOUNT ON;
 
                         BEGIN
                             update pt
                             set pt.${primaryLink} = i.id
                             from Inserted as i
-                            inner join dbo.${primaryTable} as pt
+                            inner join ${primaryTable} as pt
                                 on pt.id = i.${secondaryLink}
                         END
                     END
@@ -100,21 +103,29 @@ module.exports = function (knex) {
                     let insertResults;
 
                     async function insertWithReturn() {
+                        const insertPrimary = {
+                            data: "Testing Data"
+                        };
+
+                        const insertSecondary = {
+                            data: "Test Linking"
+                        }
+
                         const primaryId = await knex(primaryTable).insert([insertPrimary], ["id"]);
                         insertSecondary[secondaryLink] = primaryId[0];
 
                         // Test retrieve with trigger
-                        insertResults = await knex(secondaryTable).insert([insertSecondary], ["id"]);
+                        insertResults = (await knex(secondaryTable).insert([insertSecondary], ["id"]))[0];
                     }
 
                     await insertWithReturn();
 
-                    expect(insertResults).to.be.finite;
+                    expect(Number.parseInt(insertResults)).to.be.finite;
 
                     reachedEnd = true;
                 });
 
-                expect(reachedEnd).to.be(true);
+                expect(reachedEnd).to.be.true;
             });
         });
 
@@ -128,23 +139,17 @@ module.exports = function (knex) {
                 }
 
                 await knex.raw(`
-                    GO
-                    /****** Object:  Trigger [dbo].[${triggerName}]    Script Date: 12/9/2020 10:52:56 AM ******/
-                    SET ANSI_NULLS ON
-                    GO
-                    SET QUOTED_IDENTIFIER ON
-                    GO
                     CREATE TRIGGER [dbo].[${triggerName}] ON [dbo].[${secondaryTable}]
                     AFTER DELETE
                     AS 
                     BEGIN
-                        -- SET NOCOUNT ON added to prevent extra result sets from
-                        -- interfering with SELECT statements.
                         SET NOCOUNT ON;
 
                         BEGIN
-                            delete pt
-                            where id = d.${secondaryLink}
+                            delete ${primaryTable}
+                            from ${primaryTable} as pt
+                                inner join deleted as d
+                                    on pt.id = d.${secondaryLink}
                         END
                     END
                 `);
@@ -154,35 +159,43 @@ module.exports = function (knex) {
                     return true;
                 }
 
+                let reachedEnd = false;
+
                 await knex.transaction(async function () {
                     let insertedId;
                     let deletedId;
 
-                    let reachedEnd = false;
-
                     async function insertWithReturn() {
+                        const insertPrimary = {
+                            data: "Testing Data"
+                        };
+
+                        const insertSecondary = {
+                            data: "Test Linking"
+                        }
+
                         // Setup primary table for trigger use case
                         const primaryId = await knex(primaryTable).insert([insertPrimary], ["id"]);
                         insertSecondary[secondaryLink] = primaryId[0];
 
                         // Insert to table with trigger to test delete
-                        insertedId = await knex(secondaryTable).insert([insertSecondary], ["id"]);
+                        insertedId = (await knex(secondaryTable).insert([insertSecondary], ["id"]))[0];
                     }
 
                     async function deleteTriggerTable() {
                         // Test returning value from delete statement on a table with a trigger
-                        deletedId = await knex(secondaryTable).whereRaw(`id = ${insertedId}`).delete(["id"]);
+                        deletedId = (await knex(secondaryTable).whereRaw(`id = ${insertedId}`).delete(["id"]))[0];
                     }
 
                     await insertWithReturn();
                     await deleteTriggerTable();
 
-                    expect(deletedId).to.be.finite;
+                    expect(Number.parseInt(deletedId)).to.be.finite;
 
                     reachedEnd = true;
                 });
 
-                expect(reachedEnd).to.be(true);
+                expect(reachedEnd).to.be.true;
             });
         });
     });
