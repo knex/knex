@@ -2020,6 +2020,7 @@ declare namespace Knex {
     connectionTimeoutMillis?: number;
     keepAliveInitialDelayMillis?: number;
     ssl?: boolean | ConnectionOptions;
+    application_name?: string;
   }
 
   type RedshiftConnectionConfig = PgConnectionConfig;
