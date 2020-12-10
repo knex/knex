@@ -53,10 +53,6 @@ module.exports = function (knex) {
 
         // Reset tables for each test
         beforeEach(async function () {
-            if (knex.client.driverName !== 'mssql') {
-                return;
-            }
-
             // "Truncate" tables instead of recreate for each test for speed gains
             await knex.raw(`
                 delete from ${primaryTable} dbcc checkident('${primaryTable}', reseed, 0);
@@ -70,7 +66,7 @@ module.exports = function (knex) {
 
             before(async function () {
                 if (knex.client.driverName !== 'mssql') {
-                    return;
+                    this.skip();
                 }
 
                 // Create trigger
@@ -93,9 +89,6 @@ module.exports = function (knex) {
             });
 
             it('#4152 Should allow returns with inserts on tables with triggers', async function () {
-                if (knex.client.driverName !== 'mssql') {
-                    return true;
-                }
 
                 let reachedEnd = false;
 
@@ -135,7 +128,7 @@ module.exports = function (knex) {
 
             before(async function () {
                 if (knex.client.driverName !== 'mssql') {
-                    return;
+                    this.skip();
                 }
 
                 await knex.raw(`
@@ -155,10 +148,6 @@ module.exports = function (knex) {
                 `);
             })
             it('#4152 Should allow returns with deletes on tables with triggers', async function () {
-                if (knex.client.driverName !== 'mssql') {
-                    return true;
-                }
-
                 let reachedEnd = false;
 
                 await knex.transaction(async function () {
