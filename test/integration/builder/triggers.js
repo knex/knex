@@ -16,7 +16,7 @@ module.exports = function (knex) {
         // Create proper environment for tests
         before(async function () {
             if (knex.client.driverName !== 'mssql') {
-                this.skip();
+                this.skip("This test is MSSQL only");
             }
 
             await knex.schema.hasTable('users').then(async function (exists) {
@@ -66,7 +66,7 @@ module.exports = function (knex) {
 
             before(async function () {
                 if (knex.client.driverName !== 'mssql') {
-                    this.skip();
+                    this.skip("This test is MSSQL only");
                 }
 
                 // Create trigger
@@ -128,7 +128,7 @@ module.exports = function (knex) {
 
             before(async function () {
                 if (knex.client.driverName !== 'mssql') {
-                    this.skip();
+                    this.skip("This test is MSSQL only");
                 }
 
                 await knex.raw(`
