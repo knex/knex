@@ -284,7 +284,6 @@ describe('Seeder._listAll', function () {
           process.cwd() +
             '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
           process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
-          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
           process.cwd() +
             '/test/integration/seed/2-seeds/recursive-folder/co-seed.co',
           process.cwd() +
@@ -301,6 +300,7 @@ describe('Seeder._listAll', function () {
             '/test/integration/seed/2-seeds/recursive-folder/ls-seed.ls',
           process.cwd() +
             '/test/integration/seed/2-seeds/recursive-folder/ts-seed.ts',
+          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
           process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
           process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
           process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
