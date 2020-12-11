@@ -30,9 +30,13 @@ describe('interface', function () {
     }
 
     _interface(SomeClass);
+
     const fakeInstance = new SomeClass();
     chai.expect(fakeInstance[Symbol.toStringTag]).to.eq('object');
-    fakeInstance._asyncStack = ['line1', 'line2', 'line3'];
+    fakeInstance._asyncStack = {
+      error: { stack: 'line1\nline2\nline3' },
+      lines: 0,
+    };
     fakeInstance.then();
   });
 });
