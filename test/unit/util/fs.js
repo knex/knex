@@ -9,6 +9,7 @@ const {
   writeFile,
   createTemp,
   ensureDirectoryExists,
+  getFilepathsInFolder,
 } = require('../../../lib/util/fs');
 
 describe('FS functions', () => {
@@ -92,6 +93,49 @@ describe('FS functions', () => {
       await ensureDirectoryExists(newPath);
 
       expect(fs.existsSync(newPath)).to.equal(true);
+    });
+  });
+
+  describe('getFilepathsInFolder', () => {
+    it('should return sorted file list under the directory.', async () => {
+      const directory = await createTemp();
+      fs.writeFileSync(path.join(directory, 'testfile1.txt'), 'testfile1');
+      fs.writeFileSync(path.join(directory, 'testfile2.txt'), 'testfile1');
+      fs.writeFileSync(path.join(directory, 'testfile3.txt'), 'testfile1');
+      fs.mkdirSync(path.join(directory, 'dir'));
+      fs.writeFileSync(path.join(directory, 'dir/testfile1.txt'), 'testfile1');
+      fs.writeFileSync(path.join(directory, 'dir/testfile2.txt'), 'testfile2');
+      fs.writeFileSync(path.join(directory, 'dir/testfile3.txt'), 'testfile3');
+
+      const result = await getFilepathsInFolder(directory);
+
+      expect(result).to.deep.equal([
+        `${directory}/testfile1.txt`,
+        `${directory}/testfile2.txt`,
+        `${directory}/testfile3.txt`,
+      ]);
+    });
+
+    it('should return sorted file list under the directory (recursively) with recursive option.', async () => {
+      const directory = await createTemp();
+      fs.writeFileSync(path.join(directory, 'testfile1.txt'), 'testfile1');
+      fs.writeFileSync(path.join(directory, 'testfile2.txt'), 'testfile1');
+      fs.writeFileSync(path.join(directory, 'testfile3.txt'), 'testfile1');
+      fs.mkdirSync(path.join(directory, 'dir'));
+      fs.writeFileSync(path.join(directory, 'dir/testfile1.txt'), 'testfile1');
+      fs.writeFileSync(path.join(directory, 'dir/testfile2.txt'), 'testfile2');
+      fs.writeFileSync(path.join(directory, 'dir/testfile3.txt'), 'testfile3');
+
+      const result = await getFilepathsInFolder(directory, true);
+
+      expect(result).to.deep.equal([
+        `${directory}/dir/testfile1.txt`,
+        `${directory}/dir/testfile2.txt`,
+        `${directory}/dir/testfile3.txt`,
+        `${directory}/testfile1.txt`,
+        `${directory}/testfile2.txt`,
+        `${directory}/testfile3.txt`,
+      ]);
     });
   });
 });
