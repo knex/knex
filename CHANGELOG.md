@@ -1,16 +1,23 @@
 # Master (Unreleased)
 
+# 0.21.13 - 12 December, 2020
+
 ### New features:
 
 - SQLite: Add support for `dropForeign` #4092
+- Add support for WHERE clauses to "upsert" queries #4148
 
 ### Bug fixes:
 
+- MSSQL: Avoid connection getting stuck on socket hangup #4157
 - Oracle: Support specifying non-default DB port #4147
 - Oracle: Support inserts with only default values (empty body) #4092
+- CLI: fix irregular seed file execution order #4156
+- Fix performance of asyncStackTraces with enable-source-maps node flag #4154
 
 ### Typings:
 
+- PostgreSQL: Add support for application_name #4153
 - Fix types for insert to allow array #4105
 - Add types for userParams and withUserParams #4119
 - Added type for withKeyName #4139
