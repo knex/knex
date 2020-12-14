@@ -6,7 +6,7 @@ const Db = {
   MySQL: 'mysql',
   MySQL2: 'mysql2',
   MSSQL: 'mssql',
-  SQLite: 'sqlite',
+  SQLite: 'sqlite3',
   Oracle: 'oracle',
 };
 
@@ -95,7 +95,7 @@ const testConfigs = {
     seeds,
   },
 
-  sqlite: {
+  sqlite3: {
     client: 'sqlite3',
     connection: ':memory:',
     pool: poolSqlite,
