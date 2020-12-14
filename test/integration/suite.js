@@ -26,6 +26,9 @@ module.exports = function (knex) {
     require('./builder/updates')(knex);
     require('./builder/transaction')(knex);
     require('./builder/deletes')(knex);
+    require('./builder/trigger-inserts')(knex);
+    require('./builder/trigger-updates')(knex);
+    require('./builder/trigger-deletes')(knex);
     require('./builder/additional')(knex);
     require('./builder/triggers')(knex);
     require('./datatype/bigint')(knex);
