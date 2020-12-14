@@ -7,7 +7,7 @@ const Db = {
   MySQL2: 'mysql2',
   MSSQL: 'mssql',
   SQLite: 'sqlite3',
-  Oracle: 'oracle',
+  Oracle: 'oracledb',
 };
 
 const defaultDbs = [Db.PostgresSQL, Db.MySQL, Db.MySQL2, Db.SQLite, Db.MSSQL];
