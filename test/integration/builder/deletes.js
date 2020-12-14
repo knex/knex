@@ -63,7 +63,7 @@ module.exports = function (knex) {
           tester('oracledb', 'delete from "accounts" where "id" = ?', [2], 1);
           tester(
             'mssql',
-            'select top(0) [t].* into #out from [accounts] as t left join [accounts] on 0=1;delete from [accounts] output deleted.* into #out where [id] = ?; select * from #out; drop table #out;',
+            'delete from [accounts] output deleted.* where [id] = ?',
             [2],
             [
               {

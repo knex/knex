@@ -310,7 +310,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].* into #out from [accounts] as t left join [accounts] on 0=1;update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? output inserted.* into #out where [id] = ?; select * from #out; drop table #out;',
+            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? output inserted.* where [id] = ?',
             ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
             [
               {

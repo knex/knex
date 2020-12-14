@@ -99,7 +99,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+            'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
               TEST_TIMESTAMP,
@@ -253,7 +253,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+            'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
               TEST_TIMESTAMP,
@@ -471,7 +471,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+            'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
               TEST_TIMESTAMP,
@@ -570,7 +570,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+            'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
               TEST_TIMESTAMP,
@@ -588,7 +588,7 @@ module.exports = function (knex) {
               'There should be a fail when multi-insert are made in unique col.'
             );
           },
-          function () { }
+          function () {}
         );
     });
 
@@ -684,7 +684,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+            'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
             [
               'Lorem ipsum Dolore labore incididunt enim.',
               TEST_TIMESTAMP,
@@ -745,7 +745,7 @@ module.exports = function (knex) {
               );
             }
           },
-          function () { }
+          function () {}
         );
     });
 
@@ -774,7 +774,7 @@ module.exports = function (knex) {
               );
             }
           },
-          function () { }
+          function () {}
         );
     });
 
@@ -844,7 +844,7 @@ module.exports = function (knex) {
               );
               tester(
                 'mssql',
-                'select top(0) [t].[id] into #out from [test_default_table] as t left join [test_default_table] on 0=1;insert into [test_default_table] output inserted.[id] into #out default values; select [id] from #out; drop table #out;',
+                'insert into [test_default_table] output inserted.[id] default values',
                 [],
                 [1]
               );
@@ -900,7 +900,7 @@ module.exports = function (knex) {
               );
               tester(
                 'mssql',
-                'select top(0) [t].[id] into #out from [test_default_table2] as t left join [test_default_table2] on 0=1;insert into [test_default_table2] output inserted.[id] into #out default values; select [id] from #out; drop table #out;',
+                'insert into [test_default_table2] output inserted.[id] default values',
                 [],
                 [1]
               );
@@ -988,7 +988,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].[account_id],[t].[details] into #out from [test_table_two] as t left join [test_table_two] on 0=1;insert into [test_table_two] ([account_id], [details], [status]) output inserted.[account_id], inserted.[details] into #out values (?, ?, ?); select [account_id],[details] from #out; drop table #out;',
+            'insert into [test_table_two] ([account_id], [details], [status]) output inserted.[account_id], inserted.[details] values (?, ?, ?)',
             [
               10,
               'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1074,7 +1074,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select top(0) [t].* into #out from [test_table_two] as t left join [test_table_two] on 0=1;insert into [test_table_two] ([account_id], [details], [status]) output inserted.* into #out values (?, ?, ?); select * from #out; drop table #out;',
+            'insert into [test_table_two] ([account_id], [details], [status]) output inserted.* values (?, ?, ?)',
             [
               10,
               'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
