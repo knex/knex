@@ -30,7 +30,6 @@ module.exports = function (knex) {
     require('./builder/trigger-updates')(knex);
     require('./builder/trigger-deletes')(knex);
     require('./builder/additional')(knex);
-    require('./builder/triggers')(knex);
     require('./datatype/bigint')(knex);
     require('./datatype/decimal')(knex);
     require('./datatype/double')(knex);
