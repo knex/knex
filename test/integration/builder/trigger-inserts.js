@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require("lodash");
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 
