@@ -360,7 +360,7 @@ export default [
     type: "method",
     method: "where",
     example: ".where(~mixed~)",
-    children: [    ]
+    children: []
   },
   {
     type: "text",
@@ -455,7 +455,7 @@ export default [
     type: "method",
     method: "whereNot",
     example: ".whereNot(~mixed~)",
-    children: [    ]
+    children: []
   },
   {
     type: "text",
@@ -1613,7 +1613,7 @@ export default [
   {
     type: "method",
     method: "insert",
-    example: ".insert(data, [returning])",
+    example: ".insert(data, [returning], [options])",
     description: "Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#Builder-returning)",
     children: [
       {
@@ -1635,6 +1635,20 @@ export default [
         content: `
           // Returns [2] in \"mysql\", \"sqlite\"; [2, 3] in \"postgresql\"
           knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], ['id']).into('books')
+        `
+      },
+      {
+        type: "text",
+        content: "For MSSQL, triggers on tables can interrupt returning a valid value from the standard insert statements. You can add the `includeTriggerModifications` option to get around this issue. This modifies the SQL so the proper values can be returned. This only modifies the statement if you are using MSSQL, a returning value is specified, and the `includeTriggerModifications` option is set."
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+          // Adding the option includeTriggerModifications allows you to 
+          // run statements on tables that contain triggers. Only affects MSSQL.
+          knex('books')
+            .insert({title: 'Alice in Wonderland'}, ['id'], { includeTriggerModifications: true })
         `
       }
     ]
@@ -1785,7 +1799,7 @@ export default [
   {
     type: "method",
     method: "update",
-    example: ".update(data, [returning]) / .update(key, value, [returning])",
+    example: ".update(data, [returning], [options]) / .update(key, value, [returning], [options])",
     description: "Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](#Builder-returning)",
     children: [
       {
@@ -1814,13 +1828,27 @@ export default [
             .where({ id: 42 })
             .update({ title: "The Hitchhiker's Guide to the Galaxy" }, ['id', 'title'])
         `
+      },
+      {
+        type: "text",
+        content: "For MSSQL, triggers on tables can interrupt returning a valid value from the standard update statements. You can add the `includeTriggerModifications` option to get around this issue. This modifies the SQL so the proper values can be returned. This only modifies the statement if you are using MSSQL, a returning value is specified, and the `includeTriggerModifications` option is set."
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+          // Adding the option includeTriggerModifications allows you 
+          // to run statements on tables that contain triggers. Only affects MSSQL.
+          knex('books')
+            .update({title: 'Alice in Wonderland'}, ['id', 'title'], { includeTriggerModifications: true })
+        `
       }
     ]
   },
   {
     type: "method",
     method: "del / delete",
-    example: ".del()",
+    example: ".del([returning], [options])",
     description: "Aliased to del as delete is a reserved word in JavaScript, this method deletes one or more rows, based on other conditions specified in the query. Resolves the promise / fulfills the callback with the number of affected rows for the query.",
     children: [
       {
@@ -1830,13 +1858,28 @@ export default [
             .where('activated', false)
             .del()
         `
+      },
+      {
+        type: "text",
+        content: "For MSSQL, triggers on tables can interrupt returning a valid value from the standard delete statements. You can add the `includeTriggerModifications` option to get around this issue. This modifies the SQL so the proper values can be returned. This only modifies the statement if you are using MSSQL, a returning value is specified, and the `includeTriggerModifications` option is set."
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+          // Adding the option includeTriggerModifications allows you 
+          // to run statements on tables that contain triggers. Only affects MSSQL.
+          knex('books')
+            .where('title', 'Alice in Wonderland')
+            .del(['id', 'title'], { includeTriggerModifications: true })
+        `
       }
     ]
   },
   {
     type: "method",
     method: "returning",
-    example: ".returning(column) / .returning([column1, column2, ...])",
+    example: ".returning(column, [options]) / .returning([column1, column2, ...], [options])",
     description: "Utilized by PostgreSQL, MSSQL, and Oracle databases, the returning method specifies which column should be returned by the insert, update and delete methods. Passed column parameter may be a string or an array of strings. When passed in a string, makes the SQL result be reported as an array of values from the specified column. When passed in an array of strings, makes the SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is not supported on Amazon Redshift.",
     children: [
       {
@@ -1863,6 +1906,21 @@ export default [
           // Returns [ { id: 1, title: 'Slaughterhouse Five' } ]
           knex('books')
             .returning(['id','title'])
+            .insert({title: 'Slaughterhouse Five'})
+        `
+      },
+      {
+        type: "text",
+        content: "For MSSQL, triggers on tables can interrupt returning a valid value from the standard DML statements. You can add the `includeTriggerModifications` option to get around this issue. This modifies the SQL so the proper values can be returned. This only modifies the statement if you are using MSSQL, a returning value is specified, and the `includeTriggerModifications` option is set."
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+          // Adding the option includeTriggerModifications allows you 
+          // to run statements on tables that contain triggers. Only affects MSSQL.
+          knex('books')
+            .returning(['id','title'], { includeTriggerModifications: true })
             .insert({title: 'Slaughterhouse Five'})
         `
       }
@@ -2386,7 +2444,7 @@ export default [
     method: "clone",
     example: ".clone()",
     description: "Clones the current query chain, useful for re-using partial query snippets in other queries without mutating the original.",
-    children: [    ]
+    children: []
   },
   {
     type: "method",
@@ -2426,7 +2484,7 @@ export default [
     method: "debug",
     example: ".debug([enabled])",
     description: "Overrides the global debug setting for the current query chain. If enabled is omitted, query debugging will be turned on.",
-    children: [    ]
+    children: []
   },
   {
     type: "method",
