@@ -88,7 +88,7 @@ const trueDate = [
 
 describe('timestamp', function() {
 	it('should return valid dates for edge cases of leap years', function() {
-		let regex = new RegExp('^([a-z]|[A-Z]){3}[0-9]{14}$')
+		let regex = new RegExp('([a-z]|[A-Z]){3}[0-9]{14}')
 		for (let i = 0; i < 6; i++) {
 			let testDate = timestamp(checkDates[i], checkOffsets[i])
 			
@@ -98,7 +98,7 @@ describe('timestamp', function() {
 	})
 	
 	it('should give back a valid date structure with no arguments', function() {
-		let regex = new RegExp('^([a-z]|[A-Z]){3}[0-9]{14}$')
+		let regex = new RegExp('([a-z]|[A-Z]){3}[0-9]{14}')
 		
 		let testDate = timestamp()
 		
@@ -106,7 +106,7 @@ describe('timestamp', function() {
 	})
 	
 	it('should be able to convert standard time zones when given offsets manually', function() {
-		let regex = new RegExp('^([a-z]|[A-Z]){3}[0-9]{14}$')
+		let regex = new RegExp('([a-z]|[A-Z]){3}[0-9]{14}')
 		for (let i = 6; i < trueDate.length; i++) {
 			let testDate = timestamp(checkDates[6], checkOffsets[i])
 			
