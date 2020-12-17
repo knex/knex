@@ -6,8 +6,6 @@
 //                 Shrey Jain <https://github.com/shreyjain1994>
 // TypeScript Version: 3.7
 
-/// <reference types="node" />
-
 import tarn = require('tarn');
 import events = require('events');
 import stream = require('stream');
@@ -39,8 +37,8 @@ type AnyOrUnknownToOther<T1, T2> = unknown extends T1 ? T2 : T1;
 // This is primarily to keep the signatures more intuitive.
 type AugmentParams<TTarget, TParams> = TParams extends {}
   ? keyof TParams extends never
-    ? TTarget
-    : {} & TTarget & TParams
+  ? TTarget
+  : {} & TTarget & TParams
   : TTarget;
 
 // Check if provided keys (expressed as a single or union type) are members of TBase
@@ -86,8 +84,8 @@ type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
 // to facilitates type-safe aliasing for object syntax
 type MappedAliasType<TBase, TAliasMapping> = {} & {
   [K in keyof TAliasMapping]: TAliasMapping[K] extends keyof TBase
-    ? TBase[TAliasMapping[K]]
-    : any
+  ? TBase[TAliasMapping[K]]
+  : any
 };
 
 // Container type for situations when we want a partial/intersection eventually
@@ -114,17 +112,17 @@ type DeferredKeySelection<
   TIntersectProps extends {} = {},
   // Extra props which will be unioned with the result
   TUnionProps = never
-> = {
-  // These properties are not actually used, but exist simply because
-  // typescript doesn't end up happy when type parameters are unused
-  _base: TBase;
-  _hasSelection: THasSelect;
-  _keys: TKeys;
-  _aliases: TAliasMapping;
-  _single: TSingle;
-  _intersectProps: TIntersectProps;
-  _unionProps: TUnionProps;
-};
+  > = {
+    // These properties are not actually used, but exist simply because
+    // typescript doesn't end up happy when type parameters are unused
+    _base: TBase;
+    _hasSelection: THasSelect;
+    _keys: TKeys;
+    _aliases: TAliasMapping;
+    _single: TSingle;
+    _intersectProps: TIntersectProps;
+    _unionProps: TUnionProps;
+  };
 
 // An companion namespace for DeferredKeySelection which provides type operators
 // to build up participants of intersection/partial over multiple invocations
@@ -168,30 +166,30 @@ declare namespace DeferredKeySelection {
   type SetSingle<
     TSelection,
     TSingle extends boolean
-  > = TSelection extends DeferredKeySelection<
-    infer TBase,
-    infer TKeys,
-    infer THasSelect,
-    infer TAliasMapping,
-    any,
-    infer TIntersectProps,
-    infer TUnionProps
-  >
+    > = TSelection extends DeferredKeySelection<
+      infer TBase,
+      infer TKeys,
+      infer THasSelect,
+      infer TAliasMapping,
+      any,
+      infer TIntersectProps,
+      infer TUnionProps
+    >
     ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
     : never;
 
   type AddKey<
     TSelection,
     TKey extends string
-  > = TSelection extends DeferredKeySelection<
-    infer TBase,
-    infer TKeys,
-    any,
-    infer TAliasMapping,
-    infer TSingle,
-    infer TIntersectProps,
-    infer TUnionProps
-  >
+    > = TSelection extends DeferredKeySelection<
+      infer TBase,
+      infer TKeys,
+      any,
+      infer TAliasMapping,
+      infer TSingle,
+      infer TIntersectProps,
+      infer TUnionProps
+    >
     ? DeferredKeySelection<TBase, TKeys | TKey, true, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
     : DeferredKeySelection<unknown, TKey, true>;
 
@@ -242,48 +240,48 @@ declare namespace DeferredKeySelection {
       //   default return type to unknown would be a major breaking change for users.
       //
       //   So we compromise on type safety here and return any.
-        AugmentParams<
-          AnyToUnknown<TBase> extends {}
-            // ^ Conversion of any -> unknown is needed here to prevent distribution
-            //   of any over the conditional
-            ? TSingle extends true
-              ? TKeys extends keyof TBase
-                ? TBase[TKeys]
-                : any
-              : AugmentParams<
-                  true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
-                  MappedAliasType<TBase, TAliasMapping>
-                >
-          : unknown,
-          TIntersectProps
-        > | TUnionProps
-      >
+      AugmentParams<
+        AnyToUnknown<TBase> extends {}
+        // ^ Conversion of any -> unknown is needed here to prevent distribution
+        //   of any over the conditional
+        ? TSingle extends true
+        ? TKeys extends keyof TBase
+        ? TBase[TKeys]
+        : any
+        : AugmentParams<
+          true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
+          MappedAliasType<TBase, TAliasMapping>
+        >
+        : unknown,
+        TIntersectProps
+      > | TUnionProps
+    >
     : TSelection;
 
   type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
-      ? Knex.ResolveTableType<ResolveOne<TSelection>>
-      : TSelection extends DeferredKeySelection.Any[]
-      ? Knex.ResolveTableType<ResolveOne<TSelection[0]>>[]
-      : TSelection extends (infer I)[]
-      ? UnknownToAny<Knex.ResolveTableType<I>>[]
-      : UnknownToAny<Knex.ResolveTableType<TSelection>>;
+    ? Knex.ResolveTableType<ResolveOne<TSelection>>
+    : TSelection extends DeferredKeySelection.Any[]
+    ? Knex.ResolveTableType<ResolveOne<TSelection[0]>>[]
+    : TSelection extends (infer I)[]
+    ? UnknownToAny<Knex.ResolveTableType<I>>[]
+    : UnknownToAny<Knex.ResolveTableType<TSelection>>;
 }
 
 type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
-    TResult,
-    UnwrapArrayMember<TResult> extends DeferredKeySelection<
-      infer TBase,
-      infer TKeys,
-      infer THasSelect,
-      infer TAliasMapping,
-      infer TSingle,
-      infer TIntersectProps,
-      infer TUnionProps
-    >
-      ? true extends THasSelect
-        ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps & TIntersectProps2, TUnionProps>
-        : DeferredKeySelection<{}, never, true, {}, false, TIntersectProps2>
-      : TIntersectProps2
+  TResult,
+  UnwrapArrayMember<TResult> extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    infer THasSelect,
+    infer TAliasMapping,
+    infer TSingle,
+    infer TIntersectProps,
+    infer TUnionProps
+  >
+  ? true extends THasSelect
+  ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps & TIntersectProps2, TUnionProps>
+  : DeferredKeySelection<{}, never, true, {}, false, TIntersectProps2>
+  : TIntersectProps2
 >;
 
 // Convenience alias and associated companion namespace for working
@@ -301,10 +299,10 @@ declare namespace DeferredIndex {
     TBase,
     TKey extends string,
     TAliasMapping = {}
-  > = DeferredKeySelection.SetSingle<
-    DeferredKeySelection.AddKey<DeferredKeySelection.SetBase<T, TBase>, TKey>,
-    true
-  >;
+    > = DeferredKeySelection.SetSingle<
+      DeferredKeySelection.AddKey<DeferredKeySelection.SetBase<T, TBase>, TKey>,
+      true
+    >;
 }
 
 // If we have more categories of deferred selection in future,
@@ -324,6 +322,10 @@ type TableOptions = PgTableOptions;
 
 interface PgTableOptions {
   only?: boolean;
+}
+
+interface DMLOptions {
+  includeTriggerModifications?: boolean;
 }
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
@@ -419,8 +421,8 @@ declare namespace Knex {
 
   type Lookup<TRegistry extends {}, TKey extends string, TDefault = never> =
     TKey extends keyof TRegistry ?
-      TRegistry[TKey] :
-      TDefault;
+    TRegistry[TKey] :
+    TDefault;
 
   type MaybeRawColumn<TColumn> = TColumn | Raw<TColumn>;
 
@@ -560,8 +562,8 @@ declare namespace Knex {
         any,
         any
       >
-        ? DeferredKeySelection<TBase, never>[]
-        : TResult
+      ? DeferredKeySelection<TBase, never>[]
+      : TResult
     >;
     clearWhere(): QueryBuilder<TRecord, TResult>;
     clearGroup(): QueryBuilder<TRecord, TResult>;
@@ -614,7 +616,8 @@ declare namespace Knex {
       data: TRecord extends CompositeTableType<unknown>
         ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
-      returning: '*'
+      returning: '*',
+      options?: DMLOptions
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
       TKey extends StrKey<ResolveTableType<TRecord>>,
@@ -627,7 +630,8 @@ declare namespace Knex {
       data: TRecord extends CompositeTableType<unknown>
         ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
-      returning: TKey
+      returning: TKey,
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     insert<
       TKey extends StrKey<ResolveTableType<TRecord>>,
@@ -640,7 +644,8 @@ declare namespace Knex {
       data: TRecord extends CompositeTableType<unknown>
         ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
-      returning: readonly TKey[]
+      returning: readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     insert<
       TKey extends string,
@@ -653,7 +658,8 @@ declare namespace Knex {
       data: TRecord extends CompositeTableType<unknown>
         ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
-      returning: TKey
+      returning: TKey,
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     insert<
       TKey extends string,
@@ -666,7 +672,8 @@ declare namespace Knex {
       data: TRecord extends CompositeTableType<unknown>
         ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
-      returning: readonly TKey[]
+      returning: readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     insert<TResult2 = number[]>(
       data: TRecord extends CompositeTableType<unknown>
@@ -689,7 +696,8 @@ declare namespace Knex {
     >(
       columnName: K1,
       value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]>,
-      returning: K2
+      returning: K2,
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update<
       K1 extends StrKey<ResolveTableType<TRecord, 'update'>>,
@@ -702,7 +710,8 @@ declare namespace Knex {
     >(
       columnName: K1,
       value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]>,
-      returning: readonly K2[]
+      returning: readonly K2[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update<K extends keyof TRecord>(
       columnName: K,
@@ -711,11 +720,13 @@ declare namespace Knex {
     update<TResult2 = SafePartial<TRecord>[]>(
       columnName: string,
       value: Value,
-      returning: string | readonly string[]
+      returning: string | readonly string[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update(
       data: DbRecordArr<TRecord>,
-      returning: '*'
+      returning: '*',
+      options?: DMLOptions
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     update<
       TKey extends StrKey<ResolveTableType<TRecord>>,
@@ -725,8 +736,9 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
-      returning: TKey
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      returning: TKey,
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update<
       TKey extends StrKey<ResolveTableType<TRecord>>,
@@ -736,8 +748,9 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
-      returning: readonly TKey[]
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      returning: readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update<
       TKey extends string = string,
@@ -747,8 +760,9 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
-      returning: TKey | readonly TKey[]
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      returning: TKey | readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update<
       TKey extends string,
@@ -758,16 +772,17 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
-      returning: readonly TKey[]
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      returning: readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(
-      data: TRecord extends CompositeTableType<unknown> ?  ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>
+      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
 
     update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;
 
-    returning(column: '*'): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
+    returning(column: '*', options?: DMLOptions): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
       TResult2 = DeferredIndex.Augment<
@@ -776,7 +791,8 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      column: TKey
+      column: TKey,
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
@@ -785,10 +801,12 @@ declare namespace Knex {
         false
       >[]
     >(
-      columns: readonly TKey[]
+      columns: readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: string | readonly string[]
+      column: string | readonly string[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
 
     onConflict<
@@ -812,7 +830,8 @@ declare namespace Knex {
     ): OnConflictQueryBuilder<TRecord, TResult2>;
 
     del(
-      returning: '*'
+      returning: '*',
+      options?: DMLOptions
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     del<
       TKey extends StrKey<TRecord>,
@@ -822,7 +841,8 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      returning: TKey
+      returning: TKey,
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     del<
       TKey extends StrKey<TRecord>,
@@ -832,15 +852,18 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      returning: readonly TKey[]
+      returning: readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2[]>;
     del<TResult2 = SafePartial<TRecord>[]>(
-      returning: string | readonly string[]
+      returning: string | readonly string[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     del<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
     delete(
-      returning: '*'
+      returning: '*',
+      options?: DMLOptions
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     delete<
       TKey extends StrKey<ResolveTableType<TRecord>>,
@@ -850,7 +873,8 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      returning: TKey
+      returning: TKey,
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<
       TKey extends StrKey<TRecord>,
@@ -860,10 +884,12 @@ declare namespace Knex {
         TKey
       >[]
     >(
-      returning: readonly TKey[]
+      returning: readonly TKey[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = any>(
-      returning: string | readonly string[]
+      returning: string | readonly string[],
+      options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
 
@@ -876,17 +902,17 @@ declare namespace Knex {
   }
 
   type IntersectAliases<AliasUT> =
-     UnionToIntersection<
-       IncompatibleToAlt<
-         AliasUT extends (infer I)[]
-           ? I extends Ref<any, infer TMapping>
-             ? TMapping
-             : I
-           : never,
-         Dict,
-         {}
-       >
-      >;
+    UnionToIntersection<
+      IncompatibleToAlt<
+        AliasUT extends (infer I)[]
+        ? I extends Ref<any, infer TMapping>
+        ? TMapping
+        : I
+        : never,
+        Dict,
+        {}
+      >
+    >;
 
   interface AliasQueryBuilder<TRecord extends {} = any, TResult = unknown[]> {
     <
@@ -897,7 +923,7 @@ declare namespace Knex {
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
       >>
-    >(
+      >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -909,7 +935,7 @@ declare namespace Knex {
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
       >>
-    >(
+      >(
       aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -921,7 +947,7 @@ declare namespace Knex {
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
       >>
-    >(
+      >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -933,14 +959,14 @@ declare namespace Knex {
         IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
         IntersectAliases<AliasUT>
       >>
-    >(
+      >(
       aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
   }
 
   interface Select<TRecord extends {} = any, TResult = unknown[]>
     extends AliasQueryBuilder<TRecord, TResult>,
-      ColumnNameQueryBuilder<TRecord, TResult> {
+    ColumnNameQueryBuilder<TRecord, TResult> {
     (): QueryBuilder<TRecord, TResult>;
 
     <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord = any, TInnerResult = any>(
@@ -957,28 +983,28 @@ declare namespace Knex {
       TTable extends TableNames,
       TRecord2 = TableType<TTable>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, ResolveTableType<TRecord2>>
-    >(
+      >(
       tableName: TTable,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TableDescriptor | AliasDict,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       callback: Function,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       raw: Raw,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1009,14 +1035,14 @@ declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TTable extends TableNames,
       TRecord2 = ResolveTableType<TRecord> & ResolveTableType<TableType<TTable>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TTable,
       clause: JoinCallback
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1024,7 +1050,7 @@ declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       clause: JoinCallback
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1032,7 +1058,7 @@ declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       columns: { [key: string]: string | number | boolean | Raw }
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1040,7 +1066,7 @@ declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1048,7 +1074,7 @@ declare namespace Knex {
       TTable extends TableNames,
       TRecord2 = ResolveTableType<TRecord> & ResolveTableType<TableType<TTable>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TTable,
       column1: string,
       column2: string
@@ -1057,7 +1083,7 @@ declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       column2: string
@@ -1066,7 +1092,7 @@ declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       raw: Raw
@@ -1075,7 +1101,7 @@ declare namespace Knex {
       TTable extends TableNames,
       TRecord2 = ResolveTableType<TRecord> & ResolveTableType<TableType<TTable>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TTable,
       column1: string,
       operator: string,
@@ -1085,7 +1111,7 @@ declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-    >(
+      >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       operator: string,
@@ -1175,8 +1201,8 @@ declare namespace Knex {
 
   interface Where<TRecord = any, TResult = unknown>
     extends WhereRaw<TRecord, TResult>,
-      WhereWrapped<TRecord, TResult>,
-      WhereNull<TRecord, TResult> {
+    WhereWrapped<TRecord, TResult>,
+    WhereNull<TRecord, TResult> {
     (raw: Raw): QueryBuilder<TRecord, TResult>;
 
     (callback: QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult>;
@@ -1521,7 +1547,7 @@ declare namespace Knex {
         TKey
         >[]
       >(
-      column: TKey
+        column: TKey
     ): BatchInsertBuilder<TRecord, TResult2>;
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
@@ -1530,7 +1556,7 @@ declare namespace Knex {
         false
         >[]
       >(
-      columns: readonly TKey[]
+        columns: readonly TKey[]
     ): BatchInsertBuilder<TRecord, TResult2>;
     // if data with specific type passed, exclude this method
     returning<TResult2 = SafePartial<TRecord>[]>(

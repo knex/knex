@@ -133,6 +133,51 @@ module.exports = function (knex) {
 
                 expect(reachedEnd).to.be.true;
             });
+
+            it('#4152 Should allow returns with deletes on tables with triggers using returning function', async function () {
+                let reachedEnd = false;
+
+                await knex.transaction(async function () {
+                    let insertedId;
+                    let deletedId;
+
+                    async function insertWithReturn() {
+                        const insertPrimary = {
+                            data: "Testing Data"
+                        };
+
+                        const insertSecondary = {
+                            data: "Test Linking"
+                        }
+
+                        // Setup primary table for trigger use case
+                        const primaryId = await knex(primaryTable)
+                            .insert([insertPrimary], ["id"], triggerOptions);
+                        insertSecondary[secondaryLink] = primaryId[0];
+
+                        // Insert to table with trigger to test delete
+                        insertedId = (await knex(secondaryTable)
+                            .insert([insertSecondary], ["id"], triggerOptions))[0];
+                    }
+
+                    async function deleteTriggerTable() {
+                        // Test returning value from delete statement on a table with a trigger
+                        deletedId = (await knex(secondaryTable)
+                            .whereRaw(`id = ${insertedId}`)
+                            .returning(['id'], triggerOptions)
+                            .delete())[0];
+                    }
+
+                    await insertWithReturn();
+                    await deleteTriggerTable();
+
+                    expect(Number.parseInt(deletedId)).to.be.finite;
+
+                    reachedEnd = true;
+                });
+
+                expect(reachedEnd).to.be.true;
+            });
         });
 
         describe("Re-test all Delete Functions with trigger option and returns", function () {

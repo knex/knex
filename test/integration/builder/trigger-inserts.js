@@ -125,6 +125,42 @@ module.exports = function (knex) {
 
                 expect(reachedEnd).to.be.true;
             });
+
+            it('#4152 Should allow returns with inserts on tables with triggers using returning function', async function () {
+                let reachedEnd = false;
+
+                await knex.transaction(async function () {
+                    let insertResults;
+
+                    async function insertWithReturn() {
+                        const insertPrimary = {
+                            data: "Testing Data"
+                        };
+
+                        const insertSecondary = {
+                            data: "Test Linking"
+                        }
+
+                        const primaryId = await knex(primaryTable)
+                            .returning(["id"], insertTriggerOptions)
+                            .insert([insertPrimary]);
+                        insertSecondary[secondaryLink] = primaryId[0];
+
+                        // Test retrieve with trigger
+                        insertResults = (await knex(secondaryTable)
+                            .returning(["id"], insertTriggerOptions)
+                            .insert([insertSecondary]))[0];
+                    }
+
+                    await insertWithReturn();
+
+                    expect(Number.parseInt(insertResults)).to.be.finite;
+
+                    reachedEnd = true;
+                });
+
+                expect(reachedEnd).to.be.true;
+            });
         });
 
         describe("Re-test all Insert Functions with trigger option and returns", function () {
