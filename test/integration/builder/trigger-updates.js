@@ -91,7 +91,7 @@ module.exports = function (knex) {
             `);
             });
 
-            it('#4152 Should allow returns with inserts on tables with triggers', async function () {
+            it('#4152 Should allow returns with updates on tables with triggers', async function () {
                 let reachedEnd = false;
 
                 await knex.transaction(async function () {
@@ -131,7 +131,7 @@ module.exports = function (knex) {
                 expect(reachedEnd).to.be.true;
             });
 
-            it('#4152 Should allow returns with inserts on tables with triggers using returning function', async function () {
+            it('#4152 Should allow returns with updates on tables with triggers using returning function', async function () {
                 let reachedEnd = false;
 
                 await knex.transaction(async function () {
