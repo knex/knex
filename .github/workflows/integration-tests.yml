@@ -1,0 +1,79 @@
+---
+
+name: Integration Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Integration Tests
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [14.x, 12.x, 10.x]
+        database-type: [postgres, mysql, mysql2, mssql, sqlite3]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          always-auth: false
+          node-version: ${{ matrix.node-version }}
+
+      - name: Start Database(s)
+        run: |
+          docker-compose \
+            --file "scripts/docker-compose.yml" \
+            up \
+              --detach \
+              --build \
+              "${{ matrix.database-type }}"
+        if: matrix.database-type != 'sqlite3'
+
+      - name: Initialize Database(s)
+        run: |
+          docker-compose \
+            --file "scripts/docker-compose.yml" \
+            up \
+              --detach \
+              "wait${{ matrix.database-type }}"
+        if: matrix.database-type != 'sqlite3'
+
+      - name: Run npm install
+        run: npm install
+
+      - name: Run Tests
+        run: npm run test:db
+        env:
+          CI: true
+          DB: ${{ matrix.database-type }}
+          KNEX_TEST_TIMEOUT: 60000
+
+      - name: Stop Database(s)
+        run: |
+          docker-compose \
+            --file "scripts/docker-compose.yml" \
+            down
+        if: matrix.database-type != 'sqlite3'
+
+      - name: Run nyc report
+        run: |
+          nyc \
+            report \
+            --reporter=lcov
+        if: success() && contains(github.repository, 'knex/knex') && contains(github.ref, 'master')
+
+      - name: Update Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        if: success() && contains(github.repository, 'knex/knex') && contains(github.ref, 'master')
