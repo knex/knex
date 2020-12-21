@@ -1,5 +1,20 @@
 # Master (Unreleased)
 
+# 0.21.14 - 18 December, 2020
+
+### New features:
+
+- MSSQL: support "returning" on inserts, updates and deletes on tables with triggers #4152
+- Use esm import if package.json type is "module" #4158
+
+### Bug fixes:
+
+- Make sure query-response and query-error events contain _knexTxId #4160
+
+### Test / internal changes:
+
+- Improved integration test framework #4161
+
 # 0.21.13 - 12 December, 2020
 
 ### New features:
