@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
-  describe.skip('Foreign keys', () => {
+  describe.skip('Primary keys', () => {
     // @TODO remove .skip when done
     getAllDbs().forEach((db) => {
       describe(db, () => {
@@ -34,7 +34,15 @@ describe('Schema', () => {
               table.integer('id_four').primary();
             });
 
-            // @TODO Expect it to work.
+            await knex('primary_table').insert({ id_four: 1 });
+
+            try {
+              await knex('primary_table').insert({ id_four: 1 });
+              throw new Error(`Shouldn't reach this`);
+            } catch (err) {
+              console.log(err);
+              expect(true).to.be(true);
+            }
           });
 
           it('creates a primary key with a custom constraint name', async () => {
