@@ -1808,6 +1808,8 @@ declare namespace Knex {
     alter(): ColumnBuilder;
     queryContext(context: any): ColumnBuilder;
     withKeyName(keyName: string): ColumnBuilder;
+    after(columnName: string): ColumnBuilder;
+    first(): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
