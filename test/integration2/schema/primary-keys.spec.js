@@ -1,9 +1,8 @@
 const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
-describe('Schema', () => {
-  describe.skip('Primary keys', () => {
-    // @TODO remove .skip when done
+describe.only('Schema', () => {
+  describe('Primary keys', () => {
     getAllDbs().forEach((db) => {
       describe(db, () => {
         let knex;
@@ -40,8 +39,9 @@ describe('Schema', () => {
               await knex('primary_table').insert({ id_four: 1 });
               throw new Error(`Shouldn't reach this`);
             } catch (err) {
-              console.log(err);
-              expect(true).to.be(true);
+              expect(err.message).to.equal(
+                'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
+              );
             }
           });
 
@@ -50,7 +50,21 @@ describe('Schema', () => {
               table.integer('id_four').primary('my_custom_constraint_name');
             });
 
-            // @TODO Expect it to work.
+            await knex('primary_table').insert({ id_four: 1 });
+            try {
+              await knex('primary_table').insert({ id_four: 1 });
+              throw new Error(`Shouldn't reach this`);
+            } catch (err) {
+              expect(err.message).to.equal(
+                'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
+              );
+            }
+
+            await knex.schema.alterTable('primary_table', (table) => {
+              table.dropPrimary('my_custom_constraint_name');
+            });
+
+            await knex('primary_table').insert({ id_four: 1 });
           });
 
           it('creates a compound primary key', async () => {
@@ -58,7 +72,17 @@ describe('Schema', () => {
               table.primary(['id_two', 'id_three']);
             });
 
-            // @TODO Expect it to work.
+            await knex('primary_table').insert({ id_two: 1, id_three: 1 });
+            await knex('primary_table').insert({ id_two: 2, id_three: 1 });
+            await knex('primary_table').insert({ id_two: 1, id_three: 2 });
+
+            try {
+              await knex('primary_table').insert({ id_two: 1, id_three: 1 });
+            } catch (err) {
+              expect(err.message).to.equal(
+                'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+              );
+            }
           });
 
           it('creates a compound primary key with a custom constraint name', async () => {
@@ -69,7 +93,23 @@ describe('Schema', () => {
               );
             });
 
-            // @TODO Expect it to work.
+            await knex('primary_table').insert({ id_two: 1, id_three: 1 });
+            await knex('primary_table').insert({ id_two: 2, id_three: 1 });
+            await knex('primary_table').insert({ id_two: 1, id_three: 2 });
+
+            try {
+              await knex('primary_table').insert({ id_two: 1, id_three: 1 });
+            } catch (err) {
+              expect(err.message).to.equal(
+                'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+              );
+            }
+
+            await knex.schema.alterTable('primary_table', (table) => {
+              table.dropPrimary('my_custom_constraint_name');
+            });
+
+            await knex('primary_table').insert({ id_two: 1, id_three: 1 });
           });
         });
       });
