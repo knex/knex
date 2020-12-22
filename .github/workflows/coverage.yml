@@ -1,24 +1,21 @@
 ---
 
-name: Integration Tests
+name: Coverage
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
     branches:
       - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Integration Tests
+    name: Coverage
 
     strategy:
       fail-fast: false
       matrix:
-        node-version: [14.x, 12.x, 10.x]
+        node-version: [14.x]
         database-type: [postgres, mysql, mssql, sqlite3]
 
     steps:
@@ -56,7 +53,7 @@ jobs:
         run: npm install
 
       - name: Run Tests
-        run: npm run test:db
+        run: npm run test:coverage
         env:
           CI: true
           DB: ${{ matrix.database-type }}
@@ -68,3 +65,9 @@ jobs:
             --file "scripts/docker-compose.yml" \
             down
         if: matrix.database-type != 'sqlite3'
+
+      - name: Update Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        if: success() && contains(github.repository, 'knex/knex') && contains(github.ref, 'master')
