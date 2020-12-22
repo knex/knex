@@ -13,6 +13,13 @@ module.exports = function (knex) {
       return knex.destroy();
     });
 
+    if (this.driverName === 'oracledb') {
+      describe('Oracledb driver tests', function () {
+        this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+        require('./dialects/oracledb');
+      });
+    }
+
     require('./schema')(knex);
     require('./schema/foreign-keys')(knex);
     require('./migrate/migration-integration-tests')(knex);
