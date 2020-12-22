@@ -56,7 +56,7 @@ jobs:
         run: npm install
 
       - name: Run Tests
-        run: npm run test:db
+        run: npm run test:db:coverage
         env:
           CI: true
           DB: ${{ matrix.database-type }}
