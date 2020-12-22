@@ -208,6 +208,11 @@
     "branches": 69,
     "extension": [
       ".js"
+    ],
+    "exclude": [
+      "lib/dialects/oracle",
+      "lib/dialects/oracledb",
+      "lib/dialects/mysql2"
     ]
   },
   "husky": {
