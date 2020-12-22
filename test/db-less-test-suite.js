@@ -39,13 +39,6 @@ if (config.mssql) {
   });
 }
 
-if (config.oracledb) {
-  describe('Oracledb driver tests', function () {
-    this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-    require('./unit/dialects/oracledb');
-  });
-}
-
 if (config.postgres) {
   require('./unit/dialects/postgres');
 }
