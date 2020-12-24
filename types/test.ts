@@ -2700,7 +2700,7 @@ const main = async () => {
       .returning(['id', 'subject']);
   });
 
-  // $ExpectType any
+  // $ExpectType any[]
   await knex.transaction(async (trx) => {
     const articles: Article[] = [
       { id: 1, subject: 'Canterbury Tales' },
@@ -2715,7 +2715,7 @@ const main = async () => {
       .catch(trx.rollback);
   });
 
-    // $ExpectType any
+    // $ExpectType any[]
     await knex.transaction(async (trx) => {
       const articles: ReadonlyArray<Article> = [
         { id: 1, subject: 'Canterbury Tales' },

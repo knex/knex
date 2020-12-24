@@ -1657,7 +1657,7 @@ declare namespace Knex {
     asCallback(callback: Function): Promise<T>;
   }
 
-  interface Transaction<TRecord extends {} = any, TResult = any>
+  interface Transaction<TRecord extends {} = any, TResult = any[]>
     extends Knex<TRecord, TResult> {
     executionPromise: Promise<TResult>;
     isCompleted: () => boolean;
