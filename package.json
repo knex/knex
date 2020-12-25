@@ -211,8 +211,7 @@
     ],
     "exclude": [
       "lib/dialects/oracle",
-      "lib/dialects/oracledb",
-      "lib/dialects/mysql2"
+      "lib/dialects/oracledb"
     ]
   },
   "husky": {

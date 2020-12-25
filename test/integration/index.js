@@ -7,8 +7,13 @@ const fs = require('fs');
 
 Object.keys(config).forEach((dialectName) => {
   console.log(`Loading integration suite for dialect ${dialectName}`);
-  require('./connection-config-provider')(config[dialectName]);
-  return require('./suite')(logger(knex(config[dialectName])));
+  const resolvedConfig = config[dialectName];
+  if (!resolvedConfig) {
+    throw new Error(`Unknown dialect ${dialectName}`);
+  }
+
+  require('./connection-config-provider')(resolvedConfig);
+  return require('./suite')(logger(knex(resolvedConfig)));
 });
 
 before(function () {
