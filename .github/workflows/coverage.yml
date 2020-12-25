@@ -29,22 +29,8 @@ jobs:
           always-auth: false
           node-version: ${{ matrix.node-version }}
 
-      - name: Start Database(s)
-        run: |
-          docker-compose \
-            --file "scripts/docker-compose.yml" \
-            up \
-              --detach \
-              --build \
-              "mysql postgres mssql"
-
-      - name: Initialize Database(s)
-        run: |
-          docker-compose \
-            --file "scripts/docker-compose.yml" \
-            up \
-              --detach \
-              "waitmssql waitmysql waitpostgres"
+      - name: Start Databases
+        run: npm run db:start:no-oracle
 
       - name: Run npm install
         run: npm install
@@ -56,11 +42,8 @@ jobs:
           DB: postgres mysql mysql2 mssql sqlite
           KNEX_TEST_TIMEOUT: 60000
 
-      - name: Stop Database(s)
-        run: |
-          docker-compose \
-            --file "scripts/docker-compose.yml" \
-            down
+      - name: Stop Databases
+        run: npm run db:stop
 
       - name: Update Coveralls
         uses: coverallsapp/github-action@master
