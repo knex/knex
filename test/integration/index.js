@@ -6,6 +6,7 @@ const config = require('../knexfile');
 const fs = require('fs');
 
 Object.keys(config).forEach((dialectName) => {
+  console.log(`Loading integration suite for dialect ${dialectName}`);
   require('./connection-config-provider')(config[dialectName]);
   return require('./suite')(logger(knex(config[dialectName])));
 });

@@ -13,7 +13,7 @@ module.exports = {
   plugins: ['import'],
   rules: {
     'no-unused-vars': [warning, { vars: 'all', args: 'none' }],
-    'no-console': warning,
+    'no-console': 'off',
     'no-var': 2,
     'no-debugger': warning,
     'prefer-const': warning,

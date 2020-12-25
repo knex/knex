@@ -39,7 +39,7 @@ jobs:
         run: npm run test:coverage
         env:
           CI: true
-          DB: postgres mysql mysql2 mssql sqlite
+          DB: "postgres mysql mysql2 mssql sqlite"
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Databases
