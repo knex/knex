@@ -30,6 +30,42 @@ function mkConfigObj(opts) {
   };
 }
 
+function resolveKnexFilePath() {
+  const jsPath = resolveDefaultKnexfilePath('js');
+  if (fs.existsSync(jsPath)) {
+    return {
+      path: jsPath,
+      extension: 'js',
+    };
+  }
+
+  const tsPath = resolveDefaultKnexfilePath('ts');
+  if (fs.existsSync(tsPath)) {
+    return {
+      path: tsPath,
+      extension: 'ts',
+    };
+  }
+  
+  const cjsPath = resolveDefaultKnexfilePath('cjs');
+  if (fs.existsSync(cjsPath)) {
+    return {
+      path: cjsPath,
+      extension: 'cjs'
+    }
+  }
+
+  console.warn(
+    `Failed to find configuration at default location of ${resolveDefaultKnexfilePath(
+      'js'
+    )}`
+  );
+}
+
+function resolveDefaultKnexfilePath(extension) {
+  return process.cwd() + `/knexfile.${extension}`;
+}
+
 function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
   const environment = opts.env || process.env.NODE_ENV || 'development';
   const result = allConfigs[environment] || allConfigs;
