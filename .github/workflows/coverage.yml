@@ -7,7 +7,7 @@ on:
     branches:
       - master
 
-jobs:e
+jobs:
   build:
     runs-on: ubuntu-latest
     name: Coverage
