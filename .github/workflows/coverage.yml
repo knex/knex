@@ -45,6 +45,9 @@ jobs:
       - name: Stop Databases
         run: npm run db:stop
 
+      - name: Generate LCOV
+        run: npm run coveralls
+
       - name: Update Coveralls
         uses: coverallsapp/github-action@master
         with:
