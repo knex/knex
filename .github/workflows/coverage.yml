@@ -16,7 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [14.x]
-        database-type: [postgres, mysql, mssql, sqlite3]
 
     steps:
       - name: Checkout Repository
