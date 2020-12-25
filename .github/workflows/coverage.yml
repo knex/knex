@@ -7,7 +7,7 @@ on:
     branches:
       - master
 
-jobs:
+jobs:e
   build:
     runs-on: ubuntu-latest
     name: Coverage
@@ -37,8 +37,7 @@ jobs:
             up \
               --detach \
               --build \
-              "${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
+              "mysql postgres mssql"
 
       - name: Initialize Database(s)
         run: |
@@ -46,8 +45,7 @@ jobs:
             --file "scripts/docker-compose.yml" \
             up \
               --detach \
-              "wait${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
+              "waitmssql waitmysql waitpostgres"
 
       - name: Run npm install
         run: npm install
@@ -56,7 +54,7 @@ jobs:
         run: npm run test:coverage
         env:
           CI: true
-          DB: ${{ matrix.database-type }}
+          DB: postgres mysql mysql2 mssql sqlite
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Database(s)
@@ -64,10 +62,9 @@ jobs:
           docker-compose \
             --file "scripts/docker-compose.yml" \
             down
-        if: matrix.database-type != 'sqlite3'
 
       - name: Update Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: success() && contains(github.repository, 'knex/knex') && contains(github.ref, 'master')
+        if: success()
