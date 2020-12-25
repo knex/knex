@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [14.x, 12.x, 10.x]
+        node-version: [15.x, 14.x, 12.x, 10.x]
         database-type: [postgres, mysql, mssql, sqlite3]
 
     steps:
