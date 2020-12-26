@@ -1,5 +1,5 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isPostgreSQL } = require('../util/db-helpers');
+const { isPostgreSQL, isRedshift } = require('../../util/db-helpers');
 
 describe('Insert', () => {
   describe('onConflict merge', () => {
@@ -25,7 +25,11 @@ describe('Insert', () => {
           await knex.schema.dropTable('merge_table');
         });
 
-        it('inserts large amount of entries correctly', async () => {
+        it('inserts large amount of entries correctly', async function () {
+          if (isRedshift(knex)) {
+            return this.skip();
+          }
+
           const rows = [];
           // There seems to be a 32-bit limit for amount of values passed in pg (https://github.com/brianc/node-postgres/issues/581)
           // Cannot go any higher with bindings currently
