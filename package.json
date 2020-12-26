@@ -42,15 +42,16 @@
     "colorette": "1.2.1",
     "commander": "^6.2.0",
     "debug": "4.3.1",
+    "escalade": "^3.1.1",
     "esm": "^3.2.25",
     "getopts": "2.2.5",
     "interpret": "^2.2.0",
-    "liftoff": "3.1.0",
     "lodash": "^4.17.20",
     "pg-connection-string": "2.4.0",
+    "rechoir": "^0.7.0",
+    "resolve-from": "^5.0.0",
     "tarn": "^3.0.1",
-    "tildify": "2.0.0",
-    "v8flags": "^3.2.0"
+    "tildify": "2.0.0"
   },
   "peerDependencies": {
     "mssql": "^6.2.1",
