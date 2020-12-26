@@ -12,6 +12,8 @@ const testIntegrationDialects = (
   process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
 ).match(/\w+/g);
 
+console.log(`ENV DB: ${process.env.DB}`);
+
 const pool = {
   afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');

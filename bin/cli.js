@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint no-console:0, no-var:0 */
 const Liftoff = require('liftoff');
 const interpret = require('interpret');
 const path = require('path');

@@ -16,7 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [14.x]
-        database-type: [postgres, mysql, mssql, sqlite3]
 
     steps:
       - name: Checkout Repository
@@ -30,24 +29,8 @@ jobs:
           always-auth: false
           node-version: ${{ matrix.node-version }}
 
-      - name: Start Database(s)
-        run: |
-          docker-compose \
-            --file "scripts/docker-compose.yml" \
-            up \
-              --detach \
-              --build \
-              "${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
-
-      - name: Initialize Database(s)
-        run: |
-          docker-compose \
-            --file "scripts/docker-compose.yml" \
-            up \
-              --detach \
-              "wait${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
+      - name: Start Databases
+        run: npm run db:start:no-oracle
 
       - name: Run npm install
         run: npm install
@@ -56,18 +39,17 @@ jobs:
         run: npm run test:coverage
         env:
           CI: true
-          DB: ${{ matrix.database-type }}
+          DB: "postgres mysql mysql2 mssql sqlite3"
           KNEX_TEST_TIMEOUT: 60000
 
-      - name: Stop Database(s)
-        run: |
-          docker-compose \
-            --file "scripts/docker-compose.yml" \
-            down
-        if: matrix.database-type != 'sqlite3'
+      - name: Stop Databases
+        run: npm run db:stop
+
+      - name: Generate LCOV
+        run: npm run coveralls
 
       - name: Update Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: success() && contains(github.repository, 'knex/knex') && contains(github.ref, 'master')
+        if: success()

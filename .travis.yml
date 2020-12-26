@@ -11,11 +11,11 @@ matrix:
   fast_finish: true
   include:
     - node_js: '14'
-      env: DB="oracledb mysql2" KNEX_TEST_TIMEOUT=60000
+      env: DB="oracledb" KNEX_TEST_TIMEOUT=60000
     - node_js: '12'
-      env: DB="oracledb mysql2" KNEX_TEST_TIMEOUT=60000
+      env: DB="oracledb" KNEX_TEST_TIMEOUT=60000
     - node_js: '10'
-      env: DB="oracledb mysql2" KNEX_TEST_TIMEOUT=60000
+      env: DB="oracledb" KNEX_TEST_TIMEOUT=60000
 install:
   - npm i
 

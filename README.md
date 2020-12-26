@@ -2,8 +2,8 @@
 
 [![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
 [![npm downloads](https://img.shields.io/npm/dm/knex.svg)](https://npmjs.org/package/knex)
-[![Build Status](https://travis-ci.org/knex/knex.svg?branch=master)](https://travis-ci.org/knex/knex)
-[![Coverage Status](https://coveralls.io/repos/tgriesser/knex/badge.svg?branch=master)](https://coveralls.io/r/tgriesser/knex?branch=master)
+![](https://github.com/knex/knex/workflows/CI/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/knex/knex/badge.svg?branch=master)](https://coveralls.io/r/knex/knex?branch=master)
 [![Dependencies Status](https://david-dm.org/knex/knex.svg)](https://david-dm.org/knex/knex)
 [![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex)
 [![Language Grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/knex/knex.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/knex/knex/context:javascript)
