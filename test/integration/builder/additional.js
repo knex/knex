@@ -190,7 +190,7 @@ module.exports = function (knex) {
     describe('returning with wrapIdentifier and postProcessResponse` (TODO: fix to work on all possible dialects)', function () {
       const origHooks = {};
       if (!isOneOfDbs(knex, ['pg', 'mssql'])) {
-        return this.skip();
+        return;
       }
 
       before('setup custom hooks', () => {
