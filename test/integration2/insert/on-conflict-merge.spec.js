@@ -1,5 +1,5 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isPostgreSQL, isRedshift } = require('../../util/db-helpers');
+const { isPostgreSQL, isRedshift, isSQLite } = require('../../util/db-helpers');
 
 describe('Insert', () => {
   describe('onConflict merge', () => {
@@ -26,7 +26,7 @@ describe('Insert', () => {
         });
 
         it('inserts large amount of entries correctly', async function () {
-          if (isRedshift(knex)) {
+          if (isRedshift(knex) || isSQLite(knex)) {
             return this.skip();
           }
 
