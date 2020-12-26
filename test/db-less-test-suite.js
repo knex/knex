@@ -8,6 +8,7 @@ describe('Util Tests', function () {
   require('./unit/util/fs');
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
+  require('./unit/util/comma-no-paren-regex');
 });
 
 describe('Query Building Tests', function () {

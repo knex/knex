@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
-describe.skip('Schema', () => {
+describe('Schema', () => {
   describe('Foreign keys', () => {
     getAllDbs().forEach((db) => {
       describe(db, () => {
@@ -63,9 +63,9 @@ describe.skip('Schema', () => {
                   `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (99, 9999) - SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`
                 );
               }
-              if (knex.client.driverName === 'postgres') {
+              if (knex.client.driverName === 'pg') {
                 expect(err.message).to.equal(
-                  `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "foreign_keys_table_one_fkey_two_foreign"`
+                  `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "fk_fkey_threeee"`
                 );
               }
               expect(err.message).to.include('constraint');
