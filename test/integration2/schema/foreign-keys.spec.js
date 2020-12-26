@@ -65,7 +65,7 @@ describe('Schema', () => {
               }
               if (knex.client.driverName === 'pg') {
                 expect(err.message).to.equal(
-                  `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "foreign_keys_table_one_fkey_two_foreign"`
+                  `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "fk_fkey_threeee"`
                 );
               }
               expect(err.message).to.include('constraint');
