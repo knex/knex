@@ -1,4 +1,5 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const { isPostgreSQL } = require('../util/db-helpers');
 
 describe('Insert', () => {
   describe('onConflict merge', () => {
@@ -34,7 +35,11 @@ describe('Insert', () => {
           await knex.table('merge_table').insert(rows).onConflict('id').merge();
         });
 
-        it('inserts large amount of entries correctly (raw)', async () => {
+        it('inserts large amount of entries correctly (raw)', async function () {
+          if (!isPostgreSQL(knex)) {
+            return this.skip();
+          }
+
           const rows = [];
           for (let i = 0; i < 32768; i++) {
             rows.push({ id: i, value: i });
