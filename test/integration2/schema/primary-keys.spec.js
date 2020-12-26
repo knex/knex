@@ -1,14 +1,17 @@
 const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
-describe.only('Schema', () => {
+describe('Schema', () => {
   describe('Primary keys', () => {
     getAllDbs().forEach((db) => {
       describe(db, () => {
         let knex;
 
-        before(() => {
+        before(function () {
           knex = getKnexForDb(db);
+          if (knex.client.driverName === 'mssql') {
+            return this.skip();
+          }
         });
 
         after(() => {
