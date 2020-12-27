@@ -4,7 +4,7 @@ const { expect } = require('chai');
 
 const _ = require('lodash');
 const assert = require('assert');
-const Runner = require('../../../lib/runner');
+const Runner = require('../../../lib/execution/runner');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
 

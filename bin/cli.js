@@ -25,7 +25,7 @@ const { existsSync, readFile, writeFile } = require('./../lib/util/fs');
 const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
-  const importFile = require('../lib/util/import-file'); // require me late!
+  const importFile = require('../lib/schema/util/import-file'); // require me late!
   let config = await importFile(configPath);
   if (config && config.default) {
     config = config.default;
