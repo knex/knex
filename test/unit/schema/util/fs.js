@@ -1,4 +1,4 @@
-const fs = require('../../../../lib/schema/util/fs');
+const fs = require('fs');
 const path = require('path');
 
 const { expect } = require('chai');
