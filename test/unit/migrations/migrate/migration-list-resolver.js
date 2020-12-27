@@ -4,16 +4,18 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const mockFs = require('mock-fs');
-const migrationListResolver = require('../../../../lib/schema/migrate/migration-list-resolver');
+const migrationListResolver = require('../../../../lib/migrations/migrate/migration-list-resolver');
 const {
   FsMigrations,
-} = require('../../../../lib/schema/migrate/sources/fs-migrations');
+} = require('../../../../lib/migrations/migrate/sources/fs-migrations');
 
 describe('migration-list-resolver', () => {
   describe('listAll', () => {
     let migrationSource;
     before(() => {
-      migrationSource = new FsMigrations('test/integration/migrate/migration');
+      migrationSource = new FsMigrations(
+        'test/integration/migrations/migrate/migration'
+      );
       mockFs({
         'test/integration/migrate/migration': {
           'cjs-migration.cjs': 'cjs migration content',

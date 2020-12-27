@@ -3,10 +3,10 @@
 const { expect } = require('chai');
 
 const sinon = require('sinon');
-const Oracle_Client = require('../../../../lib/dialects/oracle');
+const Oracle_Client = require('../../../lib/dialects/oracledb');
 const client = new Oracle_Client({ client: 'oracledb' });
 
-describe('Oracle SchemaBuilder', function () {
+describe('OracleDb SchemaBuilder', function () {
   let tableSql;
   const equal = require('assert').equal;
 
@@ -15,6 +15,7 @@ describe('Oracle SchemaBuilder', function () {
       table.increments('id');
       table.string('email');
     });
+
     equal(2, tableSql.toSQL().length);
     expect(tableSql.toSQL()[0].sql).to.equal(
       'create table "users" ("id" integer not null primary key, "email" varchar2(255))'
@@ -97,24 +98,6 @@ describe('Oracle SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" drop ("foo", "bar")');
-  });
-
-  it('should alter columns with the alter flag', function () {
-    tableSql = client
-      .schemaBuilder()
-      .table('users', function () {
-        this.string('foo').alter();
-        this.string('bar');
-      })
-      .toSQL();
-
-    equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal(
-      'alter table "users" add "bar" varchar2(255)'
-    );
-    expect(tableSql[1].sql).to.equal(
-      'alter table "users" modify "foo" varchar2(255)'
-    );
   });
 
   it('test drop primary', function () {
@@ -667,7 +650,17 @@ describe('Oracle SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add "foo" timestamp with time zone'
+      'alter table "users" add "foo" timestamp with local time zone'
+    );
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.dateTime('foo', { useTz: true });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add "foo" timestamp with local time zone'
     );
   });
 
@@ -679,6 +672,14 @@ describe('Oracle SchemaBuilder', function () {
       })
       .toSQL();
 
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.dateTime('foo', { useTz: false });
+      })
+      .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('alter table "users" add "foo" timestamp');
   });
@@ -695,7 +696,7 @@ describe('Oracle SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add "foo" timestamp with time zone'
+      'alter table "users" add "foo" timestamp with local time zone'
     );
   });
 
@@ -709,7 +710,7 @@ describe('Oracle SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add "foo" timestamp with time zone'
+      'alter table "users" add "foo" timestamp with local time zone'
     );
   });
 
@@ -735,7 +736,7 @@ describe('Oracle SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add ("created_at" timestamp with time zone, "updated_at" timestamp with time zone)'
+      'alter table "users" add ("created_at" timestamp with local time zone, "updated_at" timestamp with local time zone)'
     );
   });
 
@@ -823,7 +824,7 @@ describe('Oracle SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'create table "default_raw_test" ("created_at" timestamp with time zone default CURRENT_TIMESTAMP)'
+      'create table "default_raw_test" ("created_at" timestamp with local time zone default CURRENT_TIMESTAMP)'
     );
   });
 
@@ -854,6 +855,7 @@ describe('Oracle SchemaBuilder', function () {
       'alter table "composite_key_test" drop constraint "ckt_unique"'
     );
   });
+
   it('#1430 - .primary & .dropPrimary takes columns and constraintName', function () {
     tableSql = client
       .schemaBuilder()
@@ -864,14 +866,12 @@ describe('Oracle SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")'
     );
-
     tableSql = client
       .schemaBuilder()
       .createTable('users', function (t) {
         t.string('test').primary('testconstraintname');
       })
       .toSQL();
-
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add constraint "testconstraintname" primary key ("test")'
     );

@@ -1,8 +1,8 @@
 'use strict';
 
 const tape = require('tape');
-const { Migrator } = require('../../lib/schema/migrate/Migrator');
-const mergeConfig = require('../../lib/schema/migrate/configuration-merger')
+const { Migrator } = require('../../lib/migrations/migrate/Migrator');
+const mergeConfig = require('../../lib/migrations/migrate/configuration-merger')
   .getMergedConfig;
 
 tape('migrate: constructor uses config.migrations', function (t) {

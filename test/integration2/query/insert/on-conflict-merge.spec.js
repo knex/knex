@@ -1,5 +1,8 @@
-const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isPostgreSQL, isMysql } = require('../../util/db-helpers');
+const {
+  getAllDbs,
+  getKnexForDb,
+} = require('../../util/knex-instance-provider');
+const { isPostgreSQL, isMysql } = require('../../../util/db-helpers');
 
 describe('Insert', () => {
   describe('onConflict merge', () => {

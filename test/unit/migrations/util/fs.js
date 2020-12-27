@@ -10,7 +10,7 @@ const {
   createTemp,
   ensureDirectoryExists,
   getFilepathsInFolder,
-} = require('../../../../lib/schema/util/fs');
+} = require('../../../../lib/migrations/util/fs');
 
 describe('FS functions', () => {
   describe('stat', () => {

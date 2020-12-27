@@ -5,9 +5,9 @@ const { expect } = require('chai');
 let tableSql;
 
 const sinon = require('sinon');
-const SQLite3_Client = require('../../../../lib/dialects/sqlite3');
+const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 const client = new SQLite3_Client({ client: 'sqlite3' });
-const SQLite3_DDL = require('../../../../lib/dialects/sqlite3/schema/ddl');
+const SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 
 const _ = require('lodash');
 const { equal, deepEqual } = require('assert');

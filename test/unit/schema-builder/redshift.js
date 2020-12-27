@@ -5,7 +5,7 @@ const { expect } = require('chai');
 
 let tableSql;
 
-const Redshift_Client = require('../../../../lib/dialects/redshift');
+const Redshift_Client = require('../../../lib/dialects/redshift');
 const client = new Redshift_Client({ client: 'redshift' });
 
 const equal = require('assert').equal;

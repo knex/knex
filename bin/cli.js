@@ -20,12 +20,16 @@ const {
   findUpModulePath,
   findUpConfig,
 } = require('./utils/cli-config-utils');
-const { existsSync, readFile, writeFile } = require('../lib/schema/util/fs');
+const {
+  existsSync,
+  readFile,
+  writeFile,
+} = require('../lib/migrations/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
-  const importFile = require('../lib/schema/util/import-file'); // require me late!
+  const importFile = require('../lib/migrations/util/import-file'); // require me late!
   let config = await importFile(configPath);
   if (config && config.default) {
     config = config.default;

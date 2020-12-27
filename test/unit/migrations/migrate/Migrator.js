@@ -1,7 +1,7 @@
 const Knex = require('../../../../lib');
 const { expect } = require('chai');
 const sqliteConfig = require('../../../knexfile').sqlite3;
-const FsMigrations = require('../../../../lib/schema/migrate/sources/fs-migrations')
+const FsMigrations = require('../../../../lib/migrations/migrate/sources/fs-migrations')
   .default;
 
 describe('Migrator', () => {

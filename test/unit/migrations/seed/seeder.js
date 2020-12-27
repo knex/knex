@@ -82,7 +82,7 @@ describe('Seeder._waterfallBatch', function () {
       database: 'knex_test',
     },
     seeds: {
-      directory: 'test/unit/schema/seed/test',
+      directory: 'test/unit/migrations/seed/test',
     },
   };
   let seeder;
@@ -94,8 +94,8 @@ describe('Seeder._waterfallBatch', function () {
   it('should throw an error with correct file name', (done) => {
     seeder
       ._waterfallBatch([
-        process.cwd() + '/test/unit/schema/seed/test/1-first.js',
-        process.cwd() + '/test/unit/schema/seed/test/2-second.js',
+        process.cwd() + '/test/unit/migrations/seed/test/1-first.js',
+        process.cwd() + '/test/unit/migrations/seed/test/2-second.js',
       ])
       .catch((error) => {
         expect(error.message).to.match(

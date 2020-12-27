@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 
 const sinon = require('sinon');
-const MySQL_Client = require('../../../../lib/dialects/mysql');
-const MySQL2_Client = require('../../../../lib/dialects/mysql2');
+const MySQL_Client = require('../../../lib/dialects/mysql');
+const MySQL2_Client = require('../../../lib/dialects/mysql2');
 
 module.exports = function (dialect) {
   describe(dialect + ' SchemaBuilder', function () {
