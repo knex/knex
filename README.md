@@ -13,25 +13,28 @@
 A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
 Node.js, featuring:
 
-- [transactions](http://knexjs.org/#Transactions)
-- [connection pooling](http://knexjs.org/#Installation-pooling)
-- [streaming queries](http://knexjs.org/#Interfaces-Streams)
-- both a [promise](http://knexjs.org/#Interfaces-Promises) and [callback](http://knexjs.org/#Interfaces-Callbacks) API
-- a [thorough test suite](https://travis-ci.org/knex/knex)
-- the ability to [run in the Browser](http://knexjs.org/#Installation-browser)
+- [transactions](https://knexjs.org/#Transactions)
+- [connection pooling](https://knexjs.org/#Installation-pooling)
+- [streaming queries](https://knexjs.org/#Interfaces-Streams)
+- both a [promise](https://knexjs.org/#Interfaces-Promises) and [callback](https://knexjs.org/#Interfaces-Callbacks) API
+- a [thorough test suite](https://github.com/knex/knex/actions)
 
 Node.js versions 10+ are supported.
 
-[Read the full documentation to get started!](http://knexjs.org)  
-[Or check out our Recipes wiki to search for solutions to some specific problems](https://github.com/knex/knex/wiki/Recipes)  
-If upgrading from older version, see [Upgrading instructions](https://github.com/knex/knex/blob/master/UPGRADING.md)
+* Take a look at the [full documentation](https://knexjs.org) to get started!  
+* Or check out our [recipes wiki](https://github.com/knex/knex/wiki/Recipes) to search for solutions to some specific problems  
+* In case of upgrading from an older version, see [migration guide](https://github.com/knex/knex/blob/master/UPGRADING.md)
+
+You can report bugs and discuss features on the [GitHub issues page](https://github.com/knex/knex/issues) or send tweets to [@kibertoad](http://twitter.com/kibertoad).
+
 
 For support and questions, join the `#bookshelf` channel on freenode IRC
 
-For an Object Relational Mapper, see:
+For knex-based Object Relational Mapper, see:
 
-- http://bookshelfjs.org
 - https://github.com/Vincit/objection.js
+- https://github.com/mikro-orm/mikro-orm
+- https://bookshelfjs.org
 
 To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](https://michaelavila.com/knex-querylab/)
 
@@ -47,49 +50,40 @@ const knex = require('knex')({
   },
 });
 
-// Create a table
-knex.schema
-  .createTable('users', table => {
-    table.increments('id');
-    table.string('user_name');
-  })
+try {
 
-  // ...and another
-  .createTable('accounts', table => {
-    table.increments('id');
-    table.string('account_name');
-    table
-      .integer('user_id')
-      .unsigned()
-      .references('users.id');
-  })
+  // Create a table
+  await knex.schema
+    .createTable('users', table => {
+      table.increments('id');
+      table.string('user_name');
+    })
+    // ...and another
+    .createTable('accounts', table => {
+      table.increments('id');
+      table.string('account_name');
+      table
+        .integer('user_id')
+        .unsigned()
+        .references('users.id');
+    })
 
   // Then query the table...
-  .then(() =>
-    knex('users').insert({ user_name: 'Tim' })
-  )
+  const insertedRows = await knex('users').insert({ user_name: 'Tim' })
 
   // ...and using the insert id, insert into the other table.
-  .then(rows => 
-    knex('accounts').insert({ account_name: 'knex', user_id: rows[0] })
-  )
+  await knex('accounts').insert({ account_name: 'knex', user_id: insertedRows[0] })
 
   // Query both of the rows.
-  .then(() => 
-    knex('users')
-      .join('accounts', 'users.id', 'accounts.user_id')
-      .select('users.user_name as user', 'accounts.account_name as account')
-  )
+  const selectedRows = await knex('users')
+    .join('accounts', 'users.id', 'accounts.user_id')
+    .select('users.user_name as user', 'accounts.account_name as account')
 
   // map over the results
-  .then(rows =>
-    rows.map(row => {
-      console.log(row)
-    })
-  )
+  const enrichedRows = selectedRows.map(row => ({ ...row, active: true }))
 
-  // Finally, add a .catch handler for the promise chain
-  .catch(e => {
-    console.error(e);
-  });
+  // Finally, add a catch statement
+} catch(e) {
+  console.error(e);
+};
 ```

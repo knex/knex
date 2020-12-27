@@ -186,18 +186,19 @@
     "./lib/seed": "./lib/util/noop.js"
   },
   "files": [
-    "CONTRIBUTING.md",
-    "README.md",
     "bin/*",
     "lib/*",
     "lib/*",
-    "knex.js",
-    "LICENSE",
-    "CHANGELOG.md",
     "scripts/*",
     "types/index.d.ts",
     "types/result.d.ts",
-    "types/tables.d.ts"
+    "types/tables.d.ts",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "knex.js",
+    "LICENSE",
+    "README.md",
+    "UPGRADING.md"
   ],
   "license": "MIT",
   "tonicExampleFilename": "scripts/runkit-example.js",
