@@ -20,7 +20,7 @@ const {
   findUpModulePath,
   findUpConfig,
 } = require('./utils/cli-config-utils');
-const { existsSync, readFile, writeFile } = require('./../lib/util/fs');
+const { existsSync, readFile, writeFile } = require('../lib/schema/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
 

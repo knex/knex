@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('../../../../lib/schema/util/fs');
 const path = require('path');
 
 const { expect } = require('chai');
@@ -10,7 +10,7 @@ const {
   createTemp,
   ensureDirectoryExists,
   getFilepathsInFolder,
-} = require('../../../lib/util/fs');
+} = require('../../../../lib/schema/util/fs');
 
 describe('FS functions', () => {
   describe('stat', () => {

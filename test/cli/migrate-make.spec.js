@@ -11,7 +11,7 @@ const {
   expectContentMatchesStub,
   setupFileHelper,
 } = require('./cli-test-utils');
-const { createTemp } = require('../../lib/util/fs');
+const { createTemp } = require('../../lib/schema/util/fs');
 
 describe('migrate:make', () => {
   describe('-x option: make migration using a specific extension', () => {

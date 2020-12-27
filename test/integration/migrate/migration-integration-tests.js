@@ -10,7 +10,7 @@ const rimraf = require('rimraf');
 const knexLib = require('../../../knex');
 const logger = require('../logger');
 const config = require('../../knexfile');
-const delay = require('../../../lib/util/delay');
+const delay = require('../../../lib/knex-builder/internal/delay');
 const _ = require('lodash');
 const testMemoryMigrations = require('./memory-migrations');
 

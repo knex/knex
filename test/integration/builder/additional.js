@@ -5,7 +5,7 @@ const { expect } = require('chai');
 
 const Knex = require('../../../knex');
 const _ = require('lodash');
-const delay = require('../../../lib/util/delay');
+const delay = require('../../../lib/knex-builder/internal/delay');
 const {
   isPostgreSQL,
   isOracle,

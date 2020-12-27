@@ -5,7 +5,7 @@ initTests();
 describe('Util Tests', function () {
   // Unit Tests for utilities.
   require('./unit/query/string');
-  require('./unit/util/fs');
+  require('./unit/schema/util/fs');
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');

@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { execCommand } = require('cli-testlab');
 const { expect } = require('chai');
-const { createTemp } = require('../../lib/util/fs');
+const { createTemp } = require('../../lib/schema/util/fs');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
