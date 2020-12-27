@@ -2,7 +2,6 @@
 
 const parseConnection = require('../../lib/util/parse-connection');
 const test = require('tape');
-const path = require('path');
 
 test('parses standard connections', function (t) {
   t.plan(1);
@@ -212,7 +211,7 @@ test('parse windows path as sqlite config', function (t) {
     value: 'win32',
   });
 
-  const modulePath = path.resolve('../../lib/util/parse-connection.js');
+  const modulePath = require.resolve('../../lib/util/parse-connection');
   const oldCache = require.cache[modulePath];
   delete require.cache[modulePath];
 
