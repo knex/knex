@@ -211,7 +211,9 @@ test('parse windows path as sqlite config', function (t) {
     value: 'win32',
   });
 
-  const modulePath = require.resolve('../../lib/util/parse-connection');
+  const modulePath = require.resolve(
+    '../../lib/knex-builder/internal/parse-connection'
+  );
   const oldCache = require.cache[modulePath];
   delete require.cache[modulePath];
 
