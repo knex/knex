@@ -236,15 +236,17 @@ test('parse windows path as sqlite config', function (t) {
 test('#852, ssl param with PG query string', function (t) {
   t.plan(1);
   t.deepLooseEqual(
-    parseConnection('postgres://user:password@host:0000/database?ssl=true')
-      .connection,
+    parseConnection('postgres://user:password@host:0000/database?ssl=true'),
     {
-      host: 'host',
-      port: '0000',
-      user: 'user',
-      password: 'password',
-      database: 'database',
-      ssl: true,
+      client: 'postgres',
+      connection: {
+        host: 'host',
+        port: '0000',
+        user: 'user',
+        password: 'password',
+        database: 'database',
+        ssl: true,
+      },
     }
   );
 });
@@ -252,15 +254,17 @@ test('#852, ssl param with PG query string', function (t) {
 test('support postgresql connection protocol', function (t) {
   t.plan(1);
   t.deepLooseEqual(
-    parseConnection('postgresql://user:password@host:0000/database?ssl=true')
-      .connection,
+    parseConnection('postgresql://user:password@host:0000/database?ssl=true'),
     {
-      host: 'host',
-      port: '0000',
-      user: 'user',
-      password: 'password',
-      database: 'database',
-      ssl: true,
+      client: 'postgresql',
+      connection: {
+        host: 'host',
+        port: '0000',
+        user: 'user',
+        password: 'password',
+        database: 'database',
+        ssl: true,
+      },
     }
   );
 });
