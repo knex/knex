@@ -28,8 +28,8 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var rows = [{...}, {...}];
-      var chunkSize = 30;
+      const rows = [{...}, {...}];
+      const chunkSize = 30;
       knex.batchInsert('TableName', rows, chunkSize)
         .returning('id')
         .then(function(ids) { ... })

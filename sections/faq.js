@@ -39,7 +39,6 @@ export default [
   {
     type: "text",
     content: [
-      "**Can I use Knex outside of Node.js**  \nYes. While the WebSQL spec is deprecated, there is still an adapter that provides support. You will need to use a build tool like browserify or webpack for a browser build.",
       "**I found something broken with Amazon Redshift! Can you help?**  \nBecause there is no testing platform available for Amazon Redshift, be aware that it is included as a dialect but is unsupported. With that said, please file an issue if something is found to be broken that is not noted in the documentation, and we will do our best.",
     ]
   }

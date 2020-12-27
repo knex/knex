@@ -150,15 +150,15 @@ export default [
         language: "js",
         content: `
           // Retrieve the stream:
-          var stream = knex.select('*').from('users').stream();
+          const stream = knex.select('*').from('users').stream();
           stream.pipe(writableStream);
 
           // With options:
-          var stream = knex.select('*').from('users').stream({highWaterMark: 5});
+          const stream = knex.select('*').from('users').stream({highWaterMark: 5});
           stream.pipe(writableStream);
 
           // Use as a promise:
-          var stream = knex.select('*').from('users')
+          const stream = knex.select('*').from('users')
             .where(knex.raw('id = ?', [1]))
             .stream(function(stream) {
               stream.pipe(writableStream);
@@ -178,7 +178,7 @@ export default [
       {
         type: "code",
         language: "js",
-        content: "var stream = knex.select('*').from('users').pipe(writableStream);"
+        content: "const stream = knex.select('*').from('users').pipe(writableStream);"
       }
     ]
   },
@@ -296,7 +296,7 @@ export default [
         type: "code",
         language: "js",
         content: `
-          var toStringQuery = knex.select('*').from('users').where('id', 1).toString();
+          const toStringQuery = knex.select('*').from('users').where('id', 1).toString();
           
           // Outputs: console.log(toStringQuery); 
           // select * from "users" where "id" = 1

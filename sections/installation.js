@@ -61,7 +61,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         connection: {
           host : '127.0.0.1',
@@ -84,7 +84,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var pg = require('knex')({
+      const pg = require('knex')({
         client: 'pg',
         connection: process.env.PG_CONNECTION_STRING,
         searchPath: ['knex', 'public'],
@@ -99,7 +99,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'sqlite3',
         connection: {
           filename: "./mydb.sqlite"
@@ -115,7 +115,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'pg',
         version: '7.2',
         connection: {
@@ -131,7 +131,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         version: '5.7',
         connection: {
@@ -151,7 +151,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'sqlite3',
         connection: () => ({
           filename: process.env.SQLITE_FILENAME
@@ -167,7 +167,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'postgres',
         connection: async () => {
           const { token, tokenExpiration } = await someCallToGetTheToken();
@@ -192,7 +192,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         connection: {
           socketPath : '/path/to/socket.sock',
@@ -211,7 +211,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         connection: {
           host : '127.0.0.1',
@@ -237,7 +237,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var pg = require('knex')({client: 'pg'});
+      const pg = require('knex')({client: 'pg'});
       knex('table').insert({a: 'b'}).returning('*').toString();
       // "insert into "table" ("a") values ('b')"
 
@@ -259,12 +259,12 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         // Params
       });
       
-      var knexWithParams = knex.withUserParams({customUserParam: 'table1'});
-      var customUserParam = knexWithParams.userParams.customUserParam;
+      const knexWithParams = knex.withUserParams({customUserParam: 'table1'});
+      const customUserParam = knexWithParams.userParams.customUserParam;
     `
   },
   {
@@ -304,7 +304,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         connection: {
           host : '127.0.0.1',
@@ -334,7 +334,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'pg',
         connection: {...},
         pool: {
@@ -372,7 +372,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'pg',
         connection: {...},
         pool: {...},
@@ -394,7 +394,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'oracledb',
         connection: {...},
         fetchAsString: [ 'number', 'clob' ]
@@ -415,7 +415,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         connection: {
           host : '127.0.0.1',
@@ -447,7 +447,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         // overly simplified snake_case -> camelCase converter
         postProcessResponse: (result, queryContext) => {
@@ -496,7 +496,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         // overly simplified camelCase -> snake_case converter
         wrapIdentifier: (value, origImpl, queryContext) => origImpl(convertToSnakeCase(value))
@@ -521,7 +521,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
          log: {
           warn(message) {
           },

@@ -436,7 +436,7 @@ export default [
   {
     type: "runnable",
     content: `
-      var subquery = knex('users').where('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
+      const subquery = knex('users').where('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
 
       knex('accounts').where('id', 'in', subquery)
     `
@@ -509,7 +509,7 @@ export default [
   {
     type: "runnable",
     content: `
-      var subquery = knex('users')
+      const subquery = knex('users')
         .whereNot('votes', '>', 100)
         .andWhere('status', 'active')
         .orWhere('name', 'John')
@@ -544,7 +544,7 @@ export default [
       {
         type: "runnable",
         content: `
-          var subquery = knex.select('id').from('accounts');
+          const subquery = knex.select('id').from('accounts');
 
           knex.select('name').from('users')
             .whereIn('account_id', subquery)
@@ -1661,7 +1661,7 @@ export default [
     type: "code",
     language: "js",
     content: `
-      var knex = require('knex')({
+      const knex = require('knex')({
         client: 'mysql',
         connection: {
           host : '127.0.0.1',
@@ -1936,11 +1936,11 @@ export default [
         type: "code",
         language: "js",
         content: `
-          var Promise = require('bluebird');
+          const Promise = require('bluebird');
           knex.transaction(function(trx) {
             knex('books').transacting(trx).insert({name: 'Old Books'})
               .then(function(resp) {
-                var id = resp[0];
+                const id = resp[0];
                 return someExternalMethod(id, trx);
               })
               .then(trx.commit)
@@ -2456,7 +2456,7 @@ export default [
         type: "code",
         language: "js",
         content: `
-          var withUserName = function(queryBuilder, foreignKey) {
+          const withUserName = function(queryBuilder, foreignKey) {
             queryBuilder.leftJoin('users', foreignKey, 'users.id').select('users.user_name');
           };
           knex.table('articles').select('title', 'body').modify(withUserName, 'articles_user.id').then(function(article) {

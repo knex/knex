@@ -160,7 +160,7 @@ export default [
   },
   {
     type: "runnable",
-    content: "var subcolumn = knex.raw('select avg(salary) from employee where dept_no = e.dept_no')\n  .wrap('(', ') avg_sal_dept');\n\nknex.select('e.lastname', 'e.salary', subcolumn)\n  .from('employee as e')\n  .whereRaw('dept_no = e.dept_no')\n"
+    content: "const subcolumn = knex.raw('select avg(salary) from employee where dept_no = e.dept_no')\n  .wrap('(', ') avg_sal_dept');\n\nknex.select('e.lastname', 'e.salary', subcolumn)\n  .from('employee as e')\n  .whereRaw('dept_no = e.dept_no')\n"
   },
   {
     type: "text",
@@ -168,6 +168,6 @@ export default [
   },
   {
     type: "runnable",
-    content: "var subcolumn = knex.avg('salary')\n  .from('employee')\n  .whereRaw('dept_no = e.dept_no')\n  .as('avg_sal_dept');\n\nknex.select('e.lastname', 'e.salary', subcolumn)\n  .from('employee as e')\n  .whereRaw('dept_no = e.dept_no')\n"
+    content: "const subcolumn = knex.avg('salary')\n  .from('employee')\n  .whereRaw('dept_no = e.dept_no')\n  .as('avg_sal_dept');\n\nknex.select('e.lastname', 'e.salary', subcolumn)\n  .from('employee as e')\n  .whereRaw('dept_no = e.dept_no')\n"
   }
 ]
