@@ -1,5 +1,7 @@
 ## Upgrading to new knex.js versions
 
+* Connection url parsing changed from legacy [url.parse](https://nodejs.org/docs/latest-v10.x/api/url.html#url_legacy_url_api) to [WHATWG URL](https://nodejs.org/docs/latest-v10.x/api/url.html#url_the_whatwg_url_api). If you have unusual for url symbols (not A-z, not digits, not dot, not dash) - check [Node.js docs for details](https://nodejs.org/docs/latest-v10.x/api/url.html#url_percent_encoding_in_urls)
+
 ### Upgrading to version 0.22.0+
 
 * v8 flags are no longer supported in cli. To pass these flags use [`NODE_OPTIONS` environment variable](https://nodejs.org/api/cli.html#cli_node_options_options).
