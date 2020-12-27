@@ -2,6 +2,7 @@
 
 const parseConnection = require('../../lib/util/parse-connection');
 const test = require('tape');
+const path = require('path');
 
 test('parses standard connections', function (t) {
   t.plan(1);
@@ -57,7 +58,7 @@ test('mysql connection protocol with query string params', function (t) {
   );
 });
 
-test('mysql connection protocol allows skip username', function(t) {
+test('mysql connection protocol allows skip username', function (t) {
   t.plan(1);
   t.deepEqual(
     parseConnection(
@@ -78,7 +79,7 @@ test('mysql connection protocol allows skip username', function(t) {
   );
 });
 
-test('mysql connection protocol allows skip password', function(t) {
+test('mysql connection protocol allows skip password', function (t) {
   t.plan(1);
   t.deepEqual(
     parseConnection('mysql://username@path.to.some-url:3306/testdb'),
@@ -94,7 +95,7 @@ test('mysql connection protocol allows skip password', function(t) {
   );
 });
 
-test('mysql connection protocol allows empty password', function(t) {
+test('mysql connection protocol allows empty password', function (t) {
   t.plan(1);
   t.deepEqual(
     parseConnection('mysql://username:@path.to.some-url:3306/testdb'),
@@ -110,7 +111,7 @@ test('mysql connection protocol allows empty password', function(t) {
   );
 });
 
-test('decodes username and password', function(t) {
+test('decodes username and password', function (t) {
   t.plan(1);
   t.deepEqual(parseConnection('mysql://user%3A@path.to.some-url:3306/testdb'), {
     client: 'mysql',
@@ -123,7 +124,7 @@ test('decodes username and password', function(t) {
   });
 });
 
-test('do not encode password', function(t) {
+test('do not encode password', function (t) {
   t.plan(1);
   t.deepEqual(
     parseConnection(
@@ -189,6 +190,47 @@ test('assume a path is sqlite', function (t) {
       filename: '/path/to/file.db',
     },
   });
+});
+
+test('assume a relative path is sqlite', function (t) {
+  t.plan(1);
+  t.deepEqual(parseConnection('./path/to/file.db'), {
+    client: 'sqlite3',
+    connection: {
+      filename: './path/to/file.db',
+    },
+  });
+});
+
+test('parse windows path as sqlite config', function (t) {
+  t.plan(1);
+  // reset process.platform to windows, reset require cache, require fresh
+  // after test restore back
+  const originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+
+  Object.defineProperty(process, 'platform', {
+    value: 'win32',
+  });
+
+  const modulePath = path.resolve('../../lib/util/parse-connection.js');
+  const oldCache = require.cache[modulePath];
+  delete require.cache[modulePath];
+
+  const parseConnection = require('../../lib/util/parse-connection');
+  try {
+    t.deepLooseEqual(
+      parseConnection('C:\\Documents\\Newsletters\\Summer2018.pdf'),
+      {
+        client: 'sqlite3',
+        connection: {
+          filename: 'C:\\Documents\\Newsletters\\Summer2018.pdf',
+        },
+      }
+    );
+  } finally {
+    Object.defineProperty(process, 'platform', originalPlatform);
+    require.cache[modulePath] = oldCache;
+  }
 });
 
 test('#852, ssl param with PG query string', function (t) {
