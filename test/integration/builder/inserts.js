@@ -6,6 +6,7 @@ const _ = require('lodash');
 const sinon = require('sinon');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
+const { isRedshift, isPostgreSQL } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Inserts', function () {
@@ -494,7 +495,7 @@ module.exports = function (knex) {
     });
 
     it('will fail when multiple inserts are made into a unique column', function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
       return knex('accounts')
@@ -1004,11 +1005,11 @@ module.exports = function (knex) {
           );
         })
         .then(function (rows) {
-          if (/redshift/.test(knex.client.driverName)) {
+          if (isRedshift(knex)) {
             return expect(rows).to.equal(1);
           }
           expect(rows.length).to.equal(1);
-          if (knex.client.driverName === 'pg') {
+          if (isPostgreSQL(knex)) {
             expect(_.keys(rows[0]).length).to.equal(2);
             expect(rows[0].account_id).to.equal(insertData.account_id);
             expect(rows[0].details).to.equal(insertData.details);
@@ -1017,7 +1018,7 @@ module.exports = function (knex) {
     });
 
     it('should allow a * for returning in postgres and oracle', function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
       const insertData = {
@@ -1151,7 +1152,7 @@ module.exports = function (knex) {
       });
 
       it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
         this.timeout(10000);
@@ -1161,12 +1162,13 @@ module.exports = function (knex) {
         await knex.schema
           .dropTableIfExists('batchInsertDuplicateKey')
           .then(function () {
-            return knex.schema.createTable('batchInsertDuplicateKey', function (
-              table
-            ) {
-              table.string('col');
-              table.primary('col');
-            });
+            return knex.schema.createTable(
+              'batchInsertDuplicateKey',
+              function (table) {
+                table.string('col');
+                table.primary('col');
+              }
+            );
           })
           .then(function () {
             const rows = [{ col: 'a' }, { col: 'a' }];
@@ -1284,7 +1286,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when multiple inserts are made into a unique column and ignore is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -1343,7 +1345,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -1407,7 +1409,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns when inserting a duplicate key to unique column and merge is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -1466,7 +1468,7 @@ module.exports = function (knex) {
     });
 
     it('conditionally updates rows when inserting a duplicate key to unique column and merge with where clause matching row(s) is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -1513,7 +1515,11 @@ module.exports = function (knex) {
         }
         if (/mysql|mysql2/i.test(knex.client.driverName)) {
           expect(err).to.be.an('error');
-          if (err.message.includes('.onConflict().merge().where() is not supported for'))
+          if (
+            err.message.includes(
+              '.onConflict().merge().where() is not supported for'
+            )
+          )
             return;
         }
         throw err;
@@ -1528,7 +1534,7 @@ module.exports = function (knex) {
     });
 
     it('will silently do nothing when inserting a duplicate key to unique column and merge with where clause matching no rows is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -1575,7 +1581,11 @@ module.exports = function (knex) {
         }
         if (/mysql|mysql2/i.test(knex.client.driverName)) {
           expect(err).to.be.an('error');
-          if (err.message.includes('.onConflict().merge().where() is not supported for'))
+          if (
+            err.message.includes(
+              '.onConflict().merge().where() is not supported for'
+            )
+          )
             return;
         }
         throw err;
@@ -1590,7 +1600,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -1657,7 +1667,7 @@ module.exports = function (knex) {
     });
 
     it('updates columns with raw value when inserting a duplicate key to unique column and merge with updates is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -1725,7 +1735,7 @@ module.exports = function (knex) {
     });
 
     it('updates and inserts columns when inserting multiple rows merge is specified', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 

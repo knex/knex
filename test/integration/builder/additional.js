@@ -6,6 +6,14 @@ const { expect } = require('chai');
 const Knex = require('../../../knex');
 const _ = require('lodash');
 const delay = require('../../../lib/util/delay');
+const {
+  isPostgreSQL,
+  isOracle,
+  isRedshift,
+  isOneOfDbs,
+  isSQLite,
+  isMysql,
+} = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Additional', function () {
@@ -181,8 +189,7 @@ module.exports = function (knex) {
 
     describe('returning with wrapIdentifier and postProcessResponse` (TODO: fix to work on all possible dialects)', function () {
       const origHooks = {};
-
-      if (!['pg', 'mssql'].includes(knex.client.driverName)) {
+      if (!isOneOfDbs(knex, ['pg', 'mssql'])) {
         return;
       }
 
@@ -263,10 +270,7 @@ module.exports = function (knex) {
           // needs to be manually reset.
           // On redshift, one would need to create an entirely new table and do
           //  `insert into ... (select ...); alter table rename...`
-          if (
-            /oracle/i.test(knex.client.driverName) ||
-            /redshift/i.test(knex.client.driverName)
-          ) {
+          if (isOracle(knex) || isRedshift(knex)) {
             return;
           }
           return knex('test_table_two')
@@ -500,7 +504,7 @@ module.exports = function (knex) {
     });
 
     it('#2184 - should properly escape table name for SQLite columnInfo', function () {
-      if (knex.client.driverName !== 'sqlite3') {
+      if (!isSQLite(knex)) {
         return this.skip();
       }
 
@@ -756,11 +760,10 @@ module.exports = function (knex) {
     });
 
     it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', function () {
-      const driverName = knex.client.driverName;
-      if (driverName === 'sqlite3') {
+      if (isSQLite(knex)) {
         return this.skip();
       } //TODO -- No built-in support for sleeps
-      if (/redshift/.test(driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -787,6 +790,7 @@ module.exports = function (knex) {
         },
       };
 
+      const driverName = knex.client.driverName;
       if (!Object.prototype.hasOwnProperty.call(testQueries, driverName)) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
@@ -798,10 +802,7 @@ module.exports = function (knex) {
       }
 
       // Only mysql/postgres query cancelling supported for now
-      if (
-        !_.startsWith(driverName, 'mysql') &&
-        !_.startsWith(driverName, 'pg')
-      ) {
+      if (!isMysql(knex) && !isPostgreSQL(knex)) {
         expect(addTimeout).to.throw(
           'Query cancelling not supported for this dialect'
         );
@@ -868,11 +869,7 @@ module.exports = function (knex) {
 
     it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async function () {
       // Only mysql/postgres query cancelling supported for now
-      const driverName = knex.client.driverName;
-      if (
-        !_.startsWith(driverName, 'mysql') &&
-        !_.startsWith(driverName, 'pg')
-      ) {
+      if (!isMysql(knex) && !isPostgreSQL(knex)) {
         return this.skip();
       }
 
@@ -903,6 +900,7 @@ module.exports = function (knex) {
         },
       };
 
+      const driverName = knex.client.driverName;
       if (!Object.prototype.hasOwnProperty.call(testQueries, driverName)) {
         throw new Error('Missing test query for dialect: ' + driverName);
       }
@@ -925,8 +923,7 @@ module.exports = function (knex) {
 
     it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', async function () {
       // Only mysql/postgres query cancelling supported for now
-      const driverName = knex.client.driverName;
-      if (!_.startsWith(driverName, 'pg')) {
+      if (!isPostgreSQL(knex)) {
         return this.skip();
       }
 
@@ -941,6 +938,7 @@ module.exports = function (knex) {
         pg: (sleepSeconds) => `SELECT pg_sleep(${sleepSeconds})`,
       };
 
+      const driverName = knex.client.driverName;
       if (!Object.prototype.hasOwnProperty.call(rawTestQueries, driverName)) {
         throw new Error('Missing test query for driverName: ' + driverName);
       }
