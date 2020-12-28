@@ -191,7 +191,6 @@
   "files": [
     "bin/*",
     "lib/*",
-    "lib/*",
     "scripts/*",
     "types/index.d.ts",
     "types/result.d.ts",
