@@ -140,7 +140,10 @@
     "mysql",
     "sqlite3",
     "oracle",
-    "mssql"
+    "mssql",
+    "builder",
+    "querybuilder",
+    "build"
   ],
   "author": {
     "name": "Tim Griesser",
