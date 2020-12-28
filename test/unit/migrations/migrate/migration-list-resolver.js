@@ -13,9 +13,7 @@ describe('migration-list-resolver', () => {
   describe('listAll', () => {
     let migrationSource;
     before(() => {
-      migrationSource = new FsMigrations(
-        'test/integration/migrations/migrate/migration'
-      );
+      migrationSource = new FsMigrations('test/integration/migrate/migration');
       mockFs({
         'test/integration/migrate/migration': {
           'cjs-migration.cjs': 'cjs migration content',
