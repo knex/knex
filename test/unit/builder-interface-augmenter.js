@@ -1,7 +1,7 @@
 'use strict';
 const {
   augmentWithBuilderInterface,
-} = require('../../lib/builderInterfaceAugmenter');
+} = require('../../lib/builder-interface-augmenter');
 const chai = require('chai');
 
 describe('interface', function () {
