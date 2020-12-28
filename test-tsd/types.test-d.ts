@@ -1,6 +1,4 @@
 import { expectAssignable, expectType } from 'tsd';
-import Knex, { QueryBuilder } from '../types';
-import { expectType } from 'tsd';
 import { clientConfig } from './common';
 
 import knexDefault, { Knex, knex } from '../types';
@@ -85,7 +83,7 @@ expectType<
 );
 
 expectAssignable<QueryBuilder>(
-  knex
+  knexInstance
     .insert({ col: 'x' })
     .into('table')
     .onConflict('col')
@@ -94,7 +92,7 @@ expectAssignable<QueryBuilder>(
 );
 
 expectAssignable<QueryBuilder>(
-  knex
+  knexInstance
     .insert({ id: 10, active: true })
     .into('table')
     .onConflict(['id'])
