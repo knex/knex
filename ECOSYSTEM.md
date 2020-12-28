@@ -5,6 +5,7 @@ Plugins and tools maintained by the knex team are listed under [Core](#core) whi
 #### [Core](#core)
 
 - [`knex-schema-inspector`](https://github.com/knex/knex-schema-inspector) Utility for extracting information about the existing DB schema.
+- [`knex-tablecleaner`](https://github.com/kibertoad/knex-tablecleaner) Library for deleting all rows from a given list of DB tables.
 
 #### [Community](#community)
 
