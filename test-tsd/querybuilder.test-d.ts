@@ -10,10 +10,12 @@ const knexInstance = knex(clientConfig);
 
 // This would be `declare module 'knex'` in runtime code
 declare module '../types' {
-  interface QueryBuilder {
-    customSelect<TRecord, TResult>(
-      value: number
-    ): Knex.QueryBuilder<TRecord, TResult>;
+  namespace Knex {
+    interface QueryBuilder {
+      customSelect<TRecord, TResult>(
+        value: number
+      ): Knex.QueryBuilder<TRecord, TResult>;
+    }
   }
 }
 
