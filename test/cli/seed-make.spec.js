@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { execCommand } = require('cli-testlab');
 const { expect } = require('chai');
-const { createTemp } = require('../../lib/util/fs');
+const { createTemp } = require('../../lib/migrations/util/fs');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -376,6 +376,72 @@ development: {
             'config.seeds.directory in knexfile must be defined',
         }
       );
+    });
+  });
+
+  describe('--timestamp-filename-prefix option: make seed with timestamp filename prefix', () => {
+    /**
+     * @type FileTestHelper
+     */
+    let fileHelper;
+
+    beforeEach(() => {
+      fileHelper = setupFileHelper();
+    });
+
+    afterEach(() => {
+      fileHelper.cleanup();
+    });
+
+    it('Creates a new seed using --timestamp-filename-prefix CLI flag', async () => {
+      const seedGlobPath = `${process.cwd()}/seeds/*_somename.js`;
+      fileHelper.registerGlobForCleanup(seedGlobPath);
+
+      await execCommand(
+        `${NODE} ${KNEX} seed:make somename --timestamp-filename-prefix --knexpath=../knex.js`,
+        {
+          expectedOutput: 'Created seed file',
+        }
+      );
+
+      const fileCount = fileHelper.fileGlobExists(seedGlobPath);
+
+      expect(fileCount).to.equal(1);
+    });
+
+    it('Creates a new seed using timestampFilenamePrefix parameter in knexfile', async () => {
+      const seedsDirectory = `${process.cwd()}/seeds`;
+      const seedGlobPath = `${seedsDirectory}/*_somename.js`;
+      fileHelper.registerGlobForCleanup(seedGlobPath);
+
+      const knexfileContents = `
+        module.exports = {
+          client: 'sqlite3',
+          connection: {
+            filename: __dirname + '/test/jake-util/test.sqlite3',
+          },
+          seeds: {
+            directory: '${seedsDirectory}',
+            timestampFilenamePrefix: true
+          },
+        };`;
+
+      fileHelper.createFile(
+        path.join(process.cwd(), 'knexfile.js'),
+        knexfileContents,
+        { isPathAbsolute: true }
+      );
+
+      await execCommand(
+        `${NODE} ${KNEX} seed:make somename --knexpath=../knex.js`,
+        {
+          expectedOutput: 'Created seed file',
+        }
+      );
+
+      const fileCount = fileHelper.fileGlobExists(seedGlobPath);
+
+      expect(fileCount).to.equal(1);
     });
   });
 });
