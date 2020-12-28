@@ -1,8 +1,8 @@
-import Knex from '../types';
+import { Knex, knex } from '../types';
 import { expectType } from 'tsd';
 import { clientConfig } from './common';
 
-const knex = Knex(clientConfig);
+const knexInstance = knex(clientConfig);
 
 // Use:
 // import Knex from 'knex'
@@ -13,7 +13,7 @@ declare module '../types' {
   interface QueryBuilder {
     customSelect<TRecord, TResult>(
       value: number
-    ): QueryBuilder<TRecord, TResult>;
+    ): Knex.QueryBuilder<TRecord, TResult>;
   }
 }
 
@@ -22,5 +22,5 @@ Knex.QueryBuilder.extend('customSelect', function (value: number) {
 });
 
 const main = async () => {
-  expectType<number[]>(await knex('users').customSelect<any, number[]>(42));
+  expectType<number[]>(await knexInstance('users').customSelect<any, number[]>(42));
 };
