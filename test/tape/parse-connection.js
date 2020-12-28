@@ -1,6 +1,6 @@
 'use strict';
 
-const parseConnection = require('../../lib/util/parse-connection');
+const parseConnection = require('../../lib/knex-builder/internal/parse-connection');
 const test = require('tape');
 
 test('parses standard connections', function (t) {
@@ -211,11 +211,13 @@ test('parse windows path as sqlite config', function (t) {
     value: 'win32',
   });
 
-  const modulePath = require.resolve('../../lib/util/parse-connection');
+  const modulePath = require.resolve(
+    '../../lib/knex-builder/internal/parse-connection'
+  );
   const oldCache = require.cache[modulePath];
   delete require.cache[modulePath];
 
-  const parseConnection = require('../../lib/util/parse-connection');
+  const parseConnection = require('../../lib/knex-builder/internal/parse-connection');
   try {
     t.deepLooseEqual(
       parseConnection('C:\\Documents\\Newsletters\\Summer2018.pdf'),

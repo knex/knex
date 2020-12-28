@@ -5,7 +5,7 @@ initTests();
 describe('Util Tests', function () {
   // Unit Tests for utilities.
   require('./unit/query/string');
-  require('./unit/util/fs');
+  require('./unit/migrations/util/fs');
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
@@ -17,16 +17,16 @@ describe('Query Building Tests', function () {
   require('./unit/query/builder');
   require('./unit/query/formatter');
   require('./unit/query/string');
-  require('./unit/schema/mysql')('mysql');
-  require('./unit/schema/mysql')('mysql2');
-  require('./unit/schema/postgres');
-  require('./unit/schema/redshift');
-  require('./unit/schema/sqlite3');
-  require('./unit/schema/oracle');
-  require('./unit/schema/mssql');
-  require('./unit/schema/oracledb');
-  require('./unit/migrate/migration-list-resolver');
-  require('./unit/seed/seeder');
+  require('./unit/schema-builder/mysql')('mysql');
+  require('./unit/schema-builder/mysql')('mysql2');
+  require('./unit/schema-builder/postgres');
+  require('./unit/schema-builder/redshift');
+  require('./unit/schema-builder/sqlite3');
+  require('./unit/schema-builder/oracle');
+  require('./unit/schema-builder/mssql');
+  require('./unit/schema-builder/oracledb');
+  require('./unit/migrations/migrate/migration-list-resolver');
+  require('./unit/migrations/seed/seeder');
   // require('./unit/interface'); ToDo Uncomment after fixed
   require('./unit/knex');
 });

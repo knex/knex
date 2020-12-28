@@ -3,7 +3,7 @@
  * to dead connection.
  */
 
-const delay = require('../../lib/util/delay');
+const delay = require('../../lib/execution/internal/delay');
 const toxiproxy = require('toxiproxy-node-client');
 const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');
