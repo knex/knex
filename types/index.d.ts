@@ -829,6 +829,16 @@ export declare namespace Knex {
       columns: readonly TKey[]
     ): OnConflictQueryBuilder<TRecord, TResult2>;
 
+    onConflict(
+      columns: string
+    ): OnConflictQueryBuilder<TRecord, TResult>;
+
+    onConflict(
+      columns: string[]
+    ): OnConflictQueryBuilder<TRecord, TResult>;
+
+    onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
+
     del(
       returning: '*',
       options?: DMLOptions

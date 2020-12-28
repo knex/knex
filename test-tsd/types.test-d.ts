@@ -1,3 +1,5 @@
+import { expectAssignable, expectType } from 'tsd';
+import Knex, { QueryBuilder } from '../types';
 import { expectType } from 'tsd';
 import { clientConfig } from './common';
 
@@ -80,4 +82,22 @@ expectType<
     .onConflict('id')
     .merge({ active: true })
     .returning('*')
+);
+
+expectAssignable<QueryBuilder>(
+  knex
+    .insert({ col: 'x' })
+    .into('table')
+    .onConflict('col')
+    .merge({ x: 'x' })
+    .debug(true)
+);
+
+expectAssignable<QueryBuilder>(
+  knex
+    .insert({ id: 10, active: true })
+    .into('table')
+    .onConflict(['id'])
+    .merge({ x: 'x' })
+    .debug(true)
 );
