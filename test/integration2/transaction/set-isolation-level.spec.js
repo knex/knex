@@ -52,12 +52,17 @@ describe('Transaction', () => {
             );
           }
           const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
+          console.log('before transaction');
           const trx = await knex
             .transaction()
             .setIsolationLevel(isolationLevel);
+          console.log('before select');
           const result1 = await trx(tableName).select();
+          console.log('before insert');
           await knex(tableName).insert({ id: 1, value: 1 });
+          console.log('after insert');
           const result2 = await trx(tableName).select();
+          console.log('after select');
           await trx.commit();
           expect(result1).to.deep.equal(result2);
         });
