@@ -27,45 +27,33 @@ describe('Transaction', () => {
           await knex.schema.dropTable(tableName);
         });
 
-        it('Expect to read transactions when read uncommitted', async () => {
-          // Postgres doesn't support read uncommitted
+        it('Expect read skew when read committed', async () => {
           // SQLite is always Serializable
-          if (isSQLite(knex) || isPostgreSQL(knex)) {
-            return this.skip();
-          }
-          await knex
-            .transaction(async (trx) => {
-              await trx(tableName).insert({ id: 1, value: 1 });
-              const result = await knex(tableName).select();
-              expect(result.length).to.equal(1);
-            })
-            .setIsolationLevel('read uncommitted');
-        });
-
-        it('Expect to not read transactions when read committed', async () => {
           if (isSQLite(knex)) {
-            return this.skip();
-          }
-          await knex
-            .transaction(async (trx) => {
-              await trx(tableName).insert({ id: 1, value: 1 });
-              const result = await knex(tableName).select();
-              expect(result.length).to.equal(0);
-            })
-            .setIsolationLevel('read committed');
-        });
-
-        it('Expect to not read transactions when read committed alternative syntax', async () => {
-          if (isSQLite(knex)) {
-            return this.skip();
+            return;
           }
           const trx = await knex
             .transaction()
             .setIsolationLevel('read committed');
-          await trx(tableName).insert({ id: 1, value: 1 });
-          const result = await knex(tableName).select();
+          const result1 = await trx(tableName).select();
+          await knex(tableName).insert({ id: 1, value: 1 });
+          const result2 = await trx(tableName).select();
           await trx.commit();
-          expect(result.length).to.equal(0);
+          expect(result1).to.not.equal(result2);
+        });
+
+        it('Expect to avoid read skew when repeatable read (snapshot isolation)', async () => {
+          if (isSQLite(knex)) {
+            return;
+          }
+          const trx = await knex
+            .transaction()
+            .setIsolationLevel('repeatable read');
+          const result1 = await trx(tableName).select();
+          await knex(tableName).insert({ id: 1, value: 1 });
+          const result2 = await trx(tableName).select();
+          await trx.commit();
+          expect(result1).to.equal(result2);
         });
       });
     });
