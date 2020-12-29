@@ -328,6 +328,10 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
+interface TransactionMethods<T> {
+  setIsolationLevel: (value: string) => T;
+}
+
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
@@ -349,11 +353,11 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   transaction(
     transactionScope?: null,
     config?: any
-  ): Promise<Knex.Transaction>;
+  ): Promise<Knex.Transaction> & TransactionMethods<Promise<Knex.Transaction>>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | void,
     config?: any
-  ): Promise<T>;
+  ): Promise<T> & TransactionMethods<Promise<T>>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
   destroy(): Promise<void>;
