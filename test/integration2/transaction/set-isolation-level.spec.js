@@ -27,7 +27,7 @@ describe('Transaction', () => {
           await knex.schema.dropTable(tableName);
         });
 
-        it('Expect to read transactions when read uncommited', async () => {
+        it('Expect to read transactions when read uncommitted', async () => {
           if (isSQLite(knex)) {
             return this.skip();
           }
@@ -37,23 +37,23 @@ describe('Transaction', () => {
               const result = await knex(tableName).select();
               expect(result.length).to.equal(1);
             })
-            .setIsolationLevel('read uncommited');
+            .setIsolationLevel('read uncommitted');
         });
 
-        it('Expect to not read transactions when read commited', async () => {
+        it('Expect to not read transactions when read committed', async () => {
           await knex
             .transaction(async (trx) => {
               await trx(tableName).insert({ id: 1, value: 1 });
               const result = await knex(tableName).select();
               expect(result.length).to.equal(0);
             })
-            .setIsolationLevel('read commited');
+            .setIsolationLevel('read committed');
         });
 
-        it('Expect to not read transactions when read commited alternative syntax', async () => {
+        it('Expect to not read transactions when read committed alternative syntax', async () => {
           const trx = await knex
             .transaction()
-            .setIsolationLevel('read commited');
+            .setIsolationLevel('read committed');
           await trx(tableName).insert({ id: 1, value: 1 });
           const result = await knex(tableName).select();
           await trx.commit();
