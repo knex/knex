@@ -46,6 +46,11 @@ describe('Transaction', () => {
           if (isSQLite(knex)) {
             return;
           }
+          if (isMssql(knex)) {
+            await knex.raw(
+              'ALTER DATABASE knex_test SET ALLOW_SNAPSHOT_ISOLATION ON'
+            );
+          }
           const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
           const trx = await knex
             .transaction()
