@@ -1,5 +1,5 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isSQLite, isPostgreSQL } = require('../../util/db-helpers');
+const { isSQLite, isMssql } = require('../../util/db-helpers');
 const { expect } = require('chai');
 
 describe('Transaction', () => {
@@ -46,9 +46,10 @@ describe('Transaction', () => {
           if (isSQLite(knex)) {
             return;
           }
+          const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
           const trx = await knex
             .transaction()
-            .setIsolationLevel('repeatable read');
+            .setIsolationLevel(isolationLevel);
           const result1 = await trx(tableName).select();
           await knex(tableName).insert({ id: 1, value: 1 });
           const result2 = await trx(tableName).select();

@@ -2,6 +2,10 @@ function isPostgreSQL(knex) {
   return knex.client.driverName === 'pg';
 }
 
+function isMssql(knex) {
+  return knex.client.driverName === 'mssql';
+}
+
 function isOracle(knex) {
   return /oracle/i.test(knex.client.driverName);
 }
@@ -31,6 +35,7 @@ function isOneOfDbs(knex, supportedDbs) {
 module.exports = {
   isOneOfDbs,
   isMysql,
+  isMssql,
   isOracle,
   isPostgreSQL,
   isRedshift,
