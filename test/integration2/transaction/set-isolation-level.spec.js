@@ -1,5 +1,5 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isSQLite } = require('../../util/db-helpers');
+const { isSQLite, isPostgreSQL } = require('../../util/db-helpers');
 const { expect } = require('chai');
 
 describe('Transaction', () => {
@@ -28,7 +28,9 @@ describe('Transaction', () => {
         });
 
         it('Expect to read transactions when read uncommitted', async () => {
-          if (isSQLite(knex)) {
+          // Postgres doesn't support read uncommitted
+          // SQLite is always Serializable
+          if (isSQLite(knex) || isPostgreSQL(knex)) {
             return this.skip();
           }
           await knex
@@ -41,6 +43,9 @@ describe('Transaction', () => {
         });
 
         it('Expect to not read transactions when read committed', async () => {
+          if (isSQLite(knex)) {
+            return this.skip();
+          }
           await knex
             .transaction(async (trx) => {
               await trx(tableName).insert({ id: 1, value: 1 });
@@ -51,6 +56,9 @@ describe('Transaction', () => {
         });
 
         it('Expect to not read transactions when read committed alternative syntax', async () => {
+          if (isSQLite(knex)) {
+            return this.skip();
+          }
           const trx = await knex
             .transaction()
             .setIsolationLevel('read committed');
