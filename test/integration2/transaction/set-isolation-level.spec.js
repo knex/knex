@@ -53,7 +53,7 @@ describe('Transaction', () => {
           await knex(tableName).insert({ id: 1, value: 1 });
           const result2 = await trx(tableName).select();
           await trx.commit();
-          expect(result1).to.equal(result2);
+          expect(result1).to.deep.equal(result2);
         });
       });
     });
