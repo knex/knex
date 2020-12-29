@@ -1,8 +1,5 @@
-const {
-  getAllDbs,
-  getKnexForDb,
-} = require('../../util/knex-instance-provider');
-const { isSQLite } = require('../../../util/db-helpers');
+const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const { isSQLite } = require('../../util/db-helpers');
 const { expect } = require('chai');
 
 describe('Transaction', () => {
