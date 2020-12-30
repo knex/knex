@@ -46,35 +46,13 @@ describe('Transaction', () => {
           if (isSQLite(knex)) {
             return;
           }
-          if (isMssql(knex)) {
-            await knex
-              .raw(
-                'ALTER DATABASE knex_test SET ALLOW_SNAPSHOT_ISOLATION ON WITH ROLLBACK IMMEDIATE'
-              )
-              .timeout(500);
-          }
           const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
           const trx = await knex
             .transaction()
             .setIsolationLevel(isolationLevel);
-          const result1 = await trx(tableName)
-            .select()
-            .timeout(500)
-            .catch(() => {
-              throw new Error('first select');
-            });
-          await knex(tableName)
-            .insert({ id: 1, value: 1 })
-            .timeout(500)
-            .catch(() => {
-              throw new Error('insert');
-            });
-          const result2 = await trx(tableName)
-            .select()
-            .timeout(500)
-            .catch(() => {
-              throw new Error('second select');
-            });
+          const result1 = await trx(tableName).select().timeout(500);
+          await knex(tableName).insert({ id: 1, value: 1 }).timeout(500);
+          const result2 = await trx(tableName).select().timeout(500);
           await trx.commit();
           expect(result1).to.deep.equal(result2);
         });
