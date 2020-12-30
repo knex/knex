@@ -263,4 +263,22 @@ export default [
     type: "text",
     content: "You can check the property `knex.isTransaction` to see if the current knex instance you are working with is a transaction."
   },
+  {
+    type: "text",
+    content: "In case you need to specify an isolation level for your transaction, you can use a config parameter `isolationLevel`. Not supported by oracle and sqlite, options are `read uncommitted`, `read committed`, `repeatable read`, `snapshot` (mssql only), `serializable`."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      // Simple read skew example
+      const isolationLevel = 'read committed';
+      const trx = await knex.transaction({isolationLevel});
+      const result1 = await trx(tableName).select();
+      await knex(tableName).insert({ id: 1, value: 1 });
+      const result2 = await trx(tableName).select();
+      await trx.commit();
+      // result1 may or may not deep equal result2 depending on isolation level
+    `
+  },
 ]
