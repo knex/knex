@@ -330,9 +330,12 @@ interface DMLOptions {
 
 // Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
 type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
-interface TransactionMethods<T> {
-  setIsolationLevel: (isolationLevel: IsolationLevels) => T;
-}
+interface TransactionConfig {
+  isolationLevel?: IsolationLevels;
+  userParams?: Record<string, any>;
+  doNotRejectOnRollback?: boolean;
+  connection?: any;
+};
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
@@ -350,16 +353,19 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   raw: Knex.RawBuilder<TRecord>;
 
   transactionProvider(
-    config?: any
+    config?: TransactionConfig
   ): () => Promise<Knex.Transaction>;
   transaction(
+    config?: TransactionConfig
+  ): Promise<Knex.Transaction>;
+  transaction(
     transactionScope?: null,
-    config?: any
-  ): Promise<Knex.Transaction> & TransactionMethods<Promise<Knex.Transaction>>;
+    config?: TransactionConfig
+  ): Promise<Knex.Transaction>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | void,
-    config?: any
-  ): Promise<T> & TransactionMethods<Promise<T>>;
+    config?: TransactionConfig
+  ): Promise<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
   destroy(): Promise<void>;

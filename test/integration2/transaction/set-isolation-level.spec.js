@@ -32,9 +32,9 @@ describe('Transaction', () => {
           if (isSQLite(knex)) {
             return;
           }
-          const trx = await knex
-            .transaction()
-            .setIsolationLevel('read committed');
+          const trx = await knex.transaction({
+            isolationLevel: 'read committed',
+          });
           const result1 = await trx(tableName).select();
           await knex(tableName).insert({ id: 1, value: 1 });
           const result2 = await trx(tableName).select();
@@ -53,9 +53,7 @@ describe('Transaction', () => {
             : isMssql(knex)
             ? 'snapshot'
             : 'repeatable read';
-          const trx = await knex
-            .transaction()
-            .setIsolationLevel(isolationLevel);
+          const trx = await knex.transaction({ isolationLevel });
           const result1 = await trx(tableName).select();
           await knex(tableName).insert({ id: 1, value: 1 });
           const result2 = await trx(tableName).select();
