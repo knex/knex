@@ -2,6 +2,16 @@
 
 ### Upgrading to version 0.95.0+
 
+* TypeScript type exports changed significantly. While `import Knex from 'knex';` used to import the knex instantiation function, the namespace and the interface for the knex instantiation function/object, there is now a clear distinction between them:
+```
+import { knex } from 'knex' // this is a function that you call to instantiate knex
+import { Knex } from 'knex' // this is a namespace, and a type of a knex object
+import KnexTimeoutError = Knex.KnexTimeoutError; // this is a class from the Knex namespace
+
+const config: Knex.Config = {} // this is a type from the Knex namespace
+const knexInstance: Knex = knex(config)
+```
+
 * Connection url parsing changed from legacy [url.parse](https://nodejs.org/docs/latest-v10.x/api/url.html#url_legacy_url_api) to [WHATWG URL](https://nodejs.org/docs/latest-v10.x/api/url.html#url_the_whatwg_url_api). If you have symbols, unusual for a URL (not A-z, not digits, not dot, not dash) - check [Node.js docs](https://nodejs.org/docs/latest-v10.x/api/url.html#url_percent_encoding_in_urls) for details
 
 * `Knex.raw` support dropped, use `knex.raw` (`require('knex').raw()` won't work anymore)
