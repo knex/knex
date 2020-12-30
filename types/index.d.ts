@@ -328,6 +328,7 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
+// Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
 type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
 interface TransactionMethods<T> {
   setIsolationLevel: (isolationLevel: IsolationLevels) => T;
