@@ -42,13 +42,15 @@ describe('Transaction', () => {
           expect(result1).to.not.equal(result2);
         });
 
-        it('Expect to avoid read skew when repeatable read (snapshot isolation)', async () => {
+        it.only('Expect to avoid read skew when repeatable read (snapshot isolation)', async () => {
           if (isSQLite(knex)) {
             return;
           }
           if (isMssql(knex)) {
             await knex
-              .raw('ALTER DATABASE knex_test SET ALLOW_SNAPSHOT_ISOLATION ON')
+              .raw(
+                'ALTER DATABASE knex_test SET ALLOW_SNAPSHOT_ISOLATION ON WITH ROLLBACK IMMEDIATE'
+              )
               .timeout(500)
               .catch(() => {
                 throw new Error('alter db');
