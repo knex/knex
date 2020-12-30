@@ -1,8 +1,8 @@
-import Knex from '../types';
+import { knex, Knex } from '../types';
 import { clientConfig } from './common';
 import { expectType } from 'tsd';
 
-const knex = Knex(clientConfig);
+const knexInstance = knex(clientConfig);
 
 interface User {
   id: number;
@@ -57,39 +57,39 @@ declare module '../types/tables' {
 const main = async () => {
   // # Select:
 
-  expectType<any[]>(await knex('users'));
+  expectType<any[]>(await knexInstance('users'));
 
   // This test (others similar to it) may seem useless but they are needed
   // to test for left-to-right inference issues eg: #3260
-  expectType<User[]>(await knex('users'));
-  expectType<User[]>(await knex<User>('users'));
-  expectType<User[]>(await knex('users_inferred'));
-  expectType<User[]>(await knex('users_composite'));
+  expectType<User[]>(await knexInstance('users'));
+  expectType<User[]>(await knexInstance<User>('users'));
+  expectType<User[]>(await knexInstance('users_inferred'));
+  expectType<User[]>(await knexInstance('users_composite'));
 
-  expectType<any[]>(await knex('users').select('id'));
-  expectType<Partial<User>[]>(await knex('users').select('id'));
+  expectType<any[]>(await knexInstance('users').select('id'));
+  expectType<Partial<User>[]>(await knexInstance('users').select('id'));
 
-  expectType<Pick<User, 'id'>[]>(await knex('users_inferred').select('id'));
-  expectType<Pick<User, 'id'>[]>(await knex('users_composite').select('id'));
+  expectType<Pick<User, 'id'>[]>(await knexInstance('users_inferred').select('id'));
+  expectType<Pick<User, 'id'>[]>(await knexInstance('users_composite').select('id'));
   expectType<Pick<User, 'id' | 'age'>[]>(
-    await knex('users_inferred').select('id').select('age')
+    await knexInstance('users_inferred').select('id').select('age')
   );
 
   expectType<Pick<User, 'id' | 'age'>[]>(
-    await knex('users_composite').select('id').select('age')
+    await knexInstance('users_composite').select('id').select('age')
   );
 
   expectType<Pick<User, 'id' | 'age'>[]>(
-    await knex('users_inferred').select('id', 'age')
+    await knexInstance('users_inferred').select('id', 'age')
   );
   expectType<Pick<User, 'id' | 'age'>[]>(
-    await knex('users_composite').select('id', 'age')
+    await knexInstance('users_composite').select('id', 'age')
   );
 
   expectType<Pick<User, 'id'> | undefined>(
-    await knex.first('id').from('users_inferred')
+    await knexInstance.first('id').from('users_inferred')
   );
   expectType<Pick<User, 'id'> | undefined>(
-    await knex.first('id').from('users_composite')
+    await knexInstance.first('id').from('users_composite')
   );
 };

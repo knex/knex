@@ -335,9 +335,9 @@ interface TransactionConfig {
   userParams?: Record<string, any>;
   doNotRejectOnRollback?: boolean;
   connection?: any;
-};
+}
 
-interface Knex<TRecord extends {} = any, TResult = unknown[]>
+export interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
     tableName: TTable,
@@ -393,11 +393,11 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   withUserParams(params: Record<string, any>): Knex;
 }
 
-declare function Knex<TRecord extends {} = any, TResult = unknown[]>(
+export declare function knex<TRecord extends {} = any, TResult = unknown[]>(
   config: Knex.Config | string
 ): Knex<TRecord, TResult>;
 
-declare namespace Knex {
+export declare namespace Knex {
   //
   // Utility Types
   //
@@ -2261,4 +2261,4 @@ declare namespace Knex {
   export class KnexTimeoutError extends Error {}
 }
 
-export = Knex;
+export default knex;

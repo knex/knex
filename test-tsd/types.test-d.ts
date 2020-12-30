@@ -1,8 +1,30 @@
 import { expectAssignable, expectType } from 'tsd';
-import Knex, { QueryBuilder } from '../types';
 import { clientConfig } from './common';
 
-const knex = Knex(clientConfig);
+import knexDefault, { Knex, knex } from '../types';
+import * as knexStar from '../types';
+import knexCjsImport = require('../');
+import QueryBuilder = Knex.QueryBuilder;
+import KnexTimeoutError = Knex.KnexTimeoutError;
+
+const knexCjs = require('../knex');
+const { knex: knexCjsNamed } = require('../knex');
+
+expectType<Knex<any, unknown[]>>(knexDefault({}));
+expectType<Knex<any, unknown[]>>(knex({}));
+expectType<Knex<any, unknown[]>>(knexStar.default({}));
+expectType<Knex<any, unknown[]>>(knexStar.knex({}));
+expectType<Knex<any, unknown[]>>(knexCjsImport.default({}));
+expectType<Knex<any, unknown[]>>(knexCjsImport.knex({}));
+expectType<KnexTimeoutError>(new KnexTimeoutError());
+expectType<KnexTimeoutError>(new KnexTimeoutError());
+
+// eslint-disable-next-line
+expectType<any>(knexCjs({}));
+// eslint-disable-next-line
+expectType<any>(knexCjsNamed({}));
+
+const knexInstance = knexDefault(clientConfig);
 
 // ToDo remove this copy-pasted type after we can export it as a named properly
 type DeferredKeySelection<
@@ -52,7 +74,7 @@ expectType<
     DeferredKeySelection<User, never, false, {}, false, {}, never>[]
   >
 >(
-  knex
+  knexInstance
     .table<User>('users')
     .insert({ id: 10, active: true })
     .onConflict('id')
@@ -61,7 +83,7 @@ expectType<
 );
 
 expectAssignable<QueryBuilder>(
-  knex
+  knexInstance
     .insert({ col: 'x' })
     .into('table')
     .onConflict('col')
@@ -70,7 +92,7 @@ expectAssignable<QueryBuilder>(
 );
 
 expectAssignable<QueryBuilder>(
-  knex
+  knexInstance
     .insert({ id: 10, active: true })
     .into('table')
     .onConflict(['id'])
