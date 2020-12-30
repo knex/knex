@@ -447,13 +447,6 @@ describe('knex', () => {
       return knex.destroy();
     });
 
-    it('supports transaction isolation', async () => {
-      const knex = Knex(sqliteConfig);
-      const trx = await knex.transaction().setIsolationLevel('serializable');
-      trx.commit();
-      return knex.destroy();
-    });
-
     it('does not reject rolled back nested transactions by default', async () => {
       const knex = Knex(sqliteConfig);
       const trx = await knex.transaction();
