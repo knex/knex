@@ -21,8 +21,9 @@ Node.js, featuring:
 
 Node.js versions 10+ are supported.
 
-* Take a look at the [full documentation](https://knexjs.org) to get started!  
-* Or check out our [recipes wiki](https://github.com/knex/knex/wiki/Recipes) to search for solutions to some specific problems  
+* Take a look at the [full documentation](https://knexjs.org) to get started!
+* Browse the [list of plugins and tools](https://github.com/knex/knex/blob/master/ECOSYSTEM.md) built for knex
+* Check out our [recipes wiki](https://github.com/knex/knex/wiki/Recipes) to search for solutions to some specific problems  
 * In case of upgrading from an older version, see [migration guide](https://github.com/knex/knex/blob/master/UPGRADING.md)
 
 You can report bugs and discuss features on the [GitHub issues page](https://github.com/knex/knex/issues) or send tweets to [@kibertoad](http://twitter.com/kibertoad).
