@@ -1,5 +1,5 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isSQLite, isMssql } = require('../../util/db-helpers');
+const { isSQLite, isMssql, isOracle } = require('../../util/db-helpers');
 const { expect } = require('chai');
 
 describe('Transaction', () => {
@@ -47,7 +47,12 @@ describe('Transaction', () => {
             return;
           }
           // NOTE: for mssql, it requires an alter database call that happens in docker-compose
-          const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
+          // Oracle only supports Serializable, so lets use that for this test
+          const isolationLevel = isOracle(knex)
+            ? 'serializable'
+            : isMssql(knex)
+            ? 'snapshot'
+            : 'repeatable read';
           const trx = await knex
             .transaction()
             .setIsolationLevel(isolationLevel);
