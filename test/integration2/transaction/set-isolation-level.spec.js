@@ -43,16 +43,11 @@ describe('Transaction', () => {
         });
 
         it('Expect to avoid read skew when repeatable read (snapshot isolation)', async () => {
-          if (isSQLite(knex)) {
+          if (isSQLite(knex) || isOracle(knex)) {
             return;
           }
           // NOTE: for mssql, it requires an alter database call that happens in docker-compose
-          // Oracle only supports Serializable, so lets use that for this test
-          const isolationLevel = isOracle(knex)
-            ? 'serializable'
-            : isMssql(knex)
-            ? 'snapshot'
-            : 'repeatable read';
+          const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
           const trx = await knex.transaction({ isolationLevel });
           const result1 = await trx(tableName).select();
           await knex(tableName).insert({ id: 1, value: 1 });
