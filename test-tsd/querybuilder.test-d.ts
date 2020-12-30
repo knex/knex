@@ -5,8 +5,7 @@ import { clientConfig } from './common';
 const knexInstance = knex(clientConfig);
 
 // Use:
-// import Knex from 'knex'
-// when "esModuleInterop": true
+// import { Knex } from 'knex'
 
 // This would be `declare module 'knex'` in runtime code
 declare module '../types' {
