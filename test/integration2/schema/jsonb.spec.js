@@ -3,9 +3,9 @@ const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
   describe('json columns', () => {
-    // no support for json in mssql, omit test
     getAllDbs()
-      .filter((db) => db !== 'mssql')
+      // no support for json in mssql and oracledb, omit test
+      .filter((db) => !['mssql', 'oracledb'].includes(db))
       .forEach((db) => {
         describe(db, () => {
           let knex;
@@ -42,6 +42,7 @@ describe('Schema', () => {
                 expect(res[0].data_type).to.equal('jsonb');
                 break;
               case 'mysql':
+              case 'oracledb':
               case 'mysql2':
                 res = await knex
                   .select('DATA_TYPE')
