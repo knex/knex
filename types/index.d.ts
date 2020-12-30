@@ -2261,4 +2261,4 @@ export declare namespace Knex {
   export class KnexTimeoutError extends Error {}
 }
 
-export default knex
+export default knex;
