@@ -47,9 +47,9 @@ describe('Transaction', () => {
             return;
           }
           if (isMssql(knex)) {
-            await knex.raw(
-              'ALTER DATABASE knex_test SET ALLOW_SNAPSHOT_ISOLATION ON'
-            );
+            await knex
+              .raw('ALTER DATABASE knex_test SET ALLOW_SNAPSHOT_ISOLATION ON')
+              .timeout(500);
           }
           const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
           console.log('before transaction');
@@ -57,11 +57,11 @@ describe('Transaction', () => {
             .transaction()
             .setIsolationLevel(isolationLevel);
           console.log('before select');
-          const result1 = await trx(tableName).select();
+          const result1 = await trx(tableName).select().timeout(500);
           console.log('before insert');
-          await knex(tableName).insert({ id: 1, value: 1 });
+          await knex(tableName).insert({ id: 1, value: 1 }).timeout(500);
           console.log('after insert');
-          const result2 = await trx(tableName).select();
+          const result2 = await trx(tableName).select().timeout(500);
           console.log('after select');
           await trx.commit();
           expect(result1).to.deep.equal(result2);
