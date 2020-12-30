@@ -56,9 +56,9 @@ describe('Transaction', () => {
           const trx = await knex
             .transaction()
             .setIsolationLevel(isolationLevel);
-          const result1 = await trx(tableName).select().timeout(500);
-          await knex(tableName).insert({ id: 1, value: 1 }).timeout(500);
-          const result2 = await trx(tableName).select().timeout(500);
+          const result1 = await trx(tableName).select();
+          await knex(tableName).insert({ id: 1, value: 1 });
+          const result2 = await trx(tableName).select();
           await trx.commit();
           expect(result1).to.deep.equal(result2);
         });
