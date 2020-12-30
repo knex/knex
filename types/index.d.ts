@@ -328,6 +328,15 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
+// Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
+type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
+interface TransactionConfig {
+  isolationLevel?: IsolationLevels;
+  userParams?: Record<string, any>;
+  doNotRejectOnRollback?: boolean;
+  connection?: any;
+};
+
 interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
@@ -344,15 +353,18 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   raw: Knex.RawBuilder<TRecord>;
 
   transactionProvider(
-    config?: any
+    config?: TransactionConfig
   ): () => Promise<Knex.Transaction>;
   transaction(
+    config?: TransactionConfig
+  ): Promise<Knex.Transaction>;
+  transaction(
     transactionScope?: null,
-    config?: any
+    config?: TransactionConfig
   ): Promise<Knex.Transaction>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | void,
-    config?: any
+    config?: TransactionConfig
   ): Promise<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
