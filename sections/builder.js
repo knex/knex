@@ -2610,11 +2610,11 @@ export default [
     content: `
       // knex.d.ts
 
-      import * as Knex from 'knex';
+      import { Knex } from 'knex';
 
       declare module 'knex' {
         interface QueryBuilder {
-        customSelect<TRecord, TResult>(value: number): QueryBuilder<TRecord, TResult>;
+        customSelect<TRecord, TResult>(value: number): Knex.QueryBuilder<TRecord, TResult>;
       }
     `
   },

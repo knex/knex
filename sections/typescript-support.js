@@ -25,7 +25,7 @@ export default [
     type: "code",
     language: "ts",
     content: `
-      import Knex from 'knex';
+      import { knex } from 'knex';
 
       declare module 'knex/types/tables' {
         interface User {
