@@ -328,8 +328,9 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
+type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
 interface TransactionMethods<T> {
-  setIsolationLevel: (value: string) => T;
+  setIsolationLevel: (isolationLevel: IsolationLevels) => T;
 }
 
 interface Knex<TRecord extends {} = any, TResult = unknown[]>

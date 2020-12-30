@@ -46,6 +46,7 @@ describe('Transaction', () => {
           if (isSQLite(knex)) {
             return;
           }
+          // NOTE: for mssql, it requires an alter database call that happens in docker-compose
           const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
           const trx = await knex
             .transaction()
