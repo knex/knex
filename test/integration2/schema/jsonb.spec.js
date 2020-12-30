@@ -42,7 +42,6 @@ describe('Schema', () => {
                 expect(res[0].data_type).to.equal('jsonb');
                 break;
               case 'mysql':
-              case 'oracledb':
               case 'mysql2':
                 res = await knex
                   .select('DATA_TYPE')
