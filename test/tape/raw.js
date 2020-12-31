@@ -1,14 +1,17 @@
 'use strict';
 
 const Raw = require('../../lib/raw');
-const Client = require('../../lib/client');
+const MysqlClient = require('../../lib/dialects/mysql/index');
+const MssqlClient = require('../../lib/dialects/mssql/index');
+const PostgreClient = require('../../lib/dialects/postgres/index');
+const SqliteClient = require('../../lib/dialects/sqlite3/index');
 const test = require('tape');
 const _ = require('lodash');
 
-const clientMysql = new Client({ client: 'mysql' });
-const clientPostgre = new Client({ client: 'pg' });
-const clientSqlite = new Client({ client: 'sqlite3' });
-const clientMssql = new Client({ client: 'mssql' });
+const clientMysql = new MysqlClient({ client: 'mysql' });
+const clientPostgre = new PostgreClient({ client: 'pg' });
+const clientSqlite = new SqliteClient({ client: 'sqlite3' });
+const clientMssql = new MssqlClient({ client: 'mssql' });
 
 function raw(sql, bindings, client = clientMysql) {
   return new Raw(client).set(sql, bindings);
@@ -134,7 +137,7 @@ test('Allows retrieval of raw query through toNative (PostgreSQL)', function (t)
       .toSQL()
       .toNative(),
     {
-      sql: 'select * from users where id = ?',
+      sql: 'select * from users where id = $1',
       bindings: [1],
     }
   );
@@ -178,7 +181,7 @@ test('Allows retrieval of raw query through toNative (mssql)', function (t) {
       .toSQL()
       .toNative(),
     {
-      sql: 'select * from users where id = ?',
+      sql: 'select * from users where id = @p0',
       bindings: [1],
     }
   );
