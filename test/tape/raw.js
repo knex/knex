@@ -5,8 +5,12 @@ const Client = require('../../lib/client');
 const test = require('tape');
 const _ = require('lodash');
 
-const client = new Client({ client: 'mysql' });
-function raw(sql, bindings) {
+const clientMysql = new Client({ client: 'mysql' });
+const clientPostgre = new Client({ client: 'pg' });
+const clientSqlite = new Client({ client: 'sqlite3' });
+const clientMssql = new Client({ client: 'mssql' });
+
+function raw(sql, bindings, client = clientMysql) {
   return new Raw(client).set(sql, bindings);
 }
 
@@ -92,14 +96,90 @@ test('raw bindings are optional, #853', function (t) {
   t.deepEqual(sql.bindings, [4]);
 });
 
-test('Allows retrieval of raw query through toNative', function (t) {
+test('Allows retrieval of raw query through toNative (MySQL)', function (t) {
   t.plan(2);
-  t.equal(raw('count(*) as user_count, status').toSQL().toNative(), {
-    sql: 'count(*) as user_count, status',
-    bindings: []
-  });
-  t.equal(raw('select * from users where id = ?', [1]).toSQL().toNative(), {
-    sql: 'select * from users where id = ?',
-    bindings: [1]
-  });
+  t.deepEqual(
+    raw('count(*) as user_count, status', undefined, clientMysql)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'count(*) as user_count, status',
+      bindings: [],
+    }
+  );
+  t.deepEqual(
+    raw('select * from users where id = ?', [1], clientMysql)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'select * from users where id = ?',
+      bindings: [1],
+    }
+  );
+});
+
+test('Allows retrieval of raw query through toNative (PostgreSQL)', function (t) {
+  t.plan(2);
+  t.deepEqual(
+    raw('count(*) as user_count, status', undefined, clientPostgre)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'count(*) as user_count, status',
+      bindings: [],
+    }
+  );
+  t.deepEqual(
+    raw('select * from users where id = ?', [1], clientPostgre)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'select * from users where id = ?',
+      bindings: [1],
+    }
+  );
+});
+
+test('Allows retrieval of raw query through toNative (SQLite)', function (t) {
+  t.plan(2);
+  t.deepEqual(
+    raw('count(*) as user_count, status', undefined, clientSqlite)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'count(*) as user_count, status',
+      bindings: [],
+    }
+  );
+  t.deepEqual(
+    raw('select * from users where id = ?', [1], clientSqlite)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'select * from users where id = ?',
+      bindings: [1],
+    }
+  );
+});
+
+test('Allows retrieval of raw query through toNative (mssql)', function (t) {
+  t.plan(2);
+  t.deepEqual(
+    raw('count(*) as user_count, status', undefined, clientMssql)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'count(*) as user_count, status',
+      bindings: [],
+    }
+  );
+  t.deepEqual(
+    raw('select * from users where id = ?', [1], clientMssql)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'select * from users where id = ?',
+      bindings: [1],
+    }
+  );
 });
