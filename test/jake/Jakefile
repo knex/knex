@@ -1,0 +1,13 @@
+#!/usr/bin/env jake
+'use strict';
+/* eslint-disable no-undef */
+
+const migrateTests = require('./jakelib/migrate-test').taskList;
+
+const tests = [
+  ...migrateTests
+];
+
+task('default', tests, () => {
+  console.log('All done.');
+});

@@ -1,0 +1,16 @@
+{
+  "extends": "dtslint/dtslint.json",
+  "rules": {
+    "ban-types": false,
+    "await-promise": false,
+    "array-type": false,
+    "no-unnecessary-class": false,
+    "no-unnecessary-generics": false,
+    "no-empty-interface": false,
+    "unified-signatures": false,
+    "no-unnecessary-qualifier": false,
+    "strict-export-declare-modifiers": false,
+    "only-arrow-functions": false,
+    "interface-over-type-literal": false
+  }
+}
