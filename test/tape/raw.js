@@ -26,7 +26,7 @@ test('allows for ?? to interpolate identifiers', function (t) {
       'table.first',
       'table.second',
     ]).toString(),
-    'select * from "table" where id = 1 and "table"."first" = "table"."second"'
+    'select * from `table` where id = 1 and `table`.`first` = `table`.`second`'
   );
 });
 
@@ -49,7 +49,7 @@ test('allows for :val: for interpolated identifiers', function (t) {
       userId: 1,
       name: 'tim',
     }).toString(),
-    'select * from "users" where user_id = 1 and name = \'tim\''
+    "select * from `users` where user_id = 1 and name = 'tim'"
   );
 });
 
@@ -57,7 +57,7 @@ test('allows use :val: in start of raw query', function (t) {
   t.plan(1);
   t.equal(
     raw(':userIdCol: = :userId', { userIdCol: 'table', userId: 1 }).toString(),
-    '"table" = 1'
+    '`table` = 1'
   );
 });
 
@@ -73,7 +73,7 @@ test('allows for :val: to be interpolated when identifiers with dots', function 
       tableCol: 'table.id',
       chairCol: 'chair.table_id',
     }).toString(),
-    'select * from "table" join "chair" on "table"."id" = "chair"."table_id"'
+    'select * from "table" join "chair" on `table`.`id` = `chair`.`table_id`'
   );
 });
 
