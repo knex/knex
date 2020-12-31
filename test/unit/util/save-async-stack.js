@@ -13,7 +13,11 @@ describe('saveAsyncStack', function () {
     };
     saveAsyncStack(fakeInstance, 1);
 
-    chai.expect(fakeInstance._asyncStack[0]).to.match(/at saveAsyncStack /);
+    const { error, lines } = fakeInstance._asyncStack;
+    const stackByLines = error.stack.split('\n');
+    const asyncStack = stackByLines.slice(lines);
+
+    chai.expect(asyncStack[0]).to.match(/at saveAsyncStack /);
   });
 
   it('should not store an error stack when config is disabled', function () {

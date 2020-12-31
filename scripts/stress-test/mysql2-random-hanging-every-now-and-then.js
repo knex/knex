@@ -2,7 +2,7 @@
  * Test case for figuring out robust way to recognize if connection is dead
  * for mysql based drivers.
  */
-const delay = require('../../lib/util/delay');
+const delay = require('../../lib/execution/internal/delay');
 const toxiproxy = require('toxiproxy-node-client');
 const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');

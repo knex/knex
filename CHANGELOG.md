@@ -1,5 +1,137 @@
 # Master (Unreleased)
 
+# 0.21.15 - 26 December, 2020
+
+### New features:
+
+- SQLite: Add primary/foreign support on alterTable #4162
+- SQLite: Add dropPrimary/dropForeign support on alterTable #4162
+
+### Typings:
+
+- Add "after" and "first" to columnBuilder types #3549 #4169
+
+### Test / internal changes:
+
+- Extract knex config resolution logic #4166
+- Run CI using GitHub Actions #4168
+- Add Node.js 15 to CI matrix #4173
+
+# 0.21.14 - 18 December, 2020
+
+### New features:
+
+- MSSQL: support "returning" on inserts, updates and deletes on tables with triggers #4152
+- Use esm import if package.json type is "module" #4158
+
+### Bug fixes:
+
+- Make sure query-response and query-error events contain _knexTxId #4160
+
+### Test / internal changes:
+
+- Improved integration test framework #4161
+
+# 0.21.13 - 12 December, 2020
+
+### New features:
+
+- SQLite: Add support for `dropForeign` #4092
+- Add support for WHERE clauses to "upsert" queries #4148
+
+### Bug fixes:
+
+- MSSQL: Avoid connection getting stuck on socket hangup #4157
+- Oracle: Support specifying non-default DB port #4147
+- Oracle: Support inserts with only default values (empty body) #4092
+- CLI: fix irregular seed file execution order #4156
+- Fix performance of asyncStackTraces with enable-source-maps node flag #4154
+
+### Typings:
+
+- PostgreSQL: Add support for application_name #4153
+- Fix types for insert to allow array #4105
+- Add types for userParams and withUserParams #4119
+- Added type for withKeyName #4139
+- Fix batchInsert definitions #4131
+- Fix types for WhereIn signature (value or query builder) #3863
+- Add types for connection config of mysql2 driver #4144
+
+### Test / internal changes:
+
+- Move TS tests to tsd (WIP) #4109 #4110
+
+# 0.21.12 - 02 November, 2020
+
+### Typings:
+
+- Reintroduce support for globally defining table/record mapping #4100
+- Add a few missing types for MSSQL Connection #4103
+- Make .ignore() and .merge() return QueryBuilder rather than QueryInterface #4102
+- Use tarn config TS types instead of generic-pool #4064
+
+# 0.21.11 - 01 November, 2020
+
+### Typings:
+
+- Revert support for globally defining table/record mapping #4099
+
+# 0.21.10 - 31 October, 2020
+
+### New features:
+
+- Upsert support (Postgres/MySQL/Sqlite) #3763
+
+### Bug fixes:
+
+- Switch to non-uuid knexQueryUids to avoid issues when mocking global date #4089
+
+### Typings:
+
+- Allow to globally define table/record mapping #4071
+
+# 0.21.9 - 27 October, 2020
+
+### New features:
+
+- add method clear(statement) to QueryBuilder #4051
+
+### Bug fixes:
+
+- CLI: fix help text being printed twice #4072
+- Oracle: columnInfo() no longer requires an Owner User #4053
+- Add missing "start" event propagation from transaction #4087
+
+# 0.21.8 - 27 October, 2020
+
+### Bug fixes:
+
+- MSSQL: Escape properly if literal '?' is needed #4053
+- Make toQuery behavior consistent with pre-0.21.7 (do not break on empty builder) #4083
+- Fix comment escaping for MySQL and PostgreSQL #4084
+
+# 0.21.7 - 25 October, 2020
+
+### New features:
+
+- CLI: Add migration stub for .cjs extension #4065
+
+### Bug fixes:
+
+- MSSQL: Add dynamic scaling for decimal values and prevents a UInt64 overflow #3910
+- MSSQL: Fix apostrophe escaping #4077
+- Ensure that semicolon is not appended to statements that already end with a semicolon #4052
+
+### Typings:
+
+- Add arguments to QueryCallback in Where #4034
+
+### Test / internal changes:
+
+- Replace lodash type-checks with native solutions #4056
+- Replace mkdirp with native recursive flag #4060
+- Replace inherits package with builtin utility #4059
+
 # 0.21.6 - 27 September, 2020
 
 ### New features:

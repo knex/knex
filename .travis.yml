@@ -11,11 +11,9 @@ matrix:
   fast_finish: true
   include:
     - node_js: '14'
-      env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
-    - node_js: '12'
-      env: TESTSCRIPT=test:everything DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+      env: DB="oracledb" KNEX_TEST_TIMEOUT=60000
     - node_js: '10'
-      env: DB="oracledb mssql mysql mysql2 postgres sqlite3" KNEX_TEST_TIMEOUT=60000
+      env: DB="oracledb" KNEX_TEST_TIMEOUT=60000
 install:
   - npm i
 
@@ -31,10 +29,7 @@ before_script:
   - sudo ldconfig
 
 script:
-  - npm run ${TESTSCRIPT:-test}
-
-after_success:
-  - npm run coveralls
+  - npm run test:db
 
 notifications:
   email: false
