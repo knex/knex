@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const { isPostgreSQL, isSQLite } = require('../../util/db-helpers');
 
 describe('Schema', () => {
   describe('Foreign keys', () => {
@@ -13,8 +14,8 @@ describe('Schema', () => {
         });
 
         after(() => {
-          return knex.destroy();
           sinon.restore();
+          return knex.destroy();
         });
 
         beforeEach(async () => {
@@ -62,14 +63,27 @@ describe('Schema', () => {
               }
             );
             const queries = await builder.generateDdlCommands();
-            expect(queries).to.eql([
-              'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null)',
-              'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
-              'DROP TABLE "foreign_keys_table_one"',
-              'CREATE TABLE `foreign_keys_table_one` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`))',
-              'INSERT INTO foreign_keys_table_one SELECT * FROM _knex_temp_alter111;',
-              'DROP TABLE "_knex_temp_alter111"',
-            ]);
+
+            if (isSQLite(knex)) {
+              expect(queries).to.eql([
+                'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null)',
+                'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
+                'DROP TABLE "foreign_keys_table_one"',
+                'CREATE TABLE `foreign_keys_table_one` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`))',
+                'INSERT INTO foreign_keys_table_one SELECT * FROM _knex_temp_alter111;',
+                'DROP TABLE "_knex_temp_alter111"',
+              ]);
+            }
+
+            if (isPostgreSQL(knex)) {
+              expect(queries).to.eql([
+                {
+                  bindings: [],
+                  sql:
+                    'alter table "foreign_keys_table_one" add constraint "fk_fkey_threeee" foreign key ("fkey_three") references "foreign_keys_table_three" ("id")',
+                },
+              ]);
+            }
           });
 
           it('creates new foreign key', async () => {
@@ -118,12 +132,12 @@ describe('Schema', () => {
               });
               throw new Error("Shouldn't reach this");
             } catch (err) {
-              if (knex.client.driverName === 'sqlite3') {
+              if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (99, 9999) - SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`
                 );
               }
-              if (knex.client.driverName === 'pg') {
+              if (isPostgreSQL(knex)) {
                 expect(err.message).to.equal(
                   `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "fk_fkey_threeee"`
                 );
