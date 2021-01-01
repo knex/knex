@@ -37,7 +37,49 @@ describe('Schema', () => {
         });
 
         describe('createForeignKey', () => {
+          it('generates correct SQL for the new foreign key operation', async () => {
+            await knex('foreign_keys_table_two').insert({});
+            await knex('foreign_keys_table_three').insert({});
+            await knex('foreign_keys_table_one').insert({
+              fkey_two: 1,
+              fkey_three: 1,
+            });
+            await knex('foreign_keys_table_one').insert({
+              fkey_two: 1,
+              fkey_three: 1,
+            });
+
+            const builder = knex.schema.alterTable(
+              'foreign_keys_table_one',
+              (table) => {
+                table
+                  .foreign('fkey_three')
+                  .references('foreign_keys_table_three.id')
+                  .withKeyName('fk_fkey_threeee');
+              }
+            );
+            const queries = await builder.generateDdlCommands();
+            expect(queries).to.eql([
+              'CREATE TABLE `_knex_temp_alter2` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null)',
+              'DROP TABLE "foreign_keys_table_one"',
+              'CREATE TABLE `foreign_keys_table_one` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`))',
+              'insert into `foreign_keys_table_one` (`fkey_three`, `fkey_two`, `id`) select 1 as `fkey_three`, 1 as `fkey_two`, 1 as `id` union all select 1 as `fkey_three`, 1 as `fkey_two`, 2 as `id`',
+              'DROP TABLE "_knex_temp_alter2"',
+            ]);
+          });
+
           it('creates new foreign key', async () => {
+            await knex('foreign_keys_table_two').insert({});
+            await knex('foreign_keys_table_three').insert({});
+            await knex('foreign_keys_table_one').insert({
+              fkey_two: 1,
+              fkey_three: 1,
+            });
+            await knex('foreign_keys_table_one').insert({
+              fkey_two: 1,
+              fkey_three: 1,
+            });
+
             await knex.schema.alterTable('foreign_keys_table_one', (table) => {
               table
                 .foreign('fkey_three')
