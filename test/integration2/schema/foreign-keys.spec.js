@@ -61,9 +61,10 @@ describe('Schema', () => {
             const queries = await builder.generateDdlCommands();
             expect(queries).to.eql([
               'CREATE TABLE `_knex_temp_alter2` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null)',
+              'INSERT INTO _knex_temp_alter2 SELECT * FROM foreign_keys_table_one;',
               'DROP TABLE "foreign_keys_table_one"',
               'CREATE TABLE `foreign_keys_table_one` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`))',
-              'insert into `foreign_keys_table_one` (`fkey_three`, `fkey_two`, `id`) select 1 as `fkey_three`, 1 as `fkey_two`, 1 as `id` union all select 1 as `fkey_three`, 1 as `fkey_two`, 2 as `id`',
+              'INSERT INTO foreign_keys_table_one SELECT * FROM _knex_temp_alter2;',
               'DROP TABLE "_knex_temp_alter2"',
             ]);
           });
@@ -86,6 +87,20 @@ describe('Schema', () => {
                 .references('foreign_keys_table_three.id')
                 .withKeyName('fk_fkey_threeee');
             });
+
+            const existingRows = await knex('foreign_keys_table_one').select();
+            expect(existingRows).to.eql([
+              {
+                fkey_three: 1,
+                fkey_two: 1,
+                id: 1,
+              },
+              {
+                fkey_three: 1,
+                fkey_two: 1,
+                id: 2,
+              },
+            ]);
 
             await knex('foreign_keys_table_two').insert({});
             await knex('foreign_keys_table_three').insert({});
