@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const sinon = require('sinon');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
@@ -7,11 +8,13 @@ describe('Schema', () => {
       describe(db, () => {
         let knex;
         before(() => {
+          sinon.stub(Math, 'random').returns(0.1);
           knex = getKnexForDb(db);
         });
 
         after(() => {
           return knex.destroy();
+          sinon.restore();
         });
 
         beforeEach(async () => {
@@ -60,12 +63,12 @@ describe('Schema', () => {
             );
             const queries = await builder.generateDdlCommands();
             expect(queries).to.eql([
-              'CREATE TABLE `_knex_temp_alter2` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null)',
-              'INSERT INTO _knex_temp_alter2 SELECT * FROM foreign_keys_table_one;',
+              'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null)',
+              'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
               'DROP TABLE "foreign_keys_table_one"',
               'CREATE TABLE `foreign_keys_table_one` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`))',
-              'INSERT INTO foreign_keys_table_one SELECT * FROM _knex_temp_alter2;',
-              'DROP TABLE "_knex_temp_alter2"',
+              'INSERT INTO foreign_keys_table_one SELECT * FROM _knex_temp_alter111;',
+              'DROP TABLE "_knex_temp_alter111"',
             ]);
           });
 
