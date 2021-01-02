@@ -108,7 +108,7 @@
     "nyc": "^15.1.0",
     "oracledb": "^5.1.0",
     "pg": "^8.5.1",
-    "pg-query-stream": "^3.4.2",
+    "pg-query-stream": "^4.0.0",
     "prettier": "2.2.1",
     "rimraf": "^3.0.2",
     "sinon": "^9.2.2",
