@@ -144,7 +144,9 @@
     "mssql",
     "builder",
     "querybuilder",
-    "build"
+    "build",
+    "db",
+    "database"
   ],
   "author": {
     "name": "Tim Griesser",
