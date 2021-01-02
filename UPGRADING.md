@@ -12,6 +12,16 @@ const config: Knex.Config = {} // this is a type from the Knex namespace
 const knexInstance: Knex = knex(config)
 ```
 
+* Transaction rollback does not trigger a promise rejection for transactions with specified handler. If you want to preserve previous behavior, pass `config` object with `doNotRejectOnRollback: false`:
+```javascript
+  await knex.transaction(async trx => {
+    const ids = await trx('catalogues')
+      .insert({
+        name: 'Old Books'
+      }, 'id')
+  }, { doNotRejectOnRollback: false });
+```
+
 * Connection url parsing changed from legacy [url.parse](https://nodejs.org/docs/latest-v10.x/api/url.html#url_legacy_url_api) to [WHATWG URL](https://nodejs.org/docs/latest-v10.x/api/url.html#url_the_whatwg_url_api). If you have symbols, unusual for a URL (not A-z, not digits, not dot, not dash) - check [Node.js docs](https://nodejs.org/docs/latest-v10.x/api/url.html#url_percent_encoding_in_urls) for details
 
 * `Knex.raw` support dropped, use `knex.raw` (`require('knex').raw()` won't work anymore)
