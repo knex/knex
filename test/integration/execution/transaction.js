@@ -587,9 +587,14 @@ module.exports = function (knex) {
 
     it('Rollback without an error should not reject with undefined #1966', function () {
       return knex
-        .transaction(function (tr) {
-          tr.rollback();
-        })
+        .transaction(
+          function (tr) {
+            tr.rollback();
+          },
+          {
+            doNotRejectOnRollback: false,
+          }
+        )
         .then(function () {
           expect(true).to.equal(false, 'Transaction should not have commited');
         })
