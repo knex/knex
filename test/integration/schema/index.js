@@ -1239,55 +1239,6 @@ module.exports = (knex) => {
           });
         });
       });
-
-      if (knex.client.driverName === 'sqlite3') {
-        describe('using wrapIdentifier and postProcessResponse', () => {
-          const tableName = 'processor_test';
-
-          beforeEach(() => {
-            knex.client.config.postProcessResponse = postProcessResponse;
-            knex.client.config.wrapIdentifier = wrapIdentifier;
-
-            return knex.schema
-              .createTable(tableName, (tbl) => {
-                tbl.integer('field_foo');
-                tbl.integer('other_field');
-              })
-              .then(() => {
-                // Data is necessary to "force" the sqlite3 dialect to actually
-                // attempt to copy data to the temp table, triggering errors
-                // if columns were not correctly copied/created/dropped.
-                return knex
-                  .insert({
-                    field_foo: 1,
-                    other_field: 1,
-                  })
-                  .into(tableName);
-              });
-          });
-
-          afterEach(() => {
-            knex.client.config.postProcessResponse = null;
-            knex.client.config.wrapIdentifier = null;
-
-            return knex.schema.dropTable(tableName);
-          });
-
-          for (const from of ['field_foo', 'FIELD_FOO']) {
-            for (const to of ['field_bar', 'FIELD_BAR']) {
-              it(`renames the column from '${from}' to '${to}'`, () =>
-                knex.schema
-                  .table(tableName, (tbl) =>
-                    tbl.renameColumn('field_foo', 'field_bar')
-                  )
-                  .then(() => knex.schema.hasColumn(tableName, 'field_bar'))
-                  .then((exists) => {
-                    expect(exists).to.equal(true);
-                  }));
-            }
-          }
-        });
-      }
     });
 
     describe('dropColumn', () => {
