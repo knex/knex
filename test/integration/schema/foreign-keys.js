@@ -36,7 +36,8 @@ module.exports = (knex) => {
       await knex.schema
         .dropTable('foreign_keys_table_one')
         .dropTable('foreign_keys_table_two')
-        .dropTable('foreign_keys_table_three');
+        .dropTable('foreign_keys_table_three')
+        .dropTable('foreign_keys_table_four');
     });
 
     describe('drop foreign key', () => {
@@ -78,17 +79,16 @@ module.exports = (knex) => {
         await knex.schema.alterTable('foreign_keys_table_one', (table) => {
           table.dropForeign(['fkey_two']);
           table.dropForeign([], 'fk_fkey_threeee');
+          table.dropForeign(['fkey_four_part1', 'fkey_four_part2']);
         });
 
         await knex('foreign_keys_table_one').insert({
-          fkey_two: 9999,
-          fkey_three: 99,
+          fkey_two: 1,
+          fkey_three: 1,
+          fkey_four_part1: 'e',
+          fkey_four_part2: 'f',
         });
-
-        await knex.schema.alterTable('foreign_keys_table_one', (table) => {
-          table.dropForeign(['fkey_four_part1', 'fkey_four_part2']);
-        });
-      });
+      }).timeout(10000000000000000);
     });
   });
 };
