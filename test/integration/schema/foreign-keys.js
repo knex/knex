@@ -83,12 +83,12 @@ module.exports = (knex) => {
         });
 
         await knex('foreign_keys_table_one').insert({
-          fkey_two: 1,
-          fkey_three: 1,
+          fkey_two: 999,
+          fkey_three: 999,
           fkey_four_part1: 'e',
           fkey_four_part2: 'f',
         });
-      }).timeout(10000000000000000);
+      });
     });
   });
 };
