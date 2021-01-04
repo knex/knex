@@ -1,4 +1,3 @@
-'use strict';
 const assert = require('chai').assert
 const timestamp = require('../../lib/util/timestamp').yyyymmddhhmmss
 
@@ -50,45 +49,45 @@ const checkOffsets = [
 ]
 
 const trueDate = [
-	'UTC20160229111245',
-	'UTC20160229183259',
-	'UTC20150301134502',
-	'UTC20150228143659',
-	'UTC20210101053058',
-	'UTC20181231100841',
+	'20160229111245',
+	'20160229183259',
+	'20150301134502',
+	'20150228143659',
+	'20210101053058',
+	'20181231100841',
 	
-	'ECT19991225130046',
-	'EET19991225140046',
-	'EAT19991225150046',
-	'MET19991225153046',
-	'NET19991225160046',
-	'PLT19991225170046',
-	'IST19991225173046',
-	'BST19991225180046',
-	'VST19991225190046',
-	'CTT19991225200046',
-	'JST19991225210046',
-	'ACT19991225213046',
-	'AET19991225220046',
-	'SST19991225230046',
-	'NST19991226000046',
-	'MIT19991225010046',
-	'HST19991225020046',
-	'AST19991225030046',
-	'PST19991225040046',
-	'MST19991225050046',
-	'CST19991225060046',
-	'EST19991225070046',
-	'PRT19991225080046',
-	'CNT19991225083046',
-	'BET19991225090046',
-	'CAT19991225110046'
+	'19991225130046',
+	'19991225140046',
+	'19991225150046',
+	'19991225153046',
+	'19991225160046',
+	'19991225170046',
+	'19991225173046',
+	'19991225180046',
+	'19991225190046',
+	'19991225200046',
+	'19991225210046',
+	'19991225213046',
+	'19991225220046',
+	'19991225230046',
+	'19991226000046',
+	'19991225010046',
+	'19991225020046',
+	'19991225030046',
+	'19991225040046',
+	'19991225050046',
+	'19991225060046',
+	'19991225070046',
+	'19991225080046',
+	'19991225083046',
+	'19991225090046',
+	'19991225110046'
 ]
 
 
 describe('timestamp', function() {
 	it('should return valid dates for edge cases of leap years', function() {
-		let regex = new RegExp('([a-z]|[A-Z]){3}[0-9]{14}')
+		let regex = new RegExp('[0-9]{14}')
 		for (let i = 0; i < 6; i++) {
 			let testDate = timestamp(checkDates[i], checkOffsets[i])
 			
@@ -98,7 +97,7 @@ describe('timestamp', function() {
 	})
 	
 	it('should give back a valid date structure with no arguments', function() {
-		let regex = new RegExp('([a-z]|[A-Z]){3}[0-9]{14}')
+		let regex = new RegExp('[0-9]{14}')
 		
 		let testDate = timestamp()
 		
@@ -106,7 +105,7 @@ describe('timestamp', function() {
 	})
 	
 	it('should be able to convert standard time zones when given offsets manually', function() {
-		let regex = new RegExp('([a-z]|[A-Z]){3}[0-9]{14}')
+		let regex = new RegExp('[0-9]{14}')
 		for (let i = 6; i < trueDate.length; i++) {
 			let testDate = timestamp(checkDates[6], checkOffsets[i])
 			
