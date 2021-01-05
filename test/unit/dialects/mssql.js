@@ -39,7 +39,7 @@ describe('MSSQL unit tests', () => {
       "select * from [projects] where [id' = 1 UNION SELECT 1, @@version -- --] = ?"
     );
   });
-  
+
   it('should not convert escaped "?" -marks in raw SQL to native parameter bindings', async () => {
     const sql = knexInstance('projects')
       .whereRaw(`notes = 'Testing question marks\\?\\?'`)

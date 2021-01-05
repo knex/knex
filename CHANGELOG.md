@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.21.15 - 26 December, 2020
+
+### New features:
+
+- SQLite: Add primary/foreign support on alterTable #4162
+- SQLite: Add dropPrimary/dropForeign support on alterTable #4162
+
+### Typings:
+
+- Add "after" and "first" to columnBuilder types #3549 #4169
+
+### Test / internal changes:
+
+- Extract knex config resolution logic #4166
+- Run CI using GitHub Actions #4168
+- Add Node.js 15 to CI matrix #4173
+
 # 0.21.14 - 18 December, 2020
 
 ### New features:

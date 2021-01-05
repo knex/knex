@@ -511,6 +511,15 @@ describe('knex', () => {
       return knex.destroy();
     });
 
+    it('does not reject transaction by default when handler is provided and there is a rollback', async () => {
+      const knex = Knex(sqliteConfig);
+      await knex.transaction((trx) => {
+        trx.rollback();
+      });
+
+      return knex.destroy();
+    });
+
     it('rejects execution promise if there was a manual rollback and transaction is set to reject', async () => {
       const knex = Knex(sqliteConfig);
 

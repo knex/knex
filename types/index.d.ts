@@ -328,7 +328,16 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
-interface Knex<TRecord extends {} = any, TResult = unknown[]>
+// Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
+type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
+interface TransactionConfig {
+  isolationLevel?: IsolationLevels;
+  userParams?: Record<string, any>;
+  doNotRejectOnRollback?: boolean;
+  connection?: any;
+}
+
+export interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
     tableName: TTable,
@@ -344,15 +353,18 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   raw: Knex.RawBuilder<TRecord>;
 
   transactionProvider(
-    config?: any
+    config?: TransactionConfig
   ): () => Promise<Knex.Transaction>;
   transaction(
+    config?: TransactionConfig
+  ): Promise<Knex.Transaction>;
+  transaction(
     transactionScope?: null,
-    config?: any
+    config?: TransactionConfig
   ): Promise<Knex.Transaction>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | void,
-    config?: any
+    config?: TransactionConfig
   ): Promise<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
@@ -381,11 +393,11 @@ interface Knex<TRecord extends {} = any, TResult = unknown[]>
   withUserParams(params: Record<string, any>): Knex;
 }
 
-declare function Knex<TRecord extends {} = any, TResult = unknown[]>(
+export declare function knex<TRecord extends {} = any, TResult = unknown[]>(
   config: Knex.Config | string
 ): Knex<TRecord, TResult>;
 
-declare namespace Knex {
+export declare namespace Knex {
   //
   // Utility Types
   //
@@ -828,6 +840,16 @@ declare namespace Knex {
     >(
       columns: readonly TKey[]
     ): OnConflictQueryBuilder<TRecord, TResult2>;
+
+    onConflict(
+      columns: string
+    ): OnConflictQueryBuilder<TRecord, TResult>;
+
+    onConflict(
+      columns: string[]
+    ): OnConflictQueryBuilder<TRecord, TResult>;
+
+    onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
 
     del(
       returning: '*',
@@ -1639,6 +1661,7 @@ declare namespace Knex {
     readonly [Symbol.toStringTag]: string;
   }
   interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys>, StringTagSupport {
+    generateDdlCommands(): Promise<string[]>;
     toQuery(): string;
     options(options: Readonly<{ [key: string]: any }>): this;
     connection(connection: any): this;
@@ -2239,4 +2262,4 @@ declare namespace Knex {
   export class KnexTimeoutError extends Error {}
 }
 
-export = Knex;
+export default knex;

@@ -1,6 +1,5 @@
 let isInitted = false;
 
-/* eslint-disable no-console */
 function initTests() {
   if (isInitted) {
     return;

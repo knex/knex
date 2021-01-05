@@ -1,6 +1,6 @@
 ---
 
-name: Linting
+name: Linting and Types
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Linting
+    name: Linting and Types
 
     strategy:
       matrix:
@@ -35,6 +35,6 @@ jobs:
         run: npm install
 
       - name: Run lint:everything
-        run: echo npm run lint:everything
+        run: npm run lint:everything
         env:
           CI: true

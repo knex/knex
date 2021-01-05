@@ -6,7 +6,7 @@ const tarn = require('tarn');
 const Pool = tarn.Pool;
 const knexfile = require('../knexfile');
 const makeKnex = require('../../knex');
-const delay = require('../../lib/util/delay');
+const delay = require('../../lib/execution/internal/delay');
 
 test(`pool evicts dead resources when factory.validate rejects`, async (t) => {
   t.plan(10);
