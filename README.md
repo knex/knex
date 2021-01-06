@@ -29,7 +29,7 @@ Node.js versions 10+ are supported.
 You can report bugs and discuss features on the [GitHub issues page](https://github.com/knex/knex/issues) or send tweets to [@kibertoad](http://twitter.com/kibertoad).
 
 
-For support and questions, join the `#bookshelf` channel on freenode IRC
+For support and questions, join our [Gitter channel](https://gitter.im/tgriesser/knex).
 
 For knex-based Object Relational Mapper, see:
 
@@ -37,7 +37,7 @@ For knex-based Object Relational Mapper, see:
 - https://github.com/mikro-orm/mikro-orm
 - https://bookshelfjs.org
 
-To see the SQL that Knex will generate for a given query, see: [Knex Query Lab](https://michaelavila.com/knex-querylab/)
+To see the SQL that Knex will generate for a given query, you can use [Knex Query Lab](https://michaelavila.com/knex-querylab/)
 
 ## Examples
 
