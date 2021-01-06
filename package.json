@@ -229,8 +229,9 @@
   "tsd": {
     "directory": "test-tsd",
     "compilerOptions": {
-      "esModuleInterop": true,
-      "module": "commonjs"
+      "esModuleInterop": false,
+      "module": "commonjs",
+      "target": "ES2017"
     }
   }
 }
