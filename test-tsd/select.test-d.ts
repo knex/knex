@@ -74,4 +74,8 @@ const main = async () => {
   expectType<Pick<User, 'id' | 'age'>[]>(
     await knex<User>('users').select('id', 'age')
   );
+
+  knex.transaction(async trx => {
+    expectType<User[]>(await trx.select('*').from('users'));
+  });
 };

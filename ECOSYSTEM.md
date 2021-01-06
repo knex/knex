@@ -10,3 +10,4 @@ Plugins and tools maintained by the knex team are listed under [Core](#core) whi
 #### [Community](#community)
 
 - [`knex-paginate`](https://github.com/felixmosh/knex-paginate) Extension of the query builder with `paginate` method that helps with pagination tasks.
+- [`pg-mem`](https://github.com/oguimbal/pg-mem) An in-memory emulation of PostgreSQL instance, which can be used for writing blazingly fast tests. Has [adapter for knex](https://github.com/oguimbal/pg-mem/wiki/Libraries-adapters#-knex)
