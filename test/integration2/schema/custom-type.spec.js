@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
-describe.only('Schema', () => {
+describe('Schema', () => {
   describe('customType', () => {
     getAllDbs().forEach((db) => {
       describe(db, () => {
