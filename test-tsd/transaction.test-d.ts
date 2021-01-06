@@ -48,7 +48,7 @@ const main = async () => {
       .returning(['id', 'subject']);
   }));
 
-  expectType<any> (await knexInstance.transaction(async (trx) => {
+  expectType<any[]> (await knexInstance.transaction(async (trx) => {
     const articles: Article[] = [
       { id: 1, subject: 'Canterbury Tales' },
       { id: 2, subject: 'Moby Dick' },
@@ -62,7 +62,7 @@ const main = async () => {
       .catch(trx.rollback);
   }));
 
-  expectType<any>(await knexInstance.transaction(async (trx) => {
+  expectType<any[]>(await knexInstance.transaction(async (trx) => {
     const articles: ReadonlyArray<Article> = [
       { id: 1, subject: 'Canterbury Tales' },
       { id: 2, subject: 'Moby Dick' },
