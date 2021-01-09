@@ -30,7 +30,7 @@
     "test:postgres": "cross-env DB=postgres npm run test:db",
     "test:tape": "node test/tape/index.js | tap-spec",
     "test:cli": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
-    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql; docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledbxe",
+    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledbxe",
     "db:start:no-oracle": "docker-compose -f scripts/docker-compose.yml up --build -d mysql postgres mssql && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres",
     "db:stop": "docker-compose -f scripts/docker-compose.yml down",
     "db:start:postgres": "docker-compose -f scripts/docker-compose.yml up --build -d postgres && docker-compose -f scripts/docker-compose.yml up waitpostgres",
