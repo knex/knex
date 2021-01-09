@@ -2,7 +2,7 @@
 
 const tape = require('tape');
 const omit = require('lodash/omit');
-const QueryBuilder = require('../../lib/query/builder');
+const QueryBuilder = require('../../lib/query/querybuilder');
 const Client = require('../../lib/client');
 
 tape('accumulates multiple update calls #647', function (t) {

@@ -1,6 +1,6 @@
 const { inherits } = require('util');
 const Knex = require('../../lib/index');
-const QueryBuilder = require('../../lib/query/builder');
+const QueryBuilder = require('../../lib/query/querybuilder');
 const { expect } = require('chai');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
