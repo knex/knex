@@ -131,9 +131,12 @@ const testConfigs = {
   },
 };
 
-function getKnexForDb(db) {
+function getKnexForDb(db, configOverrides = {}) {
   const config = testConfigs[db];
-  return knex(config);
+  return knex({
+    ...config,
+    ...configOverrides,
+  });
 }
 
 module.exports = {
