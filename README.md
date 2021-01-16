@@ -90,7 +90,7 @@ try {
 ```
 
 ## TypeScript example
-```
+```ts
 import { Knex, knex } from 'knex'
 
 interface User {
