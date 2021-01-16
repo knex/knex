@@ -13,7 +13,7 @@ const knexInstance: Knex = knex(config)
 ```
 
 * Transaction rollback does not trigger a promise rejection for transactions with specified handler. If you want to preserve previous behavior, pass `config` object with `doNotRejectOnRollback: false`:
-```javascript
+```js
   await knex.transaction(async trx => {
     const ids = await trx('catalogues')
       .insert({
@@ -80,7 +80,7 @@ Instead, use "mysql" or "mysql2" dialects.
 
 * Including schema in tableName parameter in migrations no longer works, so this is invalid:
 
-```
+```js
 await knex.migrate.latest({
     directory: 'src/services/orders/database/migrations',
     tableName: 'orders.orders_migrations'
@@ -89,7 +89,7 @@ await knex.migrate.latest({
 
 Instead, starting from 0.14.5 you should use new parameter schemaName:
 
-```
+```js
 await knex.migrate.latest({
     directory: 'src/services/orders/database/migrations',
     tableName: 'orders_migrations',
