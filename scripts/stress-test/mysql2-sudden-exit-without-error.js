@@ -3,7 +3,7 @@
  * to dead connection.
  */
 
-const Bluebird = require('bluebird');
+const delay = require('../../lib/execution/internal/delay');
 const toxiproxy = require('toxiproxy-node-client');
 const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');
@@ -29,7 +29,7 @@ async function insanelyParanoidQuery(con) {
   console.log('sending query');
   const res = await new Promise((resolve, reject) => {
     try {
-      con.query('select 1', [], function(err, rows, fields) {
+      con.query('select 1', [], function (err, rows, fields) {
         if (err) {
           reject(err);
         } else {
@@ -57,7 +57,7 @@ async function main() {
     port: 23306,
   });
 
-  mysql2Con.on('error', function(err) {
+  mysql2Con.on('error', function (err) {
     console.log("I'm dead", err);
   });
 
@@ -70,7 +70,7 @@ async function main() {
 
   // wait forever
   while (true) {
-    await Bluebird.delay(1000);
+    await delay(1000);
     try {
       await insanelyParanoidQuery(mysql2Con);
     } catch (err) {
@@ -88,11 +88,11 @@ main()
 
 console.log('Waiting for eventloop to stop...');
 
-process.on('uncaughtException', function(err) {
+process.on('uncaughtException', function (err) {
   console.log('uncaughtException', err);
 });
 
-process.on('exit', function() {
+process.on('exit', function () {
   console.log(
     'Did someone call process.exit() or wat? exitCode:',
     process.exitCode

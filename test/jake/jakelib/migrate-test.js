@@ -1,7 +1,6 @@
 #!/usr/bin/env jake
 'use strict';
 /* eslint-disable no-undef */
-/* eslint-disable no-console */
 
 const os = require('os');
 const fs = require('fs');
@@ -93,7 +92,7 @@ test('run migrations without knexfile and with --migrations-table-name', (temp) 
         new Promise((resolve, reject) =>
           db.get(
             "SELECT name FROM sqlite_master where type='table' AND name='custom_migrations_table'",
-            function(err, row) {
+            function (err, row) {
               err ? reject(err) : resolve(row);
             }
           )
@@ -701,20 +700,6 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
     migrationsList2Result.stdout,
     `No Pending Migration files Found.`
   );
-});
-
-test('migrate runs "esm" modules', (temp) => {
-  const db = knexfile.connection.filename;
-  if (fs.existsSync(db)) {
-    fs.unlinkSync(db);
-  }
-
-  return assertExec(
-    `node ${KNEX} --esm migrate:latest --knexfile=test/jake-util/knexfile-esm/knexfile.js --knexpath=../knex.js`
-  ).then(({ stdout }) => {
-    assert.include(stdout, 'Batch 1 run: 1 migrations');
-    assert.include(stdout, 'one.js');
-  });
 });
 
 module.exports = {

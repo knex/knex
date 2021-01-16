@@ -1,7 +1,8 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
-const { resolveClientNameWithAliases } = require('../../lib/helpers');
+const { resolveClientNameWithAliases } = require('../../lib/util/helpers');
 const fs = require('fs');
 const path = require('path');
+const escalade = require('escalade/sync');
 const tildify = require('tildify');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
@@ -30,7 +31,7 @@ function mkConfigObj(opts) {
   };
 }
 
-function resolveEnvironmentConfig(opts, allConfigs) {
+function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
   const environment = opts.env || process.env.NODE_ENV || 'development';
   const result = allConfigs[environment] || allConfigs;
 
@@ -45,6 +46,12 @@ function resolveEnvironmentConfig(opts, allConfigs) {
 
   if (argv.debug !== undefined) {
     result.debug = argv.debug;
+  }
+
+  // It is safe to assume that unless explicitly specified, we would want
+  // migrations, seeds etc. to be generated with same extension
+  if (configFilePath) {
+    result.ext = result.ext || path.extname(configFilePath).replace('.', '');
   }
 
   return result;
@@ -77,7 +84,11 @@ function checkLocalModule(env) {
 }
 
 function getMigrationExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
+  const config = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
@@ -91,7 +102,11 @@ function getMigrationExtension(env, opts) {
 }
 
 function getSeedExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
+  const config = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
@@ -125,6 +140,36 @@ function getStubPath(configKey, env, opts) {
   return path.join(stubDirectory, stub);
 }
 
+function findUpModulePath(cwd, packageName) {
+  const modulePackagePath = escalade(cwd, (dir, names) => {
+    if (names.includes('package.json')) {
+      return 'package.json';
+    }
+    return false;
+  });
+  try {
+    const modulePackage = require(modulePackagePath);
+    if (modulePackage.name === packageName) {
+      return path.join(
+        path.dirname(modulePackagePath),
+        modulePackage.main || 'index.js'
+      );
+    }
+  } catch (e) {}
+}
+
+function findUpConfig(cwd, name, extensions) {
+  return escalade(cwd, (dir, names) => {
+    for (const ext of extensions) {
+      const filename = `${name}.${ext}`;
+      if (names.includes(filename)) {
+        return filename;
+      }
+    }
+    return false;
+  });
+}
+
 module.exports = {
   mkConfigObj,
   resolveEnvironmentConfig,
@@ -134,4 +179,6 @@ module.exports = {
   getSeedExtension,
   getMigrationExtension,
   getStubPath,
+  findUpModulePath,
+  findUpConfig,
 };

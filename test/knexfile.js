@@ -12,8 +12,10 @@ const testIntegrationDialects = (
   process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
 ).match(/\w+/g);
 
+console.log(`ENV DB: ${process.env.DB}`);
+
 const pool = {
-  afterCreate: function(connection, callback) {
+  afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
     callback(null, connection);
   },
@@ -23,17 +25,17 @@ const poolSqlite = {
   min: 0,
   max: 1,
   acquireTimeoutMillis: 1000,
-  afterCreate: function(connection, callback) {
+  afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
-    callback(null, connection);
+    connection.run('PRAGMA foreign_keys = ON', callback);
   },
 };
 
 const mysqlPool = _.extend({}, pool, {
-  afterCreate: function(connection, callback) {
+  afterCreate: function (connection, callback) {
     promisify(connection.query)
       .call(connection, "SET sql_mode='TRADITIONAL';", [])
-      .then(function() {
+      .then(function () {
         callback(null, connection);
       });
   },
@@ -149,7 +151,7 @@ const testConfigs = {
 // export only copy the specified dialects
 module.exports = _.reduce(
   testIntegrationDialects,
-  function(res, dialectName) {
+  function (res, dialectName) {
     res[dialectName] = testConfigs[dialectName];
     return res;
   },

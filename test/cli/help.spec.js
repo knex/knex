@@ -8,19 +8,20 @@ const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 describe('help', () => {
   it('Prints help', () => {
     return execCommand(`node ${KNEX} --help`, {
-      expectedOutput: 'Usage',
+      expectedOutput: { expectedText: 'Usage', exactlyTimes: 1 },
     });
   });
 
   it('Prints help using -h flag', () => {
     return execCommand(`node ${KNEX} -h`, {
-      expectedOutput: 'Usage',
+      expectedOutput: { expectedText: 'Usage', exactlyTimes: 1 },
     });
   });
 
   it('Prints help when no arguments are given', () => {
     return execCommand(`node ${KNEX}`, {
-      expectedOutput: 'Usage',
+      expectedErrorMessage: 'Process exited with error',
+      expectedOutput: { expectedText: 'Usage', exactlyTimes: 1 },
     });
   });
 

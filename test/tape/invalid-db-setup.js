@@ -3,7 +3,7 @@
 const tape = require('tape');
 const _ = require('lodash');
 const makeKnex = require('../../knex');
-const Bluebird = require('bluebird');
+const { KnexTimeoutError } = require('../../lib/util/timeout');
 
 module.exports = (knexfile) => {
   Object.keys(knexfile).forEach((key) => {
@@ -22,17 +22,18 @@ module.exports = (knexfile) => {
       const knex = makeKnex(knexConf);
 
       tape(dialect + ' - propagate error when DB does not exist', (t) => {
-        t.plan(1);
+        t.plan(2);
         t.timeoutAfter(1000);
         knex('accounts')
           .select(1)
           .then((res) => {
             t.fail(`Query should have failed, got: ${JSON.stringify(res)}`);
           })
-          .catch(Bluebird.TimeoutError, (e) => {
-            t.fail(`Query should have failed with non timeout error`);
-          })
           .catch((e) => {
+            t.notOk(
+              e instanceof KnexTimeoutError,
+              `Query should have failed with non timeout error`
+            );
             t.ok(
               e.message.indexOf('i-refuse-to-exist') > 0,
               `all good, failed as expected with msg: ${e.message}`
@@ -43,7 +44,7 @@ module.exports = (knexfile) => {
       tape(
         dialect + ' - propagate error when DB does not exist for stream',
         (t) => {
-          t.plan(1);
+          t.plan(2);
           t.timeoutAfter(1000);
 
           knex
@@ -54,12 +55,13 @@ module.exports = (knexfile) => {
                 `Stream query should have failed, got: ${JSON.stringify(res)}`
               );
             })
-            .catch(Bluebird.TimeoutError, (e) => {
-              t.fail(`Stream query should have failed with non timeout error`);
-            })
             .catch((e) => {
+              t.notOk(
+                e instanceof KnexTimeoutError,
+                'Stream query should have failed with non timeout error'
+              );
               t.ok(
-                e.message.indexOf('i-refuse-to-exist') > 0,
+                e.message.includes('i-refuse-to-exist'),
                 `all good, failed as expected with msg: ${e.message}`
               );
             });
@@ -81,7 +83,7 @@ module.exports = (knexfile) => {
         knex.destroy();
       });
 
-      tape(dialect + ' - acquireConnectionTimeout works', (t) => {
+      tape(dialect + ' - acquireConnectionTimeout works', async (t) => {
         if (dialect === 'oracledb') {
           t.skip(
             '!!!!!!! acquireConnectionTimeout fails with oracledb! please fix. !!!!!!!!'
@@ -94,32 +96,19 @@ module.exports = (knexfile) => {
         t.timeoutAfter(1000);
 
         // just hog the only connection.
-        knex
-          .transaction((trx) => {
-            // Don't return this promise! Also note that we use `knex` instead of `trx`
-            // here on purpose. The only reason this code is here, is that we can be
-            // certain `trx` has been created before this.
-            knex('accounts')
-              .select(1)
-              .then(() => {
-                t.fail('query should have stalled');
-              })
-              .catch(Bluebird.TimeoutError, (e) => {
-                t.pass('Got acquireTimeout error');
-              })
-              .catch((e) => {
-                t.fail(
-                  `should have got acquire timeout error, but got ${e.message} instead.`
-                );
-              })
-              .finally(() => {
-                trx.commit(); // release stuff
-              });
-          })
-          .then(() => {
-            t.pass('transaction was resolved');
-            t.end();
-          });
+        const trx = await knex.transaction();
+
+        try {
+          await knex('accounts').select(1);
+
+          t.fail('query should have stalled');
+        } catch (e) {
+          t.ok(e instanceof KnexTimeoutError, 'Got acquireTimeout error');
+        } finally {
+          trx.commit();
+        }
+        t.pass('transaction was resolved');
+        t.end();
       });
     }
   });

@@ -1,5 +1,38 @@
 ## Upgrading to new knex.js versions
 
+### Upgrading to version 0.95.0+
+
+* TypeScript type exports changed significantly. While `import Knex from 'knex';` used to import the knex instantiation function, the namespace and the interface for the knex instantiation function/object, there is now a clear distinction between them:
+```
+import { knex } from 'knex' // this is a function that you call to instantiate knex
+import { Knex } from 'knex' // this is a namespace, and a type of a knex object
+import KnexTimeoutError = Knex.KnexTimeoutError; // this is a class from the Knex namespace
+
+const config: Knex.Config = {} // this is a type from the Knex namespace
+const knexInstance: Knex = knex(config)
+```
+
+* Transaction rollback does not trigger a promise rejection for transactions with specified handler. If you want to preserve previous behavior, pass `config` object with `doNotRejectOnRollback: false`:
+```javascript
+  await knex.transaction(async trx => {
+    const ids = await trx('catalogues')
+      .insert({
+        name: 'Old Books'
+      }, 'id')
+  }, { doNotRejectOnRollback: false });
+```
+
+* Connection url parsing changed from legacy [url.parse](https://nodejs.org/docs/latest-v10.x/api/url.html#url_legacy_url_api) to [WHATWG URL](https://nodejs.org/docs/latest-v10.x/api/url.html#url_the_whatwg_url_api). If you have symbols, unusual for a URL (not A-z, not digits, not dot, not dash) - check [Node.js docs](https://nodejs.org/docs/latest-v10.x/api/url.html#url_percent_encoding_in_urls) for details
+
+* Global static `Knex.raw` support dropped, use instance `knex.raw` instead. (`require('knex').raw()` won't work anymore)
+
+* v8 flags are no longer supported in cli. To pass these flags use [`NODE_OPTIONS` environment variable](https://nodejs.org/api/cli.html#cli_node_options_options).
+  For example `NODE_OPTIONS="--max-old-space-size=1536" npm run knex`
+
+### Upgrading to version 0.21.0+
+
+* Node.js older than 10 is no longer supported, make sure to update your environment; 
+
 ### Upgrading to version 0.19.0+
 
 * Passing unknown properties to connection pool configuration now throws errors (see https://github.com/Vincit/tarn.js/issues/19 for details);

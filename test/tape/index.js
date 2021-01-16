@@ -1,6 +1,7 @@
 /*eslint no-var:0*/
 'use strict';
 // var wtf = require('wtfnode');
+require('../util/chai-setup');
 var tape = require('tape');
 var makeKnex = require('../../knex');
 var knexfile = require('../knexfile');
@@ -14,7 +15,7 @@ require('./pool');
 require('./knex');
 require('./invalid-db-setup')(knexfile);
 
-Object.keys(knexfile).forEach(function(key) {
+Object.keys(knexfile).forEach(function (key) {
   var knex = makeKnex(knexfile[key]);
 
   require('./transactions')(knex);
@@ -22,8 +23,8 @@ Object.keys(knexfile).forEach(function(key) {
   require('./crossdb-compatibility')(knex);
 
   // Tear down the knex connection
-  tape(knex.client.driverName + ' - transactions: after', function(t) {
-    knex.destroy(function() {
+  tape(knex.client.driverName + ' - transactions: after', function (t) {
+    knex.destroy(function () {
       t.pass('Knex client destroyed');
       t.end();
     });

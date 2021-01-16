@@ -1,8 +1,9 @@
-/*global expect*/
-
 'use strict';
 
+const { expect } = require('chai');
+
 const _ = require('lodash');
+const { isString, isObject } = require('../../../lib/util/is');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -22,7 +23,7 @@ const postProcessResponse = (response) => {
   if (Array.isArray(response)) {
     return response.map(mapObject);
   } else {
-    if (_.isObject(response)) {
+    if (isObject(response)) {
       return mapObject(response);
     }
     return response;
@@ -32,9 +33,9 @@ const postProcessResponse = (response) => {
 module.exports = (knex) => {
   describe('Schema', () => {
     describe('errors for unsupported dialects', () => {
-      it('throws an error if client does not support createSchema', async () => {
+      it('throws an error if client does not support createSchema', async function () {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -48,9 +49,9 @@ module.exports = (knex) => {
         );
       });
 
-      it('throws an error if client does not support createSchemaIfNotExists', async () => {
+      it('throws an error if client does not support createSchemaIfNotExists', async function () {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -64,9 +65,9 @@ module.exports = (knex) => {
         );
       });
 
-      it('throws an error if client does not support dropSchema', async () => {
+      it('throws an error if client does not support dropSchema', async function () {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -80,9 +81,9 @@ module.exports = (knex) => {
         );
       });
 
-      it('throws an error if client does not support dropSchemaIfExists', async () => {
+      it('throws an error if client does not support dropSchemaIfExists', async function () {
         if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
 
         let error;
@@ -98,7 +99,7 @@ module.exports = (knex) => {
     });
 
     describe('dropTable', () => {
-      it('has a dropTableIfExists method', function() {
+      it('has a dropTableIfExists method', function () {
         this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
         return Promise.all([
           knex.schema
@@ -159,23 +160,25 @@ module.exports = (knex) => {
           return Promise.resolve();
         }
 
-        before(() =>
-          Promise.all([
-            knex.schema.createTable('increments_columns_1_test', (table) => {
+        before(async () => {
+          await knex.schema.createTable(
+            'increments_columns_1_test',
+            (table) => {
               table.increments().comment('comment_1');
-            }),
-            knex.schema.createTable('increments_columns_2_test', (table) => {
+            }
+          );
+          await knex.schema.createTable(
+            'increments_columns_2_test',
+            (table) => {
               table.increments('named_2').comment('comment_2');
-            }),
-          ])
-        );
+            }
+          );
+        });
 
-        after(() =>
-          Promise.all([
-            knex.schema.dropTable('increments_columns_1_test'),
-            knex.schema.dropTable('increments_columns_2_test'),
-          ])
-        );
+        after(async () => {
+          await knex.schema.dropTable('increments_columns_1_test');
+          await knex.schema.dropTable('increments_columns_2_test');
+        });
 
         it('#2210 - creates an incrementing column with a comment', () => {
           const table_name = 'increments_columns_1_test';
@@ -419,15 +422,8 @@ module.exports = (knex) => {
             table.bigIncrements('id');
             table.string('first_name').index();
             table.string('last_name');
-            table
-              .string('email')
-              .unique()
-              .nullable();
-            table
-              .integer('logins')
-              .defaultTo(1)
-              .index()
-              .comment();
+            table.string('email').unique().nullable();
+            table.integer('logins').defaultTo(1).index().comment();
             table.float('balance').defaultTo(0);
             if (knex.client.driverName === 'oracledb') {
               // use string instead to force varchar2 to avoid later problems with join and union
@@ -515,10 +511,7 @@ module.exports = (knex) => {
             if (/mysql/i.test(knex.client.driverName)) {
               table.engine('InnoDB');
             }
-            table
-              .integer('main')
-              .notNullable()
-              .primary();
+            table.integer('main').notNullable().primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
             table.json('metadata').defaultTo(defaultMetadata);
             if (knex.client.driverName === 'pg') {
@@ -556,11 +549,7 @@ module.exports = (knex) => {
               },
             ])
           )
-          .then(() =>
-            knex('test_table_three')
-              .where({ main: 1 })
-              .first()
-          )
+          .then(() => knex('test_table_three').where({ main: 1 }).first())
           .then((result) => {
             expect(result.main).to.equal(1);
             if (!knex.client.driverName.match(/^mysql/)) {
@@ -571,7 +560,7 @@ module.exports = (knex) => {
             if (knex.client.driverName === 'pg') {
               expect(result.metadata).to.eql(defaultMetadata);
               expect(result.details).to.eql(defaultDetails);
-            } else if (_.isString(result.metadata)) {
+            } else if (isString(result.metadata)) {
               expect(JSON.parse(result.metadata)).to.eql(defaultMetadata);
             } else {
               expect(result.metadata).to.eql(defaultMetadata);
@@ -698,10 +687,7 @@ module.exports = (knex) => {
           'invalid_inTable_param_test',
           (table) => {
             const createInvalidUndefinedInTableSchema = () => {
-              table
-                .increments('id')
-                .references('id')
-                .inTable();
+              table.increments('id').references('id').inTable();
             };
             const createInvalidObjectInTableSchema = () => {
               table
@@ -852,15 +838,8 @@ module.exports = (knex) => {
             table.bigIncrements('id');
             table.string('first_name').index();
             table.string('last_name');
-            table
-              .string('email')
-              .unique()
-              .nullable();
-            table
-              .integer('logins')
-              .defaultTo(1)
-              .index()
-              .comment();
+            table.string('email').unique().nullable();
+            table.integer('logins').defaultTo(1).index().comment();
           })
           .testSql((tester) => {
             tester('mysql', [
@@ -910,9 +889,9 @@ module.exports = (knex) => {
           t.json('json_data', true);
         }));
 
-      it('allows adding multiple columns at once', () => {
+      it('allows adding multiple columns at once', function () {
         if (/redshift/i.test(knex.client.driverName)) {
-          return;
+          return this.skip();
         }
         return knex.schema
           .table('test_table_two', (t) => {
@@ -940,7 +919,7 @@ module.exports = (knex) => {
           })
           .then(() => knex.schema.dropTable('test_table_numerics2')));
 
-      it('allows alter column syntax', () => {
+      it('allows alter column syntax', function () {
         if (
           knex.client.driverName.match('sqlite3') ||
           knex.client.driverName.match('pg-redshift') ||
@@ -952,24 +931,14 @@ module.exports = (knex) => {
 
         return knex.schema
           .table('test_table_two', (t) => {
-            t.integer('remove_not_null')
-              .notNull()
-              .defaultTo(1);
-            t.string('remove_default')
-              .notNull()
-              .defaultTo(1);
-            t.dateTime('datetime_to_date')
-              .notNull()
-              .defaultTo(knex.fn.now());
+            t.integer('remove_not_null').notNull().defaultTo(1);
+            t.string('remove_default').notNull().defaultTo(1);
+            t.dateTime('datetime_to_date').notNull().defaultTo(knex.fn.now());
           })
           .then(() =>
             knex.schema.table('test_table_two', (t) => {
-              t.integer('remove_not_null')
-                .defaultTo(1)
-                .alter();
-              t.integer('remove_default')
-                .notNull()
-                .alter();
+              t.integer('remove_not_null').defaultTo(1).alter();
+              t.integer('remove_default').notNull().alter();
               t.date('datetime_to_date').alter();
             })
           )
@@ -995,9 +964,7 @@ module.exports = (knex) => {
           })
           .then(() =>
             knex.schema.table('test_table_two', (t) => {
-              t.string('after_column')
-                .after('ref_column')
-                .collate('utf8_bin');
+              t.string('after_column').after('ref_column').collate('utf8_bin');
             })
           )
           .then(() =>
@@ -1010,9 +977,7 @@ module.exports = (knex) => {
       it('allows adding a field with custom collation first', () =>
         knex.schema
           .table('test_table_two', (t) => {
-            t.string('first_column')
-              .first()
-              .collate('utf8_bin');
+            t.string('first_column').first().collate('utf8_bin');
           })
           .then(() =>
             knex.schema.table('test_table_two', (t) => {
@@ -1138,18 +1103,9 @@ module.exports = (knex) => {
             })
             .then(() =>
               knex.schema.alterTable('add_column_test_mysql', (tbl) => {
-                tbl
-                  .integer('field_foo')
-                  .comment('foo')
-                  .alter();
-                tbl
-                  .integer('field_bar')
-                  .comment('bar')
-                  .alter();
-                tbl
-                  .integer('field_first')
-                  .first()
-                  .comment('First');
+                tbl.integer('field_foo').comment('foo').alter();
+                tbl.integer('field_bar').comment('bar').alter();
+                tbl.integer('field_first').first().comment('First');
                 tbl
                   .integer('field_after_foo')
                   .after('field_foo')
@@ -1200,13 +1156,10 @@ module.exports = (knex) => {
 
     describe('renameColumn', () => {
       describe('without mappers', () => {
-        before(() =>
-          knex.schema
+        before(async () => {
+          await knex.schema
             .createTable('rename_column_test', (tbl) => {
-              tbl
-                .increments('id_test')
-                .unsigned()
-                .primary();
+              tbl.increments('id_test').unsigned().primary();
               tbl
                 .integer('parent_id_test')
                 .unsigned()
@@ -1214,10 +1167,7 @@ module.exports = (knex) => {
                 .inTable('rename_column_test');
             })
             .createTable('rename_column_foreign_test', (tbl) => {
-              tbl
-                .increments('id')
-                .unsigned()
-                .primary();
+              tbl.increments('id').unsigned().primary();
               tbl
                 .integer('foreign_id_test')
                 .unsigned()
@@ -1226,35 +1176,27 @@ module.exports = (knex) => {
             })
             .createTable('rename_col_test', (tbl) => {
               tbl.integer('colnameint').defaultTo(1);
-              tbl
-                .string('colnamestring')
-                .defaultTo('knex')
-                .notNullable();
-            })
-            .then(() => {
-              // without data, the column isn't found??
-              return knex
-                .insert({ parent_id_test: 1 })
-                .into('rename_column_test');
-            })
-        );
+              tbl.string('colnamestring').defaultTo('knex').notNullable();
+            });
+        });
 
-        after(() =>
-          knex.schema
+        after(async () => {
+          await knex.schema
             .dropTable('rename_column_foreign_test')
             .dropTable('rename_column_test')
-            .dropTable('rename_col_test')
-        );
+            .dropTable('rename_col_test');
+        });
 
-        it('renames the column', () =>
-          knex.schema
-            .table('rename_column_test', (tbl) =>
-              tbl.renameColumn('id_test', 'id')
-            )
-            .then(() => knex.schema.hasColumn('rename_column_test', 'id'))
-            .then((exists) => {
-              expect(exists).to.equal(true);
-            }));
+        it('renames the column', async () => {
+          await knex.schema.table('rename_column_test', (tbl) =>
+            tbl.renameColumn('id_test', 'id')
+          );
+          const exists = await knex.schema.hasColumn(
+            'rename_column_test',
+            'id'
+          );
+          expect(exists).to.equal(true);
+        });
 
         it('successfully renames a column referenced in a foreign key', () =>
           knex.schema.table('rename_column_test', (tbl) => {
@@ -1297,55 +1239,6 @@ module.exports = (knex) => {
           });
         });
       });
-
-      if (knex.client.driverName === 'sqlite3') {
-        describe('using wrapIdentifier and postProcessResponse', () => {
-          const tableName = 'processor_test';
-
-          beforeEach(() => {
-            knex.client.config.postProcessResponse = postProcessResponse;
-            knex.client.config.wrapIdentifier = wrapIdentifier;
-
-            return knex.schema
-              .createTable(tableName, (tbl) => {
-                tbl.integer('field_foo');
-                tbl.integer('other_field');
-              })
-              .then(() => {
-                // Data is necessary to "force" the sqlite3 dialect to actually
-                // attempt to copy data to the temp table, triggering errors
-                // if columns were not correctly copied/created/dropped.
-                return knex
-                  .insert({
-                    field_foo: 1,
-                    other_field: 1,
-                  })
-                  .into(tableName);
-              });
-          });
-
-          afterEach(() => {
-            knex.client.config.postProcessResponse = null;
-            knex.client.config.wrapIdentifier = null;
-
-            return knex.schema.dropTable(tableName);
-          });
-
-          for (const from of ['field_foo', 'FIELD_FOO']) {
-            for (const to of ['field_bar', 'FIELD_BAR']) {
-              it(`renames the column from '${from}' to '${to}'`, () =>
-                knex.schema
-                  .table(tableName, (tbl) =>
-                    tbl.renameColumn('field_foo', 'field_bar')
-                  )
-                  .then(() => knex.schema.hasColumn(tableName, 'field_bar'))
-                  .then((exists) => {
-                    expect(exists).to.equal(true);
-                  }));
-            }
-          }
-        });
-      }
     });
 
     describe('dropColumn', () => {
@@ -1412,9 +1305,11 @@ module.exports = (knex) => {
           afterEach(() => knex.schema.dropTable('TEST'));
 
           const getCreateTableExpr = async () =>
-            (await knex.schema.raw(
-              'select name, sql from sqlite_master where type = "table" and name = "TEST"'
-            ))[0].sql;
+            (
+              await knex.schema.raw(
+                'select name, sql from sqlite_master where type = "table" and name = "TEST"'
+              )
+            )[0].sql;
 
           const dropCol = (colName) =>
             knex.schema.alterTable('TEST', (tbl) => tbl.dropColumn(colName));
@@ -1671,7 +1566,8 @@ module.exports = (knex) => {
           .then(() => {
             if (/sqlite/i.test(knex.client.dialect)) {
               //For SQLite inspect metadata to make sure the constraint exists
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'table',
@@ -1702,7 +1598,8 @@ module.exports = (knex) => {
           .then(() => {
             if (/sqlite/i.test(knex.client.dialect)) {
               //For SQLite inspect metadata to make sure the constraint exists
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'table',
@@ -1746,7 +1643,8 @@ module.exports = (knex) => {
                     '` primary key (`test`, `test2`))',
                 },
               ];
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'table',
@@ -1798,7 +1696,8 @@ module.exports = (knex) => {
                     '` (`test`)',
                 },
               ];
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'index',
@@ -1861,7 +1760,8 @@ module.exports = (knex) => {
                     '` (`test`, `test2`)',
                 },
               ];
-              tr.select('type', 'name', 'tbl_name', 'sql')
+              return tr
+                .select('type', 'name', 'tbl_name', 'sql')
                 .from('sqlite_master')
                 .where({
                   type: 'index',

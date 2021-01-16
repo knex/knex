@@ -5,4 +5,19 @@
 //     For details and documentation:
 //     http://knexjs.org
 
-module.exports = require('./lib/index');
+const knex = require('./lib/index');
+
+/**
+ * These export configurations enable JS and TS developers
+ * to consume knex in whatever way best suits their needs.
+ * Some examples of supported import syntax includes:
+ * - `const knex = require('knex')`
+ * - `const { knex } = require('knex')`
+ * - `import * as knex from 'knex'`
+ * - `import { knex } from 'knex'`
+ * - `import knex from 'knex'`
+ */
+knex.knex = knex;
+knex.default = knex;
+
+module.exports = knex;

@@ -1,5 +1,351 @@
 # Master (Unreleased)
 
+# 0.21.15 - 26 December, 2020
+
+### New features:
+
+- SQLite: Add primary/foreign support on alterTable #4162
+- SQLite: Add dropPrimary/dropForeign support on alterTable #4162
+
+### Typings:
+
+- Add "after" and "first" to columnBuilder types #3549 #4169
+
+### Test / internal changes:
+
+- Extract knex config resolution logic #4166
+- Run CI using GitHub Actions #4168
+- Add Node.js 15 to CI matrix #4173
+
+# 0.21.14 - 18 December, 2020
+
+### New features:
+
+- MSSQL: support "returning" on inserts, updates and deletes on tables with triggers #4152
+- Use esm import if package.json type is "module" #4158
+
+### Bug fixes:
+
+- Make sure query-response and query-error events contain _knexTxId #4160
+
+### Test / internal changes:
+
+- Improved integration test framework #4161
+
+# 0.21.13 - 12 December, 2020
+
+### New features:
+
+- SQLite: Add support for `dropForeign` #4092
+- Add support for WHERE clauses to "upsert" queries #4148
+
+### Bug fixes:
+
+- MSSQL: Avoid connection getting stuck on socket hangup #4157
+- Oracle: Support specifying non-default DB port #4147
+- Oracle: Support inserts with only default values (empty body) #4092
+- CLI: fix irregular seed file execution order #4156
+- Fix performance of asyncStackTraces with enable-source-maps node flag #4154
+
+### Typings:
+
+- PostgreSQL: Add support for application_name #4153
+- Fix types for insert to allow array #4105
+- Add types for userParams and withUserParams #4119
+- Added type for withKeyName #4139
+- Fix batchInsert definitions #4131
+- Fix types for WhereIn signature (value or query builder) #3863
+- Add types for connection config of mysql2 driver #4144
+
+### Test / internal changes:
+
+- Move TS tests to tsd (WIP) #4109 #4110
+
+# 0.21.12 - 02 November, 2020
+
+### Typings:
+
+- Reintroduce support for globally defining table/record mapping #4100
+- Add a few missing types for MSSQL Connection #4103
+- Make .ignore() and .merge() return QueryBuilder rather than QueryInterface #4102
+- Use tarn config TS types instead of generic-pool #4064
+
+# 0.21.11 - 01 November, 2020
+
+### Typings:
+
+- Revert support for globally defining table/record mapping #4099
+
+# 0.21.10 - 31 October, 2020
+
+### New features:
+
+- Upsert support (Postgres/MySQL/Sqlite) #3763
+
+### Bug fixes:
+
+- Switch to non-uuid knexQueryUids to avoid issues when mocking global date #4089
+
+### Typings:
+
+- Allow to globally define table/record mapping #4071
+
+# 0.21.9 - 27 October, 2020
+
+### New features:
+
+- add method clear(statement) to QueryBuilder #4051
+
+### Bug fixes:
+
+- CLI: fix help text being printed twice #4072
+- Oracle: columnInfo() no longer requires an Owner User #4053
+- Add missing "start" event propagation from transaction #4087
+
+# 0.21.8 - 27 October, 2020
+
+### Bug fixes:
+
+- MSSQL: Escape properly if literal '?' is needed #4053
+- Make toQuery behavior consistent with pre-0.21.7 (do not break on empty builder) #4083
+- Fix comment escaping for MySQL and PostgreSQL #4084
+
+# 0.21.7 - 25 October, 2020
+
+### New features:
+
+- CLI: Add migration stub for .cjs extension #4065
+
+### Bug fixes:
+
+- MSSQL: Add dynamic scaling for decimal values and prevents a UInt64 overflow #3910
+- MSSQL: Fix apostrophe escaping #4077
+- Ensure that semicolon is not appended to statements that already end with a semicolon #4052
+
+### Typings:
+
+- Add arguments to QueryCallback in Where #4034
+
+### Test / internal changes:
+
+- Replace lodash type-checks with native solutions #4056
+- Replace mkdirp with native recursive flag #4060
+- Replace inherits package with builtin utility #4059
+
+# 0.21.6 - 27 September, 2020
+
+### New features:
+
+- CLI: New config parameter / CLI flag to prefixing seed filename with timestamp #3873
+- CLI: throw an error when specific seed file cannot be found #4011
+- Warn if whereNot is used with 'in' or 'between' #4038
+
+### Bug fixes:
+
+- CLI: Fix double merging of config for migrator #4040
+
+### Typings:
+
+- Unify SeedsConfig and SeederConfig #4003
+- Allow string[] type for directory in SeedsConfig #4033
+
+# 0.21.5 - 17 August, 2020
+
+### New features:
+
+- CLI: Improve Esm interop #3985
+- CLI: Improve mjs module support #3980
+
+### Test / internal changes:
+
+- Bump version of dtslint #3984
+- Test/document esm interop mixed formats (knexfile/migrations/seeds) #3986
+
+# 0.21.4 - 10 August, 2020
+
+### New features:
+
+- CLI: Add new option for seed: recursive #3974
+
+### Bug fixes:
+
+- CLI: Do not load seeds from subfolders recursively by default #3974
+
+# 0.21.3 - 08 August, 2020
+
+### New features:
+
+- CLI: Support multiple directories for seeds #3967
+
+### Bug fixes:
+
+- Ensure DB stream is destroyed when the PassThrough is destroyed #2324
+- Support postProcessResponse for streams #3931
+- Fix ESM module interop for calling module/package of type 'module' #3938
+- CLI: Fix migration source name in rollback all #3956
+- Fix getMergedConfig calls to include client logger #3920
+- Escape single quoted values passed to defaultTo function #3899
+
+### Typings:
+
+- Add .timeout(ms) to .raw()'s typescript typings #3885
+- Add typing for double table column builder #3950
+- Add a phantom tag to Ref type to mark received type parameters as used #3934
+- Add `null` as valid binding type #3946
+
+### Test / internal changes:
+
+- Change query lab link to https #3933
+
+# 0.21.2 - 10 July, 2020
+
+### New features:
+
+- Warn user if custom migration source is being reset #3839
+- Prefer `void` as return type on migration generator ts stub #3865
+- MSSQL: Added the removal of a columns default constraint, before dropping the column #3855
+
+### Typings:
+
+- Fix definition for raw querybuilders #3846
+
+### Test / internal changes:
+
+- Refactor migration logic to use async/await #3838
+
+# 0.21.1 - 28 April, 2020
+
+### New features:
+
+- CLI: Add migrate:unlock command, truncate on forceFreeMigrationsLock #3822
+- CLI: Add support for cjs files by default #3829
+
+### Bug fixes:
+
+- CLI: Fix inference of seed/migration extension from knexfile extension #3814
+- rewrite delay to not node-only version. Fixes compatibility with browsers #3820
+
+### Test / internal changes:
+
+- Update dependencies. Explicitly support Node.js 14 #3825 #3830
+
+# 0.21.0 - 18 April, 2020
+
+### Improvements
+
+- Reduce size of lodash in bundle #3804
+
+### Breaking changes
+
+- Dropped support for Node 8
+- Breaking upstream change in `pg-query-stream`: `Changed stream.close to stream.destroy which is the official way to terminate a readable stream. This is a breaking change if you rely on the stream.close method on pg-query-stream...though should be just a find/replace type operation to upgrade as the semantics remain very similar (not exactly the same, since internals are rewritten, but more in line with how streams are "supposed" to behave).`
+
+### Test / internal changes:
+
+- Updated Tarn.js to a version 3.0.0
+- Updated mkdirp to a version 1.0.4
+- Updated examples to use ES2015 style #3810
+
+# 0.20.15 - 16 April, 2020
+
+### Bug fixes:
+
+- Support for `.finally(..)` on knex's Promise-alikes #3800
+
+### Typings:
+
+- Add types for `.distinctOn` #3784
+
+# 0.20.14 - 13 April, 2020
+
+### New features:
+
+- CLI: adds support for asynchronous knexfile loading #3748
+- Add clearGroup method #3771
+
+### Typings:
+
+- Support Raw types for insert, where, update #3730
+- Add typings for MigrationSource #3756
+- Update signature of orderBy to support QueryBuilder inside array #3757
+- Add toSQL and toString to SchemaBuilder #3758
+- `interface Knex` and `function Knex` should have the same types #3787
+- Fix minor issues around typings #3765
+
+### Test / internal changes:
+
+- Minor test internal enhancements #3747
+- Minor improvements on the usage of fs utilities #3749
+- Split tests in groups #3785
+
+# 0.20.13 - 23 March, 2020
+
+### Bug fixes:
+
+- Correctly handle dateToString escaping without timezone passed #3742 
+- Make protocol length check more defensive #3744
+
+### Typings:
+
+- Make the ChainableInterface conform to Promise<T> #3724
+
+# 0.20.12 - 19 March, 2020
+
+### Bug fixes:
+
+- Added missing call to _reject in Transactor#transaction #3706
+- Fix method binding on knex proxy #3717
+- Oracle: Transaction_OracleDB can use config.connection #3731
+
+### Typings:
+
+- Fix incorrect type signature of Having #3719
+
+### Test / internal changes:
+
+- Cleanup/remove transaction stalling #3716
+- Rewrote Transaction#acquireConnection() methods to use async #3707 
+
+# 0.20.11 - 26 February, 2020
+
+### Breaking changes:
+
+- Knex returns native JS promises instead of Bluebird ones. This means that you no longer use such methods as `map`, `spread` and `reduce` on QueryBuilder instance.
+
+### New features:
+
+- Oracle: Add OracleDB handling for buffer type in fetchAsString #3685
+
+### Bug fixes:
+
+- Fix race condition in non-container transactions #3671
+
+### Typings:
+
+- Mark knex arguments of composite/collection types to be readonly #3680
+
+### Test / internal changes:
+
+- Remove dependency on Bluebird methods from sources #3683
+- Cleanup and extract Transaction Workflow logic #3674
+
+# 0.20.10 - 13 February, 2020
+
+### Bug fixes:
+
+- Oracle: commit was a no-op causing race conditions #3668
+- CLI: Knex calls process.chdir() before opening Knexfile #3661
+- Fixed unresolved promise in cancelQuery() #3666
+
+### Typings:
+
+- `fn.now` takes optionally a precision argument. #3662
+- PG: Include SSL in connection definition #3659 
+
+### Test / internal changes:
+
+- replace Bluebird.timeout #3634
+
 # 0.20.9 - 08 February, 2020
 
 ### Bug fixes:
