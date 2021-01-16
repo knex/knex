@@ -1017,7 +1017,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       "create type \"foo_type\" as enum ('bar', 'baz')",
       'alter table "users" alter column "foo" drop default',
       'alter table "users" alter column "foo" drop not null',
-      'alter table "users" alter column "foo" type "foo_type" using ("foo"::"foo_type")',
+      'alter table "users" alter column "foo" type "foo_type" using ("foo"::text::"foo_type")',
       'alter table "users" alter column "foo" set not null',
     ];
 
@@ -1063,12 +1063,12 @@ describe('PostgreSQL SchemaBuilder', function () {
 
       'alter table "users" alter column "foo" drop default',
       'alter table "users" alter column "foo" drop not null',
-      'alter table "users" alter column "foo" type "foo_type" using ("foo"::"foo_type")',
+      'alter table "users" alter column "foo" type "foo_type" using ("foo"::text::"foo_type")',
       'alter table "users" alter column "foo" set not null',
 
       'alter table "users" alter column "baz" drop default',
       'alter table "users" alter column "baz" drop not null',
-      'alter table "users" alter column "baz" type "baz_type" using ("baz"::"baz_type")',
+      'alter table "users" alter column "baz" type "baz_type" using ("baz"::text::"baz_type")',
       'alter table "users" alter column "baz" set default \'foo\'',
     ];
 
