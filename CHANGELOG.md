@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.21.16 - 17 January, 2021
+
+### Bug fixes:
+
+- MSSQL: Avoid passing unsupported pool param. Fixes node-mssql 7+ support #4236
+
 # 0.21.15 - 26 December, 2020
 
 ### New features:
