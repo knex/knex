@@ -20,8 +20,7 @@ describe('help', () => {
 
   it('Prints help when no arguments are given', () => {
     return execCommand(`node ${KNEX}`, {
-      expectedErrorMessage: 'Process exited with error',
-      expectedOutput: { expectedText: 'Usage', exactlyTimes: 1 },
+      expectedErrorMessage: 'Usage: cli [options] [command]',
     });
   });
 
