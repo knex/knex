@@ -150,6 +150,78 @@ module.exports = function (knex) {
         });
     });
 
+    it('#4199 - adheres to optimizer hints', async function () {
+      const expectedErrors = {
+        mysql: {
+          code: 'ER_QUERY_TIMEOUT',
+          errno: 3024,
+          sqlMessage: 'Query execution was interrupted, maximum statement execution time exceeded',
+        },
+        mysql2: {
+          errno: 3024,
+          sqlMessage: 'Query execution was interrupted, maximum statement execution time exceeded',
+        },
+      }
+      if (!expectedErrors[knex.client.driverName]) {
+        return this.skip();
+      }
+      const baseQuery = knex('accounts')
+        .select('id', knex.raw('sleep(0.1)'))
+        .limit(2)
+      await expect(
+        baseQuery.clone()
+      ).to.eventually.be.fulfilled.and.to.have.lengthOf(2)
+      await expect(
+        baseQuery.clone().optimizerHint('max_execution_time(10)')
+      ).to.eventually.be.rejected.and.to.deep.include(expectedErrors[knex.client.driverName])
+    });
+
+    it('#4199 - ignores invalid optimizer hints', async function () {
+      return knex
+        .select('id')
+        .orderBy('id')
+        .from('accounts')
+        .optimizerHint('invalid()')
+        .testSql(function (tester) {
+          tester(
+            'mysql',
+            'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
+            [],
+            [{id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 7}]
+          );
+          tester(
+            'pg',
+            'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
+            [],
+            [{id: '1'}, {id: '2'}, {id: '3'}, {id: '4'}, {id: '5'}, {id: '7'}]
+          );
+          tester(
+            'pg-redshift',
+            'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
+            [],
+            [{id: '1'}, {id: '2'}, {id: '3'}, {id: '4'}, {id: '5'}, {id: '6'}]
+          );
+          tester(
+            'sqlite3',
+            'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
+            [],
+            [{id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 6}]
+          );
+          tester(
+            'oracledb',
+            'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
+            [],
+            [{id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 7}]
+          );
+          tester(
+            'mssql',
+            'select /*+ invalid() */ [id] from [accounts] order by [id] asc',
+            [],
+            [{id: '1'}, {id: '2'}, {id: '3'}, {id: '4'}, {id: '5'}, {id: '7'}]
+          );
+        });
+    });
+
     it('returns a single entry with first', function () {
       return knex
         .first('id', 'first_name')

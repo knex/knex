@@ -752,6 +752,7 @@ describe('QueryBuilder', () => {
         })
         .join('tableJoin', 'id', 'id')
         .select(['id'])
+        .optimizerHint('hint()')
         .where('id', '<', 10)
         .groupBy('id')
         .groupBy('id', 'desc')
@@ -770,6 +771,7 @@ describe('QueryBuilder', () => {
         .clear('columns')
         .select(['id'])
         .clear('select')
+        .clear('optimizerHints')
         .clear('where')
         .clear('group')
         .clear('order')
@@ -9221,6 +9223,163 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
     });
+  });
+
+  it('#4199 - allows an optimizer hint', () => {
+    testsql(
+      qb()
+        .from('testtable')
+        .optimizerHint('hint()'),
+      {
+        mysql: {
+          sql: 'select /*+ hint() */ * from `testtable`',
+          bindings: [],
+        },
+        oracledb: {
+          sql: 'select /*+ hint() */ * from "testtable"',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select /*+ hint() */ * from [testtable]',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select /*+ hint() */ * from "testtable"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select /*+ hint() */ * from "testtable"',
+          bindings: [],
+        },
+      },
+    )
+  });
+
+  it('#4199 - allows multiple optimizer hints', () => {
+    testsql(
+      qb()
+        .from('testtable')
+        .optimizerHint('hint1()', 'hint2()')
+        .optimizerHint('hint3()'),
+      {
+        mysql: {
+          sql: 'select /*+ hint1() hint2() hint3() */ * from `testtable`',
+          bindings: [],
+        },
+        oracledb: {
+          sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select /*+ hint1() hint2() hint3() */ * from [testtable]',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
+          bindings: [],
+        },
+      },
+    )
+  });
+
+  it('#4199 - allows optimizer hints in subqueries', () => {
+    testsql(
+      qb()
+        .select({
+          c1: 'c1',
+          c2: qb().select('c2').from('t2').optimizerHint('hint2()').limit(1),
+        })
+        .from('t1')
+        .optimizerHint('hint1()'),
+      {
+        mysql: {
+          sql: 'select /*+ hint1() */ `c1` as `c1`, (select /*+ hint2() */ `c2` from `t2` limit ?) as `c2` from `t1`',
+          bindings: [1],
+        },
+        oracledb: {
+          sql: 'select /*+ hint1() */ "c1" "c1", (select * from (select /*+ hint2() */ "c2" from "t2") where rownum <= ?) "c2" from "t1"',
+          bindings: [1],
+        },
+        mssql: {
+          sql: 'select /*+ hint1() */ [c1] as [c1], (select /*+ hint2() */ top (?) [c2] from [t2]) as [c2] from [t1]',
+          bindings: [1],
+        },
+        pg: {
+          sql: 'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          bindings: [1],
+        },
+        'pg-redshift': {
+          sql: 'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          bindings: [1],
+        },
+      },
+    )
+  });
+
+  it('#4199 - allows optimizer hints in unions', () => {
+    testsql(
+      qb()
+        .from('t1')
+        .optimizerHint('hint1()')
+        .unionAll(qb().from('t2').optimizerHint('hint2()')),
+      {
+        mysql: {
+          sql: 'select /*+ hint1() */ * from `t1` union all select /*+ hint2() */ * from `t2`',
+          bindings: [],
+        },
+        oracledb: {
+          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select /*+ hint1() */ * from [t1] union all select /*+ hint2() */ * from [t2]',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          bindings: [],
+        },
+      },
+    )
+  });
+
+  it('#4199 - forbids "/*", "*/" and "?" in optimizer hints', () => {
+    expect(() => {
+      qb().from('testtable').optimizerHint('hint() /*').toString();
+    }).to.throw(
+      'Optimizer hint cannot include "/*" or "*/"'
+    );
+    expect(() => {
+      qb().from('testtable').optimizerHint('hint() */').toString();
+    }).to.throw(
+      'Optimizer hint cannot include "/*" or "*/"'
+    );
+    expect(() => {
+      qb().from('testtable').optimizerHint('hint(?)').toString();
+    }).to.throw(
+      'Optimizer hint cannot include "?"'
+    );
+  });
+
+  it('#4199 - forbids non-strings as optimizer hints', () => {
+    expect(() => {
+      qb().from('testtable').optimizerHint(47).toString();
+    }).to.throw(
+      'Optimizer hint must be a string'
+    );
+    expect(() => {
+      qb().from('testtable').optimizerHint(raw('hint(?)', [47])).toString();
+    }).to.throw(
+      'Optimizer hint must be a string'
+    );
   });
 
   it('Any undefined binding in a SELECT query should throw an error', () => {
