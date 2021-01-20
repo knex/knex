@@ -17,6 +17,7 @@ const {
   expectContentMatchesStub,
   setupFileHelper,
 } = require('./cli-test-utils');
+const { doesNotReject } = require('assert');
 
 describe('seed:make', () => {
   describe('-x option: make seed using a specific extension', () => {
@@ -395,6 +396,7 @@ development: {
 
     it('Creates a new seed using --timestamp-filename-prefix CLI flag', async () => {
       const seedGlobPath = `${process.cwd()}/seeds/*_somename.js`;
+      console.log(seedGlobPath);
       fileHelper.registerGlobForCleanup(seedGlobPath);
 
       await execCommand(
