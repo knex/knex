@@ -87,9 +87,9 @@ const trueDate = [
 
 describe('timestamp', function() {
 	it('should return valid dates for edge cases of leap years', function() {
-		let regex = new RegExp('[0-9]{14}')
+		const regex = new RegExp('[0-9]{14}')
 		for (let i = 0; i < 6; i++) {
-			let testDate = timestamp(checkDates[i], checkOffsets[i])
+			const testDate = timestamp(checkDates[i], checkOffsets[i])
 			
 			assert.isTrue(regex.test(testDate), 'regex should match on output')
 			assert.equal(testDate, trueDate[i], 'These dates should match exactly')
