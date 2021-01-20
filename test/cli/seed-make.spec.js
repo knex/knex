@@ -395,7 +395,6 @@ development: {
 
     it('Creates a new seed using --timestamp-filename-prefix CLI flag', async () => {
       const seedGlobPath = `${process.cwd()}/seeds/*_somename.js`;
-      console.log(seedGlobPath);
       fileHelper.registerGlobForCleanup(seedGlobPath);
 
       await execCommand(
