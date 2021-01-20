@@ -17,7 +17,6 @@ const {
   expectContentMatchesStub,
   setupFileHelper,
 } = require('./cli-test-utils');
-const { doesNotReject } = require('assert');
 
 describe('seed:make', () => {
   describe('-x option: make seed using a specific extension', () => {
