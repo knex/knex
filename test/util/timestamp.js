@@ -97,17 +97,17 @@ describe('timestamp', function() {
 	})
 	
 	it('should give back a valid date structure with no arguments', function() {
-		let regex = new RegExp('[0-9]{14}')
+		const regex = new RegExp('[0-9]{14}')
 		
-		let testDate = timestamp()
+		const testDate = timestamp()
 		
 		assert.isTrue(regex.test(testDate))
 	})
 	
 	it('should be able to convert standard time zones when given offsets manually', function() {
-		let regex = new RegExp('[0-9]{14}')
+		const regex = new RegExp('[0-9]{14}')
 		for (let i = 6; i < trueDate.length; i++) {
-			let testDate = timestamp(checkDates[6], checkOffsets[i])
+			const testDate = timestamp(checkDates[6], checkOffsets[i])
 			
 			assert.isTrue(regex.test(testDate), 'regex should match on output')
 			assert.equal(testDate, trueDate[i], 'These dates should match exactly')
