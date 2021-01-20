@@ -9259,7 +9259,7 @@ describe('QueryBuilder', () => {
     testsql(
       qb()
         .from('testtable')
-        .optimizerHint('hint1()', 'hint2()')
+        .optimizerHint(['hint1()', 'hint2()'])
         .optimizerHint('hint3()'),
       {
         mysql: {

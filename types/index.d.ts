@@ -1002,7 +1002,7 @@ export declare namespace Knex {
   }
 
   interface OptimizerHint<TRecord extends {} = any, TResult extends {} = any> {
-    (...hints: string[]): QueryBuilder<TRecord, TResult>;
+    (hint: string): QueryBuilder<TRecord, TResult>;
     (hints: readonly string[]): QueryBuilder<TRecord, TResult>;
   }
 
