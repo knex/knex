@@ -12,7 +12,7 @@ describe('knex', () => {
         return knex.destroy();
       });
 
-      describe.only('destroy', () => {
+      describe('destroy', () => {
         it('works correctly when called multiple times', async () => {
           await knex.destroy();
           await knex.destroy();
