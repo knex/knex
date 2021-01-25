@@ -150,7 +150,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('#4199 - adheres to optimizer hints', async function () {
+    it('#4199 - adheres to hint comments', async function () {
       const expectedErrors = {
         mysql: {
           code: 'ER_QUERY_TIMEOUT',
@@ -172,16 +172,16 @@ module.exports = function (knex) {
         baseQuery.clone()
       ).to.eventually.be.fulfilled.and.to.have.lengthOf(2)
       await expect(
-        baseQuery.clone().optimizerHint('max_execution_time(10)')
+        baseQuery.clone().hintComment('max_execution_time(10)')
       ).to.eventually.be.rejected.and.to.deep.include(expectedErrors[knex.client.driverName])
     });
 
-    it('#4199 - ignores invalid optimizer hints', async function () {
+    it('#4199 - ignores invalid hint comments', async function () {
       return knex
         .select('id')
         .orderBy('id')
         .from('accounts')
-        .optimizerHint('invalid()')
+        .hintComment('invalid()')
         .testSql(function (tester) {
           tester(
             'mysql',
