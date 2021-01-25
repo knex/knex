@@ -4,7 +4,7 @@
 //                 Matt R. Wilson <https://github.com/mastermatt>
 //                 Satana Charuwichitratana <https://github.com/micksatana>
 //                 Shrey Jain <https://github.com/shreyjain1994>
-// TypeScript Version: 3.7
+// TypeScript Version: 4.1
 
 import tarn = require('tarn');
 import events = require('events');
@@ -1063,14 +1063,15 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TTable extends TableNames,
-      TRecord2 = ResolveTableType<TRecord> & ResolveTableType<TableType<TTable>>,
+      TRecord2 = ResolveTableType<TRecord> &
+        ResolveTableType<TableType<TTable>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TTable,
       clause: JoinCallback
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1078,7 +1079,7 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       clause: JoinCallback
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1086,7 +1087,7 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       columns: { [key: string]: string | number | boolean | Raw }
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1094,16 +1095,42 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
-      TTable extends TableNames,
-      TRecord2 = ResolveTableType<TRecord> & ResolveTableType<TableType<TTable>>,
+      TTable1 extends TableNames,
+      TTable2 extends TableNames,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
+      TRecord1 = ResolveTableType<TRecord>,
+      TRecord2 = TRecord1 & ResolveTableType<TableType<TTable2>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
-      tableName: TTable,
+    >(
+      tableName: TTable2,
+      column1: `${TTable1}.${TKey1}`,
+      column2: `${TTable2}.${TKey2}`
+    ): QueryBuilder<TRecord2, TResult2>;
+    <
+      TTable1 extends TableNames,
+      TTable2 extends TableNames,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
+      TRecord1 = ResolveTableType<TRecord>,
+      TRecord2 = TRecord1 & ResolveTableType<TableType<TTable2>>,
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
+    >(
+      tableName: TTable2,
+      column1: `${TTable2}.${TKey2}`,
+      column2: `${TTable1}.${TKey1}`
+    ): QueryBuilder<TRecord2, TResult2>;
+    <
+      TJoinTargetRecord extends {} = any,
+      TRecord2 extends {} = TRecord & TJoinTargetRecord,
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
+    >(
+      tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       column2: string
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1111,35 +1138,44 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
-      tableName: TableDescriptor | AliasDict | QueryCallback,
-      column1: string,
-      column2: string
-    ): QueryBuilder<TRecord2, TResult2>;
-    <
-      TJoinTargetRecord extends {} = any,
-      TRecord2 extends {} = TRecord & TJoinTargetRecord,
-      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
-      TTable extends TableNames,
-      TRecord2 = ResolveTableType<TRecord> & ResolveTableType<TableType<TTable>>,
+      TTable1 extends TableNames,
+      TTable2 extends TableNames,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
+      TRecord1 = ResolveTableType<TRecord>,
+      TRecord2 = TRecord1 & ResolveTableType<TableType<TTable2>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
-      tableName: TTable,
-      column1: string,
+    >(
+      tableName: TTable2,
+      column1: `${TTable1}.${TKey1}`,
       operator: string,
-      column2: string
+      column2: `${TTable2}.${TKey2}`
+    ): QueryBuilder<TRecord2, TResult2>;
+    <
+      TTable1 extends TableNames,
+      TTable2 extends TableNames,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
+      TRecord1 = ResolveTableType<TRecord>,
+      TRecord2 = TRecord1 & ResolveTableType<TableType<TTable2>>,
+      TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
+    >(
+      tableName: TTable2,
+      column1: `${TTable2}.${TKey2}`,
+      operator: string,
+      column2: `${TTable1}.${TKey1}`,
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       operator: string,
