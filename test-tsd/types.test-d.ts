@@ -99,3 +99,12 @@ expectAssignable<QueryBuilder>(
     .merge({ x: 'x' })
     .debug(true)
 );
+
+expectAssignable<QueryBuilder>(
+  knexInstance
+    .insert({ id: 10, active: true })
+    .into('table')
+    .onConflict(['id'])
+    .merge(['active', 'id'])
+    .debug(true)
+);
