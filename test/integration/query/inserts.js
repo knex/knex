@@ -1779,6 +1779,11 @@ module.exports = function (knex) {
               'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "name" = excluded."name" returning "email"',
               ['mergedest@example.com', 'SHOULD BE USED']
             );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = excluded.`name`',
+              ['mergedest@example.com', 'SHOULD BE USED']
+            );
           });
       } catch (err) {
         if (/oracle|mssql/i.test(knex.client.driverName)) {
