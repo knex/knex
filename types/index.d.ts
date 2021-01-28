@@ -823,7 +823,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
 
     onConflict<
-      TKey extends StrKey<TRecord>,
+      TKey extends StrKey<ResolveTableType<TRecord>>,
       TResult2 = DeferredIndex.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
@@ -833,7 +833,7 @@ export declare namespace Knex {
       column: TKey
     ): OnConflictQueryBuilder<TRecord, TResult2>;
     onConflict<
-      TKey extends StrKey<TRecord>,
+      TKey extends StrKey<ResolveTableType<TRecord>>,
       TResult2 = DeferredKeySelection.SetSingle<
         DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, TRecord, TKey>,
         false
