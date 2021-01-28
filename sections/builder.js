@@ -2441,6 +2441,20 @@ export default [
   },
   {
     type: "method",
+    method: "hintComment",
+    example: ".hintComment(hint|hints)",
+    description: "Add hints to the query using comment-like syntax `/*+ ... */`. MySQL and Oracle use this syntax for optimizer hints. Also various DB proxies and routers use this syntax to pass hints to alter their behavior. In other dialects the hints are ignored as simple comments.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').where('userid', '=', 1).hintComment('NO_ICP(accounts)')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "clone",
     example: ".clone()",
     description: "Clones the current query chain, useful for re-using partial query snippets in other queries without mutating the original.",

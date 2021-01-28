@@ -138,6 +138,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-avg">avg</a></li>
           <li>– <a href="#Builder-increment">increment</a></li>
           <li>– <a href="#Builder-decrement">decrement</a></li>
+          <li>– <a href="#Builder-hintComment">hintComment</a></li>
           <li>– <a href="#Builder-truncate">truncate</a></li>
           <li>– <a href="#Builder-pluck">pluck</a></li>
           <li>– <a href="#Builder-first">first</a></li>
