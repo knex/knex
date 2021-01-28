@@ -99,3 +99,16 @@ expectAssignable<QueryBuilder>(
     .merge({ x: 'x' })
     .debug(true)
 );
+
+expectType<
+  QueryBuilder<
+    User,
+    DeferredKeySelection<User, 'id', true, {}, true, {}, never>[]
+  >
+>(
+  knexInstance
+    .table<User>('users')
+    .insert({ id: 10, active: true })
+    .onConflict('id')
+    .ignore()
+);
