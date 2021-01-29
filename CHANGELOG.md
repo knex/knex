@@ -1,5 +1,8 @@
 # Master (Unreleased)
 
+### Test / internal changes:
+- Migrate database client code and `Raw` to es6 classes
+
 # 0.21.15 - 26 December, 2020
 
 ### New features:
