@@ -1,4 +1,3 @@
-const { inherits } = require('util');
 const Knex = require('../../lib/index');
 const QueryBuilder = require('../../lib/query/querybuilder');
 const { expect } = require('chai');
@@ -353,11 +352,7 @@ describe('knex', () => {
   it('throws if client module has not been installed', () => {
     // create dummy dialect which always fails when trying to load driver
     const SqliteClient = require(`../../lib/dialects/sqlite3/index.js`);
-    function ClientFoobar(config) {
-      SqliteClient.call(this, config);
-    }
-
-    inherits(ClientFoobar, SqliteClient);
+    class ClientFoobar extends SqliteClient {}
 
     ClientFoobar.prototype._driver = () => {
       throw new Error('Cannot require...');
