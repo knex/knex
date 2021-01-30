@@ -1,5 +1,15 @@
 # Master (Unreleased)
 
+# 0.21.17 - 30 January, 2021
+
+### Bug fixes:
+
+- SQLite: Fix SQLite foreign on delete when altering a table #4261
+
+### New features:
+
+- Add support for optimizer hints (see https://github.com/knex/documentation/pull/306 for documentation) #4243
+
 # 0.21.16 - 17 January, 2021
 
 ### Bug fixes:
