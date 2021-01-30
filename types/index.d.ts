@@ -460,13 +460,14 @@ declare namespace Knex {
   //
   // QueryInterface
   //
-  type ClearStatements = "with" | "select" | "columns" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
+  type ClearStatements = "with" | "select" | "columns" | "hintComments" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
 
   interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
     column: Select<TRecord, TResult>;
+    hintComment: HintComment<TRecord, TResult>;
     from: Table<TRecord, TResult>;
     into: Table<TRecord, TResult>;
     table: Table<TRecord, TResult>;
@@ -976,6 +977,11 @@ declare namespace Knex {
     <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord = any, TInnerResult = any>(
       subQueryBuilders: readonly QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
+  }
+
+  interface HintComment<TRecord extends {} = any, TResult extends {} = any> {
+    (hint: string): QueryBuilder<TRecord, TResult>;
+    (hints: readonly string[]): QueryBuilder<TRecord, TResult>;
   }
 
   interface Table<TRecord extends {} = any, TResult extends {} = any> {
