@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - master
+      - 0.21
 
 jobs:
   build:
