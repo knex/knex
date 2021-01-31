@@ -29,6 +29,40 @@ const knexInstance: Knex = knex(config)
 * v8 flags are no longer supported in cli. To pass these flags use [`NODE_OPTIONS` environment variable](https://nodejs.org/api/cli.html#cli_node_options_options).
   For example `NODE_OPTIONS="--max-old-space-size=1536" npm run knex`
 
+* Clients are now classes instead of new-able functions. Please migrate your custom clients to classes.
+
+```js
+const Client = require('knex')
+const {inherits} = require('util')
+
+// old
+function CustomClient(config) {
+  Client.call(this, config);
+  // construction logic
+}
+inherits(CustomClient, Client);
+CustomClient.prototype.methodOverride = function () {
+  // logic
+}
+
+// new
+class CustomClient extends Client {
+  // node 12+
+  driverName = 'abcd';
+  constructor(config) {
+    super(config);
+    this.driverName = 'abcd'; // bad way, will not work
+    // construction logic
+  }
+  methodOverride() {
+    // logic
+  }
+}
+// alternative to declare driverName
+CustomClient.prototype.driverName = 'abcd';
+
+
+```
 ### Upgrading to version 0.21.0+
 
 * Node.js older than 10 is no longer supported, make sure to update your environment; 
