@@ -8,6 +8,12 @@ const sinon = require('sinon');
 const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 const client = new SQLite3_Client({ client: 'sqlite3' });
 const SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
+const {
+  parseCreateIndex,
+} = require('../../../lib/dialects/sqlite3/schema/internal/parser');
+const {
+  compileCreateIndex,
+} = require('../../../lib/dialects/sqlite3/schema/internal/compiler');
 
 const _ = require('lodash');
 const { equal, deepEqual } = require('assert');
@@ -843,6 +849,313 @@ describe('SQLite SchemaBuilder', function () {
       expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
       expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+  });
+});
+
+describe('SQLite parser and compiler', function () {
+  const wrap = (v) => `"${v}"`;
+
+  describe('create index', function () {
+    it('basic', function () {
+      const sql = 'CREATE INDEX "users_index" on "users" ("foo")';
+      const ast = {
+        unique: false,
+        exists: false,
+        schema: null,
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          { name: 'foo', expression: false, collation: null, order: null },
+        ],
+        where: null,
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('unique', function () {
+      const sql = 'CREATE UNIQUE INDEX "users_index" on "users" ("foo")';
+      const ast = {
+        unique: true,
+        exists: false,
+        schema: null,
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          { name: 'foo', expression: false, collation: null, order: null },
+        ],
+        where: null,
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('if not exists', function () {
+      const sql = 'CREATE INDEX IF NOT EXISTS "users_index" on "users" ("foo")';
+      const ast = {
+        unique: false,
+        exists: true,
+        schema: null,
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          { name: 'foo', expression: false, collation: null, order: null },
+        ],
+        where: null,
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('schema', function () {
+      const sql = 'CREATE INDEX "schema"."users_index" on "users" ("foo")';
+      const ast = {
+        unique: false,
+        exists: false,
+        schema: 'schema',
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          { name: 'foo', expression: false, collation: null, order: null },
+        ],
+        where: null,
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('where', function () {
+      const sql =
+        'CREATE INDEX "users_index" on "users" ("foo") where foo IS NOT NULL AND bar=42';
+      const ast = {
+        unique: false,
+        exists: false,
+        schema: null,
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          { name: 'foo', expression: false, collation: null, order: null },
+        ],
+        where: 'foo IS NOT NULL AND bar=42',
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column collation and order', function () {
+      const sql =
+        'CREATE INDEX "users_index" on "users" ("foo", "baz" COLLATE BINARY, "bar" ASC, "lar" COLLATE NOCASE DESC)';
+      const ast = {
+        unique: false,
+        exists: false,
+        schema: null,
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            expression: false,
+            collation: null,
+            order: null,
+          },
+          {
+            name: 'baz',
+            expression: false,
+            collation: 'BINARY',
+            order: null,
+          },
+          {
+            name: 'bar',
+            expression: false,
+            collation: null,
+            order: 'ASC',
+          },
+          {
+            name: 'lar',
+            expression: false,
+            collation: 'NOCASE',
+            order: 'DESC',
+          },
+        ],
+        where: null,
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column expression', function () {
+      const sql =
+        'CREATE INDEX "users_index" on "users" (abs(foo), lower(baz) COLLATE RTRIM, "bar()" ASC)';
+      const ast = {
+        unique: false,
+        exists: false,
+        schema: null,
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          {
+            name: 'abs(foo)',
+            expression: true,
+            collation: null,
+            order: null,
+          },
+          {
+            name: 'lower(baz)',
+            expression: true,
+            collation: 'RTRIM',
+            order: null,
+          },
+          {
+            name: 'bar()',
+            expression: false,
+            collation: null,
+            order: 'ASC',
+          },
+        ],
+        where: null,
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('special character identifier', function () {
+      const sql =
+        'CREATE INDEX "$chema"."users index" on "use-rs" (" ( ", " COLLATE ", " ""foo"" " ASC, "``b a z``" DESC, "[[``""bar""``]]") where foo IS NOT NULL';
+      const ast = {
+        unique: false,
+        exists: false,
+        schema: '$chema',
+        index: 'users index',
+        table: 'use-rs',
+        columns: [
+          {
+            name: ' ( ',
+            expression: false,
+            collation: null,
+            order: null,
+          },
+          {
+            name: ' COLLATE ',
+            expression: false,
+            collation: null,
+            order: null,
+          },
+          {
+            name: ' ""foo"" ',
+            expression: false,
+            collation: null,
+            order: 'ASC',
+          },
+          {
+            name: '``b a z``',
+            expression: false,
+            collation: null,
+            order: 'DESC',
+          },
+          {
+            name: '[[``""bar""``]]',
+            expression: false,
+            collation: null,
+            order: null,
+          },
+        ],
+        where: 'foo IS NOT NULL',
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('no wrap', function () {
+      const sql =
+        'CREATE INDEX users_index on users (foo COLLATE BINARY ASC) where foo IS NOT NULL';
+      const ast = {
+        unique: false,
+        exists: false,
+        schema: null,
+        index: 'users_index',
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            expression: false,
+            collation: 'BINARY',
+            order: 'ASC',
+          },
+        ],
+        where: 'foo IS NOT NULL',
+      };
+
+      const parsed = parseCreateIndex(sql);
+      const compiled = compileCreateIndex(ast);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('lowercase', function () {
+      const sql =
+        'create index "users_index" ON "users" ("foo" collate BINARY asc) WHERE "foo" is not null';
+      const newSql =
+        'CREATE INDEX "users_index" on "users" ("foo" COLLATE BINARY ASC) where "foo" is not null';
+
+      const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
+
+      expect(parsedSql).to.equal(newSql);
+    });
+
+    it('whitespaces', function () {
+      const sql =
+        'CREATE  INDEX   "users_index"\non\t"users"("foo"    COLLATE\tBINARY\nASC)\r\nwhere     "foo"\nIS\tNOT\r\nNULL';
+      const newSql =
+        'CREATE INDEX "users_index" on "users" ("foo" COLLATE BINARY ASC) where "foo" IS NOT NULL';
+
+      const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
+
+      expect(parsedSql).to.equal(newSql);
+    });
+
+    it('wrap', function () {
+      const sql =
+        'CREATE INDEX "schema".[users index] on `users` ("foo " ASC, [b a z] DESC, ` bar`)';
+      const newSql =
+        'CREATE INDEX "schema"."users index" on "users" ("foo " ASC, "b a z" DESC, " bar")';
+
+      const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
+
+      expect(parsedSql).to.equal(newSql);
     });
   });
 });
