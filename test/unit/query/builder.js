@@ -10274,6 +10274,59 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should join on a subquery with custom conditions and schema', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('foo')
+        .join(qb().select(['f_id']).from('baz').as('bar'), (j) =>
+          j.on('bar.f_id', 'foo.id')
+        ),
+      {
+        mysql:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        mssql:
+          'select * from [schema].[foo] inner join (select [f_id] from [baz]) as [bar] on [bar].[f_id] = [foo].[id]',
+        oracledb:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") "bar" on "bar"."f_id" = "foo"."id"',
+        pg:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        'pg-redshift':
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        sqlite3:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+      }
+    );
+  });
+
+  it('should join on a subquery defined as a function with custom conditions and schema', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('foo')
+        .join(
+          (q) => q.select(['f_id']).from('baz').as('bar'),
+          (j) => j.on('bar.f_id', 'foo.id')
+        ),
+      {
+        mysql:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        mssql:
+          'select * from [schema].[foo] inner join (select [f_id] from [baz]) as [bar] on [bar].[f_id] = [foo].[id]',
+        oracledb:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") "bar" on "bar"."f_id" = "foo"."id"',
+        pg:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        'pg-redshift':
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        sqlite3:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+      }
+    );
+  });
+
   it('join with onVal andOnVal orOnVal', () => {
     testsql(
       qb()
