@@ -562,6 +562,9 @@ export declare namespace Knex {
     havingNotBetween: HavingRange<TRecord, TResult>;
     orHavingBetween: HavingRange<TRecord, TResult>;
     havingBetween: HavingRange<TRecord, TResult>;
+    havingNotIn: HavingRange<TRecord, TResult>;
+    andHavingNotIn: HavingRange<TRecord, TResult>;
+    orHavingNotIn: HavingRange<TRecord, TResult>;
 
     // Clear
     clearSelect(): QueryBuilder<
