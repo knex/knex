@@ -54,7 +54,7 @@ describe('SQLite SchemaBuilder', function () {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table "users" ("id" integer not null primary key autoincrement, "other_id" integer not null autoincrement)'
+      'create table `users` (`id` integer not null primary key autoincrement, `other_id` integer not null autoincrement)'
     );
   });
 
@@ -386,7 +386,7 @@ describe('SQLite SchemaBuilder', function () {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'alter table "users" add column "id" integer not null autoincrement'
+      'alter table `users` add column `id` integer not null autoincrement'
     );
   });
 
