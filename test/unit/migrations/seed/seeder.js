@@ -5,10 +5,7 @@ const { expect } = require('chai');
 
 const mockFs = require('mock-fs');
 const knex = require('../../../../knex');
-const {
-  normalizePath,
-  normalizePathArray,
-} = require('../../../util/assertHelper');
+const { normalizePathArray } = require('../../../util/assertHelper');
 
 describe('Seeder.loadExtensions', function () {
   const config = {
