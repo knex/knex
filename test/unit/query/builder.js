@@ -10327,6 +10327,102 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should not prepend schema to a subquery', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from(qb().from('foo').select().as('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from (select * from [foo]) as [bar] inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a subquery specified by a function', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from((q) => q.from('foo').select().as('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from (select * from [foo]) as [bar] inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a raw FROM clause', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from(raw('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from bar inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a raw JOIN clause', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('bar')
+        .join(raw('baz'), 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from [schema].[bar] inner join baz on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
   it('join with onVal andOnVal orOnVal', () => {
     testsql(
       qb()
