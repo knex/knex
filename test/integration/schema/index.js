@@ -1238,6 +1238,51 @@ module.exports = (knex) => {
               });
           });
         });
+
+        it('#2767 - .renameColumn should not drop the auto incremental', () => {
+          const tableName = 'rename_column_test';
+
+          if (knex && knex.client) {
+            if (/mssql/i.test(knex.client.driverName)) {
+              return knex
+                .raw(
+                  `select COLUMNPROPERTY(object_id(TABLE_SCHEMA+'.'+TABLE_NAME), COLUMN_NAME, 'IsIdentity') as Ident from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME =? AND COLUMN_NAME = ?;`,
+                  [tableName, 'id_new']
+                )
+                .then((res) => {
+                  const autoinc = res[0].Ident;
+                  expect(autoinc).to.equal(1);
+                });
+            } else if (/mysql/i.test(knex.client.driverName)) {
+              return knex.raw(`show fields from ${tableName}`).then((res) => {
+                const autoinc = res[0][0].Extra;
+                expect(autoinc).to.equal('auto_increment');
+              });
+            } else if (/pg/i.test(knex.client.driverName)) {
+              return knex
+                .raw(
+                  `select pg_get_serial_sequence(table_name, column_name) as ident from INFORMATION_SCHEMA.COLUMNS where table_name =? AND column_name = ?;`,
+                  [tableName, 'id_new']
+                )
+                .then((res) => {
+                  const autoinc = !!res.rows[0].ident;
+                  expect(autoinc).to.equal(true);
+                });
+            } else if (/sqlite/i.test(knex.client.driverName)) {
+              return knex
+                .raw(
+                  `SELECT "is-autoincrement" as ident FROM sqlite_master WHERE tbl_name=? AND sql LIKE "%AUTOINCREMENT%"`,
+                  [tableName]
+                )
+                .then((res) => {
+                  const autoinc = !!res[0].ident;
+                  expect(autoinc).to.equal(true);
+                });
+            }
+          }
+
+          return Promise.resolve();
+        });
       });
     });
 

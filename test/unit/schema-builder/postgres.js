@@ -619,6 +619,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding incrementing id without primary key', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.increments('id', { primaryKey: false });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "id" serial'
+    );
+  });
+
   it('adding big incrementing id', function () {
     tableSql = client
       .schemaBuilder()
@@ -629,6 +642,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "id" bigserial primary key'
+    );
+  });
+
+  it('adding big incrementing id without primary key', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.bigIncrements('id', { primaryKey: false });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "id" bigserial'
     );
   });
 
