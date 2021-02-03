@@ -218,8 +218,8 @@ export default [
   {
     type: "method",
     method: "increments",
-    example: "table.increments(name)",
-    description: "Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial).",
+    example: "table.increments(name, options={[primaryKey: boolean = true])",
+    description: "Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial). Note that a primary key is created by default, but you can override this behaviour by passing the `primaryKey` option.",
     children: [
       {
         type: 'code',
@@ -239,6 +239,22 @@ export default [
 
             table.foreign('author').references('userId').inTable('users');
           });
+        `
+      },
+      {
+        type: 'text',
+        content: "A primaryKey option may be passed, to disable to automatic primary key creation:"
+      }, {
+        type: 'code',
+        language: 'js',
+        content: `
+          // create table 'users' with a primary key using 'increments()'
+          //  but also increments field 'other_id' that does not need primary key
+          knex.schema.createTable('users', function (table) {
+            table.increments('id');
+            table.increments('other_id', { primaryKey: false });
+          });
+
         `
       }
     ]
