@@ -1366,7 +1366,7 @@ module.exports = (knex) => {
             expect(await hasCol('i0')).to.equal(false);
             // Constraint i0 should be unaffected:
             expect(await getCreateTableExpr()).to.equal(
-              "CREATE TABLE TEST('i1' integer, [i2] integer, `i3` integer, i4 " +
+              'CREATE TABLE "TEST"(\'i1\' integer, [i2] integer, `i3` integer, i4 ' +
                 'integer, I5 integer, unique(i4, i5), constraint i0 primary ' +
                 'key([i3], "i4"), unique([i2]), foreign key (i1) references bar ' +
                 '("i3") )'
@@ -1375,24 +1375,24 @@ module.exports = (knex) => {
             expect(await hasCol('i1')).to.equal(false);
             // Foreign key on i1 should also be dropped:
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST([i2] integer, `i3` integer, i4 integer, I5 integer, ' +
+              'CREATE TABLE "TEST"([i2] integer, `i3` integer, i4 integer, I5 integer, ' +
                 'unique(i4, i5), constraint i0 primary key([i3], "i4"), unique([i2]))'
             );
             await dropCol('i2');
             expect(await hasCol('i2')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST(`i3` integer, i4 integer, I5 integer, ' +
+              'CREATE TABLE "TEST"(`i3` integer, i4 integer, I5 integer, ' +
                 'unique(i4, i5), constraint i0 primary key([i3], "i4"))'
             );
             await dropCol('i3');
             expect(await hasCol('i3')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST(i4 integer, I5 integer, unique(i4, i5))'
+              'CREATE TABLE "TEST"(i4 integer, I5 integer, unique(i4, i5))'
             );
             await dropCol('i4');
             expect(await hasCol('i4')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST(I5 integer)'
+              'CREATE TABLE "TEST"(I5 integer)'
             );
             let lastColDeletionError;
             await knex.schema
