@@ -11,6 +11,11 @@ const {
   ensureDirectoryExists,
   getFilepathsInFolder,
 } = require('../../../../lib/migrations/util/fs');
+const {
+  normalizePath,
+  normalizePathArray,
+} = require('../../../util/assertHelper');
+require('../../../util/chai-setup');
 
 describe('FS functions', () => {
   describe('stat', () => {
@@ -56,7 +61,7 @@ describe('FS functions', () => {
 
   describe('readdir', async () => {
     it('should read a directory and return a list of files under it.', async () => {
-      const directory = await createTemp();
+      const directory = normalizePath(await createTemp());
 
       // Create files under the directory.
       fs.writeFileSync(path.join(directory, 'testfile1.txt'), 'testfile1');
@@ -66,7 +71,7 @@ describe('FS functions', () => {
 
       const result = await readdir(directory);
 
-      expect(result).to.deep.equal([
+      expect(normalizePathArray(result)).to.deep.equal([
         'testfile1.txt',
         'testfile2.txt',
         'testfile3.txt',
@@ -98,7 +103,7 @@ describe('FS functions', () => {
 
   describe('getFilepathsInFolder', () => {
     it('should return sorted file list under the directory.', async () => {
-      const directory = await createTemp();
+      const directory = normalizePath(await createTemp());
       fs.writeFileSync(path.join(directory, 'testfile1.txt'), 'testfile1');
       fs.writeFileSync(path.join(directory, 'testfile2.txt'), 'testfile1');
       fs.writeFileSync(path.join(directory, 'testfile3.txt'), 'testfile1');
@@ -109,7 +114,7 @@ describe('FS functions', () => {
 
       const result = await getFilepathsInFolder(directory);
 
-      expect(result).to.deep.equal([
+      expect(normalizePathArray(result)).to.deep.equal([
         `${directory}/testfile1.txt`,
         `${directory}/testfile2.txt`,
         `${directory}/testfile3.txt`,
@@ -117,7 +122,7 @@ describe('FS functions', () => {
     });
 
     it('should return sorted file list under the directory (recursively) with recursive option.', async () => {
-      const directory = await createTemp();
+      const directory = normalizePath(await createTemp());
       fs.writeFileSync(path.join(directory, 'testfile1.txt'), 'testfile1');
       fs.writeFileSync(path.join(directory, 'testfile2.txt'), 'testfile1');
       fs.writeFileSync(path.join(directory, 'testfile3.txt'), 'testfile1');
@@ -128,7 +133,7 @@ describe('FS functions', () => {
 
       const result = await getFilepathsInFolder(directory, true);
 
-      expect(result).to.deep.equal([
+      expect(normalizePathArray(result)).to.deep.equal([
         `${directory}/dir/testfile1.txt`,
         `${directory}/dir/testfile2.txt`,
         `${directory}/dir/testfile3.txt`,

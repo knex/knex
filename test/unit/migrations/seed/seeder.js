@@ -5,6 +5,10 @@ const { expect } = require('chai');
 
 const mockFs = require('mock-fs');
 const knex = require('../../../../knex');
+const {
+  normalizePath,
+  normalizePathArray,
+} = require('../../../util/assertHelper');
 
 describe('Seeder.loadExtensions', function () {
   const config = {
@@ -47,16 +51,19 @@ describe('Seeder.loadExtensions', function () {
 
   it('should include all supported extensions by default', function () {
     return seeder._listAll().then(function (list) {
-      expect(list).to.eql([
-        process.cwd() + '/test/integration/seed/seeds/co-seed.co',
-        process.cwd() + '/test/integration/seed/seeds/coffee-seed.coffee',
-        process.cwd() + '/test/integration/seed/seeds/eg-seed.eg',
-        process.cwd() + '/test/integration/seed/seeds/iced-seed.iced',
-        process.cwd() + '/test/integration/seed/seeds/js-seed.js',
-        process.cwd() + '/test/integration/seed/seeds/litcoffee-seed.litcoffee',
-        process.cwd() + '/test/integration/seed/seeds/ls-seed.ls',
-        process.cwd() + '/test/integration/seed/seeds/ts-seed.ts',
-      ]);
+      expect(normalizePathArray(list)).to.eql(
+        normalizePathArray([
+          process.cwd() + '/test/integration/seed/seeds/co-seed.co',
+          process.cwd() + '/test/integration/seed/seeds/coffee-seed.coffee',
+          process.cwd() + '/test/integration/seed/seeds/eg-seed.eg',
+          process.cwd() + '/test/integration/seed/seeds/iced-seed.iced',
+          process.cwd() + '/test/integration/seed/seeds/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/seeds/litcoffee-seed.litcoffee',
+          process.cwd() + '/test/integration/seed/seeds/ls-seed.ls',
+          process.cwd() + '/test/integration/seed/seeds/ts-seed.ts',
+        ])
+      );
     });
   });
 
@@ -64,10 +71,12 @@ describe('Seeder.loadExtensions', function () {
     return seeder
       ._listAll({ loadExtensions: ['.ts', '.js'] })
       .then(function (list) {
-        expect(list).to.eql([
-          process.cwd() + '/test/integration/seed/seeds/js-seed.js',
-          process.cwd() + '/test/integration/seed/seeds/ts-seed.ts',
-        ]);
+        expect(normalizePathArray(list)).to.eql(
+          normalizePathArray([
+            process.cwd() + '/test/integration/seed/seeds/js-seed.js',
+            process.cwd() + '/test/integration/seed/seeds/ts-seed.ts',
+          ])
+        );
       });
   });
 });
@@ -174,26 +183,28 @@ describe('Seeder._listAll', function () {
 
   it('should include all supported files sorted by alphabetically order by default', function () {
     return seeder._listAll().then(function (list) {
-      expect(list).to.eql([
-        process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
-        process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
-        process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
-        process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
-        process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
-        process.cwd() +
-          '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
-        process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
-        process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
-        process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
-        process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
-        process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
-        process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
-        process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
-        process.cwd() +
-          '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
-        process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
-        process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
-      ]);
+      expect(normalizePathArray(list)).to.eql(
+        normalizePathArray([
+          process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
+          process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
+          process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
+          process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
+          process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
+          process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
+          process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
+          process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
+          process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
+          process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
+          process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
+          process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
+          process.cwd() +
+            '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
+          process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
+          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
+        ])
+      );
     });
   });
   it('should include all supported files respecting order of directories config', function () {
@@ -202,26 +213,28 @@ describe('Seeder._listAll', function () {
         sortDirsSeparately: true,
       })
       .then(function (list) {
-        expect(list).to.eql([
-          process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
-          process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
-          process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
-          process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
-          process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
-          process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
-          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
-          process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
-          process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
-          process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
-          process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
-          process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
-          process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
-          process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
-        ]);
+        expect(normalizePathArray(list)).to.eql(
+          normalizePathArray([
+            process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
+            process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
+            process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
+            process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
+            process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
+            process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
+            process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
+            process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
+            process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
+            process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
+            process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
+            process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
+            process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
+            process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
+          ])
+        );
       });
   });
   it('should include all supported files and files in subfolders', function () {
@@ -230,42 +243,44 @@ describe('Seeder._listAll', function () {
         recursive: true,
       })
       .then(function (list) {
-        expect(list).to.eql([
-          process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
-          process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
-          process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
-          process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
-          process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
-          process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
-          process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
-          process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
-          process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
-          process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
-          process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
-          process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
-          process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/co-seed.co',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/coffee-seed.coffee',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/eg-seed.eg',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/iced-seed.iced',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/litcoffee-seed.litcoffee',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/ls-seed.ls',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/ts-seed.ts',
-          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
-        ]);
+        expect(normalizePathArray(list)).to.eql(
+          normalizePathArray([
+            process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
+            process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
+            process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
+            process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
+            process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
+            process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
+            process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
+            process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
+            process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
+            process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
+            process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
+            process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
+            process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/co-seed.co',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/coffee-seed.coffee',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/eg-seed.eg',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/iced-seed.iced',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/litcoffee-seed.litcoffee',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/ls-seed.ls',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/ts-seed.ts',
+            process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
+          ])
+        );
       });
   });
   it('should include all supported files and files in subfolders, sorted by directories', function () {
@@ -275,42 +290,44 @@ describe('Seeder._listAll', function () {
         sortDirsSeparately: true,
       })
       .then(function (list) {
-        expect(list).to.eql([
-          process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
-          process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
-          process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
-          process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
-          process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
-          process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/co-seed.co',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/coffee-seed.coffee',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/eg-seed.eg',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/iced-seed.iced',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/litcoffee-seed.litcoffee',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/ls-seed.ls',
-          process.cwd() +
-            '/test/integration/seed/2-seeds/recursive-folder/ts-seed.ts',
-          process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
-          process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
-          process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
-          process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
-          process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
-          process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
-          process.cwd() +
-            '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
-          process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
-          process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
-        ]);
+        expect(normalizePathArray(list)).to.eql(
+          normalizePathArray([
+            process.cwd() + '/test/integration/seed/2-seeds/co-seed.co',
+            process.cwd() + '/test/integration/seed/2-seeds/coffee-seed.coffee',
+            process.cwd() + '/test/integration/seed/2-seeds/eg-seed.eg',
+            process.cwd() + '/test/integration/seed/2-seeds/iced-seed.iced',
+            process.cwd() + '/test/integration/seed/2-seeds/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/litcoffee-seed.litcoffee',
+            process.cwd() + '/test/integration/seed/2-seeds/ls-seed.ls',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/co-seed.co',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/coffee-seed.coffee',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/eg-seed.eg',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/iced-seed.iced',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/litcoffee-seed.litcoffee',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/ls-seed.ls',
+            process.cwd() +
+              '/test/integration/seed/2-seeds/recursive-folder/ts-seed.ts',
+            process.cwd() + '/test/integration/seed/2-seeds/ts-seed.ts',
+            process.cwd() + '/test/integration/seed/1-seeds/co-seed.co',
+            process.cwd() + '/test/integration/seed/1-seeds/coffee-seed.coffee',
+            process.cwd() + '/test/integration/seed/1-seeds/eg-seed.eg',
+            process.cwd() + '/test/integration/seed/1-seeds/iced-seed.iced',
+            process.cwd() + '/test/integration/seed/1-seeds/js-seed.js',
+            process.cwd() +
+              '/test/integration/seed/1-seeds/litcoffee-seed.litcoffee',
+            process.cwd() + '/test/integration/seed/1-seeds/ls-seed.ls',
+            process.cwd() + '/test/integration/seed/1-seeds/ts-seed.ts',
+          ])
+        );
       });
   });
 });
