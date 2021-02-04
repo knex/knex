@@ -1208,7 +1208,7 @@ module.exports = (knex) => {
             tbl.renameColumn('id', 'id_new');
           }));
 
-        it.only('#933 - .renameColumn should not drop null or default value', () => {
+        it('#933 - .renameColumn should not drop null or default value', () => {
           const tableName = 'rename_col_test';
           return knex.transaction((tr) => {
             const getColInfo = () => tr(tableName).columnInfo();
