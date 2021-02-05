@@ -1,7 +1,7 @@
-/*global expect*/
 /*eslint no-var:0, indent:0, max-len:0 */
 'use strict';
 
+const { expect } = require('chai');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const PG_Client = require('../../../lib/dialects/postgres');
 const Redshift_Client = require('../../../lib/dialects/redshift');
@@ -42,7 +42,7 @@ const clientsWithNullAsDefault = {
 
 const customLoggerConfig = {
   log: {
-    warn: function(message) {
+    warn: function (message) {
       throw new Error(message);
     },
   },
@@ -169,10 +169,7 @@ describe('Custom identifier wrapping', () => {
 
   it('should use custom wrapper', () => {
     testsql(
-      qb()
-        .withSchema('schema')
-        .select('users.foo as bar')
-        .from('users'),
+      qb().withSchema('schema').select('users.foo as bar').from('users'),
       {
         mysql:
           'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`',
@@ -368,20 +365,15 @@ describe('Custom identifier wrapping', () => {
     });
 
     it('should return the query context if called with no arguments', () => {
-      expect(
-        qb()
-          .queryContext({ foo: 'foo' })
-          .queryContext()
-      ).to.deep.equal({ foo: 'foo' });
+      expect(qb().queryContext({ foo: 'foo' }).queryContext()).to.deep.equal({
+        foo: 'foo',
+      });
     });
 
     describe('when a builder is cloned', () => {
       it('should copy the query context', () => {
         expect(
-          qb()
-            .queryContext({ foo: 'foo' })
-            .clone()
-            .queryContext()
+          qb().queryContext({ foo: 'foo' }).clone().queryContext()
         ).to.deep.equal({ foo: 'foo' });
       });
 
@@ -405,26 +397,17 @@ describe('Custom identifier wrapping', () => {
 
 describe('QueryBuilder', () => {
   it('basic select', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users'),
-      {
-        mysql: 'select * from `users`',
-        mssql: 'select * from [users]',
-        pg: 'select * from "users"',
-        'pg-redshift': 'select * from "users"',
-      }
-    );
+    testsql(qb().select('*').from('users'), {
+      mysql: 'select * from `users`',
+      mssql: 'select * from [users]',
+      pg: 'select * from "users"',
+      'pg-redshift': 'select * from "users"',
+    });
   });
 
   it('adding selects', () => {
     testsql(
-      qb()
-        .select('foo')
-        .select('bar')
-        .select(['baz', 'boom'])
-        .from('users'),
+      qb().select('foo').select('bar').select(['baz', 'boom']).from('users'),
       {
         mysql: 'select `foo`, `bar`, `baz`, `boom` from `users`',
         mssql: 'select [foo], [bar], [baz], [boom] from [users]',
@@ -435,54 +418,38 @@ describe('QueryBuilder', () => {
   });
 
   it('basic select distinct', () => {
-    testsql(
-      qb()
-        .distinct()
-        .select('foo', 'bar')
-        .from('users'),
-      {
-        mysql: {
-          sql: 'select distinct `foo`, `bar` from `users`',
-        },
-        mssql: {
-          sql: 'select distinct [foo], [bar] from [users]',
-        },
-        pg: {
-          sql: 'select distinct "foo", "bar" from "users"',
-        },
-        'pg-redshift': {
-          sql: 'select distinct "foo", "bar" from "users"',
-        },
-      }
-    );
+    testsql(qb().distinct().select('foo', 'bar').from('users'), {
+      mysql: {
+        sql: 'select distinct `foo`, `bar` from `users`',
+      },
+      mssql: {
+        sql: 'select distinct [foo], [bar] from [users]',
+      },
+      pg: {
+        sql: 'select distinct "foo", "bar" from "users"',
+      },
+      'pg-redshift': {
+        sql: 'select distinct "foo", "bar" from "users"',
+      },
+    });
   });
 
   it('basic select with alias as property-value pairs', () => {
-    testsql(
-      qb()
-        .select({ bar: 'foo' })
-        .from('users'),
-      {
-        mysql: 'select `foo` as `bar` from `users`',
-        mssql: 'select [foo] as [bar] from [users]',
-        oracledb: 'select "foo" "bar" from "users"',
-        pg: 'select "foo" as "bar" from "users"',
-      }
-    );
+    testsql(qb().select({ bar: 'foo' }).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      pg: 'select "foo" as "bar" from "users"',
+    });
   });
 
   it('basic select with mixed pure column and alias pair', () => {
-    testsql(
-      qb()
-        .select('baz', { bar: 'foo' })
-        .from('users'),
-      {
-        mysql: 'select `baz`, `foo` as `bar` from `users`',
-        mssql: 'select [baz], [foo] as [bar] from [users]',
-        oracledb: 'select "baz", "foo" "bar" from "users"',
-        pg: 'select "baz", "foo" as "bar" from "users"',
-      }
-    );
+    testsql(qb().select('baz', { bar: 'foo' }).from('users'), {
+      mysql: 'select `baz`, `foo` as `bar` from `users`',
+      mssql: 'select [baz], [foo] as [bar] from [users]',
+      oracledb: 'select "baz", "foo" "bar" from "users"',
+      pg: 'select "baz", "foo" as "bar" from "users"',
+    });
   });
 
   it('basic select with array-wrapped alias pair', () => {
@@ -500,76 +467,51 @@ describe('QueryBuilder', () => {
   });
 
   it('basic select with mixed pure column and alias pair', () => {
-    testsql(
-      qb()
-        .select({ bar: 'foo' })
-        .from('users'),
-      {
-        mysql: 'select `foo` as `bar` from `users`',
-        mssql: 'select [foo] as [bar] from [users]',
-        oracledb: 'select "foo" "bar" from "users"',
-        pg: 'select "foo" as "bar" from "users"',
-      }
-    );
+    testsql(qb().select({ bar: 'foo' }).from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      pg: 'select "foo" as "bar" from "users"',
+    });
   });
 
   it('basic old-style alias', () => {
-    testsql(
-      qb()
-        .select('foo as bar')
-        .from('users'),
-      {
-        mysql: 'select `foo` as `bar` from `users`',
-        mssql: 'select [foo] as [bar] from [users]',
-        oracledb: 'select "foo" "bar" from "users"',
-        pg: 'select "foo" as "bar" from "users"',
-        'pg-redshift': 'select "foo" as "bar" from "users"',
-      }
-    );
+    testsql(qb().select('foo as bar').from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      pg: 'select "foo" as "bar" from "users"',
+      'pg-redshift': 'select "foo" as "bar" from "users"',
+    });
   });
 
   it('basic alias trims spaces', () => {
-    testsql(
-      qb()
-        .select(' foo   as bar ')
-        .from('users'),
-      {
-        mysql: 'select `foo` as `bar` from `users`',
-        mssql: 'select [foo] as [bar] from [users]',
-        oracledb: 'select "foo" "bar" from "users"',
-        pg: 'select "foo" as "bar" from "users"',
-        'pg-redshift': 'select "foo" as "bar" from "users"',
-      }
-    );
+    testsql(qb().select(' foo   as bar ').from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      pg: 'select "foo" as "bar" from "users"',
+      'pg-redshift': 'select "foo" as "bar" from "users"',
+    });
   });
 
   it('allows for case-insensitive alias', () => {
-    testsql(
-      qb()
-        .select(' foo   aS bar ')
-        .from('users'),
-      {
-        mysql: 'select `foo` as `bar` from `users`',
-        mssql: 'select [foo] as [bar] from [users]',
-        oracledb: 'select "foo" "bar" from "users"',
-        pg: 'select "foo" as "bar" from "users"',
-        'pg-redshift': 'select "foo" as "bar" from "users"',
-      }
-    );
+    testsql(qb().select(' foo   aS bar ').from('users'), {
+      mysql: 'select `foo` as `bar` from `users`',
+      mssql: 'select [foo] as [bar] from [users]',
+      oracledb: 'select "foo" "bar" from "users"',
+      pg: 'select "foo" as "bar" from "users"',
+      'pg-redshift': 'select "foo" as "bar" from "users"',
+    });
   });
 
   it('allows alias with dots in the identifier name', () => {
-    testsql(
-      qb()
-        .select('foo as bar.baz')
-        .from('users'),
-      {
-        mysql: 'select `foo` as `bar.baz` from `users`',
-        mssql: 'select [foo] as [bar.baz] from [users]',
-        pg: 'select "foo" as "bar.baz" from "users"',
-        'pg-redshift': 'select "foo" as "bar.baz" from "users"',
-      }
-    );
+    testsql(qb().select('foo as bar.baz').from('users'), {
+      mysql: 'select `foo` as `bar.baz` from `users`',
+      mssql: 'select [foo] as [bar.baz] from [users]',
+      pg: 'select "foo" as "bar.baz" from "users"',
+      'pg-redshift': 'select "foo" as "bar.baz" from "users"',
+    });
   });
 
   it('less trivial case of object alias syntax', () => {
@@ -585,9 +527,7 @@ describe('QueryBuilder', () => {
         .from({
           table1: 'table',
           table2: 'table',
-          subq: qb()
-            .from('test')
-            .limit(1),
+          subq: qb().from('test').limit(1),
         }),
       {
         mysql:
@@ -605,112 +545,76 @@ describe('QueryBuilder', () => {
   });
 
   it('basic table wrapping', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('public.users'),
-      {
-        mysql: 'select * from `public`.`users`',
-        mssql: 'select * from [public].[users]',
-        pg: 'select * from "public"."users"',
-        'pg-redshift': 'select * from "public"."users"',
-      }
-    );
+    testsql(qb().select('*').from('public.users'), {
+      mysql: 'select * from `public`.`users`',
+      mssql: 'select * from [public].[users]',
+      pg: 'select * from "public"."users"',
+      'pg-redshift': 'select * from "public"."users"',
+    });
   });
 
   it('basic table wrapping with declared schema', () => {
-    testsql(
-      qb()
-        .withSchema('myschema')
-        .select('*')
-        .from('users'),
-      {
-        mysql: 'select * from `myschema`.`users`',
-        pg: 'select * from "myschema"."users"',
-        'pg-redshift': 'select * from "myschema"."users"',
-        mssql: 'select * from [myschema].[users]',
-      }
-    );
+    testsql(qb().withSchema('myschema').select('*').from('users'), {
+      mysql: 'select * from `myschema`.`users`',
+      pg: 'select * from "myschema"."users"',
+      'pg-redshift': 'select * from "myschema"."users"',
+      mssql: 'select * from [myschema].[users]',
+    });
   });
 
   it('selects from only', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users', { only: true }),
-      {
-        pg: 'select * from only "users"',
-      }
-    );
+    testsql(qb().select('*').from('users', { only: true }), {
+      pg: 'select * from only "users"',
+    });
   });
 
   it('clear a select', () => {
-    testsql(
-      qb()
-        .select('id', 'email')
-        .from('users')
-        .clearSelect(),
-      {
-        mysql: {
-          sql: 'select * from `users`',
-        },
-        mssql: {
-          sql: 'select * from [users]',
-        },
-        pg: {
-          sql: 'select * from "users"',
-        },
-        'pg-redshift': {
-          sql: 'select * from "users"',
-        },
-      }
-    );
+    testsql(qb().select('id', 'email').from('users').clearSelect(), {
+      mysql: {
+        sql: 'select * from `users`',
+      },
+      mssql: {
+        sql: 'select * from [users]',
+      },
+      pg: {
+        sql: 'select * from "users"',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users"',
+      },
+    });
 
-    testsql(
-      qb()
-        .select('id')
-        .from('users')
-        .clearSelect()
-        .select('email'),
-      {
-        mysql: {
-          sql: 'select `email` from `users`',
-        },
-        mssql: {
-          sql: 'select [email] from [users]',
-        },
-        pg: {
-          sql: 'select "email" from "users"',
-        },
-        'pg-redshift': {
-          sql: 'select "email" from "users"',
-        },
-      }
-    );
+    testsql(qb().select('id').from('users').clearSelect().select('email'), {
+      mysql: {
+        sql: 'select `email` from `users`',
+      },
+      mssql: {
+        sql: 'select [email] from [users]',
+      },
+      pg: {
+        sql: 'select "email" from "users"',
+      },
+      'pg-redshift': {
+        sql: 'select "email" from "users"',
+      },
+    });
   });
 
   it('clear a where', () => {
-    testsql(
-      qb()
-        .select('id')
-        .from('users')
-        .where('id', '=', 1)
-        .clearWhere(),
-      {
-        mysql: {
-          sql: 'select `id` from `users`',
-        },
-        mssql: {
-          sql: 'select [id] from [users]',
-        },
-        pg: {
-          sql: 'select "id" from "users"',
-        },
-        'pg-redshift': {
-          sql: 'select "id" from "users"',
-        },
-      }
-    );
+    testsql(qb().select('id').from('users').where('id', '=', 1).clearWhere(), {
+      mysql: {
+        sql: 'select `id` from `users`',
+      },
+      mssql: {
+        sql: 'select [id] from [users]',
+      },
+      pg: {
+        sql: 'select "id" from "users"',
+      },
+      'pg-redshift': {
+        sql: 'select "id" from "users"',
+      },
+    });
 
     testsql(
       qb()
@@ -740,27 +644,53 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('clear a group', () => {
+    testsql(qb().table('users').groupBy('name').clearGroup(), {
+      mysql: {
+        sql: 'select * from `users`',
+      },
+      mssql: {
+        sql: 'select * from [users]',
+      },
+      pg: {
+        sql: 'select * from "users"',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users"',
+      },
+    });
+
+    testsql(qb().table('users').groupBy('name').clearGroup().groupBy('id'), {
+      mysql: {
+        sql: 'select * from `users` group by `id`',
+      },
+      mssql: {
+        sql: 'select * from [users] group by [id]',
+      },
+      pg: {
+        sql: 'select * from "users" group by "id"',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" group by "id"',
+      },
+    });
+  });
+
   it('clear an order', () => {
-    testsql(
-      qb()
-        .table('users')
-        .orderBy('name', 'desc')
-        .clearOrder(),
-      {
-        mysql: {
-          sql: 'select * from `users`',
-        },
-        mssql: {
-          sql: 'select * from [users]',
-        },
-        pg: {
-          sql: 'select * from "users"',
-        },
-        'pg-redshift': {
-          sql: 'select * from "users"',
-        },
-      }
-    );
+    testsql(qb().table('users').orderBy('name', 'desc').clearOrder(), {
+      mysql: {
+        sql: 'select * from `users`',
+      },
+      mssql: {
+        sql: 'select * from [users]',
+      },
+      pg: {
+        sql: 'select * from "users"',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users"',
+      },
+    });
 
     testsql(
       qb()
@@ -813,44 +743,124 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it('basic wheres', () => {
+  it('clear by statements', () => {
     testsql(
       qb()
-        .select('*')
-        .from('users')
-        .where('id', '=', 1),
+        .table('users')
+        .with('testWith', (queryBuilder) => {
+          return queryBuilder.table('user_info').where('a', 'b');
+        })
+        .join('tableJoin', 'id', 'id')
+        .select(['id'])
+        .hintComment('hint()')
+        .where('id', '<', 10)
+        .groupBy('id')
+        .groupBy('id', 'desc')
+        .limit(100)
+        .offset(100)
+        .having('id', '>', 100)
+        .union(function () {
+          this.select('*').from('users').whereNull('first_name');
+        })
+        .unionAll(function () {
+          this.select('*').from('users').whereNull('first_name');
+        })
+        .clear('with')
+        .clear('join')
+        .clear('union')
+        .clear('columns')
+        .select(['id'])
+        .clear('select')
+        .clear('hintComments')
+        .clear('where')
+        .clear('group')
+        .clear('order')
+        .clear('limit')
+        .clear('offset')
+        .clear('having'),
       {
         mysql: {
-          sql: 'select * from `users` where `id` = ?',
-          bindings: [1],
+          sql: 'select * from `users`',
+          bindings: [],
         },
         mssql: {
-          sql: 'select * from [users] where [id] = ?',
-          bindings: [1],
+          sql: 'select * from [users]',
+          bindings: [],
         },
         pg: {
-          sql: 'select * from "users" where "id" = ?',
-          bindings: [1],
+          sql: 'select * from "users"',
+          bindings: [],
         },
         'pg-redshift': {
-          sql: 'select * from "users" where "id" = ?',
-          bindings: [1],
+          sql: 'select * from "users"',
+          bindings: [],
         },
       }
     );
+  });
 
-    testquery(
+  it('Can clear increment/decrement calls via .clear()', () => {
+    testsql(
       qb()
-        .select('*')
-        .from('users')
-        .where('id', '=', 1),
+        .into('users')
+        .where('id', '=', 1)
+        .update({ email: 'foo@bar.com' })
+        .increment({
+          balance: 10,
+        })
+        .clear('counter')
+        .decrement({
+          value: 50,
+        })
+        .clear('counters'),
       {
-        mysql: 'select * from `users` where `id` = 1',
-        pg: 'select * from "users" where "id" = 1',
-        'pg-redshift': 'select * from "users" where "id" = 1',
-        mssql: 'select * from [users] where [id] = 1',
+        pg: {
+          sql: 'update "users" set "email" = ? where "id" = ?',
+          bindings: ['foo@bar.com', 1],
+        },
+        mysql: {
+          sql: 'update `users` set `email` = ? where `id` = ?',
+          bindings: ['foo@bar.com', 1],
+        },
+        mssql: {
+          sql:
+            'update [users] set [email] = ? where [id] = ?;select @@rowcount',
+          bindings: ['foo@bar.com', 1],
+        },
+        'pg-redshift': {
+          sql: 'update "users" set "email" = ? where "id" = ?',
+          bindings: ['foo@bar.com', 1],
+        },
       }
     );
+  });
+
+  it('basic wheres', () => {
+    testsql(qb().select('*').from('users').where('id', '=', 1), {
+      mysql: {
+        sql: 'select * from `users` where `id` = ?',
+        bindings: [1],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ?',
+        bindings: [1],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ?',
+        bindings: [1],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ?',
+        bindings: [1],
+      },
+    });
+
+    testquery(qb().select('*').from('users').where('id', '=', 1), {
+      mysql: 'select * from `users` where `id` = 1',
+      pg: 'select * from "users" where "id" = 1',
+      'pg-redshift': 'select * from "users" where "id" = 1',
+      mssql: 'select * from [users] where [id] = 1',
+    });
   });
 
   it('whereColumn', () => {
@@ -870,43 +880,31 @@ describe('QueryBuilder', () => {
   });
 
   it('where not', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereNot('id', '=', 1),
-      {
-        mysql: {
-          sql: 'select * from `users` where not `id` = ?',
-          bindings: [1],
-        },
-        mssql: {
-          sql: 'select * from [users] where not [id] = ?',
-          bindings: [1],
-        },
-        pg: {
-          sql: 'select * from "users" where not "id" = ?',
-          bindings: [1],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where not "id" = ?',
-          bindings: [1],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereNot('id', '=', 1), {
+      mysql: {
+        sql: 'select * from `users` where not `id` = ?',
+        bindings: [1],
+      },
+      mssql: {
+        sql: 'select * from [users] where not [id] = ?',
+        bindings: [1],
+      },
+      pg: {
+        sql: 'select * from "users" where not "id" = ?',
+        bindings: [1],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where not "id" = ?',
+        bindings: [1],
+      },
+    });
 
-    testquery(
-      qb()
-        .select('*')
-        .from('users')
-        .whereNot('id', '=', 1),
-      {
-        mysql: 'select * from `users` where not `id` = 1',
-        pg: 'select * from "users" where not "id" = 1',
-        'pg-redshift': 'select * from "users" where not "id" = 1',
-        mssql: 'select * from [users] where not [id] = 1',
-      }
-    );
+    testquery(qb().select('*').from('users').whereNot('id', '=', 1), {
+      mysql: 'select * from `users` where not `id` = 1',
+      pg: 'select * from "users" where not "id" = 1',
+      'pg-redshift': 'select * from "users" where not "id" = 1',
+      mssql: 'select * from [users] where not [id] = 1',
+    });
   });
 
   it('grouped or where not', () => {
@@ -914,7 +912,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .whereNot(function() {
+        .whereNot(function () {
           this.where('id', '=', 1).orWhereNot('id', '=', 3);
         }),
       {
@@ -941,7 +939,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .whereNot(function() {
+        .whereNot(function () {
           this.where('id', '=', 1).orWhereNot('id', '=', 3);
         }),
       {
@@ -959,7 +957,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .where(function() {
+        .where(function () {
           this.where('id', '=', 1).orWhereNot('id', '=', 3);
         }),
       {
@@ -986,7 +984,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .where(function() {
+        .where(function () {
           this.where('id', '=', 1).orWhereNot('id', '=', 3);
         }),
       {
@@ -1046,46 +1044,62 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it('where bool', () => {
-    testquery(
-      qb()
+  it('where not should throw warning when used with "in" or "between"', function () {
+    try {
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
         .select('*')
         .from('users')
-        .where(true),
-      {
-        mysql: 'select * from `users` where 1 = 1',
-        sqlite3: 'select * from `users` where 1 = 1',
-        mssql: 'select * from [users] where 1 = 1',
-        pg: 'select * from "users" where 1 = 1',
-      }
-    );
+        .whereNot('id', 'in', [1, 2, 3]);
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'whereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.'
+      );
+    }
+
+    try {
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'between', [1, 3]);
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'whereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.'
+      );
+    }
+  });
+
+  it('where bool', () => {
+    testquery(qb().select('*').from('users').where(true), {
+      mysql: 'select * from `users` where 1 = 1',
+      sqlite3: 'select * from `users` where 1 = 1',
+      mssql: 'select * from [users] where 1 = 1',
+      pg: 'select * from "users" where 1 = 1',
+    });
   });
 
   it('where betweens', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereBetween('id', [1, 2]),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` between ? and ?',
-          bindings: [1, 2],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] between ? and ?',
-          bindings: [1, 2],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" between ? and ?',
-          bindings: [1, 2],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" between ? and ?',
-          bindings: [1, 2],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereBetween('id', [1, 2]), {
+      mysql: {
+        sql: 'select * from `users` where `id` between ? and ?',
+        bindings: [1, 2],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] between ? and ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" between ? and ?',
+        bindings: [1, 2],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" between ? and ?',
+        bindings: [1, 2],
+      },
+    });
   });
 
   it('and where betweens', () => {
@@ -1153,65 +1167,50 @@ describe('QueryBuilder', () => {
   });
 
   it('where betweens, alternate', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', 'BeTween', [1, 2]),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` between ? and ?',
-          bindings: [1, 2],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] between ? and ?',
-          bindings: [1, 2],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" between ? and ?',
-          bindings: [1, 2],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" between ? and ?',
-          bindings: [1, 2],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').where('id', 'BeTween', [1, 2]), {
+      mysql: {
+        sql: 'select * from `users` where `id` between ? and ?',
+        bindings: [1, 2],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] between ? and ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" between ? and ?',
+        bindings: [1, 2],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" between ? and ?',
+        bindings: [1, 2],
+      },
+    });
   });
 
   it('where not between', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereNotBetween('id', [1, 2]),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` not between ? and ?',
-          bindings: [1, 2],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] not between ? and ?',
-          bindings: [1, 2],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" not between ? and ?',
-          bindings: [1, 2],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" not between ? and ?',
-          bindings: [1, 2],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereNotBetween('id', [1, 2]), {
+      mysql: {
+        sql: 'select * from `users` where `id` not between ? and ?',
+        bindings: [1, 2],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] not between ? and ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" not between ? and ?',
+        bindings: [1, 2],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" not between ? and ?',
+        bindings: [1, 2],
+      },
+    });
   });
 
   it('where not between, alternate', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', 'not between ', [1, 2]),
+      qb().select('*').from('users').where('id', 'not between ', [1, 2]),
       {
         mysql: {
           sql: 'select * from `users` where `id` not between ? and ?',
@@ -1290,30 +1289,24 @@ describe('QueryBuilder', () => {
   });
 
   it('raw column wheres', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where(raw('LCASE("name")'), 'foo'),
-      {
-        mysql: {
-          sql: 'select * from `users` where LCASE("name") = ?',
-          bindings: ['foo'],
-        },
-        mssql: {
-          sql: 'select * from [users] where LCASE("name") = ?',
-          bindings: ['foo'],
-        },
-        pg: {
-          sql: 'select * from "users" where LCASE("name") = ?',
-          bindings: ['foo'],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where LCASE("name") = ?',
-          bindings: ['foo'],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').where(raw('LCASE("name")'), 'foo'), {
+      mysql: {
+        sql: 'select * from `users` where LCASE("name") = ?',
+        bindings: ['foo'],
+      },
+      mssql: {
+        sql: 'select * from [users] where LCASE("name") = ?',
+        bindings: ['foo'],
+      },
+      pg: {
+        sql: 'select * from "users" where LCASE("name") = ?',
+        bindings: ['foo'],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where LCASE("name") = ?',
+        bindings: ['foo'],
+      },
+    });
   });
 
   it('raw wheres', () => {
@@ -1400,30 +1393,24 @@ describe('QueryBuilder', () => {
   });
 
   it('basic where ins', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereIn('id', [1, 2, 3]),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereIn('id', [1, 2, 3]), {
+      mysql: {
+        sql: 'select * from `users` where `id` in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+    });
   });
 
   it('multi column where ins', () => {
@@ -1503,30 +1490,24 @@ describe('QueryBuilder', () => {
   });
 
   it('basic where not ins', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereNotIn('id', [1, 2, 3]),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereNotIn('id', [1, 2, 3]), {
+      mysql: {
+        sql: 'select * from `users` where `id` not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+    });
   });
 
   it('chained or where not in', () => {
@@ -1586,30 +1567,24 @@ describe('QueryBuilder', () => {
   });
 
   it('chained basic where not ins', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .not.whereIn('id', [1, 2, 3]),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" not in (?, ?, ?)',
-          bindings: [1, 2, 3],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').not.whereIn('id', [1, 2, 3]), {
+      mysql: {
+        sql: 'select * from `users` where `id` not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" not in (?, ?, ?)',
+        bindings: [1, 2, 3],
+      },
+    });
   });
 
   it('chained or where not in', () => {
@@ -1641,78 +1616,64 @@ describe('QueryBuilder', () => {
   });
 
   it('whereIn with empty array, #477', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereIn('id', []),
-      {
-        mysql: {
-          sql: 'select * from `users` where 1 = ?',
-          bindings: [0],
-        },
-        sqlite3: {
-          sql: 'select * from `users` where 1 = ?',
-          bindings: [0],
-        },
-        mssql: {
-          sql: 'select * from [users] where 1 = ?',
-          bindings: [0],
-        },
-        pg: {
-          sql: 'select * from "users" where 1 = ?',
-          bindings: [0],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where 1 = ?',
-          bindings: [0],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereIn('id', []), {
+      mysql: {
+        sql: 'select * from `users` where 1 = ?',
+        bindings: [0],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where 1 = ?',
+        bindings: [0],
+      },
+      mssql: {
+        sql: 'select * from [users] where 1 = ?',
+        bindings: [0],
+      },
+      pg: {
+        sql: 'select * from "users" where 1 = ?',
+        bindings: [0],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where 1 = ?',
+        bindings: [0],
+      },
+    });
   });
 
   it('whereNotIn with empty array, #477', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereNotIn('id', []),
-      {
-        mysql: {
-          sql: 'select * from `users` where 1 = ?',
-          bindings: [1],
-        },
-        sqlite3: {
-          sql: 'select * from `users` where 1 = ?',
-          bindings: [1],
-        },
-        mssql: {
-          sql: 'select * from [users] where 1 = ?',
-          bindings: [1],
-        },
-        pg: {
-          sql: 'select * from "users" where 1 = ?',
-          bindings: [1],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where 1 = ?',
-          bindings: [1],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereNotIn('id', []), {
+      mysql: {
+        sql: 'select * from `users` where 1 = ?',
+        bindings: [1],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where 1 = ?',
+        bindings: [1],
+      },
+      mssql: {
+        sql: 'select * from [users] where 1 = ?',
+        bindings: [1],
+      },
+      pg: {
+        sql: 'select * from "users" where 1 = ?',
+        bindings: [1],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where 1 = ?',
+        bindings: [1],
+      },
+    });
   });
 
   it('should allow a function as the first argument, for a grouped where clause', () => {
-    const partial = qb()
-      .table('test')
-      .where('id', '=', 1);
+    const partial = qb().table('test').where('id', '=', 1);
     testsql(partial, {
       mysql: 'select * from `test` where `id` = ?',
       mssql: 'select * from [test] where [id] = ?',
       pg: 'select * from "test" where "id" = ?',
     });
 
-    const subWhere = function(sql) {
+    const subWhere = function (sql) {
       expect(this).to.equal(sql);
       this.where({ id: 3 }).orWhere('id', 4);
     };
@@ -1738,12 +1699,12 @@ describe('QueryBuilder', () => {
   });
 
   it('should accept a function as the "value", for a sub select', () => {
-    const chain = qb().where('id', '=', function(qb) {
+    const chain = qb().where('id', '=', function (qb) {
       expect(this).to.equal(qb);
       this.select('account_id')
         .from('names')
         .where('names.id', '>', 1)
-        .orWhere(function() {
+        .orWhere(function () {
           this.where('names.first_name', 'like', 'Tim%').andWhere(
             'names.id',
             '>',
@@ -1788,12 +1749,12 @@ describe('QueryBuilder', () => {
   });
 
   it('should accept a function as the "value", for a sub select when chained', () => {
-    const chain = qb().where('id', '=', function(qb) {
+    const chain = qb().where('id', '=', function (qb) {
       expect(this).to.equal(qb);
       this.select('account_id')
         .from('names')
         .where('names.id', '>', 1)
-        .or.where(function() {
+        .or.where(function () {
           this.where('names.first_name', 'like', 'Tim%').and.where(
             'names.id',
             '>',
@@ -1847,10 +1808,8 @@ describe('QueryBuilder', () => {
       .select('*')
       .from('users')
       .where('id', '=', 1)
-      .union(function() {
-        this.select('*')
-          .from('users')
-          .where('id', '=', 2);
+      .union(function () {
+        this.select('*').from('users').where('id', '=', 2);
       });
     testsql(chain, {
       mysql: {
@@ -1880,15 +1839,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .union(
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         }
       );
     testsql(multipleArgumentsChain, {
@@ -1919,15 +1874,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .union([
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         },
       ]);
     testsql(arrayChain, {
@@ -1958,10 +1909,10 @@ describe('QueryBuilder', () => {
     const wrappedChain = qb()
       .select('*')
       .from('users')
-      .where('id', 'in', function() {
+      .where('id', 'in', function () {
         this.table('users')
           .max('id')
-          .union(function() {
+          .union(function () {
             this.table('users').min('id');
           }, true);
       });
@@ -1994,15 +1945,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .union(
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         },
         true
       );
@@ -2035,15 +1982,11 @@ describe('QueryBuilder', () => {
       .where({ id: 1 })
       .union(
         [
-          function() {
-            this.select('*')
-              .from('users')
-              .where({ id: 2 });
+          function () {
+            this.select('*').from('users').where({ id: 2 });
           },
-          function() {
-            this.select('*')
-              .from('users')
-              .where({ id: 3 });
+          function () {
+            this.select('*').from('users').where({ id: 3 });
           },
         ],
         true
@@ -2076,10 +2019,10 @@ describe('QueryBuilder', () => {
     const wrappedChain = qb()
       .select('*')
       .from('users')
-      .where('id', 'in', function() {
+      .where('id', 'in', function () {
         this.table('users')
           .max('id')
-          .unionAll(function() {
+          .unionAll(function () {
             this.table('users').min('id');
           }, true);
       });
@@ -2112,15 +2055,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .unionAll(
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         },
         true
       );
@@ -2153,15 +2092,11 @@ describe('QueryBuilder', () => {
       .where({ id: 1 })
       .unionAll(
         [
-          function() {
-            this.select('*')
-              .from('users')
-              .where({ id: 2 });
+          function () {
+            this.select('*').from('users').where({ id: 2 });
           },
-          function() {
-            this.select('*')
-              .from('users')
-              .where({ id: 3 });
+          function () {
+            this.select('*').from('users').where({ id: 3 });
           },
         ],
         true
@@ -2204,10 +2139,8 @@ describe('QueryBuilder', () => {
       .select('*')
       .from('users')
       .where('id', '=', 1)
-      .unionAll(function() {
-        this.select('*')
-          .from('users')
-          .where('id', '=', 2);
+      .unionAll(function () {
+        this.select('*').from('users').where('id', '=', 2);
       });
     testsql(chain, {
       mysql: {
@@ -2237,15 +2170,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .unionAll(
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         }
       );
     testsql(multipleArgumentsChain, {
@@ -2276,15 +2205,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .unionAll([
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         },
       ]);
     testsql(arrayChain, {
@@ -2316,16 +2241,9 @@ describe('QueryBuilder', () => {
       .select('*')
       .from('users')
       .where('id', '=', 1)
-      .union(
-        qb()
-          .select('*')
-          .from('users')
-          .where('id', '=', 2)
-      )
-      .union(function() {
-        this.select('*')
-          .from('users')
-          .where('id', '=', 3);
+      .union(qb().select('*').from('users').where('id', '=', 2))
+      .union(function () {
+        this.select('*').from('users').where('id', '=', 3);
       });
     testsql(chain, {
       mysql: {
@@ -2355,10 +2273,7 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .union([
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 2 }),
+        qb().select('*').from('users').where({ id: 2 }),
         raw('select * from users where id = ?', [3]),
       ]);
     testsql(arrayChain, {
@@ -2389,10 +2304,7 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .union(
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 2 }),
+        qb().select('*').from('users').where({ id: 2 }),
         raw('select * from users where id = ?', [3])
       );
     testsql(multipleArgumentsChain, {
@@ -2424,18 +2336,8 @@ describe('QueryBuilder', () => {
       .select('*')
       .from('users')
       .where('id', '=', 1)
-      .unionAll(
-        qb()
-          .select('*')
-          .from('users')
-          .where('id', '=', 2)
-      )
-      .unionAll(
-        qb()
-          .select('*')
-          .from('users')
-          .where('id', '=', 3)
-      );
+      .unionAll(qb().select('*').from('users').where('id', '=', 2))
+      .unionAll(qb().select('*').from('users').where('id', '=', 3));
 
     testsql(chain, {
       mysql: {
@@ -2465,10 +2367,7 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .unionAll([
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 2 }),
+        qb().select('*').from('users').where({ id: 2 }),
         raw('select * from users where id = ?', [3]),
       ]);
     testsql(arrayChain, {
@@ -2499,10 +2398,7 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .unionAll(
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 2 }),
+        qb().select('*').from('users').where({ id: 2 }),
         raw('select * from users where id = ?', [3])
       );
     testsql(multipleArgumentsChain, {
@@ -2534,10 +2430,8 @@ describe('QueryBuilder', () => {
       .select('*')
       .from('users')
       .where('id', '=', 1)
-      .intersect(function() {
-        this.select('*')
-          .from('users')
-          .where('id', '=', 2);
+      .intersect(function () {
+        this.select('*').from('users').where('id', '=', 2);
       });
 
     testsql(chain, {
@@ -2573,15 +2467,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .intersect(
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         }
       );
     testsql(multipleArgumentsChain, {
@@ -2617,15 +2507,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .intersect([
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         },
       ]);
     testsql(arrayChain, {
@@ -2661,10 +2547,10 @@ describe('QueryBuilder', () => {
     const wrappedChain = qb()
       .select('*')
       .from('users')
-      .where('id', 'in', function() {
+      .where('id', 'in', function () {
         this.table('users')
           .max('id')
-          .intersect(function() {
+          .intersect(function () {
             this.table('users').min('id');
           }, true);
       });
@@ -2692,15 +2578,11 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .intersect(
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 2 });
+        function () {
+          this.select('*').from('users').where({ id: 2 });
         },
-        function() {
-          this.select('*')
-            .from('users')
-            .where({ id: 3 });
+        function () {
+          this.select('*').from('users').where({ id: 3 });
         },
         true
       );
@@ -2728,15 +2610,11 @@ describe('QueryBuilder', () => {
       .where({ id: 1 })
       .intersect(
         [
-          function() {
-            this.select('*')
-              .from('users')
-              .where({ id: 2 });
+          function () {
+            this.select('*').from('users').where({ id: 2 });
           },
-          function() {
-            this.select('*')
-              .from('users')
-              .where({ id: 3 });
+          function () {
+            this.select('*').from('users').where({ id: 3 });
           },
         ],
         true
@@ -2765,16 +2643,9 @@ describe('QueryBuilder', () => {
       .select('*')
       .from('users')
       .where('id', '=', 1)
-      .intersect(
-        qb()
-          .select('*')
-          .from('users')
-          .where('id', '=', 2)
-      )
-      .intersect(function() {
-        this.select('*')
-          .from('users')
-          .where('id', '=', 3);
+      .intersect(qb().select('*').from('users').where('id', '=', 2))
+      .intersect(function () {
+        this.select('*').from('users').where('id', '=', 3);
       });
     testsql(chain, {
       mssql: {
@@ -2799,10 +2670,7 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .intersect([
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 2 }),
+        qb().select('*').from('users').where({ id: 2 }),
         raw('select * from users where id = ?', [3]),
       ]);
     testsql(arrayChain, {
@@ -2828,10 +2696,7 @@ describe('QueryBuilder', () => {
       .from('users')
       .where({ id: 1 })
       .intersect(
-        qb()
-          .select('*')
-          .from('users')
-          .where({ id: 2 }),
+        qb().select('*').from('users').where({ id: 2 }),
         raw('select * from users where id = ?', [3])
       );
     testsql(multipleArgumentsChain, {
@@ -2859,10 +2724,7 @@ describe('QueryBuilder', () => {
         .select('*')
         .from('users')
         .whereIn('id', (qb) => {
-          qb.select('id')
-            .from('users')
-            .where('age', '>', 25)
-            .limit(3);
+          qb.select('id').from('users').where('age', '>', 25).limit(3);
         }),
       {
         mysql: {
@@ -2941,9 +2803,7 @@ describe('QueryBuilder', () => {
         .select('*')
         .from('users')
         .whereNotIn('id', (qb) => {
-          qb.select('id')
-            .from('users')
-            .where('age', '>', 25);
+          qb.select('id').from('users').where('age', '>', 25);
         }),
       {
         mysql: {
@@ -2971,39 +2831,29 @@ describe('QueryBuilder', () => {
   });
 
   it('basic where nulls', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereNull('id'),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` is null',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] is null',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" is null',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" is null',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereNull('id'), {
+      mysql: {
+        sql: 'select * from `users` where `id` is null',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] is null',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" is null',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" is null',
+        bindings: [],
+      },
+    });
   });
 
   it('basic or where nulls', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', '=', 1)
-        .orWhereNull('id'),
+      qb().select('*').from('users').where('id', '=', 1).orWhereNull('id'),
       {
         mysql: {
           sql: 'select * from `users` where `id` = ? or `id` is null',
@@ -3026,39 +2876,29 @@ describe('QueryBuilder', () => {
   });
 
   it('basic where not nulls', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereNotNull('id'),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` is not null',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] is not null',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" is not null',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" is not null',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereNotNull('id'), {
+      mysql: {
+        sql: 'select * from `users` where `id` is not null',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] is not null',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" is not null',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" is not null',
+        bindings: [],
+      },
+    });
   });
 
   it('basic or where not nulls', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', '>', 1)
-        .orWhereNotNull('id'),
+      qb().select('*').from('users').where('id', '>', 1).orWhereNotNull('id'),
       {
         mysql: {
           sql: 'select * from `users` where `id` > ? or `id` is not null',
@@ -3081,39 +2921,29 @@ describe('QueryBuilder', () => {
   });
 
   it('group bys', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .groupBy('id', 'email'),
-      {
-        mysql: {
-          sql: 'select * from `users` group by `id`, `email`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [users] group by [id], [email]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "users" group by "id", "email"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" group by "id", "email"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').groupBy('id', 'email'), {
+      mysql: {
+        sql: 'select * from `users` group by `id`, `email`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] group by [id], [email]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" group by "id", "email"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" group by "id", "email"',
+        bindings: [],
+      },
+    });
   });
 
   it('order bys', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .orderBy('email')
-        .orderBy('age', 'desc'),
+      qb().select('*').from('users').orderBy('email').orderBy('age', 'desc'),
       {
         mysql: {
           sql: 'select * from `users` order by `email` asc, `age` desc',
@@ -3227,65 +3057,50 @@ describe('QueryBuilder', () => {
   });
 
   it('raw group bys', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .groupByRaw('id, email'),
-      {
-        mysql: {
-          sql: 'select * from `users` group by id, email',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [users] group by id, email',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "users" group by id, email',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" group by id, email',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').groupByRaw('id, email'), {
+      mysql: {
+        sql: 'select * from `users` group by id, email',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] group by id, email',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" group by id, email',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" group by id, email',
+        bindings: [],
+      },
+    });
   });
 
   it('raw order bys with default direction', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .orderBy(raw('col NULLS LAST')),
-      {
-        mysql: {
-          sql: 'select * from `users` order by col NULLS LAST asc',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [users] order by col NULLS LAST asc',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "users" order by col NULLS LAST asc',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" order by col NULLS LAST asc',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').orderBy(raw('col NULLS LAST')), {
+      mysql: {
+        sql: 'select * from `users` order by col NULLS LAST asc',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] order by col NULLS LAST asc',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" order by col NULLS LAST asc',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by col NULLS LAST asc',
+        bindings: [],
+      },
+    });
   });
 
   it('raw order bys with specified direction', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .orderBy(raw('col NULLS LAST'), 'desc'),
+      qb().select('*').from('users').orderBy(raw('col NULLS LAST'), 'desc'),
       {
         mysql: {
           sql: 'select * from `users` order by col NULLS LAST desc',
@@ -3308,38 +3123,29 @@ describe('QueryBuilder', () => {
   });
 
   it('orderByRaw', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .orderByRaw('col NULLS LAST DESC'),
-      {
-        mysql: {
-          sql: 'select * from `users` order by col NULLS LAST DESC',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [users] order by col NULLS LAST DESC',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "users" order by col NULLS LAST DESC',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" order by col NULLS LAST DESC',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').orderByRaw('col NULLS LAST DESC'), {
+      mysql: {
+        sql: 'select * from `users` order by col NULLS LAST DESC',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] order by col NULLS LAST DESC',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" order by col NULLS LAST DESC',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by col NULLS LAST DESC',
+        bindings: [],
+      },
+    });
   });
 
   it('orderByRaw second argument is the binding', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .orderByRaw('col NULLS LAST ?', 'dEsc'),
+      qb().select('*').from('users').orderByRaw('col NULLS LAST ?', 'dEsc'),
       {
         mysql: {
           sql: 'select * from `users` order by col NULLS LAST ?',
@@ -3363,11 +3169,7 @@ describe('QueryBuilder', () => {
 
   it('multiple order bys', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .orderBy('email')
-        .orderBy('age', 'desc'),
+      qb().select('*').from('users').orderBy('email').orderBy('age', 'desc'),
       {
         mysql: {
           sql: 'select * from `users` order by `email` asc, `age` desc',
@@ -3390,19 +3192,13 @@ describe('QueryBuilder', () => {
   });
 
   it('havings', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .having('email', '>', 1),
-      {
-        mysql: 'select * from `users` having `email` > ?',
-        mssql: 'select * from [users] having [email] > ?',
-        pg: 'select * from "users" having "email" > ?',
-        'pg-redshift': 'select * from "users" having "email" > ?',
-        oracledb: 'select * from "users" having "email" > ?',
-      }
-    );
+    testsql(qb().select('*').from('users').having('email', '>', 1), {
+      mysql: 'select * from `users` having `email` > ?',
+      mssql: 'select * from [users] having [email] > ?',
+      pg: 'select * from "users" having "email" > ?',
+      'pg-redshift': 'select * from "users" having "email" > ?',
+      oracledb: 'select * from "users" having "email" > ?',
+    });
   });
 
   it('or having', () => {
@@ -3427,7 +3223,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .having(function() {
+        .having(function () {
           this.where('email', '>', 1);
         }),
       {
@@ -3445,7 +3241,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .having(function() {
+        .having(function () {
           this.where('email', '>', 10);
           this.orWhere('email', '=', 7);
         }),
@@ -3462,11 +3258,7 @@ describe('QueryBuilder', () => {
 
   it('grouped having', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .groupBy('email')
-        .having('email', '>', 1),
+      qb().select('*').from('users').groupBy('email').having('email', '>', 1),
       {
         mysql: 'select * from `users` group by `email` having `email` > ?',
         mssql: 'select * from [users] group by [email] having [email] > ?',
@@ -3497,19 +3289,13 @@ describe('QueryBuilder', () => {
   });
 
   it('raw havings', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .having(raw('user_foo < user_bar')),
-      {
-        mysql: 'select * from `users` having user_foo < user_bar',
-        mssql: 'select * from [users] having user_foo < user_bar',
-        pg: 'select * from "users" having user_foo < user_bar',
-        'pg-redshift': 'select * from "users" having user_foo < user_bar',
-        oracledb: 'select * from "users" having user_foo < user_bar',
-      }
-    );
+    testsql(qb().select('*').from('users').having(raw('user_foo < user_bar')), {
+      mysql: 'select * from `users` having user_foo < user_bar',
+      mssql: 'select * from [users] having user_foo < user_bar',
+      pg: 'select * from "users" having user_foo < user_bar',
+      'pg-redshift': 'select * from "users" having user_foo < user_bar',
+      oracledb: 'select * from "users" having user_foo < user_bar',
+    });
   });
 
   it('raw or havings', () => {
@@ -3532,28 +3318,18 @@ describe('QueryBuilder', () => {
   });
 
   it('having null', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .havingNull('baz'),
-      {
-        mysql: 'select * from `users` having `baz` is null',
-        mssql: 'select * from [users] having [baz] is null',
-        pg: 'select * from "users" having "baz" is null',
-        'pg-redshift': 'select * from "users" having "baz" is null',
-        oracledb: 'select * from "users" having "baz" is null',
-      }
-    );
+    testsql(qb().select('*').from('users').havingNull('baz'), {
+      mysql: 'select * from `users` having `baz` is null',
+      mssql: 'select * from [users] having [baz] is null',
+      pg: 'select * from "users" having "baz" is null',
+      'pg-redshift': 'select * from "users" having "baz" is null',
+      oracledb: 'select * from "users" having "baz" is null',
+    });
   });
 
   it('or having null', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .havingNull('baz')
-        .orHavingNull('foo'),
+      qb().select('*').from('users').havingNull('baz').orHavingNull('foo'),
       {
         mysql: 'select * from `users` having `baz` is null or `foo` is null',
         mssql: 'select * from [users] having [baz] is null or [foo] is null',
@@ -3566,19 +3342,13 @@ describe('QueryBuilder', () => {
   });
 
   it('having not null', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .havingNotNull('baz'),
-      {
-        mysql: 'select * from `users` having `baz` is not null',
-        mssql: 'select * from [users] having [baz] is not null',
-        pg: 'select * from "users" having "baz" is not null',
-        'pg-redshift': 'select * from "users" having "baz" is not null',
-        oracledb: 'select * from "users" having "baz" is not null',
-      }
-    );
+    testsql(qb().select('*').from('users').havingNotNull('baz'), {
+      mysql: 'select * from `users` having `baz` is not null',
+      mssql: 'select * from [users] having [baz] is not null',
+      pg: 'select * from "users" having "baz" is not null',
+      'pg-redshift': 'select * from "users" having "baz" is not null',
+      oracledb: 'select * from "users" having "baz" is not null',
+    });
   });
 
   it('or having not null', () => {
@@ -3608,7 +3378,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .havingExists(function() {
+        .havingExists(function () {
           this.select('baz').from('users');
         }),
       {
@@ -3630,10 +3400,10 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .havingExists(function() {
+        .havingExists(function () {
           this.select('baz').from('users');
         })
-        .orHavingExists(function() {
+        .orHavingExists(function () {
           this.select('foo').from('users');
         }),
       {
@@ -3656,7 +3426,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .havingNotExists(function() {
+        .havingNotExists(function () {
           this.select('baz').from('users');
         }),
       {
@@ -3679,10 +3449,10 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .havingNotExists(function() {
+        .havingNotExists(function () {
           this.select('baz').from('users');
         })
-        .orHavingNotExists(function() {
+        .orHavingNotExists(function () {
           this.select('foo').from('users');
         }),
       {
@@ -3701,19 +3471,13 @@ describe('QueryBuilder', () => {
   });
 
   it('having between', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .havingBetween('baz', [5, 10]),
-      {
-        mysql: 'select * from `users` having `baz` between ? and ?',
-        mssql: 'select * from [users] having [baz] between ? and ?',
-        pg: 'select * from "users" having "baz" between ? and ?',
-        'pg-redshift': 'select * from "users" having "baz" between ? and ?',
-        oracledb: 'select * from "users" having "baz" between ? and ?',
-      }
-    );
+    testsql(qb().select('*').from('users').havingBetween('baz', [5, 10]), {
+      mysql: 'select * from `users` having `baz` between ? and ?',
+      mssql: 'select * from [users] having [baz] between ? and ?',
+      pg: 'select * from "users" having "baz" between ? and ?',
+      'pg-redshift': 'select * from "users" having "baz" between ? and ?',
+      oracledb: 'select * from "users" having "baz" between ? and ?',
+    });
   });
 
   it('or having between', () => {
@@ -3739,19 +3503,13 @@ describe('QueryBuilder', () => {
   });
 
   it('having not between', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .havingNotBetween('baz', [5, 10]),
-      {
-        mysql: 'select * from `users` having `baz` not between ? and ?',
-        mssql: 'select * from [users] having [baz] not between ? and ?',
-        pg: 'select * from "users" having "baz" not between ? and ?',
-        'pg-redshift': 'select * from "users" having "baz" not between ? and ?',
-        oracledb: 'select * from "users" having "baz" not between ? and ?',
-      }
-    );
+    testsql(qb().select('*').from('users').havingNotBetween('baz', [5, 10]), {
+      mysql: 'select * from `users` having `baz` not between ? and ?',
+      mssql: 'select * from [users] having [baz] not between ? and ?',
+      pg: 'select * from "users" having "baz" not between ? and ?',
+      'pg-redshift': 'select * from "users" having "baz" not between ? and ?',
+      oracledb: 'select * from "users" having "baz" not between ? and ?',
+    });
   });
 
   it('or having not between', () => {
@@ -3777,19 +3535,13 @@ describe('QueryBuilder', () => {
   });
 
   it('having in', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .havingIn('baz', [5, 10, 37]),
-      {
-        mysql: 'select * from `users` having `baz` in (?, ?, ?)',
-        mssql: 'select * from [users] having [baz] in (?, ?, ?)',
-        pg: 'select * from "users" having "baz" in (?, ?, ?)',
-        'pg-redshift': 'select * from "users" having "baz" in (?, ?, ?)',
-        oracledb: 'select * from "users" having "baz" in (?, ?, ?)',
-      }
-    );
+    testsql(qb().select('*').from('users').havingIn('baz', [5, 10, 37]), {
+      mysql: 'select * from `users` having `baz` in (?, ?, ?)',
+      mssql: 'select * from [users] having [baz] in (?, ?, ?)',
+      pg: 'select * from "users" having "baz" in (?, ?, ?)',
+      'pg-redshift': 'select * from "users" having "baz" in (?, ?, ?)',
+      oracledb: 'select * from "users" having "baz" in (?, ?, ?)',
+    });
   });
 
   it('or having in', () => {
@@ -3815,19 +3567,13 @@ describe('QueryBuilder', () => {
   });
 
   it('having not in', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .havingNotIn('baz', [5, 10, 37]),
-      {
-        mysql: 'select * from `users` having `baz` not in (?, ?, ?)',
-        mssql: 'select * from [users] having [baz] not in (?, ?, ?)',
-        pg: 'select * from "users" having "baz" not in (?, ?, ?)',
-        'pg-redshift': 'select * from "users" having "baz" not in (?, ?, ?)',
-        oracledb: 'select * from "users" having "baz" not in (?, ?, ?)',
-      }
-    );
+    testsql(qb().select('*').from('users').havingNotIn('baz', [5, 10, 37]), {
+      mysql: 'select * from `users` having `baz` not in (?, ?, ?)',
+      mssql: 'select * from [users] having [baz] not in (?, ?, ?)',
+      pg: 'select * from "users" having "baz" not in (?, ?, ?)',
+      'pg-redshift': 'select * from "users" having "baz" not in (?, ?, ?)',
+      oracledb: 'select * from "users" having "baz" not in (?, ?, ?)',
+    });
   });
 
   it('or having not in', () => {
@@ -3853,131 +3599,105 @@ describe('QueryBuilder', () => {
   });
 
   it('limits', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .limit(10),
-      {
-        mysql: {
-          sql: 'select * from `users` limit ?',
-          bindings: [10],
-        },
-        mssql: {
-          sql: 'select top (?) * from [users]',
-          bindings: [10],
-        },
-        oracledb: {
-          sql: 'select * from (select * from "users") where rownum <= ?',
-          bindings: [10],
-        },
-        pg: {
-          sql: 'select * from "users" limit ?',
-          bindings: [10],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" limit ?',
-          bindings: [10],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').limit(10), {
+      mysql: {
+        sql: 'select * from `users` limit ?',
+        bindings: [10],
+      },
+      mssql: {
+        sql: 'select top (?) * from [users]',
+        bindings: [10],
+      },
+      oracledb: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [10],
+      },
+      pg: {
+        sql: 'select * from "users" limit ?',
+        bindings: [10],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" limit ?',
+        bindings: [10],
+      },
+    });
   });
 
   it('can limit 0', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .limit(0),
-      {
-        mysql: {
-          sql: 'select * from `users` limit ?',
-          bindings: [0],
-        },
-        mssql: {
-          sql: 'select top (?) * from [users]',
-          bindings: [0],
-        },
-        oracledb: {
-          sql: 'select * from (select * from "users") where rownum <= ?',
-          bindings: [0],
-        },
-        pg: {
-          sql: 'select * from "users" limit ?',
-          bindings: [0],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" limit ?',
-          bindings: [0],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').limit(0), {
+      mysql: {
+        sql: 'select * from `users` limit ?',
+        bindings: [0],
+      },
+      mssql: {
+        sql: 'select top (?) * from [users]',
+        bindings: [0],
+      },
+      oracledb: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [0],
+      },
+      pg: {
+        sql: 'select * from "users" limit ?',
+        bindings: [0],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" limit ?',
+        bindings: [0],
+      },
+    });
   });
 
   it('limits and offsets', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .offset(5)
-        .limit(10),
-      {
-        mysql: {
-          sql: 'select * from `users` limit ? offset ?',
-          bindings: [10, 5],
-        },
-        mssql: {
-          sql: 'select * from [users] offset ? rows fetch next ? rows only',
-          bindings: [5, 10],
-        },
-        oracledb: {
-          sql:
-            'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
-          bindings: [15, 5],
-        },
-        pg: {
-          sql: 'select * from "users" limit ? offset ?',
-          bindings: [10, 5],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" limit ? offset ?',
-          bindings: [10, 5],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').offset(5).limit(10), {
+      mysql: {
+        sql: 'select * from `users` limit ? offset ?',
+        bindings: [10, 5],
+      },
+      mssql: {
+        sql: 'select * from [users] offset ? rows fetch next ? rows only',
+        bindings: [5, 10],
+      },
+      oracledb: {
+        sql:
+          'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
+        bindings: [15, 5],
+      },
+      pg: {
+        sql: 'select * from "users" limit ? offset ?',
+        bindings: [10, 5],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" limit ? offset ?',
+        bindings: [10, 5],
+      },
+    });
   });
 
   it('limits and offsets with raw', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .offset(raw('5'))
-        .limit(raw('10')),
-      {
-        mysql: {
-          sql: 'select * from `users` limit ? offset 5',
-          bindings: [10],
-        },
-        mssql: {
-          sql: 'select * from [users] offset 5 rows fetch next ? rows only',
-          bindings: [10],
-        },
-        oracledb: {
-          sql:
-            'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > 5',
-          bindings: [15],
-        },
-        pg: {
-          sql: 'select * from "users" limit ? offset 5',
-          bindings: [10],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" limit ? offset 5',
-          bindings: [10],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').offset(raw('5')).limit(raw('10')), {
+      mysql: {
+        sql: 'select * from `users` limit ? offset 5',
+        bindings: [10],
+      },
+      mssql: {
+        sql: 'select * from [users] offset 5 rows fetch next ? rows only',
+        bindings: [10],
+      },
+      oracledb: {
+        sql:
+          'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > 5',
+        bindings: [15],
+      },
+      pg: {
+        sql: 'select * from "users" limit ? offset 5',
+        bindings: [10],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" limit ? offset 5',
+        bindings: [10],
+      },
+    });
   });
 
   it('limits and raw selects', () => {
@@ -4013,78 +3733,63 @@ describe('QueryBuilder', () => {
   });
 
   it('first', () => {
-    testsql(
-      qb()
-        .first('*')
-        .from('users'),
-      {
-        mysql: {
-          sql: 'select * from `users` limit ?',
-          bindings: [1],
-        },
-        mssql: {
-          sql: 'select top (?) * from [users]',
-          bindings: [1],
-        },
-        oracledb: {
-          sql: 'select * from (select * from "users") where rownum <= ?',
-          bindings: [1],
-        },
-        pg: {
-          sql: 'select * from "users" limit ?',
-          bindings: [1],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" limit ?',
-          bindings: [1],
-        },
-      }
-    );
+    testsql(qb().first('*').from('users'), {
+      mysql: {
+        sql: 'select * from `users` limit ?',
+        bindings: [1],
+      },
+      mssql: {
+        sql: 'select top (?) * from [users]',
+        bindings: [1],
+      },
+      oracledb: {
+        sql: 'select * from (select * from "users") where rownum <= ?',
+        bindings: [1],
+      },
+      pg: {
+        sql: 'select * from "users" limit ?',
+        bindings: [1],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" limit ?',
+        bindings: [1],
+      },
+    });
   });
 
   it('offsets only', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .offset(5),
-      {
-        mysql: {
-          sql: 'select * from `users` limit 18446744073709551615 offset ?',
-          bindings: [5],
-        },
-        sqlite3: {
-          sql: 'select * from `users` limit ? offset ?',
-          bindings: [-1, 5],
-        },
-        pg: {
-          sql: 'select * from "users" offset ?',
-          bindings: [5],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" offset ?',
-          bindings: [5],
-        },
-        mssql: {
-          sql: 'select * from [users] offset ? rows',
-          bindings: [5],
-        },
-        oracledb: {
-          sql:
-            'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
-          bindings: [10000000000005, 5],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').offset(5), {
+      mysql: {
+        sql: 'select * from `users` limit 18446744073709551615 offset ?',
+        bindings: [5],
+      },
+      sqlite3: {
+        sql: 'select * from `users` limit ? offset ?',
+        bindings: [-1, 5],
+      },
+      pg: {
+        sql: 'select * from "users" offset ?',
+        bindings: [5],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" offset ?',
+        bindings: [5],
+      },
+      mssql: {
+        sql: 'select * from [users] offset ? rows',
+        bindings: [5],
+      },
+      oracledb: {
+        sql:
+          'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= ?) where rownum_ > ?',
+        bindings: [10000000000005, 5],
+      },
+    });
   });
 
   it('where shortcut', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', 1)
-        .orWhere('name', 'foo'),
+      qb().select('*').from('users').where('id', 1).orWhere('name', 'foo'),
       {
         mysql: {
           sql: 'select * from `users` where `id` = ? or `name` = ?',
@@ -4147,9 +3852,7 @@ describe('QueryBuilder', () => {
         .from('users')
         .where('email', '=', 'foo')
         .orWhere((qb) => {
-          qb.where('name', '=', 'bar')
-            .where('age', '=', 25)
-            .clearWhere();
+          qb.where('name', '=', 'bar').where('age', '=', 25).clearWhere();
         }),
       {
         mysql: {
@@ -4206,9 +3909,7 @@ describe('QueryBuilder', () => {
         .from('users')
         .where('email', '=', 'foo')
         .orWhere('id', '=', (qb) => {
-          qb.select(raw('max(id)'))
-            .from('users')
-            .where('email', '=', 'bar');
+          qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
         }),
       {
         mysql: {
@@ -4279,9 +3980,7 @@ describe('QueryBuilder', () => {
         .from('users')
         .where('email', '=', 'foo')
         .orWhere('id', '=', (qb) => {
-          qb.select(raw('max(id)'))
-            .from('users')
-            .where('email', '=', 'bar');
+          qb.select(raw('max(id)')).from('users').where('email', '=', 'bar');
         })
         .clearSelect(),
       {
@@ -4350,10 +4049,7 @@ describe('QueryBuilder', () => {
         .select('*')
         .from('orders')
         .whereExists(
-          qb()
-            .select('*')
-            .from('products')
-            .whereRaw('products.id = orders.id')
+          qb().select('*').from('products').whereRaw('products.id = orders.id')
         ),
       {
         mysql: {
@@ -4489,11 +4185,7 @@ describe('QueryBuilder', () => {
 
   it('cross join', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .crossJoin('contracts')
-        .crossJoin('photos'),
+      qb().select('*').from('users').crossJoin('contracts').crossJoin('photos'),
       {
         mysql: {
           sql:
@@ -4923,7 +4615,7 @@ describe('QueryBuilder', () => {
         .select('*')
         .from('users')
         .join('contacts', (qb) => {
-          qb.on('users.id', '=', 'contacts.id').onExists(function() {
+          qb.on('users.id', '=', 'contacts.id').onExists(function () {
             this.select('*').from('foo');
           });
         }),
@@ -4949,10 +4641,10 @@ describe('QueryBuilder', () => {
         .from('users')
         .join('contacts', (qb) => {
           qb.on('users.id', '=', 'contacts.id')
-            .onExists(function() {
+            .onExists(function () {
               this.select('*').from('foo');
             })
-            .orOnExists(function() {
+            .orOnExists(function () {
               this.select('*').from('bar');
             });
         }),
@@ -4977,7 +4669,7 @@ describe('QueryBuilder', () => {
         .select('*')
         .from('users')
         .join('contacts', (qb) => {
-          qb.on('users.id', '=', 'contacts.id').onNotExists(function() {
+          qb.on('users.id', '=', 'contacts.id').onNotExists(function () {
             this.select('*').from('foo');
           });
         }),
@@ -5003,10 +4695,10 @@ describe('QueryBuilder', () => {
         .from('users')
         .join('contacts', (qb) => {
           qb.on('users.id', '=', 'contacts.id')
-            .onNotExists(function() {
+            .onNotExists(function () {
               this.select('*').from('foo');
             })
-            .orOnNotExists(function() {
+            .orOnNotExists(function () {
               this.select('*').from('bar');
             });
         }),
@@ -5234,271 +4926,221 @@ describe('QueryBuilder', () => {
   });
 
   it('raw expressions in select', () => {
-    testsql(
-      qb()
-        .select(raw('substr(foo, 6)'))
-        .from('users'),
-      {
-        mysql: {
-          sql: 'select substr(foo, 6) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select substr(foo, 6) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select substr(foo, 6) from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select substr(foo, 6) from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select(raw('substr(foo, 6)')).from('users'), {
+      mysql: {
+        sql: 'select substr(foo, 6) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select substr(foo, 6) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select substr(foo, 6) from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select substr(foo, 6) from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count', () => {
-    testsql(
-      qb()
-        .from('users')
-        .count(),
-      {
-        mysql: {
-          sql: 'select count(*) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(*) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(*) from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select count(*) from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').count(), {
+      mysql: {
+        sql: 'select count(*) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(*) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(*) from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select count(*) from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count distinct', () => {
-    testsql(
-      qb()
-        .from('users')
-        .countDistinct(),
-      {
-        mysql: {
-          sql: 'select count(distinct *) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(distinct *) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(distinct *) from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select count(distinct *) from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').countDistinct(), {
+      mysql: {
+        sql: 'select count(distinct *) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(distinct *) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(distinct *) from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select count(distinct *) from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count with string alias', () => {
-    testsql(
-      qb()
-        .from('users')
-        .count('* as all'),
-      {
-        mysql: {
-          sql: 'select count(*) as `all` from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(*) as [all] from [users]',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'select count(*) "all" from "users"',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(*) as "all" from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select count(*) as "all" from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').count('* as all'), {
+      mysql: {
+        sql: 'select count(*) as `all` from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(*) as [all] from [users]',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count with object alias', () => {
-    testsql(
-      qb()
-        .from('users')
-        .count({ all: '*' }),
-      {
-        mysql: {
-          sql: 'select count(*) as `all` from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(*) as [all] from [users]',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'select count(*) "all" from "users"',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(*) as "all" from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select count(*) as "all" from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').count({ all: '*' }), {
+      mysql: {
+        sql: 'select count(*) as `all` from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(*) as [all] from [users]',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'select count(*) "all" from "users"',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select count(*) as "all" from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count distinct with string alias', () => {
-    testsql(
-      qb()
-        .from('users')
-        .countDistinct('* as all'),
-      {
-        mysql: {
-          sql: 'select count(distinct *) as `all` from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(distinct *) as [all] from [users]',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'select count(distinct *) "all" from "users"',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(distinct *) as "all" from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select count(distinct *) as "all" from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').countDistinct('* as all'), {
+      mysql: {
+        sql: 'select count(distinct *) as `all` from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(distinct *) as [all] from [users]',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count distinct with object alias', () => {
-    testsql(
-      qb()
-        .from('users')
-        .countDistinct({ all: '*' }),
-      {
-        mysql: {
-          sql: 'select count(distinct *) as `all` from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(distinct *) as [all] from [users]',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'select count(distinct *) "all" from "users"',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(distinct *) as "all" from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select count(distinct *) as "all" from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').countDistinct({ all: '*' }), {
+      mysql: {
+        sql: 'select count(distinct *) as `all` from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(distinct *) as [all] from [users]',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'select count(distinct *) "all" from "users"',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select count(distinct *) as "all" from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count with raw values', () => {
-    testsql(
-      qb()
-        .from('users')
-        .count(raw('??', 'name')),
-      {
-        mysql: {
-          sql: 'select count(`name`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count([name]) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count("name") from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').count(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(`name`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count([name]) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count("name") from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count distinct with raw values', () => {
-    testsql(
-      qb()
-        .from('users')
-        .countDistinct(raw('??', 'name')),
-      {
-        mysql: {
-          sql: 'select count(distinct `name`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(distinct [name]) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(distinct "name") from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').countDistinct(raw('??', 'name')), {
+      mysql: {
+        sql: 'select count(distinct `name`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(distinct [name]) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(distinct "name") from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count distinct with multiple columns', () => {
-    testsql(
-      qb()
-        .from('users')
-        .countDistinct('foo', 'bar'),
-      {
-        mysql: {
-          sql: 'select count(distinct `foo`, `bar`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select count(distinct [foo], [bar]) from [users]',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'select count(distinct "foo", "bar") from "users"',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select count(distinct("foo", "bar")) from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').countDistinct('foo', 'bar'), {
+      mysql: {
+        sql: 'select count(distinct `foo`, `bar`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select count(distinct [foo], [bar]) from [users]',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'select count(distinct "foo", "bar") from "users"',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select count(distinct("foo", "bar")) from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('count distinct with multiple columns with alias', () => {
@@ -5528,29 +5170,24 @@ describe('QueryBuilder', () => {
   });
 
   it('max', () => {
-    testsql(
-      qb()
-        .from('users')
-        .max('id'),
-      {
-        mysql: {
-          sql: 'select max(`id`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select max([id]) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select max("id") from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select max("id") from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').max('id'), {
+      mysql: {
+        sql: 'select max(`id`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select max([id]) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select max("id") from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select max("id") from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('max with raw values', () => {
@@ -5576,29 +5213,24 @@ describe('QueryBuilder', () => {
   });
 
   it('min', () => {
-    testsql(
-      qb()
-        .from('users')
-        .max('id'),
-      {
-        mysql: {
-          sql: 'select max(`id`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select max([id]) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select max("id") from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select max("id") from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').max('id'), {
+      mysql: {
+        sql: 'select max(`id`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select max([id]) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select max("id") from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select max("id") from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('min with raw values', () => {
@@ -5624,29 +5256,24 @@ describe('QueryBuilder', () => {
   });
 
   it('sum', () => {
-    testsql(
-      qb()
-        .from('users')
-        .sum('id'),
-      {
-        mysql: {
-          sql: 'select sum(`id`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select sum([id]) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select sum("id") from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select sum("id") from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').sum('id'), {
+      mysql: {
+        sql: 'select sum(`id`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select sum([id]) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select sum("id") from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select sum("id") from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('sum with raw values', () => {
@@ -5672,29 +5299,24 @@ describe('QueryBuilder', () => {
   });
 
   it('sum distinct', () => {
-    testsql(
-      qb()
-        .from('users')
-        .sumDistinct('id'),
-      {
-        mysql: {
-          sql: 'select sum(distinct `id`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select sum(distinct [id]) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select sum(distinct "id") from "users"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select sum(distinct "id") from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').sumDistinct('id'), {
+      mysql: {
+        sql: 'select sum(distinct `id`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select sum(distinct [id]) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select sum(distinct "id") from "users"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select sum(distinct "id") from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('sum distinct with raw values', () => {
@@ -5720,25 +5342,20 @@ describe('QueryBuilder', () => {
   });
 
   it('avg', () => {
-    testsql(
-      qb()
-        .from('users')
-        .avg('id'),
-      {
-        mysql: {
-          sql: 'select avg(`id`) from `users`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select avg([id]) from [users]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select avg("id") from "users"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('users').avg('id'), {
+      mysql: {
+        sql: 'select avg(`id`) from `users`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select avg([id]) from [users]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select avg("id") from "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('avg with raw values', () => {
@@ -5786,29 +5403,24 @@ describe('QueryBuilder', () => {
   });
 
   it('insert method', () => {
-    testsql(
-      qb()
-        .into('users')
-        .insert({ email: 'foo' }),
-      {
-        mysql: {
-          sql: 'insert into `users` (`email`) values (?)',
-          bindings: ['foo'],
-        },
-        mssql: {
-          sql: 'insert into [users] ([email]) values (?)',
-          bindings: ['foo'],
-        },
-        pg: {
-          sql: 'insert into "users" ("email") values (?)',
-          bindings: ['foo'],
-        },
-        'pg-redshift': {
-          sql: 'insert into "users" ("email") values (?)',
-          bindings: ['foo'],
-        },
-      }
-    );
+    testsql(qb().into('users').insert({ email: 'foo' }), {
+      mysql: {
+        sql: 'insert into `users` (`email`) values (?)',
+        bindings: ['foo'],
+      },
+      mssql: {
+        sql: 'insert into [users] ([email]) values (?)',
+        bindings: ['foo'],
+      },
+      pg: {
+        sql: 'insert into "users" ("email") values (?)',
+        bindings: ['foo'],
+      },
+      'pg-redshift': {
+        sql: 'insert into "users" ("email") values (?)',
+        bindings: ['foo'],
+      },
+    });
   });
 
   it('multiple inserts', () => {
@@ -6060,154 +5672,134 @@ describe('QueryBuilder', () => {
     const previousValuesForUndefinedSqlite3 = clients.sqlite3.valueForUndefined;
     clients.sqlite3.valueForUndefined = null;
 
-    testsql(
-      qb()
-        .insert(data)
-        .into('table'),
-      {
-        mysql: {
-          sql:
-            'insert into `table` (`a`, `b`, `c`) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
-          bindings: [1, 2, 2, 3],
-        },
-        sqlite3: {
-          sql:
-            'insert into `table` (`a`, `b`, `c`) select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c`',
-          bindings: [
-            1,
-            undefined,
-            undefined,
-            undefined,
-            2,
-            undefined,
-            2,
-            undefined,
-            3,
-          ],
-        },
-        mssql: {
-          sql:
-            'insert into [table] ([a], [b], [c]) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
-          bindings: [1, 2, 2, 3],
-        },
-        oracledb: {
-          sql:
-            'begin execute immediate \'insert into "table" ("a", "b", "c") values (:1, DEFAULT, DEFAULT)\' using ?; execute immediate \'insert into "table" ("a", "b", "c") values (DEFAULT, :1, DEFAULT)\' using ?; execute immediate \'insert into "table" ("a", "b", "c") values (:1, DEFAULT, :2)\' using ?, ?;end;',
-          bindings: [1, 2, 2, 3],
-        },
-        pg: {
-          sql:
-            'insert into "table" ("a", "b", "c") values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
-          bindings: [1, 2, 2, 3],
-        },
-        'pg-redshift': {
-          sql:
-            'insert into "table" ("a", "b", "c") values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
-          bindings: [1, 2, 2, 3],
-        },
-      }
-    );
+    testsql(qb().insert(data).into('table'), {
+      mysql: {
+        sql:
+          'insert into `table` (`a`, `b`, `c`) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3],
+      },
+      sqlite3: {
+        sql:
+          'insert into `table` (`a`, `b`, `c`) select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c`',
+        bindings: [
+          1,
+          undefined,
+          undefined,
+          undefined,
+          2,
+          undefined,
+          2,
+          undefined,
+          3,
+        ],
+      },
+      mssql: {
+        sql:
+          'insert into [table] ([a], [b], [c]) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3],
+      },
+      oracledb: {
+        sql:
+          'begin execute immediate \'insert into "table" ("a", "b", "c") values (:1, DEFAULT, DEFAULT)\' using ?; execute immediate \'insert into "table" ("a", "b", "c") values (DEFAULT, :1, DEFAULT)\' using ?; execute immediate \'insert into "table" ("a", "b", "c") values (:1, DEFAULT, :2)\' using ?, ?;end;',
+        bindings: [1, 2, 2, 3],
+      },
+      pg: {
+        sql:
+          'insert into "table" ("a", "b", "c") values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3],
+      },
+      'pg-redshift': {
+        sql:
+          'insert into "table" ("a", "b", "c") values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
+        bindings: [1, 2, 2, 3],
+      },
+    });
     clients.sqlite3.valueForUndefined = previousValuesForUndefinedSqlite3;
   });
 
   it('empty insert should be a noop', () => {
-    testsql(
-      qb()
-        .into('users')
-        .insert(),
-      {
-        mysql: {
-          sql: '',
-          bindings: [],
-        },
-        mssql: {
-          sql: '',
-          bindings: [],
-        },
-        oracledb: {
-          sql: '',
-          bindings: [],
-        },
-        pg: {
-          sql: '',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: '',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().into('users').insert(), {
+      mysql: {
+        sql: '',
+        bindings: [],
+      },
+      mssql: {
+        sql: '',
+        bindings: [],
+      },
+      oracledb: {
+        sql: '',
+        bindings: [],
+      },
+      pg: {
+        sql: '',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: '',
+        bindings: [],
+      },
+    });
   });
 
   it('insert with empty array should be a noop', () => {
-    testsql(
-      qb()
-        .into('users')
-        .insert([]),
-      {
-        mysql: {
-          sql: '',
-          bindings: [],
-        },
-        mssql: {
-          sql: '',
-          bindings: [],
-        },
-        oracledb: {
-          sql: '',
-          bindings: [],
-        },
-        pg: {
-          sql: '',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: '',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().into('users').insert([]), {
+      mysql: {
+        sql: '',
+        bindings: [],
+      },
+      mssql: {
+        sql: '',
+        bindings: [],
+      },
+      oracledb: {
+        sql: '',
+        bindings: [],
+      },
+      pg: {
+        sql: '',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: '',
+        bindings: [],
+      },
+    });
   });
 
   it('insert with array with empty object and returning', () => {
-    testsql(
-      qb()
-        .into('users')
-        .insert([{}], 'id'),
-      {
-        mysql: {
-          sql: 'insert into `users` () values ()',
-          bindings: [],
+    testsql(qb().into('users').insert([{}], 'id'), {
+      mysql: {
+        sql: 'insert into `users` () values ()',
+        bindings: [],
+      },
+      sqlite3: {
+        sql: 'insert into `users` default values',
+        bindings: [],
+      },
+      pg: {
+        sql: 'insert into "users" default values returning "id"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'insert into "users" default values',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'insert into [users] output inserted.[id] default values',
+        bindings: [],
+      },
+      oracledb: {
+        sql:
+          'insert into "users" ("id") values (default) returning "id" into ?',
+        bindings: (bindings) => {
+          expect(bindings.length).to.equal(1);
+          expect(bindings[0].toString()).to.equal(
+            '[object ReturningHelper:id]'
+          );
         },
-        sqlite3: {
-          sql: 'insert into `users` default values',
-          bindings: [],
-        },
-        pg: {
-          sql: 'insert into "users" default values returning "id"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'insert into "users" default values',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'insert into [users] output inserted.[id] default values',
-          bindings: [],
-        },
-        oracledb: {
-          sql:
-            'insert into "users" ("id") values (default) returning "id" into ?',
-          bindings: (bindings) => {
-            expect(bindings.length).to.equal(1);
-            expect(bindings[0].toString()).to.equal(
-              '[object ReturningHelper:id]'
-            );
-          },
-        },
-      }
-    );
+      },
+    });
   });
 
   it('update method', () => {
@@ -6222,7 +5814,8 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar', 1],
         },
         mssql: {
-          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
+          sql:
+            'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
           bindings: ['foo', 'bar', 1],
         },
         pg: {
@@ -6277,17 +5870,15 @@ describe('QueryBuilder', () => {
 
   it("should allow for 'null' updates", () => {
     testsql(
-      qb()
-        .update({ email: null, name: 'bar' })
-        .table('users')
-        .where('id', 1),
+      qb().update({ email: null, name: 'bar' }).table('users').where('id', 1),
       {
         mysql: {
           sql: 'update `users` set `email` = ?, `name` = ? where `id` = ?',
           bindings: [null, 'bar', 1],
         },
         mssql: {
-          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
+          sql:
+            'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
           bindings: [null, 'bar', 1],
         },
         pg: {
@@ -6319,7 +5910,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc',
+            'update top (?) [users] set [email] = ?, [name] = ? where [id] = ? order by [foo] desc;select @@rowcount',
           bindings: [5, 'foo', 'bar', 1],
         },
         pg: {
@@ -6349,7 +5940,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?',
+            'update [users] set [email] = ?, [name] = ? from [users] inner join [orders] on [users].[id] = [orders].[user_id] where [users].[id] = ?;select @@rowcount',
           bindings: ['foo', 'bar', 1],
         },
         pg: {
@@ -6382,7 +5973,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?',
+            'update top (?) [users] set [email] = ?, [name] = ? where [users].[id] = ?;select @@rowcount',
           bindings: [1, 'foo', 'bar', 1],
         },
         pg: {
@@ -6411,7 +6002,8 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar', 1],
         },
         mssql: {
-          sql: 'update [users] set [email] = ?, [name] = ? where [id] = ?',
+          sql:
+            'update [users] set [email] = ?, [name] = ? where [id] = ?;select @@rowcount',
           bindings: ['foo', 'bar', 1],
         },
         pg: {
@@ -6469,7 +6061,8 @@ describe('QueryBuilder', () => {
           bindings: ['bar', 1],
         },
         mssql: {
-          sql: 'update [users] set [email] = foo, [name] = ? where [id] = ?',
+          sql:
+            'update [users] set [email] = foo, [name] = ? where [id] = ?;select @@rowcount',
           bindings: ['bar', 1],
         },
         pg: {
@@ -6485,30 +6078,25 @@ describe('QueryBuilder', () => {
   });
 
   it('increment method', () => {
-    testsql(
-      qb()
-        .into('users')
-        .where('id', '=', 1)
-        .increment('balance', 10),
-      {
-        mysql: {
-          sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
-          bindings: [10, 1],
-        },
-        mssql: {
-          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
-          bindings: [10, 1],
-        },
-        pg: {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [10, 1],
-        },
-        'pg-redshift': {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [10, 1],
-        },
-      }
-    );
+    testsql(qb().into('users').where('id', '=', 1).increment('balance', 10), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
+        bindings: [10, 1],
+      },
+      mssql: {
+        sql:
+          'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
+        bindings: [10, 1],
+      },
+      pg: {
+        sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
+        bindings: [10, 1],
+      },
+      'pg-redshift': {
+        sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
+        bindings: [10, 1],
+      },
+    });
   });
 
   it('Calling increment multiple times on same column overwrites the previous value', () => {
@@ -6528,7 +6116,8 @@ describe('QueryBuilder', () => {
           bindings: [20, 1],
         },
         mssql: {
-          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
+          sql:
+            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
           bindings: [20, 1],
         },
         'pg-redshift': {
@@ -6556,7 +6145,8 @@ describe('QueryBuilder', () => {
           bindings: [90, 1],
         },
         mssql: {
-          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
+          sql:
+            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
           bindings: [90, 1],
         },
         'pg-redshift': {
@@ -6584,7 +6174,8 @@ describe('QueryBuilder', () => {
           bindings: [20, 1],
         },
         mssql: {
-          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
+          sql:
+            'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
           bindings: [20, 1],
         },
         'pg-redshift': {
@@ -6593,6 +6184,199 @@ describe('QueryBuilder', () => {
         },
       }
     );
+  });
+
+  it('insert method respects raw bindings', () => {
+    testsql(
+      qb()
+        .insert({ email: raw('CURRENT TIMESTAMP') })
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert into `users` (`email`) values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'insert into [users] ([email]) values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        pg: {
+          sql: 'insert into "users" ("email") values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'insert into "users" ("email") values (CURRENT TIMESTAMP)',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('insert ignore', () => {
+    testsql(
+      qb().insert({ email: 'foo' }).onConflict('email').ignore().into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`) values (?)',
+          bindings: ['foo'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email") values (?) on conflict ("email") do nothing',
+          bindings: ['foo'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`) values (?) on conflict (`email`) do nothing',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('insert ignore multiple', () => {
+    testsql(
+      qb()
+        .insert([{ email: 'foo' }, { email: 'bar' }])
+        .onConflict('email')
+        .ignore()
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`) values (?), (?)',
+          bindings: ['foo', 'bar'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email") values (?), (?) on conflict ("email") do nothing',
+          bindings: ['foo', 'bar'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (`email`) do nothing',
+          bindings: ['foo', 'bar'],
+        },
+      }
+    );
+  });
+
+  it('insert ignore with composite unique keys', () => {
+    testsql(
+      qb()
+        .insert([{ org: 'acme-inc', email: 'foo' }])
+        .onConflict(['org', 'email'])
+        .ignore()
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`, `org`) values (?, ?)',
+          bindings: ['foo', 'acme-inc'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "org") values (?, ?) on conflict ("org", "email") do nothing',
+          bindings: ['foo', 'acme-inc'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `org`) values (?, ?) on conflict (`org`, `email`) do nothing',
+          bindings: ['foo', 'acme-inc'],
+        },
+      }
+    );
+  });
+
+  it('insert merge with explicit updates', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'dayle' },
+        ])
+        .onConflict('email')
+        .merge({ name: 'overidden' }),
+      {
+        mysql: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `name` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `name` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "name" = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+      }
+    );
+  });
+
+  it('insert merge multiple with implicit updates', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'dayle' },
+        ])
+        .onConflict('email')
+        .merge(),
+      {
+        mysql: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name"',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+      }
+    );
+  });
+
+  it('insert merge with where clause', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert({ email: 'foo', name: 'taylor' })
+        .onConflict('email')
+        .merge()
+        .where('email', 'foo2'),
+      {
+        pg: {
+          sql:
+            'insert into "users" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "email" = ?',
+          bindings: ['foo', 'taylor', 'foo2'],
+        },
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `email` = ?',
+          bindings: ['foo', 'taylor', 'foo2'],
+        },
+      }
+    );
+
+    expect(() => {
+      clients.mysql
+        .queryBuilder()
+        .insert({ email: 'foo', name: 'taylor' })
+        .onConflict('email')
+        .merge()
+        .where('email', 'foo2')
+        .toString();
+    }).to.throw('onConflict().merge().where() is not supported for mysql');
   });
 
   it('Calling decrement and then increment will overwrite the previous value', () => {
@@ -6612,7 +6396,8 @@ describe('QueryBuilder', () => {
           bindings: [90, 1],
         },
         mssql: {
-          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
+          sql:
+            'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
           bindings: [90, 1],
         },
         'pg-redshift': {
@@ -6646,7 +6431,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update [users] set [email] = ?, [balance] = [balance] + ?, [subbalance] = [subbalance] - ? where [id] = ?',
+            'update [users] set [email] = ?, [balance] = [balance] + ?, [subbalance] = [subbalance] - ? where [id] = ?;select @@rowcount',
           bindings: ['foo@bar.com', 10, 100, 1],
         },
         'pg-redshift': {
@@ -6678,7 +6463,8 @@ describe('QueryBuilder', () => {
           bindings: [500, 1],
         },
         mssql: {
-          sql: 'update [users] set [balance] = ? where [id] = ?',
+          sql:
+            'update [users] set [balance] = ? where [id] = ?;select @@rowcount',
           bindings: [500, 1],
         },
         'pg-redshift': {
@@ -6715,7 +6501,7 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql:
-            'update [users] set [balance] = [balance] + ?, [times] = [times] + ?, [value] = [value] - ?, [subvalue] = [subvalue] - ? where [id] = ?',
+            'update [users] set [balance] = [balance] + ?, [times] = [times] + ?, [value] = [value] - ?, [subvalue] = [subvalue] - ? where [id] = ?;select @@rowcount',
           bindings: [10, 1, 50, 30, 1],
         },
         'pg-redshift': {
@@ -6750,7 +6536,8 @@ describe('QueryBuilder', () => {
           bindings: ['foo@bar.com', 1],
         },
         mssql: {
-          sql: 'update [users] set [email] = ? where [id] = ?',
+          sql:
+            'update [users] set [email] = ? where [id] = ?;select @@rowcount',
           bindings: ['foo@bar.com', 1],
         },
         'pg-redshift': {
@@ -6762,119 +6549,95 @@ describe('QueryBuilder', () => {
   });
 
   it('increment method with floats', () => {
-    testsql(
-      qb()
-        .into('users')
-        .where('id', '=', 1)
-        .increment('balance', 1.23),
-      {
-        mysql: {
-          sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
-          bindings: [1.23, 1],
-        },
-        mssql: {
-          sql: 'update [users] set [balance] = [balance] + ? where [id] = ?',
-          bindings: [1.23, 1],
-        },
-        pg: {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [1.23, 1],
-        },
-        'pg-redshift': {
-          sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
-          bindings: [1.23, 1],
-        },
-      }
-    );
+    testsql(qb().into('users').where('id', '=', 1).increment('balance', 1.23), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` + ? where `id` = ?',
+        bindings: [1.23, 1],
+      },
+      mssql: {
+        sql:
+          'update [users] set [balance] = [balance] + ? where [id] = ?;select @@rowcount',
+        bindings: [1.23, 1],
+      },
+      pg: {
+        sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
+        bindings: [1.23, 1],
+      },
+      'pg-redshift': {
+        sql: 'update "users" set "balance" = "balance" + ? where "id" = ?',
+        bindings: [1.23, 1],
+      },
+    });
   });
 
   it('decrement method', () => {
-    testsql(
-      qb()
-        .into('users')
-        .where('id', '=', 1)
-        .decrement('balance', 10),
-      {
-        mysql: {
-          sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
-          bindings: [10, 1],
-        },
-        mssql: {
-          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
-          bindings: [10, 1],
-        },
-        pg: {
-          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
-          bindings: [10, 1],
-        },
-        'pg-redshift': {
-          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
-          bindings: [10, 1],
-        },
-      }
-    );
+    testsql(qb().into('users').where('id', '=', 1).decrement('balance', 10), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
+        bindings: [10, 1],
+      },
+      mssql: {
+        sql:
+          'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+        bindings: [10, 1],
+      },
+      pg: {
+        sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+        bindings: [10, 1],
+      },
+      'pg-redshift': {
+        sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+        bindings: [10, 1],
+      },
+    });
   });
 
   it('decrement method with floats', () => {
-    testsql(
-      qb()
-        .into('users')
-        .where('id', '=', 1)
-        .decrement('balance', 1.23),
-      {
-        mysql: {
-          sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
-          bindings: [1.23, 1],
-        },
-        mssql: {
-          sql: 'update [users] set [balance] = [balance] - ? where [id] = ?',
-          bindings: [1.23, 1],
-        },
-        pg: {
-          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
-          bindings: [1.23, 1],
-        },
-        'pg-redshift': {
-          sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
-          bindings: [1.23, 1],
-        },
-      }
-    );
+    testsql(qb().into('users').where('id', '=', 1).decrement('balance', 1.23), {
+      mysql: {
+        sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
+        bindings: [1.23, 1],
+      },
+      mssql: {
+        sql:
+          'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+        bindings: [1.23, 1],
+      },
+      pg: {
+        sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+        bindings: [1.23, 1],
+      },
+      'pg-redshift': {
+        sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+        bindings: [1.23, 1],
+      },
+    });
   });
 
   it('delete method', () => {
-    testsql(
-      qb()
-        .from('users')
-        .where('email', '=', 'foo')
-        .delete(),
-      {
-        mysql: {
-          sql: 'delete from `users` where `email` = ?',
-          bindings: ['foo'],
-        },
-        mssql: {
-          sql: 'delete from [users] where [email] = ?',
-          bindings: ['foo'],
-        },
-        pg: {
-          sql: 'delete from "users" where "email" = ?',
-          bindings: ['foo'],
-        },
-        'pg-redshift': {
-          sql: 'delete from "users" where "email" = ?',
-          bindings: ['foo'],
-        },
-      }
-    );
+    testsql(qb().from('users').where('email', '=', 'foo').delete(), {
+      mysql: {
+        sql: 'delete from `users` where `email` = ?',
+        bindings: ['foo'],
+      },
+      mssql: {
+        sql: 'delete from [users] where [email] = ?;select @@rowcount',
+        bindings: ['foo'],
+      },
+      pg: {
+        sql: 'delete from "users" where "email" = ?',
+        bindings: ['foo'],
+      },
+      'pg-redshift': {
+        sql: 'delete from "users" where "email" = ?',
+        bindings: ['foo'],
+      },
+    });
   });
 
   it('delete only method', () => {
     testsql(
-      qb()
-        .from('users', { only: true })
-        .where('email', '=', 'foo')
-        .delete(),
+      qb().from('users', { only: true }).where('email', '=', 'foo').delete(),
       {
         pg: {
           sql: 'delete from only "users" where "email" = ?',
@@ -6885,193 +6648,145 @@ describe('QueryBuilder', () => {
   });
 
   it('truncate method', () => {
-    testsql(
-      qb()
-        .table('users')
-        .truncate(),
-      {
-        mysql: {
-          sql: 'truncate `users`',
-          bindings: [],
+    testsql(qb().table('users').truncate(), {
+      mysql: {
+        sql: 'truncate `users`',
+        bindings: [],
+      },
+      sqlite3: {
+        sql: 'delete from `users`',
+        bindings: [],
+        output: (output) => {
+          expect(typeof output).to.equal('function');
         },
-        sqlite3: {
-          sql: 'delete from `users`',
-          bindings: [],
-          output: (output) => {
-            expect(typeof output).to.equal('function');
-          },
-        },
-        pg: {
-          sql: 'truncate "users" restart identity',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'truncate "users"',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'truncate table [users]',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'truncate table "users"',
-          bindings: [],
-        },
-      }
-    );
+      },
+      pg: {
+        sql: 'truncate "users" restart identity',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'truncate "users"',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'truncate table [users]',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'truncate table "users"',
+        bindings: [],
+      },
+    });
   });
 
   it('insert get id', () => {
-    testsql(
-      qb()
-        .from('users')
-        .insert({ email: 'foo' }, 'id'),
-      {
-        mysql: {
-          sql: 'insert into `users` (`email`) values (?)',
-          bindings: ['foo'],
+    testsql(qb().from('users').insert({ email: 'foo' }, 'id'), {
+      mysql: {
+        sql: 'insert into `users` (`email`) values (?)',
+        bindings: ['foo'],
+      },
+      pg: {
+        sql: 'insert into "users" ("email") values (?) returning "id"',
+        bindings: ['foo'],
+      },
+      'pg-redshift': {
+        sql: 'insert into "users" ("email") values (?)',
+        bindings: ['foo'],
+      },
+      mssql: {
+        sql: 'insert into [users] ([email]) output inserted.[id] values (?)',
+        bindings: ['foo'],
+      },
+      oracledb: {
+        sql: 'insert into "users" ("email") values (?) returning "id" into ?',
+        bindings: (bindings) => {
+          expect(bindings.length).to.equal(2);
+          expect(bindings[0]).to.equal('foo');
+          expect(bindings[1].toString()).to.equal(
+            '[object ReturningHelper:id]'
+          );
         },
-        pg: {
-          sql: 'insert into "users" ("email") values (?) returning "id"',
-          bindings: ['foo'],
-        },
-        'pg-redshift': {
-          sql: 'insert into "users" ("email") values (?)',
-          bindings: ['foo'],
-        },
-        mssql: {
-          sql: 'insert into [users] ([email]) output inserted.[id] values (?)',
-          bindings: ['foo'],
-        },
-        oracledb: {
-          sql: 'insert into "users" ("email") values (?) returning "id" into ?',
-          bindings: (bindings) => {
-            expect(bindings.length).to.equal(2);
-            expect(bindings[0]).to.equal('foo');
-            expect(bindings[1].toString()).to.equal(
-              '[object ReturningHelper:id]'
-            );
-          },
-        },
-      }
-    );
+      },
+    });
   });
 
   it('wrapping', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users'),
-      {
-        mysql: 'select * from `users`',
-        mssql: 'select * from [users]',
-        pg: 'select * from "users"',
-      }
-    );
+    testsql(qb().select('*').from('users'), {
+      mysql: 'select * from `users`',
+      mssql: 'select * from [users]',
+      pg: 'select * from "users"',
+    });
   });
 
   it('order by desc', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .orderBy('email', 'desc'),
-      {
-        mysql: 'select * from `users` order by `email` desc',
-        mssql: 'select * from [users] order by [email] desc',
-        pg: 'select * from "users" order by "email" desc',
-      }
-    );
+    testsql(qb().select('*').from('users').orderBy('email', 'desc'), {
+      mysql: 'select * from `users` order by `email` desc',
+      mssql: 'select * from [users] order by [email] desc',
+      pg: 'select * from "users" order by "email" desc',
+    });
   });
 
   it('providing null or false as second parameter builds correctly', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('foo', null),
-      {
-        mysql: 'select * from `users` where `foo` is null',
-        mssql: 'select * from [users] where [foo] is null',
-        pg: 'select * from "users" where "foo" is null',
-      }
-    );
+    testsql(qb().select('*').from('users').where('foo', null), {
+      mysql: 'select * from `users` where `foo` is null',
+      mssql: 'select * from [users] where [foo] is null',
+      pg: 'select * from "users" where "foo" is null',
+    });
   });
 
   it('lock for update', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('foo')
-        .where('bar', '=', 'baz')
-        .forUpdate(),
-      {
-        mysql: {
-          sql: 'select * from `foo` where `bar` = ? for update',
-          bindings: ['baz'],
-        },
-        pg: {
-          sql: 'select * from "foo" where "bar" = ? for update',
-          bindings: ['baz'],
-        },
-        mssql: {
-          sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
-          bindings: ['baz'],
-        },
-        oracledb: {
-          sql: 'select * from "foo" where "bar" = ? for update',
-          bindings: ['baz'],
-        },
-      }
-    );
+    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
+      mysql: {
+        sql: 'select * from `foo` where `bar` = ? for update',
+        bindings: ['baz'],
+      },
+      pg: {
+        sql: 'select * from "foo" where "bar" = ? for update',
+        bindings: ['baz'],
+      },
+      mssql: {
+        sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
+        bindings: ['baz'],
+      },
+      oracledb: {
+        sql: 'select * from "foo" where "bar" = ? for update',
+        bindings: ['baz'],
+      },
+    });
   });
 
   it('lock in share mode', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('foo')
-        .where('bar', '=', 'baz')
-        .forShare(),
-      {
-        mysql: {
-          sql: 'select * from `foo` where `bar` = ? lock in share mode',
-          bindings: ['baz'],
-        },
-        pg: {
-          sql: 'select * from "foo" where "bar" = ? for share',
-          bindings: ['baz'],
-        },
-        mssql: {
-          sql: 'select * from [foo] with (HOLDLOCK) where [bar] = ?',
-          bindings: ['baz'],
-        },
-      }
-    );
+    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forShare(), {
+      mysql: {
+        sql: 'select * from `foo` where `bar` = ? lock in share mode',
+        bindings: ['baz'],
+      },
+      pg: {
+        sql: 'select * from "foo" where "bar" = ? for share',
+        bindings: ['baz'],
+      },
+      mssql: {
+        sql: 'select * from [foo] with (HOLDLOCK) where [bar] = ?',
+        bindings: ['baz'],
+      },
+    });
   });
 
   it('should allow lock (such as forUpdate) outside of a transaction', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('foo')
-        .where('bar', '=', 'baz')
-        .forUpdate(),
-      {
-        mysql: {
-          sql: 'select * from `foo` where `bar` = ? for update',
-          bindings: ['baz'],
-        },
-        mssql: {
-          sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
-          bindings: ['baz'],
-        },
-        pg: {
-          sql: 'select * from "foo" where "bar" = ? for update',
-          bindings: ['baz'],
-        },
-      }
-    );
+    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
+      mysql: {
+        sql: 'select * from `foo` where `bar` = ? for update',
+        bindings: ['baz'],
+      },
+      mssql: {
+        sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
+        bindings: ['baz'],
+      },
+      pg: {
+        sql: 'select * from "foo" where "bar" = ? for update',
+        bindings: ['baz'],
+      },
+    });
   });
 
   it('lock only some tables for update', () => {
@@ -7103,61 +6818,39 @@ describe('QueryBuilder', () => {
   });
 
   it('lock for update with skip locked #1937', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('foo')
-        .first()
-        .forUpdate()
-        .skipLocked(),
-      {
-        mysql: {
-          sql: 'select * from `foo` limit ? for update skip locked',
-          bindings: [1],
-        },
-        pg: {
-          sql: 'select * from "foo" limit ? for update skip locked',
-          bindings: [1],
-        },
-      }
-    );
+    testsql(qb().select('*').from('foo').first().forUpdate().skipLocked(), {
+      mysql: {
+        sql: 'select * from `foo` limit ? for update skip locked',
+        bindings: [1],
+      },
+      pg: {
+        sql: 'select * from "foo" limit ? for update skip locked',
+        bindings: [1],
+      },
+    });
   });
 
   it('lock for update with nowait #1937', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('foo')
-        .first()
-        .forUpdate()
-        .noWait(),
-      {
-        mysql: {
-          sql: 'select * from `foo` limit ? for update nowait',
-          bindings: [1],
-        },
-        pg: {
-          sql: 'select * from "foo" limit ? for update nowait',
-          bindings: [1],
-        },
-      }
-    );
+    testsql(qb().select('*').from('foo').first().forUpdate().noWait(), {
+      mysql: {
+        sql: 'select * from `foo` limit ? for update nowait',
+        bindings: [1],
+      },
+      pg: {
+        sql: 'select * from "foo" limit ? for update nowait',
+        bindings: [1],
+      },
+    });
   });
 
   it('noWait and skipLocked require a lock mode to be set', () => {
     expect(() => {
-      qb()
-        .select('*')
-        .noWait()
-        .toString();
+      qb().select('*').noWait().toString();
     }).to.throw(
       '.noWait() can only be used after a call to .forShare() or .forUpdate()!'
     );
     expect(() => {
-      qb()
-        .select('*')
-        .skipLocked()
-        .toString();
+      qb().select('*').skipLocked().toString();
     }).to.throw(
       '.skipLocked() can only be used after a call to .forShare() or .forUpdate()!'
     );
@@ -7165,20 +6858,10 @@ describe('QueryBuilder', () => {
 
   it('skipLocked conflicts with noWait and vice-versa', () => {
     expect(() => {
-      qb()
-        .select('*')
-        .forUpdate()
-        .noWait()
-        .skipLocked()
-        .toString();
+      qb().select('*').forUpdate().noWait().skipLocked().toString();
     }).to.throw('.skipLocked() cannot be used together with .noWait()!');
     expect(() => {
-      qb()
-        .select('*')
-        .forUpdate()
-        .skipLocked()
-        .noWait()
-        .toString();
+      qb().select('*').forUpdate().skipLocked().noWait().toString();
     }).to.throw('.noWait() cannot be used together with .skipLocked()!');
   });
 
@@ -7188,10 +6871,7 @@ describe('QueryBuilder', () => {
         .table('entries')
         .insert({
           secret: 123,
-          sequence: qb()
-            .count('*')
-            .from('entries')
-            .where('secret', 123),
+          sequence: qb().count('*').from('entries').where('secret', 123),
         }),
       {
         mysql: {
@@ -7223,7 +6903,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('student')
-        .leftOuterJoin('student_languages', function() {
+        .leftOuterJoin('student_languages', function () {
           this.on('student.id', 'student_languages.student_id').andOn(
             'student_languages.code',
             raw('?', 'en_US')
@@ -7255,38 +6935,30 @@ describe('QueryBuilder', () => {
   });
 
   it('should not break with null call #182', () => {
-    testsql(
-      qb()
-        .from('test')
-        .limit(null)
-        .offset(null),
-      {
-        mysql: {
-          sql: 'select * from `test`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [test]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "test"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "test"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('test').limit(null).offset(null), {
+      mysql: {
+        sql: 'select * from `test`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [test]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "test"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "test"',
+        bindings: [],
+      },
+    });
   });
 
-  it('should throw warning with null call in limit', function() {
+  it('should throw warning with null call in limit', function () {
     try {
       testsql(
-        qb()
-          .from('test')
-          .limit(null),
+        qb().from('test').limit(null),
         {
           mysql: {
             sql: 'select * from `test`',
@@ -7315,39 +6987,30 @@ describe('QueryBuilder', () => {
   });
 
   it('should do nothing with offset when passing null', () => {
-    testsql(
-      qb()
-        .from('test')
-        .limit(10)
-        .offset(null),
-      {
-        mysql: {
-          sql: 'select * from `test` limit ?',
-          bindings: [10],
-        },
-        mssql: {
-          sql: 'select top (?) * from [test]',
-          bindings: [10],
-        },
-        pg: {
-          sql: 'select * from "test" limit ?',
-          bindings: [10],
-        },
-        'pg-redshift': {
-          sql: 'select * from "test" limit ?',
-          bindings: [10],
-        },
-      }
-    );
+    testsql(qb().from('test').limit(10).offset(null), {
+      mysql: {
+        sql: 'select * from `test` limit ?',
+        bindings: [10],
+      },
+      mssql: {
+        sql: 'select top (?) * from [test]',
+        bindings: [10],
+      },
+      pg: {
+        sql: 'select * from "test" limit ?',
+        bindings: [10],
+      },
+      'pg-redshift': {
+        sql: 'select * from "test" limit ?',
+        bindings: [10],
+      },
+    });
   });
 
-  it('should throw warning with wrong value call in offset', function() {
+  it('should throw warning with wrong value call in offset', function () {
     try {
       testsql(
-        qb()
-          .from('test')
-          .limit(10)
-          .offset('$10'),
+        qb().from('test').limit(10).offset('$10'),
         {
           mysql: {
             sql: 'select * from `test` limit ?',
@@ -7376,45 +7039,30 @@ describe('QueryBuilder', () => {
   });
 
   it('should clear offset when passing null', () => {
-    testsql(
-      qb()
-        .from('test')
-        .offset(10)
-        .offset(null),
-      {
-        mysql: {
-          sql: 'select * from `test`',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select * from [test]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select * from "test"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select * from "test"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().from('test').offset(10).offset(null), {
+      mysql: {
+        sql: 'select * from `test`',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [test]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "test"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "test"',
+        bindings: [],
+      },
+    });
   });
 
   it('allows passing builder into where clause, #162', () => {
-    const chain = qb()
-      .from('chapter')
-      .select('id')
-      .where('book', 1);
-    const page = qb()
-      .from('page')
-      .select('id')
-      .whereIn('chapter_id', chain);
-    const word = qb()
-      .from('word')
-      .select('id')
-      .whereIn('page_id', page);
+    const chain = qb().from('chapter').select('id').where('book', 1);
+    const page = qb().from('page').select('id').whereIn('chapter_id', chain);
+    const word = qb().from('word').select('id').whereIn('page_id', page);
     const three = chain.clone().del();
     const two = page.clone().del();
     const one = word.clone().del();
@@ -7427,7 +7075,7 @@ describe('QueryBuilder', () => {
       },
       mssql: {
         sql:
-          'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?))',
+          'delete from [word] where [page_id] in (select [id] from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?));select @@rowcount',
         bindings: [1],
       },
       pg: {
@@ -7450,7 +7098,7 @@ describe('QueryBuilder', () => {
       },
       mssql: {
         sql:
-          'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?)',
+          'delete from [page] where [chapter_id] in (select [id] from [chapter] where [book] = ?);select @@rowcount',
         bindings: [1],
       },
       pg: {
@@ -7471,7 +7119,7 @@ describe('QueryBuilder', () => {
         bindings: [1],
       },
       mssql: {
-        sql: 'delete from [chapter] where [book] = ?',
+        sql: 'delete from [chapter] where [book] = ?;select @@rowcount',
         bindings: [1],
       },
       pg: {
@@ -7494,10 +7142,8 @@ describe('QueryBuilder', () => {
         .insert(
           qb()
             .select(raw('?, ?', [id, email]))
-            .whereNotExists(function() {
-              this.select(1)
-                .from('recipients')
-                .where('recipient_id', id);
+            .whereNotExists(function () {
+              this.select(1).from('recipients').where('recipient_id', id);
             })
         ),
       {
@@ -7547,7 +7193,7 @@ describe('QueryBuilder', () => {
       },
       mssql: {
         sql:
-          'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?',
+          'update [tblPerson] set [tblPerson].[City] = ? from [tblPerson] inner join [tblPersonData] on [tblPersonData].[PersonId] = [tblPerson].[PersonId] where [tblPersonData].[DataId] = ? and [tblPerson].[PersonId] = ?;select @@rowcount',
         bindings: ['Boonesville', 1, 5],
       },
       pg: {
@@ -7566,10 +7212,8 @@ describe('QueryBuilder', () => {
   it('does crazy advanced inserts with clever raw use, #211', () => {
     const q1 = qb()
       .select(raw("'user'"), raw("'user@foo.com'"))
-      .whereNotExists(function() {
-        this.select(1)
-          .from('recipients')
-          .where('recipient_id', 1);
+      .whereNotExists(function () {
+        this.select(1).from('recipients').where('recipient_id', 1);
       });
     const q2 = qb()
       .table('recipients')
@@ -7598,57 +7242,42 @@ describe('QueryBuilder', () => {
   });
 
   it('supports capitalized operators', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('name', 'LIKE', '%test%'),
-      {
-        mysql: {
-          sql: 'select * from `users` where `name` like ?',
-          bindings: ['%test%'],
-        },
-        mssql: {
-          sql: 'select * from [users] where [name] like ?',
-          bindings: ['%test%'],
-        },
-        pg: {
-          sql: 'select * from "users" where "name" like ?',
-          bindings: ['%test%'],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "name" like ?',
-          bindings: ['%test%'],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').where('name', 'LIKE', '%test%'), {
+      mysql: {
+        sql: 'select * from `users` where `name` like ?',
+        bindings: ['%test%'],
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] like ?',
+        bindings: ['%test%'],
+      },
+      pg: {
+        sql: 'select * from "users" where "name" like ?',
+        bindings: ['%test%'],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "name" like ?',
+        bindings: ['%test%'],
+      },
+    });
   });
 
   it('supports POSIX regex operators in Postgres', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('name', '~', '.*test.*'),
-      {
-        pg: {
-          sql: 'select * from "users" where "name" ~ ?',
-          bindings: ['.*test.*'],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "name" ~ ?',
-          bindings: ['.*test.*'],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').where('name', '~', '.*test.*'), {
+      pg: {
+        sql: 'select * from "users" where "name" ~ ?',
+        bindings: ['.*test.*'],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "name" ~ ?',
+        bindings: ['.*test.*'],
+      },
+    });
   });
 
   it('supports NOT ILIKE operator in Postgres', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('name', 'not ilike', '%jeff%'),
+      qb().select('*').from('users').where('name', 'not ilike', '%jeff%'),
       {
         pg: {
           sql: 'select * from "users" where "name" not ilike ?',
@@ -7664,23 +7293,14 @@ describe('QueryBuilder', () => {
 
   it('throws if you try to use an invalid operator', () => {
     expect(() => {
-      qb()
-        .select('*')
-        .where('id', 'isnt', 1)
-        .toString();
+      qb().select('*').where('id', 'isnt', 1).toString();
     }).to.throw('The operator "isnt" is not permitted');
   });
 
   it('throws if you try to use an invalid operator in an inserted statement', () => {
-    const obj = qb()
-      .select('*')
-      .where('id', 'isnt', 1);
+    const obj = qb().select('*').where('id', 'isnt', 1);
     expect(() => {
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', 'in', obj)
-        .toString();
+      qb().select('*').from('users').where('id', 'in', obj).toString();
     }).to.throw('The operator "isnt" is not permitted');
   });
 
@@ -7803,7 +7423,7 @@ describe('QueryBuilder', () => {
     testsql(
       qb()
         .select('e.lastname', 'e.salary')
-        .select(function() {
+        .select(function () {
           this.select('avg(salary)')
             .from('employee')
             .whereRaw('dept_no = e.dept_no')
@@ -7991,7 +7611,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('accounts')
-        .innerJoin('table1', function() {
+        .innerJoin('table1', function () {
           this.using('id');
         }),
       {
@@ -8015,7 +7635,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('accounts')
-        .innerJoin('table1', function() {
+        .innerJoin('table1', function () {
           this.using(['id', 'test']);
         }),
       {
@@ -8044,10 +7664,8 @@ describe('QueryBuilder', () => {
     testsql(
       qb()
         .into('votes')
-        .insert(function() {
-          this.select('*')
-            .from('votes')
-            .where('id', 99);
+        .insert(function () {
+          this.select('*').from('votes').where('id', 99);
         }),
       {
         mysql: {
@@ -8070,16 +7688,912 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it('allows sub-query chain on insert, #427', () => {
+  it('dense_rank with string and no partition', function () {
+    testsql(qb().select('*').from('accounts').denseRank(null, 'email'), {
+      mssql: {
+        sql: 'select *, dense_rank() over (order by [email]) from [accounts]',
+      },
+      pg: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"',
+      },
+      oracledb: {
+        sql: 'select *, dense_rank() over (order by "email") from "accounts"',
+      },
+    });
+  });
+
+  it('dense_rank with array and no partition', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('test_alias', ['email', 'name']),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with array', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank(null, ['email'], ['address', 'phone']),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by [address], [phone] order by [email]) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with string', function () {
+    testsql(
+      qb().select('*').from('accounts').denseRank(null, 'email', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by [address] order by [email]) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by "address" order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by "address" order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with array and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('test_alias', ['email'], ['address', 'phone']),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with string and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('test_alias', 'email', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with function', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank(null, function () {
+          this.orderBy('email');
+        }),
+      {
+        mssql: {
+          sql: 'select *, dense_rank() over (order by [email]) from [accounts]',
+        },
+        pg: {
+          sql: 'select *, dense_rank() over (order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql: 'select *, dense_rank() over (order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with function and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('test_alias', function () {
+          this.orderBy('email').partitionBy('address');
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with function and arrays', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('test_alias', function () {
+          this.orderBy(['email', 'name']).partitionBy(['address', 'phone']);
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with function and chains', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('test_alias', function () {
+          this.orderBy('email')
+            .partitionBy('address')
+            .partitionBy('phone')
+            .orderBy('name');
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('chained dense_rank ', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('first_alias', 'email')
+        .denseRank('second_alias', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (order by [email]) as first_alias, dense_rank() over (order by [address]) as second_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (order by "email") as first_alias, dense_rank() over (order by "address") as second_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (order by "email") as first_alias, dense_rank() over (order by "address") as second_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with raw', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank(null, raw('partition by address order by email')),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by address order by email) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by address order by email) from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by address order by email) from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('dense_rank with raw and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .denseRank('test_alias', raw('partition by address order by email')),
+      {
+        mssql: {
+          sql:
+            'select *, dense_rank() over (partition by address order by email) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, dense_rank() over (partition by address order by email) as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, dense_rank() over (partition by address order by email) as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with string and no partition', function () {
+    testsql(qb().select('*').from('accounts').rank(null, 'email'), {
+      mssql: {
+        sql: 'select *, rank() over (order by [email]) from [accounts]',
+      },
+      pg: {
+        sql: 'select *, rank() over (order by "email") from "accounts"',
+      },
+      oracledb: {
+        sql: 'select *, rank() over (order by "email") from "accounts"',
+      },
+    });
+  });
+
+  it('rank with array and alias', function () {
+    testsql(
+      qb().select('*').from('accounts').rank('test_alias', ['email', 'name']),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with array', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank(null, ['email'], ['address', 'phone']),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by [address], [phone] order by [email]) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with string', function () {
+    testsql(qb().select('*').from('accounts').rank(null, 'email', 'address'), {
+      mssql: {
+        sql:
+          'select *, rank() over (partition by [address] order by [email]) from [accounts]',
+      },
+      pg: {
+        sql:
+          'select *, rank() over (partition by "address" order by "email") from "accounts"',
+      },
+      oracledb: {
+        sql:
+          'select *, rank() over (partition by "address" order by "email") from "accounts"',
+      },
+    });
+  });
+
+  it('rank with array and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank('test_alias', ['email'], ['address', 'phone']),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with string and alias', function () {
+    testsql(
+      qb().select('*').from('accounts').rank('test_alias', 'email', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with function', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank(null, function () {
+          this.orderBy('email');
+        }),
+      {
+        mssql: {
+          sql: 'select *, rank() over (order by [email]) from [accounts]',
+        },
+        pg: {
+          sql: 'select *, rank() over (order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql: 'select *, rank() over (order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with function and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank('test_alias', function () {
+          this.orderBy('email').partitionBy('address');
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with function and arrays', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank('test_alias', function () {
+          this.orderBy(['email', 'name']).partitionBy(['address', 'phone']);
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with function and chains', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank('test_alias', function () {
+          this.orderBy('email')
+            .partitionBy('address')
+            .partitionBy('phone')
+            .orderBy('name');
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('chained rank', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank('first_alias', 'email')
+        .rank('second_alias', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (order by [email]) as first_alias, rank() over (order by [address]) as second_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (order by "email") as first_alias, rank() over (order by "address") as second_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (order by "email") as first_alias, rank() over (order by "address") as second_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with raw', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank(null, raw('partition by address order by email')),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by address order by email) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by address order by email) from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by address order by email) from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('rank with raw and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rank('test_alias', raw('partition by address order by email')),
+      {
+        mssql: {
+          sql:
+            'select *, rank() over (partition by address order by email) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, rank() over (partition by address order by email) as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, rank() over (partition by address order by email) as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with string and no partition', function () {
+    testsql(qb().select('*').from('accounts').rowNumber(null, 'email'), {
+      mssql: {
+        sql: 'select *, row_number() over (order by [email]) from [accounts]',
+      },
+      pg: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"',
+      },
+      oracledb: {
+        sql: 'select *, row_number() over (order by "email") from "accounts"',
+      },
+    });
+  });
+
+  it('row_number with array and no partition', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('test_alias', ['email', 'name']),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with array', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber(null, ['email'], ['address', 'phone']),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by [address], [phone] order by [email]) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with string', function () {
+    testsql(
+      qb().select('*').from('accounts').rowNumber(null, 'email', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by [address] order by [email]) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by "address" order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by "address" order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with array and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('test_alias', ['email'], ['address', 'phone']),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with string and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('test_alias', 'email', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by [address] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with function', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber(null, function () {
+          this.orderBy('email');
+        }),
+      {
+        mssql: {
+          sql: 'select *, row_number() over (order by [email]) from [accounts]',
+        },
+        pg: {
+          sql: 'select *, row_number() over (order by "email") from "accounts"',
+        },
+        oracledb: {
+          sql: 'select *, row_number() over (order by "email") from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with function and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('test_alias', function () {
+          this.orderBy('email').partitionBy('address');
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by [address] order by [email]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with function and arrays', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('test_alias', function () {
+          this.orderBy(['email', 'name']).partitionBy(['address', 'phone']);
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with function and chains', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('test_alias', function () {
+          this.orderBy('email')
+            .partitionBy('address')
+            .partitionBy('phone')
+            .orderBy('name');
+        }),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('chained row_number', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('first_alias', 'email')
+        .rowNumber('second_alias', 'address'),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (order by [email]) as first_alias, row_number() over (order by [address]) as second_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (order by "email") as first_alias, row_number() over (order by "address") as second_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (order by "email") as first_alias, row_number() over (order by "address") as second_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with raw', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber(null, raw('partition by address order by email')),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by address order by email) from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by address order by email) from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by address order by email) from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('row_number with raw and alias', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber('test_alias', raw('partition by address order by email')),
+      {
+        mssql: {
+          sql:
+            'select *, row_number() over (partition by address order by email) as test_alias from [accounts]',
+        },
+        pg: {
+          sql:
+            'select *, row_number() over (partition by address order by email) as test_alias from "accounts"',
+        },
+        oracledb: {
+          sql:
+            'select *, row_number() over (partition by address order by email) as test_alias from "accounts"',
+        },
+      }
+    );
+  });
+
+  it('allows sub-query function on insert, #427', function () {
     testsql(
       qb()
         .into('votes')
-        .insert(
-          qb()
-            .select('*')
-            .from('votes')
-            .where('id', 99)
-        ),
+        .insert(function () {
+          this.select('*').from('votes').where('id', 99);
+        }),
+      {
+        mysql: {
+          sql: 'insert into `votes` select * from `votes` where `id` = ?',
+          bindings: [99],
+        },
+        mssql: {
+          sql: 'insert into [votes] select * from [votes] where [id] = ?',
+          bindings: [99],
+        },
+        pg: {
+          sql: 'insert into "votes" select * from "votes" where "id" = ?',
+          bindings: [99],
+        },
+      }
+    );
+  });
+
+  it('allows sub-query chain on insert, #427', () => {
+    testsql(
+      qb().into('votes').insert(qb().select('*').from('votes').where('id', 99)),
       {
         mysql: {
           sql: 'insert into `votes` select * from `votes` where `id` = ?',
@@ -8154,10 +8668,7 @@ describe('QueryBuilder', () => {
         .table('entries')
         .insert({
           secret: 123,
-          sequence: qb()
-            .count('*')
-            .from('entries')
-            .where('secret', 123),
+          sequence: qb().count('*').from('entries').where('secret', 123),
         }),
       {
         mysql: {
@@ -8255,29 +8766,24 @@ describe('QueryBuilder', () => {
   });
 
   it('escapes queries properly, #737', () => {
-    testsql(
-      qb()
-        .select('id","name', 'id`name')
-        .from('test`'),
-      {
-        mysql: {
-          sql: 'select `id","name`, `id``name` from `test```',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select [id","name], [id`name] from [test`]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select "id"",""name", "id`name" from "test`"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select "id"",""name", "id`name" from "test`"',
-          bindings: [],
-        },
-      }
-    );
+    testsql(qb().select('id","name', 'id`name').from('test`'), {
+      mysql: {
+        sql: 'select `id","name`, `id``name` from `test```',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select [id","name], [id`name] from [test`]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select "id"",""name", "id`name" from "test`"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select "id"",""name", "id`name" from "test`"',
+        bindings: [],
+      },
+    });
   });
 
   it('has a fromJS method for json construction of queries', () => {
@@ -8318,7 +8824,7 @@ describe('QueryBuilder', () => {
   it('has a modify method which accepts a function that can modify the query', () => {
     // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
-    const withBars = function(queryBuilder, table, fk) {
+    const withBars = function (queryBuilder, table, fk) {
       if (!this || this !== queryBuilder) {
         throw 'Expected query builder passed as first argument and bound as `this` context';
       }
@@ -8326,10 +8832,7 @@ describe('QueryBuilder', () => {
     };
 
     testsql(
-      qb()
-        .select('foo_id')
-        .from('foos')
-        .modify(withBars, 'foos', 'bar_id'),
+      qb().select('foo_id').from('foos').modify(withBars, 'foos', 'bar_id'),
       {
         mysql: {
           sql:
@@ -8366,24 +8869,15 @@ describe('QueryBuilder', () => {
   });
 
   it('escapes single quotes properly', () => {
-    testquery(
-      qb()
-        .select('*')
-        .from('users')
-        .where('last_name', "O'Brien"),
-      {
-        mysql: "select * from `users` where `last_name` = 'O\\'Brien'",
-        pg: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
-      }
-    );
+    testquery(qb().select('*').from('users').where('last_name', "O'Brien"), {
+      mysql: "select * from `users` where `last_name` = 'O\\'Brien'",
+      pg: 'select * from "users" where "last_name" = \'O\'\'Brien\'',
+    });
   });
 
   it('escapes double quotes property', () => {
     testquery(
-      qb()
-        .select('*')
-        .from('players')
-        .where('name', 'Gerald "Ice" Williams'),
+      qb().select('*').from('players').where('name', 'Gerald "Ice" Williams'),
       {
         pg: 'select * from "players" where "name" = \'Gerald "Ice" Williams\'',
       }
@@ -8391,46 +8885,31 @@ describe('QueryBuilder', () => {
   });
 
   it('escapes backslashes properly', () => {
-    testquery(
-      qb()
-        .select('*')
-        .from('files')
-        .where('path', 'C:\\test.txt'),
-      {
-        pg: 'select * from "files" where "path" = E\'C:\\\\test.txt\'',
-      }
-    );
+    testquery(qb().select('*').from('files').where('path', 'C:\\test.txt'), {
+      pg: 'select * from "files" where "path" = E\'C:\\\\test.txt\'',
+    });
   });
 
   it('allows join without operator and with value 0 #953', () => {
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .join('photos', 'photos.id', 0),
-      {
-        mysql: {
-          sql: 'select * from `users` inner join `photos` on `photos`.`id` = 0',
-        },
-        mssql: {
-          sql: 'select * from [users] inner join [photos] on [photos].[id] = 0',
-        },
-        pg: {
-          sql: 'select * from "users" inner join "photos" on "photos"."id" = 0',
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" inner join "photos" on "photos"."id" = 0',
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').join('photos', 'photos.id', 0), {
+      mysql: {
+        sql: 'select * from `users` inner join `photos` on `photos`.`id` = 0',
+      },
+      mssql: {
+        sql: 'select * from [users] inner join [photos] on [photos].[id] = 0',
+      },
+      pg: {
+        sql: 'select * from "users" inner join "photos" on "photos"."id" = 0',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" inner join "photos" on "photos"."id" = 0',
+      },
+    });
   });
 
   it('allows join with operator and with value 0 #953', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .join('photos', 'photos.id', '>', 0),
+      qb().select('*').from('users').join('photos', 'photos.id', '>', 0),
       {
         mysql: {
           sql: 'select * from `users` inner join `photos` on `photos`.`id` > 0',
@@ -8450,58 +8929,46 @@ describe('QueryBuilder', () => {
 
   it('where with date object', () => {
     const date = new Date();
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('birthday', '>=', date),
-      {
-        mysql: {
-          sql: 'select * from `users` where `birthday` >= ?',
-          bindings: [date],
-        },
-        mssql: {
-          sql: 'select * from [users] where [birthday] >= ?',
-          bindings: [date],
-        },
-        pg: {
-          sql: 'select * from "users" where "birthday" >= ?',
-          bindings: [date],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "birthday" >= ?',
-          bindings: [date],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').where('birthday', '>=', date), {
+      mysql: {
+        sql: 'select * from `users` where `birthday` >= ?',
+        bindings: [date],
+      },
+      mssql: {
+        sql: 'select * from [users] where [birthday] >= ?',
+        bindings: [date],
+      },
+      pg: {
+        sql: 'select * from "users" where "birthday" >= ?',
+        bindings: [date],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "birthday" >= ?',
+        bindings: [date],
+      },
+    });
   });
 
   it('raw where with date object', () => {
     const date = new Date();
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .whereRaw('birthday >= ?', date),
-      {
-        mysql: {
-          sql: 'select * from `users` where birthday >= ?',
-          bindings: [date],
-        },
-        mssql: {
-          sql: 'select * from [users] where birthday >= ?',
-          bindings: [date],
-        },
-        pg: {
-          sql: 'select * from "users" where birthday >= ?',
-          bindings: [date],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where birthday >= ?',
-          bindings: [date],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereRaw('birthday >= ?', date), {
+      mysql: {
+        sql: 'select * from `users` where birthday >= ?',
+        bindings: [date],
+      },
+      mssql: {
+        sql: 'select * from [users] where birthday >= ?',
+        bindings: [date],
+      },
+      pg: {
+        sql: 'select * from "users" where birthday >= ?',
+        bindings: [date],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where birthday >= ?',
+        bindings: [date],
+      },
+    });
   });
 
   it('#965 - .raw accepts Array and Non-Array bindings', () => {
@@ -8526,10 +8993,7 @@ describe('QueryBuilder', () => {
 
     //String
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where(raw('username = ?', 'knex')),
+      qb().select('*').from('users').where(raw('username = ?', 'knex')),
       expected('username', ['knex'])
     );
     testsql(
@@ -8542,10 +9006,7 @@ describe('QueryBuilder', () => {
 
     //Number
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where(raw('isadmin = ?', 0)),
+      qb().select('*').from('users').where(raw('isadmin = ?', 0)),
       expected('isadmin', [0])
     );
     testsql(
@@ -8560,10 +9021,7 @@ describe('QueryBuilder', () => {
     const date = new Date(2016, 0, 5, 10, 19, 30, 599);
     const sqlUpdTime = '2016-01-05 10:19:30.599';
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where(raw('updtime = ?', date)),
+      qb().select('*').from('users').where(raw('updtime = ?', date)),
       expected('updtime', [date])
     );
     testsql(
@@ -8573,28 +9031,18 @@ describe('QueryBuilder', () => {
         .where(raw('updtime = ?', [date])),
       expected('updtime', [date])
     );
-    testquery(
-      qb()
-        .select('*')
-        .from('users')
-        .where(raw('updtime = ?', date)),
-      {
-        mysql: "select * from `users` where updtime = '" + sqlUpdTime + "'",
-        pg: 'select * from "users" where updtime = \'' + sqlUpdTime + "'",
-      }
-    );
+    testquery(qb().select('*').from('users').where(raw('updtime = ?', date)), {
+      mysql: "select * from `users` where updtime = '" + sqlUpdTime + "'",
+      pg: 'select * from "users" where updtime = \'' + sqlUpdTime + "'",
+    });
   });
 
   it('#1118 orWhere({..}) generates or (and - and - and)', () => {
     testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', '=', 1)
-        .orWhere({
-          email: 'foo',
-          id: 2,
-        }),
+      qb().select('*').from('users').where('id', '=', 1).orWhere({
+        email: 'foo',
+        id: 2,
+      }),
       {
         mysql: {
           sql:
@@ -8753,33 +9201,183 @@ describe('QueryBuilder', () => {
   });
 
   it('#1402 - raw should take "not" into consideration in querybuilder', () => {
+    testsql(qb().from('testtable').whereNot(raw('is_active')), {
+      mysql: {
+        sql: 'select * from `testtable` where not is_active',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'select * from "testtable" where not is_active',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [testtable] where not is_active',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "testtable" where not is_active',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "testtable" where not is_active',
+        bindings: [],
+      },
+    });
+  });
+
+  it('#4199 - allows an hint comment', () => {
+    testsql(qb().from('testtable').hintComment('hint()'), {
+      mysql: {
+        sql: 'select /*+ hint() */ * from `testtable`',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select /*+ hint() */ * from [testtable]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+    });
+  });
+
+  it('#4199 - allows multiple hint comments', () => {
     testsql(
       qb()
         .from('testtable')
-        .whereNot(raw('is_active')),
+        .hintComment(['hint1()', 'hint2()'])
+        .hintComment('hint3()'),
       {
         mysql: {
-          sql: 'select * from `testtable` where not is_active',
+          sql: 'select /*+ hint1() hint2() hint3() */ * from `testtable`',
           bindings: [],
         },
         oracledb: {
-          sql: 'select * from "testtable" where not is_active',
+          sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
           bindings: [],
         },
         mssql: {
-          sql: 'select * from [testtable] where not is_active',
+          sql: 'select /*+ hint1() hint2() hint3() */ * from [testtable]',
           bindings: [],
         },
         pg: {
-          sql: 'select * from "testtable" where not is_active',
+          sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
           bindings: [],
         },
         'pg-redshift': {
-          sql: 'select * from "testtable" where not is_active',
+          sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
           bindings: [],
         },
       }
     );
+  });
+
+  it('#4199 - allows hint comments in subqueries', () => {
+    testsql(
+      qb()
+        .select({
+          c1: 'c1',
+          c2: qb().select('c2').from('t2').hintComment('hint2()').limit(1),
+        })
+        .from('t1')
+        .hintComment('hint1()'),
+      {
+        mysql: {
+          sql:
+            'select /*+ hint1() */ `c1` as `c1`, (select /*+ hint2() */ `c2` from `t2` limit ?) as `c2` from `t1`',
+          bindings: [1],
+        },
+        oracledb: {
+          sql:
+            'select /*+ hint1() */ "c1" "c1", (select * from (select /*+ hint2() */ "c2" from "t2") where rownum <= ?) "c2" from "t1"',
+          bindings: [1],
+        },
+        mssql: {
+          sql:
+            'select /*+ hint1() */ [c1] as [c1], (select /*+ hint2() */ top (?) [c2] from [t2]) as [c2] from [t1]',
+          bindings: [1],
+        },
+        pg: {
+          sql:
+            'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          bindings: [1],
+        },
+        'pg-redshift': {
+          sql:
+            'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          bindings: [1],
+        },
+      }
+    );
+  });
+
+  it('#4199 - allows hint comments in unions', () => {
+    testsql(
+      qb()
+        .from('t1')
+        .hintComment('hint1()')
+        .unionAll(qb().from('t2').hintComment('hint2()')),
+      {
+        mysql: {
+          sql:
+            'select /*+ hint1() */ * from `t1` union all select /*+ hint2() */ * from `t2`',
+          bindings: [],
+        },
+        oracledb: {
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          bindings: [],
+        },
+        mssql: {
+          sql:
+            'select /*+ hint1() */ * from [t1] union all select /*+ hint2() */ * from [t2]',
+          bindings: [],
+        },
+        pg: {
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('#4199 - forbids "/*", "*/" and "?" in hint comments', () => {
+    expect(() => {
+      qb().from('testtable').hintComment('hint() /*').toString();
+    }).to.throw('Hint comment cannot include "/*" or "*/"');
+    expect(() => {
+      qb().from('testtable').hintComment('hint() */').toString();
+    }).to.throw('Hint comment cannot include "/*" or "*/"');
+    expect(() => {
+      qb().from('testtable').hintComment('hint(?)').toString();
+    }).to.throw('Hint comment cannot include "?"');
+  });
+
+  it('#4199 - forbids non-strings as hint comments', () => {
+    expect(() => {
+      qb().from('testtable').hintComment(47).toString();
+    }).to.throw('Hint comment must be a string');
+    expect(() => {
+      qb()
+        .from('testtable')
+        .hintComment(raw('hint(?)', [47]))
+        .toString();
+    }).to.throw('Hint comment must be a string');
   });
 
   it('Any undefined binding in a SELECT query should throw an error', () => {
@@ -9003,39 +9601,21 @@ describe('QueryBuilder', () => {
 
   it('operator transformation', () => {
     // part of common base code, no need to test on every dialect
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', '?', 1),
-      {
-        pg: 'select * from "users" where "id" \\? ?',
-      }
-    );
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', '?|', 1),
-      {
-        pg: 'select * from "users" where "id" \\?| ?',
-      }
-    );
-    testsql(
-      qb()
-        .select('*')
-        .from('users')
-        .where('id', '?&', 1),
-      {
-        pg: 'select * from "users" where "id" \\?& ?',
-      }
-    );
+    testsql(qb().select('*').from('users').where('id', '?', 1), {
+      pg: 'select * from "users" where "id" \\? ?',
+    });
+    testsql(qb().select('*').from('users').where('id', '?|', 1), {
+      pg: 'select * from "users" where "id" \\?| ?',
+    });
+    testsql(qb().select('*').from('users').where('id', '?&', 1), {
+      pg: 'select * from "users" where "id" \\?& ?',
+    });
   });
 
   it("wrapped 'with' clause select", () => {
     testsql(
       qb()
-        .with('withClause', function() {
+        .with('withClause', function () {
           this.select('foo').from('users');
         })
         .select('*')
@@ -9058,7 +9638,7 @@ describe('QueryBuilder', () => {
   it("wrapped 'with' clause insert", () => {
     testsql(
       qb()
-        .with('withClause', function() {
+        .with('withClause', function () {
           this.select('foo').from('users');
         })
         .insert(raw('select * from "withClause"'))
@@ -9077,10 +9657,8 @@ describe('QueryBuilder', () => {
   it("wrapped 'with' clause multiple insert", () => {
     testsql(
       qb()
-        .with('withClause', function() {
-          this.select('foo')
-            .from('users')
-            .where({ name: 'bob' });
+        .with('withClause', function () {
+          this.select('foo').from('users').where({ name: 'bob' });
         })
         .insert([
           { email: 'thisMail', name: 'sam' },
@@ -9115,7 +9693,7 @@ describe('QueryBuilder', () => {
   it("wrapped 'with' clause update", () => {
     testsql(
       qb()
-        .with('withClause', function() {
+        .with('withClause', function () {
           this.select('foo').from('users');
         })
         .update({ foo: 'updatedFoo' })
@@ -9123,7 +9701,7 @@ describe('QueryBuilder', () => {
         .from('users'),
       {
         mssql:
-          'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?',
+          'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
         sqlite3:
           'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
         pg:
@@ -9135,7 +9713,7 @@ describe('QueryBuilder', () => {
   it("wrapped 'with' clause delete", () => {
     testsql(
       qb()
-        .with('withClause', function() {
+        .with('withClause', function () {
           this.select('email').from('users');
         })
         .del()
@@ -9143,7 +9721,7 @@ describe('QueryBuilder', () => {
         .from('users'),
       {
         mssql:
-          'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?',
+          'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?;select @@rowcount',
         sqlite3:
           'with `withClause` as (select `email` from `users`) delete from `users` where `foo` = ?',
         pg:
@@ -9176,10 +9754,10 @@ describe('QueryBuilder', () => {
   it("chained wrapped 'with' clause", () => {
     testsql(
       qb()
-        .with('firstWithClause', function() {
+        .with('firstWithClause', function () {
           this.select('foo').from('users');
         })
-        .with('secondWithClause', function() {
+        .with('secondWithClause', function () {
           this.select('bar').from('users');
         })
         .select('*')
@@ -9202,11 +9780,9 @@ describe('QueryBuilder', () => {
   it("nested 'with' clause", () => {
     testsql(
       qb()
-        .with('withClause', function() {
-          this.with('withSubClause', function() {
-            this.select('foo')
-              .as('baz')
-              .from('users');
+        .with('withClause', function () {
+          this.with('withSubClause', function () {
+            this.select('foo').as('baz').from('users');
           })
             .select('*')
             .from('withSubClause');
@@ -9231,7 +9807,7 @@ describe('QueryBuilder', () => {
   it("nested 'with' clause with bindings", () => {
     testsql(
       qb()
-        .with('withClause', function() {
+        .with('withClause', function () {
           this.with(
             'withSubClause',
             raw(
@@ -9276,52 +9852,43 @@ describe('QueryBuilder', () => {
   });
 
   it('should return dialect specific sql and bindings with  toSQL().toNative()', () => {
-    testNativeSql(
-      qb()
-        .from('table')
-        .where('isIt', true),
-      {
-        mssql: {
-          sql: 'select * from [table] where [isIt] = @p0',
-          bindings: [true],
-        },
-        mysql: {
-          sql: 'select * from `table` where `isIt` = ?',
-          bindings: [true],
-        },
-        sqlite3: {
-          sql: 'select * from `table` where `isIt` = ?',
-          bindings: [true],
-        },
-        pg: {
-          sql: 'select * from "table" where "isIt" = $1',
-          bindings: [true],
-        },
-        oracledb: {
-          sql: 'select * from "table" where "isIt" = :1',
-          bindings: [1],
-        },
-      }
-    );
+    testNativeSql(qb().from('table').where('isIt', true), {
+      mssql: {
+        sql: 'select * from [table] where [isIt] = @p0',
+        bindings: [true],
+      },
+      mysql: {
+        sql: 'select * from `table` where `isIt` = ?',
+        bindings: [true],
+      },
+      sqlite3: {
+        sql: 'select * from `table` where `isIt` = ?',
+        bindings: [true],
+      },
+      pg: {
+        sql: 'select * from "table" where "isIt" = $1',
+        bindings: [true],
+      },
+      oracledb: {
+        sql: 'select * from "table" where "isIt" = :1',
+        bindings: [1],
+      },
+    });
   });
 
   it("nested and chained wrapped 'with' clause", () => {
     testsql(
       qb()
-        .with('firstWithClause', function() {
-          this.with('firstWithSubClause', function() {
-            this.select('foo')
-              .as('foz')
-              .from('users');
+        .with('firstWithClause', function () {
+          this.with('firstWithSubClause', function () {
+            this.select('foo').as('foz').from('users');
           })
             .select('*')
             .from('firstWithSubClause');
         })
-        .with('secondWithClause', function() {
-          this.with('secondWithSubClause', function() {
-            this.select('bar')
-              .as('baz')
-              .from('users');
+        .with('secondWithClause', function () {
+          this.with('secondWithSubClause', function () {
+            this.select('bar').as('baz').from('users');
           })
             .select('*')
             .from('secondWithSubClause');
@@ -9346,20 +9913,16 @@ describe('QueryBuilder', () => {
   it("nested and chained wrapped 'withRecursive' clause", () => {
     testsql(
       qb()
-        .withRecursive('firstWithClause', function() {
-          this.withRecursive('firstWithSubClause', function() {
-            this.select('foo')
-              .as('foz')
-              .from('users');
+        .withRecursive('firstWithClause', function () {
+          this.withRecursive('firstWithSubClause', function () {
+            this.select('foo').as('foz').from('users');
           })
             .select('*')
             .from('firstWithSubClause');
         })
-        .withRecursive('secondWithClause', function() {
-          this.withRecursive('secondWithSubClause', function() {
-            this.select('bar')
-              .as('baz')
-              .from('users');
+        .withRecursive('secondWithClause', function () {
+          this.withRecursive('secondWithSubClause', function () {
+            this.select('bar').as('baz').from('users');
           })
             .select('*')
             .from('secondWithSubClause');
@@ -9387,11 +9950,7 @@ describe('QueryBuilder', () => {
         qb()
           .with(
             'update1',
-            raw('??', [
-              qb()
-                .from('accounts')
-                .update({ name: 'foo' }),
-            ])
+            raw('??', [qb().from('accounts').update({ name: 'foo' })])
           )
           .from('accounts'),
         {
@@ -9403,12 +9962,7 @@ describe('QueryBuilder', () => {
     it('with update query passed as query builder', () => {
       testquery(
         qb()
-          .with(
-            'update1',
-            qb()
-              .from('accounts')
-              .update({ name: 'foo' })
-          )
+          .with('update1', qb().from('accounts').update({ name: 'foo' }))
           .from('accounts'),
         {
           pg: `with "update1" as (update "accounts" set "name" = 'foo') select * from "accounts"`,
@@ -9434,12 +9988,7 @@ describe('QueryBuilder', () => {
         qb()
           .with(
             'delete1',
-            raw('??', [
-              qb()
-                .delete()
-                .from('accounts')
-                .where('id', 1),
-            ])
+            raw('??', [qb().delete().from('accounts').where('id', 1)])
           )
           .from('accounts'),
         {
@@ -9452,10 +10001,7 @@ describe('QueryBuilder', () => {
       testquery(
         qb()
           .with('delete1', (builder) =>
-            builder
-              .delete()
-              .from('accounts')
-              .where('id', 1)
+            builder.delete().from('accounts').where('id', 1)
           )
           .from('accounts'),
         {
@@ -9467,13 +10013,7 @@ describe('QueryBuilder', () => {
     it('with delete query passed as callback', () => {
       testquery(
         qb()
-          .with(
-            'delete1',
-            qb()
-              .delete()
-              .from('accounts')
-              .where('id', 1)
-          )
+          .with('delete1', qb().delete().from('accounts').where('id', 1))
           .from('accounts'),
         {
           pg: `with "delete1" as (delete from "accounts" where "id" = 1) select * from "accounts"`,
@@ -9504,10 +10044,7 @@ describe('QueryBuilder', () => {
 
   it('#1710, properly escapes arrays in where clauses in postgresql', () => {
     testquery(
-      qb()
-        .select('*')
-        .from('sometable')
-        .where('array_field', '&&', [7]),
+      qb().select('*').from('sometable').where('array_field', '&&', [7]),
       {
         pg: 'select * from "sometable" where "array_field" && \'{7}\'',
       }
@@ -9537,37 +10074,25 @@ describe('QueryBuilder', () => {
   it('#2003, properly escapes objects with toPostgres specialization', () => {
     function TestObject() {}
     TestObject.prototype.toPostgres = () => 'foobar';
-    testquery(
-      qb()
-        .table('sometable')
-        .insert({ id: new TestObject() }),
-      {
-        pg: 'insert into "sometable" ("id") values (\'foobar\')',
-      }
-    );
+    testquery(qb().table('sometable').insert({ id: new TestObject() }), {
+      pg: 'insert into "sometable" ("id") values (\'foobar\')',
+    });
   });
 
   it('Throws error if .update() results in faulty sql due to no data', () => {
     try {
-      qb()
-        .table('sometable')
-        .update({ column: undefined })
-        .toString();
+      qb().table('sometable').update({ foobar: undefined }).toString();
       throw new Error('Should not reach this point');
     } catch (error) {
       expect(error.message).to.equal(
-        'Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query.'
+        'Empty .update() call detected! Update data does not contain any values to update. This will result in a faulty query. Table: sometable. Columns: foobar.'
       );
     }
   });
 
   it('Throws error if .first() is called on update', () => {
     try {
-      qb()
-        .table('sometable')
-        .update({ column: 'value' })
-        .first()
-        .toSQL();
+      qb().table('sometable').update({ column: 'value' }).first().toSQL();
 
       throw new Error('Should not reach this point');
     } catch (error) {
@@ -9579,11 +10104,7 @@ describe('QueryBuilder', () => {
 
   it('Throws error if .first() is called on insert', () => {
     try {
-      qb()
-        .table('sometable')
-        .insert({ column: 'value' })
-        .first()
-        .toSQL();
+      qb().table('sometable').insert({ column: 'value' }).first().toSQL();
 
       throw new Error('Should not reach this point');
     } catch (error) {
@@ -9595,11 +10116,7 @@ describe('QueryBuilder', () => {
 
   it('Throws error if .first() is called on delete', () => {
     try {
-      qb()
-        .table('sometable')
-        .del()
-        .first()
-        .toSQL();
+      qb().table('sometable').del().first().toSQL();
 
       throw new Error('Should not reach this point');
     } catch (error) {
@@ -9676,10 +10193,7 @@ describe('QueryBuilder', () => {
 
     expect(() => {
       testsql(
-        qb()
-          .into('users')
-          .insert({ email: 'foo' })
-          .returning('id'),
+        qb().into('users').insert({ email: 'foo' }).returning('id'),
         {
           mysql: {
             sql: 'insert into `users` (`email`) values (?)',
@@ -9713,10 +10227,7 @@ describe('QueryBuilder', () => {
 
     expect(() => {
       testsql(
-        qb()
-          .into('users')
-          .insert({ email: 'foo' })
-          .returning('id'),
+        qb().into('users').insert({ email: 'foo' }).returning('id'),
         {
           sqlite3: {
             sql: 'insert into `users` (`email`) values (?)',
@@ -9761,6 +10272,155 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should join on a subquery with custom conditions and schema', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('foo')
+        .join(qb().select(['f_id']).from('baz').as('bar'), (j) =>
+          j.on('bar.f_id', 'foo.id')
+        ),
+      {
+        mysql:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        mssql:
+          'select * from [schema].[foo] inner join (select [f_id] from [baz]) as [bar] on [bar].[f_id] = [foo].[id]',
+        oracledb:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") "bar" on "bar"."f_id" = "foo"."id"',
+        pg:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        'pg-redshift':
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        sqlite3:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+      }
+    );
+  });
+
+  it('should join on a subquery defined as a function with custom conditions and schema', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('foo')
+        .join(
+          (q) => q.select(['f_id']).from('baz').as('bar'),
+          (j) => j.on('bar.f_id', 'foo.id')
+        ),
+      {
+        mysql:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        mssql:
+          'select * from [schema].[foo] inner join (select [f_id] from [baz]) as [bar] on [bar].[f_id] = [foo].[id]',
+        oracledb:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") "bar" on "bar"."f_id" = "foo"."id"',
+        pg:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        'pg-redshift':
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        sqlite3:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a subquery', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from(qb().from('foo').select().as('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from (select * from [foo]) as [bar] inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a subquery specified by a function', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from((q) => q.from('foo').select().as('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from (select * from [foo]) as [bar] inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a raw FROM clause', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from(raw('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from bar inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a raw JOIN clause', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('bar')
+        .join(raw('baz'), 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from [schema].[bar] inner join baz on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
   it('join with onVal andOnVal orOnVal', () => {
     testsql(
       qb()
@@ -9774,15 +10434,15 @@ describe('QueryBuilder', () => {
           updatedAt: 'p.post_modified_gmt',
         })
         .from({ p: 'wp_posts' })
-        .leftJoin({ price: 'wp_postmeta' }, function() {
+        .leftJoin({ price: 'wp_postmeta' }, function () {
           this.on('p.id', '=', 'price.post_id')
-            .onVal(function() {
+            .onVal(function () {
               this.onVal('price.meta_key', '_regular_price').andOnVal(
                 'price_meta_key',
                 '_regular_price'
               );
             })
-            .orOnVal(function() {
+            .orOnVal(function () {
               this.onVal('price_meta.key', '_regular_price');
             });
         }),

@@ -1,7 +1,6 @@
 #!/usr/bin/env jake
 'use strict';
 /* eslint-disable no-undef */
-/* eslint-disable no-console */
 
 const os = require('os');
 const fs = require('fs');
@@ -82,37 +81,6 @@ test('Create a migration file without client passed', (temp) =>
       )
     ));
 
-test('Run migrations', (temp) =>
-  new Promise((resolve, reject) =>
-    fs.writeFile(
-      temp + '/migrations/000_create_rule_table.js',
-      `
-            exports.up = (knex)=> knex.schema.createTable('rules', (table)=> {
-                table.string('name');
-            });
-            exports.down = (knex)=> knex.schema.dropTable('rules');
-        `,
-      (err) => (err ? reject(err) : resolve())
-    )
-  )
-    .then(() =>
-      assertExec(`${KNEX} migrate:latest \
-                 --client=sqlite3 --connection=${temp}/db \
-                 --migrations-directory=${temp}/migrations \
-                 create_rule_table`)
-    )
-    .then(() => assertExec(`ls ${temp}/db`, 'Find the database file'))
-    .then(() => new sqlite3.Database(temp + '/db'))
-    .then(
-      (db) =>
-        new Promise((resolve, reject) =>
-          db.get('SELECT name FROM knex_migrations', function(err, row) {
-            err ? reject(err) : resolve(row);
-          })
-        )
-    )
-    .then((row) => assert.equal(row.name, '000_create_rule_table.js')));
-
 test('run migrations without knexfile and with --migrations-table-name', (temp) =>
   assertExec(`${KNEX} migrate:latest \
               --client=sqlite3  --connection=${temp}/db \
@@ -124,7 +92,7 @@ test('run migrations without knexfile and with --migrations-table-name', (temp) 
         new Promise((resolve, reject) =>
           db.get(
             "SELECT name FROM sqlite_master where type='table' AND name='custom_migrations_table'",
-            function(err, row) {
+            function (err, row) {
               err ? reject(err) : resolve(row);
             }
           )

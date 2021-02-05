@@ -13,11 +13,12 @@ module.exports = {
   plugins: ['import'],
   rules: {
     'no-unused-vars': [warning, { vars: 'all', args: 'none' }],
-    'no-console': warning,
+    'no-console': 'off',
     'no-var': 2,
     'no-debugger': warning,
     'prefer-const': warning,
     'no-fallthrough': warning,
+    'require-atomic-updates': 0,
   },
   env: {
     node: true,

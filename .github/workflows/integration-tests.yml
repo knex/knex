@@ -1,0 +1,70 @@
+---
+
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: CI
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [15.x, 14.x, 12.x, 10.x]
+        database-type: [postgres, mysql, mssql, sqlite3]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          always-auth: false
+          node-version: ${{ matrix.node-version }}
+
+      - name: Start Database(s)
+        run: |
+          docker-compose \
+            --file "scripts/docker-compose.yml" \
+            up \
+              --detach \
+              --build \
+              "${{ matrix.database-type }}"
+        if: matrix.database-type != 'sqlite3'
+
+      - name: Initialize Database(s)
+        run: |
+          docker-compose \
+            --file "scripts/docker-compose.yml" \
+            up \
+              --detach \
+              "wait${{ matrix.database-type }}"
+        if: matrix.database-type != 'sqlite3'
+
+      - name: Run npm install
+        run: npm install
+
+      - name: Run Tests
+        run: npm run test:db
+        env:
+          CI: true
+          DB: ${{ matrix.database-type }}
+          KNEX_TEST_TIMEOUT: 60000
+
+      - name: Stop Database(s)
+        run: |
+          docker-compose \
+            --file "scripts/docker-compose.yml" \
+            down
+        if: matrix.database-type != 'sqlite3'
