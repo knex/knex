@@ -228,7 +228,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'select sum([logins]) as [login_sum],sum([balance]) as [balance_sum] from [accounts]',
+            'select sum([logins]) as [login_sum], sum([balance]) as [balance_sum] from [accounts]',
             [],
             [
               {
