@@ -65,7 +65,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? where [id] = ?',
+            'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? where [id] = ?;select @@rowcount',
             ['test100@example.com', null, 'Test', 1000],
             0
           );

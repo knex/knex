@@ -19,7 +19,12 @@ module.exports = function (knex) {
           );
           tester('sqlite3', 'delete from `accounts` where `id` = ?', [1], 1);
           tester('oracledb', 'delete from "accounts" where "id" = ?', [1], 1);
-          tester('mssql', 'delete from [accounts] where [id] = ?', [1], 1);
+          tester(
+            'mssql',
+            'delete from [accounts] where [id] = ?;select @@rowcount',
+            [1],
+            1
+          );
         });
     });
 
