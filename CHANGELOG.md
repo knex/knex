@@ -1,7 +1,51 @@
 # Master (Unreleased)
 
+### New features:
+
+- Add transaction isolation support #4185
+- Add analytic functions #4188
+- Change default to not trigger a promise rejection for transactions with a specified handler #4195
+- Make toSQL().toNative() work for Raw to match the API for QueryBuilder #4058
+- Allow 'match' operator #3569
+- Support optimizer hints #4243  
+- Add parameter to prevent autoincrement columns from being primary keys #4266
+- Make "first" and "pluck" mutually exclusive #4280  
+- MSSQL: Replace MSSQL dialect with Tedious.js implementation #2857 #4281
+  MSSQL: Use "nvarchar(max)" for ".json()" #4278
+- SQLite: Fallback to json for sqlite3 when using jsonb #4186
+- SQLite: Return complete list of DDL commands for creating foreign keys #4194
+- SQLite: Support dropping composite foreign keys #4202
+- SQLite: Recreate indices when altering a table #4277
+
+### Bug fixes:
+
+- Fix issue with .withSchema usage with joins on a subquery #4267
+- Fix issue with schema usage with FROM clause contain QueryBuilder, function or Raw #4268
+- CLI: Address raised security warnings by dropping liftoff #4122
+- PostgreSQL: Add check to only create native enum once #3658
+- SQLite: Fix foreign key "on delete" when altering a table #4225
+- MySQL: Keep auto increment after rename #4266
+
+### Typings:
+
+- Add missing onConflict overrides #4182
+- Introduce the "infamous triplet" export #4181
+- Fix type definition of Transaction #4172
+- Add typedefinitions for havingNotIn #4265
+
 ### Test / internal changes:
-- Migrate database client code and `Raw` to es6 classes
+
+- Drop global Knex.raw #4180
+- Stop using legacy url.parse API #3702
+- Various internal refactorings #4175 #4177 #4178 #4192
+- Refactor to classes #4190 #4191 #4193 #4210 #4253
+- Move transaction type tests to TSD #4208
+- Clean up destroy logic #4248  
+- Colorize code snippets in readme files #4234  
+- Add "Ecosystem" documentation for Knex plugins #4183  
+- Documentation cleanup
+- SQLite: Use SQLite "rename column" instead of a DDL helper #4200
+- SQLite: Simplify reinsert logic when altering a table #4272
 
 # 0.21.15 - 26 December, 2020
 

@@ -12,6 +12,8 @@ const config: Knex.Config = {} // this is a type from the Knex namespace
 const knexInstance: Knex = knex(config)
 ```
 
+* MSSQL driver was completely reworked in order to address the multitude of connection pool, error handling and performance issues. Since the new implementation uses `tedious` library directly instead of `mssql`, please replace `mssql` with `tedious` in your dependencies if you are using a MSSQL database.
+
 * Transaction rollback does not trigger a promise rejection for transactions with specified handler. If you want to preserve previous behavior, pass `config` object with `doNotRejectOnRollback: false`:
 ```js
   await knex.transaction(async trx => {
@@ -60,9 +62,12 @@ class CustomClient extends Client {
 }
 // alternative to declare driverName
 CustomClient.prototype.driverName = 'abcd';
-
-
 ```
+
+* There was a major internal restructuring and renaming effort. Most dialect-specific compilers/builder have dialect name as a prefix now. Also some files were moved. Make sure to make adjustments accordingly if you were referencing specific knex library files directly from your code.
+
+* "first" and "pluck" can no longer be both chained on the same operation. Previously only the last one chained was used, now this would throw an error. 
+
 ### Upgrading to version 0.21.0+
 
 * Node.js older than 10 is no longer supported, make sure to update your environment; 
