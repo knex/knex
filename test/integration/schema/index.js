@@ -539,7 +539,7 @@ module.exports = (knex) => {
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('mssql', [
-              "CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default 'Lorem ipsum Qui quis qui in.', [metadata] text default '{\"a\":10}', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))",
+              "CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default 'Lorem ipsum Qui quis qui in.', [metadata] nvarchar(max) default '{\"a\":10}', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))",
             ]);
           })
           .then(() =>
