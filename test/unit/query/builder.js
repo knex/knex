@@ -10096,9 +10096,7 @@ describe('QueryBuilder', () => {
 
       throw new Error('Should not reach this point');
     } catch (error) {
-      expect(error.message).to.equal(
-        'Cannot chain .first() on "update" query!'
-      );
+      expect(error.message).to.equal('Cannot chain .first() on "update" query');
     }
   });
 
@@ -10108,9 +10106,7 @@ describe('QueryBuilder', () => {
 
       throw new Error('Should not reach this point');
     } catch (error) {
-      expect(error.message).to.equal(
-        'Cannot chain .first() on "insert" query!'
-      );
+      expect(error.message).to.equal('Cannot chain .first() on "insert" query');
     }
   });
 
@@ -10120,7 +10116,7 @@ describe('QueryBuilder', () => {
 
       throw new Error('Should not reach this point');
     } catch (error) {
-      expect(error.message).to.equal('Cannot chain .first() on "del" query!');
+      expect(error.message).to.equal('Cannot chain .first() on "del" query');
     }
   });
 
