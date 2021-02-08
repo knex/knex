@@ -1938,14 +1938,6 @@ export declare namespace Knex {
 
 interface MsSqlDefaultAuthenticationConfig extends MsSqlConnectionConfigBase {
   type?: 'default' | never;
-  /**
-   * User name to use for sql server login.
-   */
-  user?: string;
-  /**
-   * Password to use for sql server login.
-   */
-  password?: string;
 }
 
 interface MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
@@ -1996,18 +1988,11 @@ interface MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
   extends MsSqlConnectionConfigBase {
   type: 'azure-active-directory-password';
   /**
-   * A user need to provide `userName` asscoiate to their account.
-   */
-  userName: string;
-  /**
-   * A user need to provide `password` asscoiate to their account.
-   */
-  password: string;
-
-  /**
    * Optional parameter for specific Azure tenant ID
    */
   domain: string;
+  userName: string;
+  password: string;
 }
 
 interface MsSqlAzureActiveDirectoryServicePrincipalSecretConfig
@@ -2030,19 +2015,13 @@ interface MsSqlAzureActiveDirectoryServicePrincipalSecretConfig
 interface MsSqlNtlmAuthenticationConfig extends MsSqlConnectionConfigBase {
   type: 'ntlm';
   /**
-   * User name from your windows account.
-   */
-  userName: string;
-  /**
-   * Password from your windows account.
-   */
-  password: string;
-  /**
    * Once you set domain for ntlm authentication type, driver will connect to SQL Server using domain login.
    *
    * This is necessary for forming a connection using ntlm type
    */
   domain: string;
+  userName: string;
+  password: string;
 }
 
 type MsSqlConnectionConfig =
@@ -2059,9 +2038,9 @@ interface MsSqlConnectionConfigBase {
     type?: MsSqlAuthenticationTypeOptions;
 
     driver?: string;
-    user?: string;
+    userName?: string; // equivalent to knex "user"
     password?: string;
-    server: string;
+    server: string; // equivalent to knex "host"
     port?: number;
     domain?: string;
     database: string;
