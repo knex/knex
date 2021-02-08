@@ -28,19 +28,13 @@ describe('Pluck', () => {
       it('Throws an error if used before before "first"', async () => {
         expect(() => {
           knex(tblName).pluck(colName).first();
-        }).to.throw(
-          Error,
-          'Cannot apply "first", response processing method is already set to "pluck"'
-        );
+        }).to.throw(Error, 'Cannot chain .first() on "pluck" query');
       });
 
       it('Throws an error if used before after "first"', () => {
         expect(() => {
           knex(tblName).first().pluck(colName);
-        }).to.throw(
-          Error,
-          'Cannot apply "pluck", response processing method is already set to "first"'
-        );
+        }).to.throw(Error, 'Cannot chain .pluck() on "first" query');
       });
     });
   });
