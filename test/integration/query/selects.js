@@ -155,25 +155,29 @@ module.exports = function (knex) {
         mysql: {
           code: 'ER_QUERY_TIMEOUT',
           errno: 3024,
-          sqlMessage: 'Query execution was interrupted, maximum statement execution time exceeded',
+          sqlMessage:
+            'Query execution was interrupted, maximum statement execution time exceeded',
         },
         mysql2: {
           errno: 3024,
-          sqlMessage: 'Query execution was interrupted, maximum statement execution time exceeded',
+          sqlMessage:
+            'Query execution was interrupted, maximum statement execution time exceeded',
         },
-      }
+      };
       if (!expectedErrors[knex.client.driverName]) {
         return this.skip();
       }
       const baseQuery = knex('accounts')
         .select('id', knex.raw('sleep(0.1)'))
-        .limit(2)
+        .limit(2);
       await expect(
         baseQuery.clone()
-      ).to.eventually.be.fulfilled.and.to.have.lengthOf(2)
+      ).to.eventually.be.fulfilled.and.to.have.lengthOf(2);
       await expect(
         baseQuery.clone().hintComment('max_execution_time(10)')
-      ).to.eventually.be.rejected.and.to.deep.include(expectedErrors[knex.client.driverName])
+      ).to.eventually.be.rejected.and.to.deep.include(
+        expectedErrors[knex.client.driverName]
+      );
     });
 
     it('#4199 - ignores invalid hint comments', async function () {
@@ -187,37 +191,58 @@ module.exports = function (knex) {
             'mysql',
             'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
             [],
-            [{id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 7}]
+            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 7 }]
           );
           tester(
             'pg',
             'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
             [],
-            [{id: '1'}, {id: '2'}, {id: '3'}, {id: '4'}, {id: '5'}, {id: '7'}]
+            [
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '4' },
+              { id: '5' },
+              { id: '7' },
+            ]
           );
           tester(
             'pg-redshift',
             'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
             [],
-            [{id: '1'}, {id: '2'}, {id: '3'}, {id: '4'}, {id: '5'}, {id: '6'}]
+            [
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '4' },
+              { id: '5' },
+              { id: '6' },
+            ]
           );
           tester(
             'sqlite3',
             'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
             [],
-            [{id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 6}]
+            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
           );
           tester(
             'oracledb',
             'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
             [],
-            [{id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5}, {id: 7}]
+            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 7 }]
           );
           tester(
             'mssql',
             'select /*+ invalid() */ [id] from [accounts] order by [id] asc',
             [],
-            [{id: '1'}, {id: '2'}, {id: '3'}, {id: '4'}, {id: '5'}, {id: '7'}]
+            [
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '4' },
+              { id: '5' },
+              { id: '7' },
+            ]
           );
         });
     });

@@ -9226,33 +9226,28 @@ describe('QueryBuilder', () => {
   });
 
   it('#4199 - allows an hint comment', () => {
-    testsql(
-      qb()
-        .from('testtable')
-        .hintComment('hint()'),
-      {
-        mysql: {
-          sql: 'select /*+ hint() */ * from `testtable`',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'select /*+ hint() */ * from "testtable"',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select /*+ hint() */ * from [testtable]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select /*+ hint() */ * from "testtable"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select /*+ hint() */ * from "testtable"',
-          bindings: [],
-        },
+    testsql(qb().from('testtable').hintComment('hint()'), {
+      mysql: {
+        sql: 'select /*+ hint() */ * from `testtable`',
+        bindings: [],
       },
-    )
+      oracledb: {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select /*+ hint() */ * from [testtable]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+    });
   });
 
   it('#4199 - allows multiple hint comments', () => {
@@ -9282,8 +9277,8 @@ describe('QueryBuilder', () => {
           sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
           bindings: [],
         },
-      },
-    )
+      }
+    );
   });
 
   it('#4199 - allows hint comments in subqueries', () => {
@@ -9297,27 +9292,32 @@ describe('QueryBuilder', () => {
         .hintComment('hint1()'),
       {
         mysql: {
-          sql: 'select /*+ hint1() */ `c1` as `c1`, (select /*+ hint2() */ `c2` from `t2` limit ?) as `c2` from `t1`',
+          sql:
+            'select /*+ hint1() */ `c1` as `c1`, (select /*+ hint2() */ `c2` from `t2` limit ?) as `c2` from `t1`',
           bindings: [1],
         },
         oracledb: {
-          sql: 'select /*+ hint1() */ "c1" "c1", (select * from (select /*+ hint2() */ "c2" from "t2") where rownum <= ?) "c2" from "t1"',
+          sql:
+            'select /*+ hint1() */ "c1" "c1", (select * from (select /*+ hint2() */ "c2" from "t2") where rownum <= ?) "c2" from "t1"',
           bindings: [1],
         },
         mssql: {
-          sql: 'select /*+ hint1() */ [c1] as [c1], (select /*+ hint2() */ top (?) [c2] from [t2]) as [c2] from [t1]',
+          sql:
+            'select /*+ hint1() */ [c1] as [c1], (select /*+ hint2() */ top (?) [c2] from [t2]) as [c2] from [t1]',
           bindings: [1],
         },
         pg: {
-          sql: 'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          sql:
+            'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
           bindings: [1],
         },
         'pg-redshift': {
-          sql: 'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          sql:
+            'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
           bindings: [1],
         },
-      },
-    )
+      }
+    );
   });
 
   it('#4199 - allows hint comments in unions', () => {
@@ -9328,58 +9328,56 @@ describe('QueryBuilder', () => {
         .unionAll(qb().from('t2').hintComment('hint2()')),
       {
         mysql: {
-          sql: 'select /*+ hint1() */ * from `t1` union all select /*+ hint2() */ * from `t2`',
+          sql:
+            'select /*+ hint1() */ * from `t1` union all select /*+ hint2() */ * from `t2`',
           bindings: [],
         },
         oracledb: {
-          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
           bindings: [],
         },
         mssql: {
-          sql: 'select /*+ hint1() */ * from [t1] union all select /*+ hint2() */ * from [t2]',
+          sql:
+            'select /*+ hint1() */ * from [t1] union all select /*+ hint2() */ * from [t2]',
           bindings: [],
         },
         pg: {
-          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
           bindings: [],
         },
         'pg-redshift': {
-          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
           bindings: [],
         },
-      },
-    )
+      }
+    );
   });
 
   it('#4199 - forbids "/*", "*/" and "?" in hint comments', () => {
     expect(() => {
       qb().from('testtable').hintComment('hint() /*').toString();
-    }).to.throw(
-      'Hint comment cannot include "/*" or "*/"'
-    );
+    }).to.throw('Hint comment cannot include "/*" or "*/"');
     expect(() => {
       qb().from('testtable').hintComment('hint() */').toString();
-    }).to.throw(
-      'Hint comment cannot include "/*" or "*/"'
-    );
+    }).to.throw('Hint comment cannot include "/*" or "*/"');
     expect(() => {
       qb().from('testtable').hintComment('hint(?)').toString();
-    }).to.throw(
-      'Hint comment cannot include "?"'
-    );
+    }).to.throw('Hint comment cannot include "?"');
   });
 
   it('#4199 - forbids non-strings as hint comments', () => {
     expect(() => {
       qb().from('testtable').hintComment(47).toString();
-    }).to.throw(
-      'Hint comment must be a string'
-    );
+    }).to.throw('Hint comment must be a string');
     expect(() => {
-      qb().from('testtable').hintComment(raw('hint(?)', [47])).toString();
-    }).to.throw(
-      'Hint comment must be a string'
-    );
+      qb()
+        .from('testtable')
+        .hintComment(raw('hint(?)', [47]))
+        .toString();
+    }).to.throw('Hint comment must be a string');
   });
 
   it('Any undefined binding in a SELECT query should throw an error', () => {
