@@ -1927,8 +1927,137 @@ export declare namespace Knex {
     requestTimeout?: number;
   }
 
-  // Config object for mssql: see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mssql/index.d.ts
-  interface MsSqlConnectionConfig {
+  type MsSqlAuthenticationTypeOptions =
+    | 'default'
+    | 'ntlm'
+    | 'azure-active-directory-password'
+    | 'azure-active-directory-access-token'
+    | 'azure-active-directory-msi-vm'
+    | 'azure-active-directory-msi-app-service'
+    | 'azure-active-directory-service-principal-secret';
+
+interface MsSqlDefaultAuthenticationConfig extends MsSqlConnectionConfigBase {
+  type?: 'default' | never;
+  /**
+   * User name to use for sql server login.
+   */
+  userName?: string;
+  /**
+   * Password to use for sql server login.
+   */
+  password?: string;
+}
+
+interface MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-msi-app-service';
+  /**
+   * If you user want to connect to an Azure app service using a specific client account
+   * they need to provide `clientId` asscoiate to their created idnetity.
+   *
+   * This is optional for retrieve token from azure web app service
+   */
+  clientId?: string;
+  /**
+   * A msi app service environment need to provide `msiEndpoint` for retriving the accesstoken.
+   */
+  msiEndpoint?: string;
+  /**
+   * A msi app service environment need to provide `msiSecret` for retriving the accesstoken.
+   */
+  msiSecret?: string;
+}
+
+interface MsSqlAzureActiveDirectoryMsiVmAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-msi-vm';
+  /**
+   * If you user want to connect to an Azure app service using a specific client account
+   * they need to provide `clientId` asscoiate to their created idnetity.
+   *
+   * This is optional for retrieve token from azure web app service
+   */
+  clientId?: string;
+  /**
+   * A user need to provide `msiEndpoint` for retriving the accesstoken.
+   */
+  msiEndpoint?: string;
+}
+
+interface MsSqlAzureActiveDirectoryAccessTokenAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-access-token';
+  /**
+   * A user-provided access token
+   */
+  token: string;
+}
+interface MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-password';
+  /**
+   * A user need to provide `userName` asscoiate to their account.
+   */
+  userName: string;
+  /**
+   * A user need to provide `password` asscoiate to their account.
+   */
+  password: string;
+
+  /**
+   * Optional parameter for specific Azure tenant ID
+   */
+  domain: string;
+}
+
+interface MsSqlAzureActiveDirectoryServicePrincipalSecretConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-service-principal-secret';
+  /**
+   * Application (`client`) ID from your registered Azure application
+   */
+  clientId: string;
+  /**
+   * The created `client secret` for this registered Azure application
+   */
+  clientSecret: string;
+  /**
+   * Directory (`tenant`) ID from your registered Azure application
+   */
+  tenantId: string;
+}
+
+interface MsSqlNtlmAuthenticationConfig extends MsSqlConnectionConfigBase {
+  type: 'ntlm';
+  /**
+   * User name from your windows account.
+   */
+  userName: string;
+  /**
+   * Password from your windows account.
+   */
+  password: string;
+  /**
+   * Once you set domain for ntlm authentication type, driver will connect to SQL Server using domain login.
+   *
+   * This is necessary for forming a connection using ntlm type
+   */
+  domain: string;
+}
+
+type MsSqlConnectionConfig =
+  | MsSqlDefaultAuthenticationConfig
+  | MsSqlNtlmAuthenticationConfig
+  | MsSqlAzureActiveDirectoryAccessTokenAuthenticationConfig
+  | MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
+  | MsSqlAzureActiveDirectoryMsiVmAuthenticationConfig
+  | MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
+  | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig;
+
+  // Config object for tedious: see http://tediousjs.github.io/tedious/api-connection.html
+interface MsSqlConnectionConfigBase {
+    type?: MsSqlAuthenticationTypeOptions;
+
     driver?: string;
     user?: string;
     password?: string;
