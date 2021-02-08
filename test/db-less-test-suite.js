@@ -50,7 +50,6 @@ if (config.sqlite3) {
   });
 }
 
-/*
 describe('CLI tests', function () {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
   require('./cli/help.spec');
@@ -62,4 +61,3 @@ describe('CLI tests', function () {
   require('./cli/version.spec');
   require('./cli/esm-interop.spec');
 });
-*/
