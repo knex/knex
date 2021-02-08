@@ -1941,7 +1941,7 @@ interface MsSqlDefaultAuthenticationConfig extends MsSqlConnectionConfigBase {
   /**
    * User name to use for sql server login.
    */
-  userName?: string;
+  user?: string;
   /**
    * Password to use for sql server login.
    */
