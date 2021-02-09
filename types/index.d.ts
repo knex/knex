@@ -466,7 +466,8 @@ export declare namespace Knex {
 
   interface OnConflictQueryBuilder<TRecord, TResult> {
     ignore(): QueryBuilder<TRecord, TResult>;
-    merge(data?: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
+    merge(mergeColumns?: (keyof TRecord)[]): QueryBuilder<TRecord, TResult>;
+    merge(data?: Extract<DbRecord<TRecord>, object>): QueryBuilder<TRecord, TResult>;
   }
 
   //
