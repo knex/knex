@@ -1716,7 +1716,7 @@ export default [
     type: "method",
     method: "merge",
     example: "insert(..).onConflict(..).merge() / insert(..).onConflict(..).merge(updates)",
-    description: "Implemented for the PostgreSQL, MySQL, and SQLite databases. Modifies an insert query, to turn it into an 'upsert' operation. Uses ON DUPLICATE KEY UPDATE in MySQL, and adds an ON CONFLICT (columns) DO UPDATE clause to the insert statement in PostgreSQL and SQLite.",
+    description: "Implemented for the PostgreSQL, MySQL, and SQLite databases. Modifies an insert query, to turn it into an 'upsert' operation. Uses ON DUPLICATE KEY UPDATE in MySQL, and adds an ON CONFLICT (columns) DO UPDATE clause to the insert statement in PostgreSQL and SQLite. By default, it merges all columns.",
     children: [
       {
         type: "runnable",
@@ -1749,7 +1749,27 @@ export default [
       },
       {
         type: "text",
-        content: "It is also possible to specify data to update seperately from the data to insert. This is useful if you only want to update a subset of the columns. For example, you may want to set a 'created_at' column when inserting but would prefer not to update it if the row already exists:"
+        content: "It is also possible to specify a subset of the columns to merge when a conflict occurs. For example, you may want to set a 'created_at' column when inserting but would prefer not to update it if the row already exists:"
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+          const timestamp = Date.now();
+          knex('tableName')
+            .insert({
+              email: "ignore@example.com",
+              name: "John Doe",
+              created_at: timestamp,
+              updated_at: timestamp,
+            })
+            .onConflict('email')
+            .merge(['email', 'name', 'updated_at'])
+        `
+      },
+      {
+        type: "text",
+        content: "It is also possible to specify data to update seperately from the data to insert. This is useful if you want to update with different data to the insert. For example, you may want to change a value if the row already exists:"
       },
       {
         type: "code",
@@ -1765,8 +1785,7 @@ export default [
             })
             .onConflict('email')
             .merge({
-              name: "John Doe",
-              updated_at: timestamp,
+              name: "John Doe The Second",
             })
         `
       },
