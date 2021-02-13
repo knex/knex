@@ -629,21 +629,23 @@ export default [
     type: "code",
     language: "js",
     content: `
+    const path = require('path')
+
     class WebpackMigrationSource {
       constructor(migrationContext) {
-        this.migrationContext = migrationContext;
+        this.migrationContext = migrationContext
       }
 
       getMigrations() {
-          return Promise.resolve(this.migrationContext.keys().sort())
+        return Promise.resolve(this.migrationContext.keys().sort())
       }
 
       getMigrationName(migration) {
-        return migration
+        return path.parse(migration).base
       }
   
       getMigration(migration) {
-          return this.migrationContext(migration)
+        return this.migrationContext(migration)
       }
     }
 
