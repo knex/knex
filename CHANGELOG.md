@@ -10,6 +10,9 @@
 - Support optimizer hints #4243  
 - Add parameter to prevent autoincrement columns from being primary keys #4266
 - Make "first" and "pluck" mutually exclusive #4280  
+- Added merge strategy to allow selecting columns to upsert. #4252
+- Throw error if the array passed to insert is empty #4289
+- CLI: Use UTC timestamp for new migrations #4245  
 - MSSQL: Replace MSSQL dialect with Tedious.js implementation #2857 #4281
   MSSQL: Use "nvarchar(max)" for ".json()" #4278
 - SQLite: Fallback to json for sqlite3 when using jsonb #4186
