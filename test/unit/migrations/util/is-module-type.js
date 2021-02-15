@@ -5,17 +5,15 @@ const isModuleType = require('../../../../lib/migrations/util/is-module-type.js'
 require('../../../util/chai-setup');
 
 describe('isModuleType', () => {
-  let originalPackgeType;
-  let originalPackageJson;
+  let originalEnv = {};
 
   before(() => {
-    originalPackgeType = process.env.npm_package_type;
-    originalPackageJson = process.env.npm_package_json;
+    originalEnv = { ...process.env };
+    process.env = {};
   });
 
   after(() => {
-    process.env.npm_package_type = originalPackgeType;
-    process.env.npm_package_json = originalPackageJson;
+    process.env = { ...originalEnv };
   });
 
   beforeEach(() => {
