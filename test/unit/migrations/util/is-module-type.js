@@ -1,0 +1,60 @@
+
+const path = require('path');
+
+const { expect } = require('chai');
+const isModuleType = require('../../../../lib/migrations/util/is-module-type.js');
+require('../../../util/chai-setup');
+
+describe('isModuleType', () => {
+  let originalPackgeType;
+  let originalPackageJson;
+
+  before(()=>{
+    originalPackgeType = process.env.npm_package_type;
+    originalPackageJson = process.env.npm_package_json;
+  });
+
+  after(() => {
+     process.env.npm_package_type = originalPackgeType;
+     process.env.npm_package_json = originalPackageJson;
+  })
+
+  beforeEach(()=>{
+    delete process.env.npm_package_type;
+    delete process.env.npm_package_json;
+  });
+
+  it('should return true if the file is a .mjs file', async () => {
+    expect(await isModuleType('test.mjs')).to.be.true;
+  });
+
+  it('should return true if type=module with npm < 7.0.0', async () => {
+    process.env.npm_package_type = 'module';
+    expect(await isModuleType('test.js')).to.be.true;
+  });
+
+  it('should return false if type=commonjs with npm < 7.0.0', async () => {
+    process.env.npm_package_type = 'commonjs';
+    expect(await isModuleType('test.js')).to.be.false;
+  });
+
+  it('should return true if type=module with npm >= 7.0.0', async () => {
+    process.env.npm_package_json = path.normalize(__dirname + '/test/package-module.json');
+    expect(await isModuleType('test.js')).to.be.true;
+  });
+
+  it('should return false if type=commonjs with npm >= 7.0.0', async () => {
+    process.env.npm_package_json = path.normalize(__dirname + '/test/package-commonjs.json');
+    expect(await isModuleType('test.js')).to.be.false;
+  });
+
+  it('should return false if package.json is invalid and file type is js with npm >= 7.0.0', async () => {
+    process.env.npm_package_json = path.normalize(__dirname + '/test/package-invalid.json');
+    expect(await isModuleType('test.js')).to.be.false;
+  });
+
+  it('should return true if package.json is invalid and file type is mjs with npm >= 7.0.0', async () => {
+    process.env.npm_package_json = path.normalize(__dirname + '/test/package-invalid.json');
+    expect(await isModuleType('test.mjs')).to.be.true;
+  });
+})

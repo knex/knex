@@ -1,0 +1,4 @@
+// Intentionally invalid JSON
+{
+    "type": ,
+}
