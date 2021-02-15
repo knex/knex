@@ -34,6 +34,21 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test basic create table with incrementing without primary key', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.increments('id');
+          table.increments('other_id', { primaryKey: false });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null auto_increment)'
+      );
+    });
+
     it('test basic create table with charset and collate', function () {
       tableSql = client.schemaBuilder().createTable('users', function (table) {
         table.increments('id');
@@ -421,6 +436,20 @@ module.exports = function (dialect) {
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add `id` bigint unsigned not null auto_increment primary key'
+      );
+    });
+
+    it('test adding big incrementing id without primary key', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.bigIncrements('id', { primaryKey: false });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `id` bigint unsigned not null auto_increment'
       );
     });
 

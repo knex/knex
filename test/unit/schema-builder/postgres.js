@@ -619,6 +619,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding incrementing id without primary key', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.increments('id', { primaryKey: false });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "id" serial'
+    );
+  });
+
   it('adding big incrementing id', function () {
     tableSql = client
       .schemaBuilder()
@@ -629,6 +642,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "id" bigserial primary key'
+    );
+  });
+
+  it('adding big incrementing id without primary key', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.bigIncrements('id', { primaryKey: false });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "id" bigserial'
     );
   });
 
@@ -996,6 +1022,85 @@ describe('PostgreSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       `alter table "${tableSchema}"."${tableName}" add column "${columnName}" "${typeSchema}"."${typeName}"`
     );
+  });
+
+  it('adding enum with useNative and alter', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table
+          .enu('foo', ['bar', 'baz'], {
+            useNative: true,
+            enumName: 'foo_type',
+          })
+          .notNullable()
+          .alter();
+      })
+      .toSQL();
+    equal(5, tableSql.length);
+
+    const expectedSql = [
+      "create type \"foo_type\" as enum ('bar', 'baz')",
+      'alter table "users" alter column "foo" drop default',
+      'alter table "users" alter column "foo" drop not null',
+      'alter table "users" alter column "foo" type "foo_type" using ("foo"::text::"foo_type")',
+      'alter table "users" alter column "foo" set not null',
+    ];
+
+    for (let i = 0; i < tableSql.length; i++) {
+      expect(tableSql[i].sql).to.equal(expectedSql[i]);
+    }
+  });
+
+  it('adding multiple useNative enums with some alters', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table
+          .enu('foo', ['bar', 'baz'], {
+            useNative: true,
+            enumName: 'foo_type',
+          })
+          .notNullable()
+          .alter();
+
+        table.enu('bar', ['foo', 'baz'], {
+          useNative: true,
+          enumName: 'bar_type',
+        });
+
+        table
+          .enu('baz', ['foo', 'bar'], {
+            useNative: true,
+            enumName: 'baz_type',
+          })
+          .defaultTo('foo')
+          .alter();
+      })
+      .toSQL();
+    equal(12, tableSql.length);
+
+    const expectedSql = [
+      "create type \"baz_type\" as enum ('foo', 'bar')",
+      "create type \"foo_type\" as enum ('bar', 'baz')",
+      "create type \"bar_type\" as enum ('foo', 'baz')",
+
+      'alter table "users" add column "bar" "bar_type"',
+
+      'alter table "users" alter column "foo" drop default',
+      'alter table "users" alter column "foo" drop not null',
+      'alter table "users" alter column "foo" type "foo_type" using ("foo"::text::"foo_type")',
+      'alter table "users" alter column "foo" set not null',
+
+      'alter table "users" alter column "baz" drop default',
+      'alter table "users" alter column "baz" drop not null',
+      'alter table "users" alter column "baz" type "baz_type" using ("baz"::text::"baz_type")',
+      'alter table "users" alter column "baz" set default \'foo\'',
+    ];
+
+    for (let i = 0; i < tableSql.length; i++) {
+      expect(tableSql[i].sql).to.equal(expectedSql[i]);
+    }
   });
 
   it('adding date', function () {

@@ -7,7 +7,7 @@ const {
   escapeString,
   dateToString,
   makeEscape,
-} = require('../../../lib/query/string');
+} = require('../../../lib/util/string');
 
 describe('String utility functions', () => {
   describe('arrayToList', () => {

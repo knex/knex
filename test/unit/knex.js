@@ -1,6 +1,5 @@
-const { inherits } = require('util');
 const Knex = require('../../lib/index');
-const QueryBuilder = require('../../lib/query/builder');
+const QueryBuilder = require('../../lib/query/querybuilder');
 const { expect } = require('chai');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
@@ -237,7 +236,7 @@ describe('knex', () => {
     return knex.destroy();
   });
 
-  it('passes queryContext to wrapIdentifier in raw query', async () => {
+  it('passes queryContext to wrapIdentifier in raw query', async function () {
     if (!sqliteConfig) {
       return this.skip();
     }
@@ -281,7 +280,7 @@ describe('knex', () => {
     return knex.destroy();
   });
 
-  it('passes queryContext to wrapIdentifier in raw query in transaction', async () => {
+  it('passes queryContext to wrapIdentifier in raw query in transaction', async function () {
     if (!sqliteConfig) {
       return this.skip();
     }
@@ -353,11 +352,7 @@ describe('knex', () => {
   it('throws if client module has not been installed', () => {
     // create dummy dialect which always fails when trying to load driver
     const SqliteClient = require(`../../lib/dialects/sqlite3/index.js`);
-    function ClientFoobar(config) {
-      SqliteClient.call(this, config);
-    }
-
-    inherits(ClientFoobar, SqliteClient);
+    class ClientFoobar extends SqliteClient {}
 
     ClientFoobar.prototype._driver = () => {
       throw new Error('Cannot require...');
@@ -370,7 +365,7 @@ describe('knex', () => {
   });
 
   describe('transaction', () => {
-    it('transaction of a copy with userParams retains userparams', async () => {
+    it('transaction of a copy with userParams retains userparams', async function () {
       if (!sqliteConfig) {
         return this.skip();
       }
@@ -388,7 +383,7 @@ describe('knex', () => {
       knex.destroy();
     });
 
-    it('propagates error correctly when all connections are in use', async () => {
+    it('propagates error correctly when all connections are in use', async function () {
       const knex = Knex(sqliteConfig);
       let trx;
       let wasAsserted = false;
@@ -412,7 +407,7 @@ describe('knex', () => {
       return knex.destroy();
     });
 
-    it('supports direct retrieval of a transaction from provider', async () => {
+    it('supports direct retrieval of a transaction from provider', async function () {
       const knex = Knex(sqliteConfig);
       const trxProvider = knex.transactionProvider();
       const trxPromise = trxProvider();
@@ -602,7 +597,7 @@ describe('knex', () => {
       return knex.destroy();
     });
 
-    it('creating transaction copy with user params should throw an error', async () => {
+    it('creating transaction copy with user params should throw an error', async function () {
       if (!sqliteConfig) {
         return this.skip();
       }
@@ -622,7 +617,7 @@ describe('knex', () => {
   });
 
   describe('async stack traces', () => {
-    it('should capture stack trace on query builder instantiation', async () => {
+    it('should capture stack trace on query builder instantiation', async function () {
       if (!sqliteConfig) {
         return this.skip();
       }

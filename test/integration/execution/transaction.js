@@ -467,6 +467,9 @@ module.exports = function (knex) {
         let sql = 'SELECT 1';
         if (knex.client.driverName === 'oracledb') {
           sql = 'SELECT 1 FROM DUAL';
+        } else if (knex.client.dialect === 'mssql') {
+          // MSSQL does not have a boolean type.
+          sql = 'SELECT CASE WHEN 1 = 1 THEN 1 ELSE 0 END';
         }
 
         trx

@@ -56,7 +56,7 @@ module.exports = function (knex) {
           await knex.raw(`
                     CREATE TRIGGER [${triggerName}] ON [${secondaryTable}]
                     AFTER INSERT
-                    AS 
+                    AS
                     BEGIN
                         SET NOCOUNT ON;
 
@@ -880,8 +880,9 @@ module.exports = function (knex) {
           });
       });
 
-      it('should handle empty inserts', function () {
-        return knex.schema
+      it('should handle empty inserts', async function () {
+        await knex.schema.dropTableIfExists('trigger_retest_insert');
+        return await knex.schema
           .createTable('trigger_retest_insert', function (qb) {
             qb.increments().primary();
             qb.string('string').defaultTo('hello');
@@ -936,8 +937,9 @@ module.exports = function (knex) {
           });
       });
 
-      it('should handle empty arrays inserts', function () {
-        return knex.schema
+      it('should handle empty arrays inserts', async function () {
+        await knex.schema.dropTableIfExists('trigger_retest_insert2');
+        return await knex.schema
           .createTable('trigger_retest_insert2', function (qb) {
             qb.increments().primary();
             qb.string('string').defaultTo('hello');

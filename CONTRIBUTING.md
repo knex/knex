@@ -77,7 +77,7 @@ tl;dr list:
 
 Test case should initialize needed tables, insert needed data and fail...
 
-```
+```js
 const knex = require('knex')({
   client: 'pg',
   connection: 'postgres:///knex_test'

@@ -466,19 +466,21 @@ export declare namespace Knex {
 
   interface OnConflictQueryBuilder<TRecord, TResult> {
     ignore(): QueryBuilder<TRecord, TResult>;
-    merge(data?: DbRecord<TRecord>): QueryBuilder<TRecord, TResult>;
+    merge(mergeColumns?: (keyof TRecord)[]): QueryBuilder<TRecord, TResult>;
+    merge(data?: Extract<DbRecord<TRecord>, object>): QueryBuilder<TRecord, TResult>;
   }
 
   //
   // QueryInterface
   //
-  type ClearStatements = "with" | "select" | "columns" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
+  type ClearStatements = "with" | "select" | "columns" | "hintComments" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
 
   interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
     column: Select<TRecord, TResult>;
+    hintComment: HintComment<TRecord, TResult>;
     from: Table<TRecord, TResult>;
     into: Table<TRecord, TResult>;
     table: Table<TRecord, TResult>;
@@ -561,6 +563,9 @@ export declare namespace Knex {
     havingNotBetween: HavingRange<TRecord, TResult>;
     orHavingBetween: HavingRange<TRecord, TResult>;
     havingBetween: HavingRange<TRecord, TResult>;
+    havingNotIn: HavingRange<TRecord, TResult>;
+    andHavingNotIn: HavingRange<TRecord, TResult>;
+    orHavingNotIn: HavingRange<TRecord, TResult>;
 
     // Clear
     clearSelect(): QueryBuilder<
@@ -998,6 +1003,11 @@ export declare namespace Knex {
     <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord = any, TInnerResult = any>(
       subQueryBuilders: readonly QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
+  }
+
+  interface HintComment<TRecord extends {} = any, TResult extends {} = any> {
+    (hint: string): QueryBuilder<TRecord, TResult>;
+    (hints: readonly string[]): QueryBuilder<TRecord, TResult>;
   }
 
   interface Table<TRecord extends {} = any, TResult extends {} = any> {
@@ -1680,7 +1690,7 @@ export declare namespace Knex {
     asCallback(callback: Function): Promise<T>;
   }
 
-  interface Transaction<TRecord extends {} = any, TResult = any>
+  interface Transaction<TRecord extends {} = any, TResult = any[]>
     extends Knex<TRecord, TResult> {
     executionPromise: Promise<TResult>;
     isCompleted: () => boolean;
@@ -1918,12 +1928,120 @@ export declare namespace Knex {
     requestTimeout?: number;
   }
 
-  // Config object for mssql: see https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/mssql/index.d.ts
-  interface MsSqlConnectionConfig {
+  type MsSqlAuthenticationTypeOptions =
+    | 'default'
+    | 'ntlm'
+    | 'azure-active-directory-password'
+    | 'azure-active-directory-access-token'
+    | 'azure-active-directory-msi-vm'
+    | 'azure-active-directory-msi-app-service'
+    | 'azure-active-directory-service-principal-secret';
+
+interface MsSqlDefaultAuthenticationConfig extends MsSqlConnectionConfigBase {
+  type?: 'default' | never;
+}
+
+interface MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-msi-app-service';
+  /**
+   * If you user want to connect to an Azure app service using a specific client account
+   * they need to provide `clientId` asscoiate to their created idnetity.
+   *
+   * This is optional for retrieve token from azure web app service
+   */
+  clientId?: string;
+  /**
+   * A msi app service environment need to provide `msiEndpoint` for retriving the accesstoken.
+   */
+  msiEndpoint?: string;
+  /**
+   * A msi app service environment need to provide `msiSecret` for retriving the accesstoken.
+   */
+  msiSecret?: string;
+}
+
+interface MsSqlAzureActiveDirectoryMsiVmAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-msi-vm';
+  /**
+   * If you user want to connect to an Azure app service using a specific client account
+   * they need to provide `clientId` asscoiate to their created idnetity.
+   *
+   * This is optional for retrieve token from azure web app service
+   */
+  clientId?: string;
+  /**
+   * A user need to provide `msiEndpoint` for retriving the accesstoken.
+   */
+  msiEndpoint?: string;
+}
+
+interface MsSqlAzureActiveDirectoryAccessTokenAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-access-token';
+  /**
+   * A user-provided access token
+   */
+  token: string;
+}
+interface MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-password';
+  /**
+   * Optional parameter for specific Azure tenant ID
+   */
+  domain: string;
+  userName: string;
+  password: string;
+}
+
+interface MsSqlAzureActiveDirectoryServicePrincipalSecretConfig
+  extends MsSqlConnectionConfigBase {
+  type: 'azure-active-directory-service-principal-secret';
+  /**
+   * Application (`client`) ID from your registered Azure application
+   */
+  clientId: string;
+  /**
+   * The created `client secret` for this registered Azure application
+   */
+  clientSecret: string;
+  /**
+   * Directory (`tenant`) ID from your registered Azure application
+   */
+  tenantId: string;
+}
+
+interface MsSqlNtlmAuthenticationConfig extends MsSqlConnectionConfigBase {
+  type: 'ntlm';
+  /**
+   * Once you set domain for ntlm authentication type, driver will connect to SQL Server using domain login.
+   *
+   * This is necessary for forming a connection using ntlm type
+   */
+  domain: string;
+  userName: string;
+  password: string;
+}
+
+type MsSqlConnectionConfig =
+  | MsSqlDefaultAuthenticationConfig
+  | MsSqlNtlmAuthenticationConfig
+  | MsSqlAzureActiveDirectoryAccessTokenAuthenticationConfig
+  | MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
+  | MsSqlAzureActiveDirectoryMsiVmAuthenticationConfig
+  | MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
+  | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig;
+
+  // Config object for tedious: see http://tediousjs.github.io/tedious/api-connection.html
+interface MsSqlConnectionConfigBase {
+    type?: MsSqlAuthenticationTypeOptions;
+
     driver?: string;
-    user?: string;
+    userName?: string; // equivalent to knex "user"
     password?: string;
-    server: string;
+    server: string; // equivalent to knex "host"
     port?: number;
     domain?: string;
     database: string;
