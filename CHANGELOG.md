@@ -22,6 +22,7 @@
 - Fix issue with .withSchema usage with joins on a subquery #4267
 - Fix issue with schema usage with FROM clause contain QueryBuilder, function or Raw #4268
 - CLI: Address raised security warnings by dropping liftoff #4122
+- CLI: Fix an issue with npm@7 and ESM when `type` was set to `'module'` in `package.json` #4295
 - PostgreSQL: Add check to only create native enum once #3658
 - SQLite: Fix foreign key "on delete" when altering a table #4225
 - MySQL: Keep auto increment after rename #4266
