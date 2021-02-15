@@ -68,6 +68,8 @@ CustomClient.prototype.driverName = 'abcd';
 
 * "first" and "pluck" can no longer be both chained on the same operation. Previously only the last one chained was used, now this would throw an error. 
 
+* Trying to execute an operation resulting in an empty query such as inserting an empty array, will now throw an error on all database drivers.
+
 ### Upgrading to version 0.21.0+
 
 * Node.js older than 10 is no longer supported, make sure to update your environment; 

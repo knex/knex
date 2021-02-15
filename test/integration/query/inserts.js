@@ -797,6 +797,13 @@ module.exports = function (knex) {
         });
     });
 
+    it('should throw an error if the array passed in is empty', async function () {
+      expect(knex('account').insert([])).to.be.rejectedWith(
+        Error,
+        'The query is empty'
+      );
+    });
+
     it('should handle empty inserts', function () {
       return knex.schema
         .createTable('test_default_table', function (qb) {
