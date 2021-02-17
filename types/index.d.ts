@@ -2264,6 +2264,7 @@ interface MsSqlConnectionConfigBase {
     sortDirsSeparately?: boolean;
     loadExtensions?: readonly string[];
     migrationSource?: MigrationSource<unknown>;
+    name?: string;
   }
 
   interface Migrator {
