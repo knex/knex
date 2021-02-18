@@ -4,6 +4,7 @@ const { expect } = require('chai');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
+const sinon = require('sinon');
 
 describe('knex', () => {
   describe('supports passing existing connection', () => {
@@ -723,6 +724,25 @@ describe('knex', () => {
       expect(() =>
         Knex.QueryBuilder.extend('select', function (value) {})
       ).to.throw(`Can't extend QueryBuilder with existing method ('select')`);
+    });
+
+    it('should contain the query context on a query-error event', async function () {
+      const spy = sinon.spy();
+      const context = { aPrimitive: true };
+      const knex = Knex(sqliteConfig)
+        .from('test')
+        .queryContext(context)
+        .on('query-error', spy);
+
+      try {
+        await knex.from('banana');
+      } catch {}
+
+      expect(spy).to.be.calledOnce;
+      const [[error, errorArgs]] = spy.args;
+      expect(error).to.be.instanceOf(Error);
+      expect(errorArgs).to.be.ok;
+      expect(errorArgs.queryContext).to.equal(context);
     });
 
     // TODO: Consider moving these somewhere that tests the
