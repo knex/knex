@@ -12,6 +12,7 @@
 - Make "first" and "pluck" mutually exclusive #4280  
 - Added merge strategy to allow selecting columns to upsert. #4252
 - Throw error if the array passed to insert is empty #4289
+- Events: introduce queryContext on query-error #4301
 - CLI: Use UTC timestamp for new migrations #4245  
 - MSSQL: Replace MSSQL dialect with Tedious.js implementation #2857 #4281
   MSSQL: Use "nvarchar(max)" for ".json()" #4278
@@ -36,6 +37,7 @@
 - Introduce the "infamous triplet" export #4181
 - Fix type definition of Transaction #4172
 - Add typedefinitions for havingNotIn #4265
+- Include 'name' property in MigratorConfig #4300
 
 ### Test / internal changes:
 
