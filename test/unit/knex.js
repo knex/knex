@@ -736,7 +736,8 @@ describe('knex', () => {
 
       try {
         await knex.from('banana');
-      } catch {}
+        // eslint-disable-next-line no-empty
+      } catch (_e) {}
 
       expect(spy).to.be.calledOnce;
       const [[error, errorArgs]] = spy.args;
