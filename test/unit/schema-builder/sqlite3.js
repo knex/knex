@@ -943,7 +943,7 @@ describe('SQLite parser and compiler', function () {
 
     it('where', function () {
       const sql =
-        'CREATE INDEX "users_index" on "users" ("foo") where foo IS NOT NULL AND bar=42';
+        'CREATE INDEX "users_index" on "users" ("foo") where foo IS NOT NULL AND bar = 42';
       const ast = {
         unique: false,
         exists: false,
@@ -953,7 +953,7 @@ describe('SQLite parser and compiler', function () {
         columns: [
           { name: 'foo', expression: false, collation: null, order: null },
         ],
-        where: 'foo IS NOT NULL AND bar=42',
+        where: ['foo', 'IS', 'NOT', 'NULL', 'AND', 'bar', '=', '42'],
       };
 
       const parsed = parseCreateIndex(sql);
@@ -1010,7 +1010,7 @@ describe('SQLite parser and compiler', function () {
 
     it('column expression', function () {
       const sql =
-        'CREATE INDEX "users_index" on "users" (abs(foo), lower(baz) COLLATE RTRIM, "bar()" ASC)';
+        'CREATE INDEX "users_index" on "users" (abs(foo), random() COLLATE RTRIM, baz + bar ASC)';
       const ast = {
         unique: false,
         exists: false,
@@ -1019,20 +1019,20 @@ describe('SQLite parser and compiler', function () {
         table: 'users',
         columns: [
           {
-            name: 'abs(foo)',
+            name: ['abs', ['foo']],
             expression: true,
             collation: null,
             order: null,
           },
           {
-            name: 'lower(baz)',
+            name: ['random', []],
             expression: true,
             collation: 'RTRIM',
             order: null,
           },
           {
-            name: 'bar()',
-            expression: false,
+            name: ['baz', '+', 'bar'],
+            expression: true,
             collation: null,
             order: 'ASC',
           },
@@ -1049,12 +1049,12 @@ describe('SQLite parser and compiler', function () {
 
     it('special character identifier', function () {
       const sql =
-        'CREATE INDEX "$chema"."users index" on "use-rs" (" ( ", " COLLATE ", " ""foo"" " ASC, "``b a z``" DESC, "[[``""bar""``]]") where foo IS NOT NULL';
+        'CREATE INDEX "$chema"."users  index" on "use-rs" (" ( ", " COLLATE ", " ""foo"" " ASC, "``b a z``" DESC, "[[``""bar""``]]") where foo IS NOT NULL';
       const ast = {
         unique: false,
         exists: false,
         schema: '$chema',
-        index: 'users index',
+        index: 'users  index',
         table: 'use-rs',
         columns: [
           {
@@ -1088,7 +1088,7 @@ describe('SQLite parser and compiler', function () {
             order: null,
           },
         ],
-        where: 'foo IS NOT NULL',
+        where: ['foo', 'IS', 'NOT', 'NULL'],
       };
 
       const parsed = parseCreateIndex(sql);
@@ -1100,7 +1100,7 @@ describe('SQLite parser and compiler', function () {
 
     it('no wrap', function () {
       const sql =
-        'CREATE INDEX users_index on users (foo COLLATE BINARY ASC) where foo IS NOT NULL';
+        'CREATE INDEX users_index on users (note COLLATE BINARY ASC) where foo IS NOT NULL';
       const ast = {
         unique: false,
         exists: false,
@@ -1109,13 +1109,13 @@ describe('SQLite parser and compiler', function () {
         table: 'users',
         columns: [
           {
-            name: 'foo',
+            name: 'note',
             expression: false,
             collation: 'BINARY',
             order: 'ASC',
           },
         ],
-        where: 'foo IS NOT NULL',
+        where: ['foo', 'IS', 'NOT', 'NULL'],
       };
 
       const parsed = parseCreateIndex(sql);
@@ -1138,9 +1138,9 @@ describe('SQLite parser and compiler', function () {
 
     it('whitespaces', function () {
       const sql =
-        'CREATE  INDEX   "users_index"\non\t"users"("foo"    COLLATE\tBINARY\nASC)\r\nwhere     "foo"\nIS\tNOT\r\nNULL';
+        'CREATE  INDEX   "users  index"\non\t"users"("foo"    COLLATE\tBINARY\nASC)\r\nwhere     "foo"\n  IS\tNOT\r\nNULL';
       const newSql =
-        'CREATE INDEX "users_index" on "users" ("foo" COLLATE BINARY ASC) where "foo" IS NOT NULL';
+        'CREATE INDEX "users  index" on "users" ("foo" COLLATE BINARY ASC) where "foo" IS NOT NULL';
 
       const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
 
