@@ -1,5 +1,7 @@
 # Master (Unreleased)
 
+- CLI: Fix an issue with npm@7 and ESM when type was set to 'module' in package.json #4295
+
 # 0.21.17 - 30 January, 2021
 
 ### Bug fixes:
