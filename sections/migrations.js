@@ -653,6 +653,13 @@ export default [
     knex.migrate.latest({
       migrationSource: new WebpackMigrationSource(require.context('./migrations', false, /\.js$/))
     })
+    
+    // with webpack >=5, require.context will add both the relative and absolute paths to the context
+    // to avoid duplicate migration errors, you'll need to filter out one or the other
+    // this example filters out absolute paths, leaving only the relative ones(./migrations/*.js):
+    knex.migrate.latest({
+      migrationSource: new WebpackMigrationSource(require.context('./migrations', false, /^\\.\\/.*\\.js$/))
+    })
     `
   },
   // esm interop
