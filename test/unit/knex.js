@@ -366,11 +366,14 @@ describe('knex', () => {
   });
 
   describe('transaction', () => {
-    it('transaction of a copy with userParams retains userparams', async function () {
+    before(function skipSuiteIfSqliteConfigAbsent() {
+      // This is the case when the |DB| environment parameter does not include |sqlite|.
       if (!sqliteConfig) {
         return this.skip();
       }
+    });
 
+    it('transaction of a copy with userParams retains userparams', async function () {
       const knex = Knex(sqliteConfig);
 
       const knexWithParams = knex.withUserParams({ userParam: '451' });
@@ -599,10 +602,6 @@ describe('knex', () => {
     });
 
     it('creating transaction copy with user params should throw an error', async function () {
-      if (!sqliteConfig) {
-        return this.skip();
-      }
-
       const knex = Knex(sqliteConfig);
 
       await knex.transaction(async (trx) => {
@@ -639,6 +638,13 @@ describe('knex', () => {
   });
 
   describe('extend query builder', () => {
+    before(function skipSuiteIfSqliteConfigAbsent() {
+      // This is the case when the |DB| environment parameter does not include |sqlite|.
+      if (!sqliteConfig) {
+        return this.skip();
+      }
+    });
+
     let connection;
     beforeEach(() => {
       connection = new sqlite3.Database(':memory:');
