@@ -10,6 +10,14 @@ describe('Transaction', () => {
         const tableName = 'key_value';
         before(() => {
           knex = getKnexForDb(db);
+
+          if (isMssql(knex)) {
+            // Enable the snapshot isolation level required by certain transaction tests.
+            return knex.raw(
+              `ALTER DATABASE :db: SET ALLOW_SNAPSHOT_ISOLATION ON`,
+              { db: knex.context.client.config.connection.database }
+            );
+          }
         });
 
         after(() => {
@@ -46,7 +54,7 @@ describe('Transaction', () => {
           if (isSQLite(knex) || isOracle(knex)) {
             return;
           }
-          // NOTE: for mssql, it requires an alter database call that happens in docker-compose
+          // NOTE: mssql requires an alter database call to enable the snapshot isolation level.
           const isolationLevel = isMssql(knex) ? 'snapshot' : 'repeatable read';
           const trx = await knex.transaction({ isolationLevel });
           const result1 = await trx(tableName).select();
