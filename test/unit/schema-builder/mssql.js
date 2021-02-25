@@ -169,6 +169,24 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('should alter multiple columns over multiple queries', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').alter();
+        this.string('bar').alter();
+      })
+      .toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ALTER COLUMN [foo] nvarchar(255)'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'ALTER TABLE [users] ALTER COLUMN [bar] nvarchar(255)'
+    );
+  });
+
   it('test drop unique, custom', function () {
     tableSql = client
       .schemaBuilder()
