@@ -9226,33 +9226,28 @@ describe('QueryBuilder', () => {
   });
 
   it('#4199 - allows an hint comment', () => {
-    testsql(
-      qb()
-        .from('testtable')
-        .hintComment('hint()'),
-      {
-        mysql: {
-          sql: 'select /*+ hint() */ * from `testtable`',
-          bindings: [],
-        },
-        oracledb: {
-          sql: 'select /*+ hint() */ * from "testtable"',
-          bindings: [],
-        },
-        mssql: {
-          sql: 'select /*+ hint() */ * from [testtable]',
-          bindings: [],
-        },
-        pg: {
-          sql: 'select /*+ hint() */ * from "testtable"',
-          bindings: [],
-        },
-        'pg-redshift': {
-          sql: 'select /*+ hint() */ * from "testtable"',
-          bindings: [],
-        },
+    testsql(qb().from('testtable').hintComment('hint()'), {
+      mysql: {
+        sql: 'select /*+ hint() */ * from `testtable`',
+        bindings: [],
       },
-    )
+      oracledb: {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select /*+ hint() */ * from [testtable]',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select /*+ hint() */ * from "testtable"',
+        bindings: [],
+      },
+    });
   });
 
   it('#4199 - allows multiple hint comments', () => {
@@ -9282,8 +9277,8 @@ describe('QueryBuilder', () => {
           sql: 'select /*+ hint1() hint2() hint3() */ * from "testtable"',
           bindings: [],
         },
-      },
-    )
+      }
+    );
   });
 
   it('#4199 - allows hint comments in subqueries', () => {
@@ -9297,27 +9292,32 @@ describe('QueryBuilder', () => {
         .hintComment('hint1()'),
       {
         mysql: {
-          sql: 'select /*+ hint1() */ `c1` as `c1`, (select /*+ hint2() */ `c2` from `t2` limit ?) as `c2` from `t1`',
+          sql:
+            'select /*+ hint1() */ `c1` as `c1`, (select /*+ hint2() */ `c2` from `t2` limit ?) as `c2` from `t1`',
           bindings: [1],
         },
         oracledb: {
-          sql: 'select /*+ hint1() */ "c1" "c1", (select * from (select /*+ hint2() */ "c2" from "t2") where rownum <= ?) "c2" from "t1"',
+          sql:
+            'select /*+ hint1() */ "c1" "c1", (select * from (select /*+ hint2() */ "c2" from "t2") where rownum <= ?) "c2" from "t1"',
           bindings: [1],
         },
         mssql: {
-          sql: 'select /*+ hint1() */ [c1] as [c1], (select /*+ hint2() */ top (?) [c2] from [t2]) as [c2] from [t1]',
+          sql:
+            'select /*+ hint1() */ [c1] as [c1], (select /*+ hint2() */ top (?) [c2] from [t2]) as [c2] from [t1]',
           bindings: [1],
         },
         pg: {
-          sql: 'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          sql:
+            'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
           bindings: [1],
         },
         'pg-redshift': {
-          sql: 'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
+          sql:
+            'select /*+ hint1() */ "c1" as "c1", (select /*+ hint2() */ "c2" from "t2" limit ?) as "c2" from "t1"',
           bindings: [1],
         },
-      },
-    )
+      }
+    );
   });
 
   it('#4199 - allows hint comments in unions', () => {
@@ -9328,58 +9328,56 @@ describe('QueryBuilder', () => {
         .unionAll(qb().from('t2').hintComment('hint2()')),
       {
         mysql: {
-          sql: 'select /*+ hint1() */ * from `t1` union all select /*+ hint2() */ * from `t2`',
+          sql:
+            'select /*+ hint1() */ * from `t1` union all select /*+ hint2() */ * from `t2`',
           bindings: [],
         },
         oracledb: {
-          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
           bindings: [],
         },
         mssql: {
-          sql: 'select /*+ hint1() */ * from [t1] union all select /*+ hint2() */ * from [t2]',
+          sql:
+            'select /*+ hint1() */ * from [t1] union all select /*+ hint2() */ * from [t2]',
           bindings: [],
         },
         pg: {
-          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
           bindings: [],
         },
         'pg-redshift': {
-          sql: 'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
+          sql:
+            'select /*+ hint1() */ * from "t1" union all select /*+ hint2() */ * from "t2"',
           bindings: [],
         },
-      },
-    )
+      }
+    );
   });
 
   it('#4199 - forbids "/*", "*/" and "?" in hint comments', () => {
     expect(() => {
       qb().from('testtable').hintComment('hint() /*').toString();
-    }).to.throw(
-      'Hint comment cannot include "/*" or "*/"'
-    );
+    }).to.throw('Hint comment cannot include "/*" or "*/"');
     expect(() => {
       qb().from('testtable').hintComment('hint() */').toString();
-    }).to.throw(
-      'Hint comment cannot include "/*" or "*/"'
-    );
+    }).to.throw('Hint comment cannot include "/*" or "*/"');
     expect(() => {
       qb().from('testtable').hintComment('hint(?)').toString();
-    }).to.throw(
-      'Hint comment cannot include "?"'
-    );
+    }).to.throw('Hint comment cannot include "?"');
   });
 
   it('#4199 - forbids non-strings as hint comments', () => {
     expect(() => {
       qb().from('testtable').hintComment(47).toString();
-    }).to.throw(
-      'Hint comment must be a string'
-    );
+    }).to.throw('Hint comment must be a string');
     expect(() => {
-      qb().from('testtable').hintComment(raw('hint(?)', [47])).toString();
-    }).to.throw(
-      'Hint comment must be a string'
-    );
+      qb()
+        .from('testtable')
+        .hintComment(raw('hint(?)', [47]))
+        .toString();
+    }).to.throw('Hint comment must be a string');
   });
 
   it('Any undefined binding in a SELECT query should throw an error', () => {
@@ -10098,9 +10096,7 @@ describe('QueryBuilder', () => {
 
       throw new Error('Should not reach this point');
     } catch (error) {
-      expect(error.message).to.equal(
-        'Cannot chain .first() on "update" query!'
-      );
+      expect(error.message).to.equal('Cannot chain .first() on "update" query');
     }
   });
 
@@ -10110,9 +10106,7 @@ describe('QueryBuilder', () => {
 
       throw new Error('Should not reach this point');
     } catch (error) {
-      expect(error.message).to.equal(
-        'Cannot chain .first() on "insert" query!'
-      );
+      expect(error.message).to.equal('Cannot chain .first() on "insert" query');
     }
   });
 
@@ -10122,7 +10116,7 @@ describe('QueryBuilder', () => {
 
       throw new Error('Should not reach this point');
     } catch (error) {
-      expect(error.message).to.equal('Cannot chain .first() on "del" query!');
+      expect(error.message).to.equal('Cannot chain .first() on "del" query');
     }
   });
 
@@ -10270,6 +10264,155 @@ describe('QueryBuilder', () => {
           'select "departments".*, "trainee_cnts"."count" as "trainee_cnt" from "foo"."departments" inner join (select "department_id", count(*) from "foo"."trainees" group by "department_id") as "trainee_cnts" on "trainee_cnts"."department_id" = "departments"."id"',
         oracledb:
           'select "departments".*, "trainee_cnts"."count" "trainee_cnt" from "foo"."departments" inner join (select "department_id", count(*) from "foo"."trainees" group by "department_id") "trainee_cnts" on "trainee_cnts"."department_id" = "departments"."id"',
+      }
+    );
+  });
+
+  it('should join on a subquery with custom conditions and schema', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('foo')
+        .join(qb().select(['f_id']).from('baz').as('bar'), (j) =>
+          j.on('bar.f_id', 'foo.id')
+        ),
+      {
+        mysql:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        mssql:
+          'select * from [schema].[foo] inner join (select [f_id] from [baz]) as [bar] on [bar].[f_id] = [foo].[id]',
+        oracledb:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") "bar" on "bar"."f_id" = "foo"."id"',
+        pg:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        'pg-redshift':
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        sqlite3:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+      }
+    );
+  });
+
+  it('should join on a subquery defined as a function with custom conditions and schema', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('foo')
+        .join(
+          (q) => q.select(['f_id']).from('baz').as('bar'),
+          (j) => j.on('bar.f_id', 'foo.id')
+        ),
+      {
+        mysql:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        mssql:
+          'select * from [schema].[foo] inner join (select [f_id] from [baz]) as [bar] on [bar].[f_id] = [foo].[id]',
+        oracledb:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") "bar" on "bar"."f_id" = "foo"."id"',
+        pg:
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        'pg-redshift':
+          'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
+        sqlite3:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a subquery', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from(qb().from('foo').select().as('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from (select * from [foo]) as [bar] inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a subquery specified by a function', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from((q) => q.from('foo').select().as('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from (select * from "foo") as "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from (select * from [foo]) as [bar] inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a raw FROM clause', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from(raw('bar'))
+        .join('baz', 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from bar inner join [schema].[baz] on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+      }
+    );
+  });
+
+  it('should not prepend schema to a raw JOIN clause', () => {
+    testsql(
+      qb()
+        .withSchema('schema')
+        .select()
+        .from('bar')
+        .join(raw('baz'), 'foo.id', 'bar.foo_id'),
+      {
+        pg:
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        'pg-redshift':
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        mysql:
+          'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
+        mssql:
+          'select * from [schema].[bar] inner join baz on [foo].[id] = [bar].[foo_id]',
+        oracledb:
+          'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
+        sqlite3:
+          'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
       }
     );
   });

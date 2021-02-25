@@ -1,10 +1,10 @@
-const { inherits } = require('util');
 const Knex = require('../../lib/index');
 const QueryBuilder = require('../../lib/query/querybuilder');
 const { expect } = require('chai');
 const sqliteConfig = require('../knexfile').sqlite3;
 const sqlite3 = require('sqlite3');
 const { noop } = require('lodash');
+const sinon = require('sinon');
 
 describe('knex', () => {
   describe('supports passing existing connection', () => {
@@ -353,11 +353,7 @@ describe('knex', () => {
   it('throws if client module has not been installed', () => {
     // create dummy dialect which always fails when trying to load driver
     const SqliteClient = require(`../../lib/dialects/sqlite3/index.js`);
-    function ClientFoobar(config) {
-      SqliteClient.call(this, config);
-    }
-
-    inherits(ClientFoobar, SqliteClient);
+    class ClientFoobar extends SqliteClient {}
 
     ClientFoobar.prototype._driver = () => {
       throw new Error('Cannot require...');
@@ -370,11 +366,14 @@ describe('knex', () => {
   });
 
   describe('transaction', () => {
-    it('transaction of a copy with userParams retains userparams', async function () {
+    before(function skipSuiteIfSqliteConfigAbsent() {
+      // This is the case when the |DB| environment parameter does not include |sqlite|.
       if (!sqliteConfig) {
         return this.skip();
       }
+    });
 
+    it('transaction of a copy with userParams retains userparams', async function () {
       const knex = Knex(sqliteConfig);
 
       const knexWithParams = knex.withUserParams({ userParam: '451' });
@@ -603,10 +602,6 @@ describe('knex', () => {
     });
 
     it('creating transaction copy with user params should throw an error', async function () {
-      if (!sqliteConfig) {
-        return this.skip();
-      }
-
       const knex = Knex(sqliteConfig);
 
       await knex.transaction(async (trx) => {
@@ -643,6 +638,13 @@ describe('knex', () => {
   });
 
   describe('extend query builder', () => {
+    before(function skipSuiteIfSqliteConfigAbsent() {
+      // This is the case when the |DB| environment parameter does not include |sqlite|.
+      if (!sqliteConfig) {
+        return this.skip();
+      }
+    });
+
     let connection;
     beforeEach(() => {
       connection = new sqlite3.Database(':memory:');
@@ -728,6 +730,26 @@ describe('knex', () => {
       expect(() =>
         Knex.QueryBuilder.extend('select', function (value) {})
       ).to.throw(`Can't extend QueryBuilder with existing method ('select')`);
+    });
+
+    it('should contain the query context on a query-error event', async function () {
+      const spy = sinon.spy();
+      const context = { aPrimitive: true };
+      const knex = Knex(sqliteConfig)
+        .from('test')
+        .queryContext(context)
+        .on('query-error', spy);
+
+      try {
+        await knex.from('banana');
+        // eslint-disable-next-line no-empty
+      } catch (_e) {}
+
+      expect(spy).to.be.calledOnce;
+      const [[error, errorArgs]] = spy.args;
+      expect(error).to.be.instanceOf(Error);
+      expect(errorArgs).to.be.ok;
+      expect(errorArgs.queryContext).to.equal(context);
     });
 
     // TODO: Consider moving these somewhere that tests the

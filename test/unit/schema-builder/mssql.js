@@ -38,6 +38,20 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('test basic create table with incrementing without primary key', function () {
+    tableSql = client.schemaBuilder().createTable('users', function (table) {
+      table.increments('id', { primaryKey: false });
+    });
+
+    equal(1, tableSql.toSQL().length);
+    expect(tableSql.toSQL()[0].sql).to.equal(
+      'CREATE TABLE [users] ([id] int identity(1,1) not null)'
+    );
+    expect(tableSql.toQuery()).to.equal(
+      'CREATE TABLE [users] ([id] int identity(1,1) not null)'
+    );
+  });
+
   it('test drop table', function () {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
@@ -151,7 +165,25 @@ describe('MSSQL SchemaBuilder', function () {
       'ALTER TABLE [users] ADD [bar] nvarchar(255)'
     );
     expect(tableSql[1].sql).to.equal(
-      'ALTER TABLE [users] alter column [foo] nvarchar(255)'
+      'ALTER TABLE [users] ALTER COLUMN [foo] nvarchar(255)'
+    );
+  });
+
+  it('should alter multiple columns over multiple queries', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').alter();
+        this.string('bar').alter();
+      })
+      .toSQL();
+
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ALTER COLUMN [foo] nvarchar(255)'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'ALTER TABLE [users] ALTER COLUMN [bar] nvarchar(255)'
     );
   });
 
@@ -458,6 +490,20 @@ describe('MSSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'ALTER TABLE [users] ADD [id] bigint identity(1,1) not null primary key'
+    );
+  });
+
+  it('test adding big incrementing id without primary key', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.bigIncrements('id', { primaryKey: false });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD [id] bigint identity(1,1) not null'
     );
   });
 

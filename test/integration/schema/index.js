@@ -539,7 +539,7 @@ module.exports = (knex) => {
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('mssql', [
-              "CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default 'Lorem ipsum Qui quis qui in.', [metadata] text default '{\"a\":10}', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))",
+              "CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default 'Lorem ipsum Qui quis qui in.', [metadata] nvarchar(max) default '{\"a\":10}', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))",
             ]);
           })
           .then(() =>
@@ -1238,6 +1238,51 @@ module.exports = (knex) => {
               });
           });
         });
+
+        it('#2767 - .renameColumn should not drop the auto incremental', () => {
+          const tableName = 'rename_column_test';
+
+          if (knex && knex.client) {
+            if (/mssql/i.test(knex.client.driverName)) {
+              return knex
+                .raw(
+                  `select COLUMNPROPERTY(object_id(TABLE_SCHEMA+'.'+TABLE_NAME), COLUMN_NAME, 'IsIdentity') as Ident from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME =? AND COLUMN_NAME = ?;`,
+                  [tableName, 'id_new']
+                )
+                .then((res) => {
+                  const autoinc = res[0].Ident;
+                  expect(autoinc).to.equal(1);
+                });
+            } else if (/mysql/i.test(knex.client.driverName)) {
+              return knex.raw(`show fields from ${tableName}`).then((res) => {
+                const autoinc = res[0][0].Extra;
+                expect(autoinc).to.equal('auto_increment');
+              });
+            } else if (/pg/i.test(knex.client.driverName)) {
+              return knex
+                .raw(
+                  `select pg_get_serial_sequence(table_name, column_name) as ident from INFORMATION_SCHEMA.COLUMNS where table_name =? AND column_name = ?;`,
+                  [tableName, 'id_new']
+                )
+                .then((res) => {
+                  const autoinc = !!res.rows[0].ident;
+                  expect(autoinc).to.equal(true);
+                });
+            } else if (/sqlite/i.test(knex.client.driverName)) {
+              return knex
+                .raw(
+                  `SELECT "is-autoincrement" as ident FROM sqlite_master WHERE tbl_name=? AND sql LIKE "%AUTOINCREMENT%"`,
+                  [tableName]
+                )
+                .then((res) => {
+                  const autoinc = !!res[0].ident;
+                  expect(autoinc).to.equal(true);
+                });
+            }
+          }
+
+          return Promise.resolve();
+        });
       });
     });
 
@@ -1321,7 +1366,7 @@ module.exports = (knex) => {
             expect(await hasCol('i0')).to.equal(false);
             // Constraint i0 should be unaffected:
             expect(await getCreateTableExpr()).to.equal(
-              "CREATE TABLE TEST('i1' integer, [i2] integer, `i3` integer, i4 " +
+              'CREATE TABLE "TEST"(\'i1\' integer, [i2] integer, `i3` integer, i4 ' +
                 'integer, I5 integer, unique(i4, i5), constraint i0 primary ' +
                 'key([i3], "i4"), unique([i2]), foreign key (i1) references bar ' +
                 '("i3") )'
@@ -1330,24 +1375,24 @@ module.exports = (knex) => {
             expect(await hasCol('i1')).to.equal(false);
             // Foreign key on i1 should also be dropped:
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST([i2] integer, `i3` integer, i4 integer, I5 integer, ' +
+              'CREATE TABLE "TEST"([i2] integer, `i3` integer, i4 integer, I5 integer, ' +
                 'unique(i4, i5), constraint i0 primary key([i3], "i4"), unique([i2]))'
             );
             await dropCol('i2');
             expect(await hasCol('i2')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST(`i3` integer, i4 integer, I5 integer, ' +
+              'CREATE TABLE "TEST"(`i3` integer, i4 integer, I5 integer, ' +
                 'unique(i4, i5), constraint i0 primary key([i3], "i4"))'
             );
             await dropCol('i3');
             expect(await hasCol('i3')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST(i4 integer, I5 integer, unique(i4, i5))'
+              'CREATE TABLE "TEST"(i4 integer, I5 integer, unique(i4, i5))'
             );
             await dropCol('i4');
             expect(await hasCol('i4')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE TEST(I5 integer)'
+              'CREATE TABLE "TEST"(I5 integer)'
             );
             let lastColDeletionError;
             await knex.schema

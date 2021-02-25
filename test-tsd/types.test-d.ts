@@ -112,3 +112,12 @@ expectType<
     .onConflict('id')
     .ignore()
 );
+
+expectAssignable<QueryBuilder>(
+  knexInstance
+    .insert({ id: 10, active: true })
+    .into('table')
+    .onConflict(['id'])
+    .merge(['active', 'id'])
+    .debug(true)
+);

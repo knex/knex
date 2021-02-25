@@ -1,5 +1,7 @@
 const { promisify } = require('util');
 const knex = require('../../../lib');
+const testConfig =
+  (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
 
 const Db = {
   PostgresSQL: 'postgres',
@@ -52,7 +54,7 @@ const seeds = {
 const testConfigs = {
   mysql: {
     client: 'mysql',
-    connection: {
+    connection: testConfig.mysql || {
       port: 23306,
       database: 'knex_test',
       host: 'localhost',
@@ -67,7 +69,7 @@ const testConfigs = {
 
   mysql2: {
     client: 'mysql2',
-    connection: {
+    connection: testConfig.mysql || {
       port: 23306,
       database: 'knex_test',
       host: 'localhost',
@@ -82,7 +84,7 @@ const testConfigs = {
 
   postgres: {
     client: 'postgres',
-    connection: {
+    connection: testConfig.postgres || {
       adapter: 'postgresql',
       port: 25432,
       host: 'localhost',
@@ -97,7 +99,7 @@ const testConfigs = {
 
   sqlite3: {
     client: 'sqlite3',
-    connection: ':memory:',
+    connection: testConfig.sqlite3 || ':memory:',
     pool: poolSqlite,
     migrations,
     seeds,
@@ -105,7 +107,7 @@ const testConfigs = {
 
   mssql: {
     client: 'mssql',
-    connection: {
+    connection: testConfig.mssql || {
       user: 'sa',
       password: 'S0meVeryHardPassword',
       server: 'localhost',
@@ -119,7 +121,7 @@ const testConfigs = {
 
   oracledb: {
     client: 'oracledb',
-    connection: {
+    connection: testConfig.oracledb || {
       user: 'system',
       password: 'Oracle18',
       connectString: 'localhost:21521/XE',

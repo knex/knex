@@ -797,6 +797,13 @@ module.exports = function (knex) {
         });
     });
 
+    it('should throw an error if the array passed in is empty', async function () {
+      expect(knex('account').insert([])).to.be.rejectedWith(
+        Error,
+        'The query is empty'
+      );
+    });
+
     it('should handle empty inserts', function () {
       return knex.schema
         .createTable('test_default_table', function (qb) {
@@ -1599,7 +1606,7 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('BEFORE');
     });
 
-    it('updates columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
+    it('updates all columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
       if (isRedshift(knex)) {
         return this.skip();
       }
@@ -1666,7 +1673,7 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('SOURCE');
     });
 
-    it('updates columns with raw value when inserting a duplicate key to unique column and merge with updates is specified', async function () {
+    it('updates columns with raw value when inserting a duplicate key to unique column and merge with update data is specified', async function () {
       if (isRedshift(knex)) {
         return this.skip();
       }
@@ -1732,6 +1739,74 @@ module.exports = function (knex) {
         .select();
       expect(rows.length).to.equal(1);
       expect(rows[0].name).to.equal('SOURCE');
+    });
+
+    it('updates specified columns with insert value when inserting a duplicate key to unique column and merge with update columns is specified', async function () {
+      if (isRedshift(knex)) {
+        return this.skip();
+      }
+
+      // Setup table for testing knex.raw with
+      await knex.schema.dropTableIfExists('upsert_value_source');
+      await knex.schema.createTable('upsert_value_source', (table) => {
+        table.string('name');
+      });
+      await knex('upsert_value_source').insert([{ name: 'SOURCE' }]);
+
+      // Setup: Create table with unique email column
+      await knex.schema.dropTableIfExists('upsert_tests');
+      await knex.schema.createTable('upsert_tests', (table) => {
+        table.string('name');
+        table.string('email');
+        table.unique('email');
+      });
+
+      // Setup: Create row to conflict against
+      await knex('upsert_tests').insert([
+        { email: 'mergedest@example.com', name: 'DEST' },
+      ]);
+
+      // Perform insert..merge (upsert)
+      try {
+        await knex('upsert_tests')
+          .insert(
+            { email: 'mergedest@example.com', name: 'SHOULD BE USED' },
+            'email'
+          )
+          .onConflict('email')
+          .merge(['name'])
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `name` = values(`name`)',
+              ['mergedest@example.com', 'SHOULD BE USED']
+            );
+            tester(
+              'pg',
+              'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "name" = excluded."name" returning "email"',
+              ['mergedest@example.com', 'SHOULD BE USED']
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = excluded.`name`',
+              ['mergedest@example.com', 'SHOULD BE USED']
+            );
+          });
+      } catch (err) {
+        if (/oracle|mssql/i.test(knex.client.driverName)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
+
+      // Check that row HAS been updated
+      const rows = await knex('upsert_tests')
+        .where({ email: 'mergedest@example.com' })
+        .select();
+      expect(rows.length).to.equal(1);
+      expect(rows[0].name).to.equal('SHOULD BE USED');
     });
 
     it('updates and inserts columns when inserting multiple rows merge is specified', async function () {

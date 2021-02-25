@@ -415,7 +415,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             ['datatype_test', 'knex_test'],
             {
               enum_value: {
@@ -491,7 +491,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             null,
             {
               defaultValue: null,

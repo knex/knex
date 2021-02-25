@@ -17,9 +17,13 @@ const testMemoryMigrations = require('./memory-migrations');
 module.exports = function (knex) {
   rimraf.sync(path.join(__dirname, './migration'));
 
-  before(function () {
+  before(async () => {
     // make sure lock was not left from previous failed test run
-    return knex.migrate.forceFreeMigrationsLock({
+    await knex.schema.dropTableIfExists('knex_migrations');
+    await knex.schema.dropTableIfExists('migration_test_1');
+    await knex.schema.dropTableIfExists('migration_test_2');
+    await knex.schema.dropTableIfExists('migration_test_2_1');
+    await knex.migrate.forceFreeMigrationsLock({
       directory: 'test/integration/migrate/test',
     });
   });
