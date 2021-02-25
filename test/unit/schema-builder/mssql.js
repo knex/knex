@@ -165,7 +165,7 @@ describe('MSSQL SchemaBuilder', function () {
       'ALTER TABLE [users] ADD [bar] nvarchar(255)'
     );
     expect(tableSql[1].sql).to.equal(
-      'ALTER TABLE [users] alter column [foo] nvarchar(255)'
+      'ALTER TABLE [users] ALTER COLUMN [foo] nvarchar(255)'
     );
   });
 
