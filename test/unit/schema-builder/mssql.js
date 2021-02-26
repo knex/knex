@@ -5,15 +5,15 @@ const sinon = require('sinon');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
 const client = new MSSQL_Client({ client: 'mssql' });
 
-describe('MSSQL SchemaBuilder', function() {
+describe('MSSQL SchemaBuilder', function () {
   let tableSql;
   const equal = require('assert').equal;
 
-  it('throws when charset and collate are specified', function() {
+  it('throws when charset and collate are specified', function () {
     expect(() => {
       tableSql = client
         .schemaBuilder()
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id');
           table.string('email');
           table.charset('utf8');
@@ -23,10 +23,10 @@ describe('MSSQL SchemaBuilder', function() {
     }).to.throw('Knex only supports charset statement with mysql');
   });
 
-  it('basic create table', function() {
+  it('basic create table', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.increments('id');
         this.string('email');
       })
@@ -38,8 +38,8 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test basic create table with incrementing without primary key', function() {
-    tableSql = client.schemaBuilder().createTable('users', function(table) {
+  it('test basic create table with incrementing without primary key', function () {
+    tableSql = client.schemaBuilder().createTable('users', function (table) {
       table.increments('id', { primaryKey: false });
     });
 
@@ -52,21 +52,15 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test drop table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTable('users')
-      .toSQL();
+  it('test drop table', function () {
+    tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('DROP TABLE [users]');
   });
 
-  it('test drop table if exists', function() {
-    tableSql = client
-      .schemaBuilder()
-      .dropTableIfExists('users')
-      .toSQL();
+  it('test drop table if exists', function () {
+    tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
@@ -74,10 +68,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test drop column', function() {
+  it('test drop column', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropColumn('foo');
       })
       .toSQL();
@@ -89,10 +83,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[1].sql).to.equal('ALTER TABLE [users] DROP COLUMN [foo]');
   });
 
-  it('drops multiple columns with an array', function() {
+  it('drops multiple columns with an array', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropColumn(['foo', 'bar']);
       })
       .toSQL();
@@ -109,10 +103,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('drops multiple columns as multiple arguments', function() {
+  it('drops multiple columns as multiple arguments', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropColumn('foo', 'bar');
       })
       .toSQL();
@@ -129,10 +123,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test drop primary', function() {
+  it('test drop primary', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropPrimary('testconstraintname');
       })
       .toSQL();
@@ -143,10 +137,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test drop unique', function() {
+  it('test drop unique', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropUnique('foo');
       })
       .toSQL();
@@ -157,10 +151,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('should alter columns with the alter flag', function() {
+  it('should alter columns with the alter flag', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.string('foo').alter();
         this.string('bar');
       })
@@ -175,10 +169,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('should alter multiple columns over multiple queries', function() {
+  it('should alter multiple columns over multiple queries', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.string('foo').alter();
         this.string('bar').alter();
       })
@@ -193,10 +187,54 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test drop unique, custom', function() {
+  it('should drop existing default constraint before setting a new one', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
+        this.string('foo').defaultTo('test').alter();
+        this.string('bar').alter();
+      })
+      .toSQL();
+
+    equal(tableSql.length, 4);
+    expect(tableSql[0].sql).to.includes(
+      `IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`
+    );
+    expect(tableSql[1].sql).to.equal(
+      'ALTER TABLE [users] ALTER COLUMN [foo] nvarchar(255)'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'ALTER TABLE [users] ALTER COLUMN [bar] nvarchar(255)'
+    );
+    expect(tableSql[3].sql).to.equal(
+      "ALTER TABLE [users] ADD CONSTRAINT [users_foo_default] DEFAULT 'test' FOR [foo]"
+    );
+  });
+
+  it('should add default constraint separately', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').nullable().defaultTo('test').alter();
+      })
+      .toSQL();
+
+    equal(tableSql.length, 3);
+    expect(tableSql[0].sql).to.includes(
+      `IF @constraint IS NOT NULL EXEC('ALTER TABLE users DROP CONSTRAINT ' + @constraint)`
+    );
+    expect(tableSql[1].sql).to.equal(
+      'ALTER TABLE [users] ALTER COLUMN [foo] nvarchar(255) null'
+    );
+    expect(tableSql[2].sql).to.equal(
+      "ALTER TABLE [users] ADD CONSTRAINT [users_foo_default] DEFAULT 'test' FOR [foo]"
+    );
+  });
+
+  it('test drop unique, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
         this.dropUnique(null, 'foo');
       })
       .toSQL();
@@ -205,10 +243,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('DROP INDEX [foo] ON [users]');
   });
 
-  it('test drop index', function() {
+  it('test drop index', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropIndex('foo');
       })
       .toSQL();
@@ -217,10 +255,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('DROP INDEX [users_foo_index] ON [users]');
   });
 
-  it('test drop index, custom', function() {
+  it('test drop index, custom', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropIndex(null, 'foo');
       })
       .toSQL();
@@ -229,10 +267,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('DROP INDEX [foo] ON [users]');
   });
 
-  it('test drop foreign', function() {
+  it('test drop foreign', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropForeign('foo');
       })
       .toSQL();
@@ -243,10 +281,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test drop foreign, custom', function() {
+  it('test drop foreign, custom', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropForeign(null, 'foo');
       })
       .toSQL();
@@ -257,10 +295,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test drop timestamps', function() {
+  it('test drop timestamps', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dropTimestamps();
       })
       .toSQL();
@@ -277,11 +315,8 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test rename table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .renameTable('users', 'foo')
-      .toSQL();
+  it('test rename table', function () {
+    tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal('exec sp_rename ?, ?');
@@ -289,11 +324,8 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].bindings[1]).to.equal('foo');
   });
 
-  it('test has table', function() {
-    tableSql = client
-      .schemaBuilder()
-      .hasTable('users')
-      .toSQL();
+  it('test has table', function () {
+    tableSql = client.schemaBuilder().hasTable('users').toSQL();
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
@@ -302,7 +334,7 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].bindings[0]).to.equal('[users]');
   });
 
-  it('test has table with schema', function() {
+  it('test has table with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('schema')
@@ -316,7 +348,7 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].bindings[0]).to.equal('[schema].[users]');
   });
 
-  it('test rename table with schema', function() {
+  it('test rename table with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('schema')
@@ -329,11 +361,8 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].bindings[1]).to.equal('foo');
   });
 
-  it('test has column', function() {
-    tableSql = client
-      .schemaBuilder()
-      .hasColumn('users', 'foo')
-      .toSQL();
+  it('test has column', function () {
+    tableSql = client.schemaBuilder().hasColumn('users', 'foo').toSQL();
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
@@ -343,7 +372,7 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].bindings[1]).to.equal('[users]');
   });
 
-  it('test has column with schema', function() {
+  it('test has column with schema', function () {
     tableSql = client
       .schemaBuilder()
       .withSchema('schema')
@@ -358,10 +387,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].bindings[1]).to.equal('[schema].[users]');
   });
 
-  it('test adding primary key', function() {
+  it('test adding primary key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.primary('foo', 'bar');
       })
       .toSQL();
@@ -372,10 +401,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding unique key', function() {
+  it('test adding unique key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.unique('foo', 'bar');
       })
       .toSQL();
@@ -386,10 +415,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding index', function() {
+  it('test adding index', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.index(['foo', 'bar'], 'baz');
       })
       .toSQL();
@@ -400,13 +429,11 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding foreign key', function() {
+  it('test adding foreign key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.foreign('foo_id')
-          .references('id')
-          .on('orders');
+      .table('users', function () {
+        this.foreign('foo_id').references('id').on('orders');
       })
       .toSQL();
 
@@ -417,10 +444,8 @@ describe('MSSQL SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.integer('foo_id')
-          .references('id')
-          .on('orders');
+      .table('users', function () {
+        this.integer('foo_id').references('id').on('orders');
       })
       .toSQL();
 
@@ -431,13 +456,11 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('adding foreign key with specific identifier', function() {
+  it('adding foreign key with specific identifier', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.foreign('foo_id', 'fk_foo')
-          .references('id')
-          .on('orders');
+      .table('users', function () {
+        this.foreign('foo_id', 'fk_foo').references('id').on('orders');
       })
       .toSQL();
 
@@ -448,7 +471,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.integer('foo_id')
           .references('id')
           .on('orders')
@@ -463,10 +486,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('adds foreign key with onUpdate and onDelete', function() {
+  it('adds foreign key with onUpdate and onDelete', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('person', function(table) {
+      .createTable('person', function (table) {
         table
           .integer('user_id')
           .notNull()
@@ -486,10 +509,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding incrementing id', function() {
+  it('test adding incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.increments('id');
       })
       .toSQL();
@@ -500,10 +523,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding big incrementing id', function() {
+  it('test adding big incrementing id', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.bigIncrements('id');
       })
       .toSQL();
@@ -514,10 +537,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding big incrementing id without primary key', function() {
+  it('test adding big incrementing id without primary key', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.bigIncrements('id', { primaryKey: false });
       })
       .toSQL();
@@ -528,10 +551,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding column after another column', function() {
+  it('test adding column after another column', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.string('name').after('foo');
       })
       .toSQL();
@@ -542,10 +565,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding column on the first place', function() {
+  it('test adding column on the first place', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.string('first_name').first();
       })
       .toSQL();
@@ -556,10 +579,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding string', function() {
+  it('test adding string', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.string('foo');
       })
       .toSQL();
@@ -570,10 +593,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('uses the varchar column constraint', function() {
+  it('uses the varchar column constraint', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.string('foo', 100);
       })
       .toSQL();
@@ -584,13 +607,11 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('chains notNull and defaultTo', function() {
+  it('chains notNull and defaultTo', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
-        this.string('foo', 100)
-          .notNull()
-          .defaultTo('bar');
+      .table('users', function () {
+        this.string('foo', 100).notNull().defaultTo('bar');
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -599,10 +620,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('allows for raw values in the default field', function() {
+  it('allows for raw values in the default field', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.string('foo', 100)
           .nullable()
           .defaultTo(client.raw('CURRENT TIMESTAMP'));
@@ -615,10 +636,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('allows custom named default constraints', function() {
+  it('allows custom named default constraints', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.integer('foo').defaultTo('test', { constraintName: 'DF_foo' });
       })
       .toSQL();
@@ -628,10 +649,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it("doesn't name constraints when opt-out", function() {
+  it("doesn't name constraints when opt-out", function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.integer('foo').defaultTo('test', { constraintName: '' });
       })
       .toSQL();
@@ -641,10 +662,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding text', function() {
+  it('test adding text', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.text('foo');
       })
       .toSQL();
@@ -655,10 +676,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding big integer', function() {
+  it('test adding big integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.bigInteger('foo');
       })
       .toSQL();
@@ -667,10 +688,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] bigint');
   });
 
-  it('test adding integer', function() {
+  it('test adding integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.integer('foo');
       })
       .toSQL();
@@ -679,10 +700,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] int');
   });
 
-  it('test adding medium integer', function() {
+  it('test adding medium integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.mediumint('foo');
       })
       .toSQL();
@@ -691,10 +712,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] int');
   });
 
-  it('test adding small integer', function() {
+  it('test adding small integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.smallint('foo');
       })
       .toSQL();
@@ -703,10 +724,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] smallint');
   });
 
-  it('test adding tiny integer', function() {
+  it('test adding tiny integer', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.tinyint('foo');
       })
       .toSQL();
@@ -715,10 +736,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] tinyint');
   });
 
-  it('test adding float', function() {
+  it('test adding float', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.float('foo', 5, 2);
       })
       .toSQL();
@@ -727,10 +748,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
-  it('test adding double', function() {
+  it('test adding double', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.double('foo');
       })
       .toSQL();
@@ -739,10 +760,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
-  it('test adding double specifying precision', function() {
+  it('test adding double specifying precision', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.double('foo', 15, 8);
       })
       .toSQL();
@@ -751,10 +772,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] float');
   });
 
-  it('test adding decimal', function() {
+  it('test adding decimal', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.decimal('foo', 5, 2);
       })
       .toSQL();
@@ -765,43 +786,43 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding decimal, no precision', function() {
+  it('test adding decimal, no precision', function () {
     expect(() => {
       tableSql = client
         .schemaBuilder()
-        .table('users', function() {
+        .table('users', function () {
           this.decimal('foo', null);
         })
         .toSQL();
     }).to.throw('Specifying no precision on decimal columns is not supported');
   });
 
-  it('set comment to undefined', function() {
-    expect(function() {
+  it('set comment to undefined', function () {
+    expect(function () {
       client
         .schemaBuilder()
-        .table('user', function(t) {
+        .table('user', function (t) {
           t.comment();
         })
         .toSQL();
     }).to.throw(TypeError);
   });
 
-  it('set comment to null', function() {
-    expect(function() {
+  it('set comment to null', function () {
+    expect(function () {
       client
         .schemaBuilder()
-        .table('user', function(t) {
+        .table('user', function (t) {
           t.comment(null);
         })
         .toSQL();
     }).to.throw(TypeError);
   });
 
-  it('test adding boolean', function() {
+  it('test adding boolean', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.boolean('foo');
       })
       .toSQL();
@@ -810,10 +831,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] bit');
   });
 
-  it('test adding enum', function() {
+  it('test adding enum', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.enum('foo', ['bar', 'baz']);
       })
       .toSQL();
@@ -824,10 +845,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding date', function() {
+  it('test adding date', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.date('foo');
       })
       .toSQL();
@@ -836,10 +857,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] date');
   });
 
-  it('test adding date time', function() {
+  it('test adding date time', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.dateTime('foo');
       })
       .toSQL();
@@ -848,10 +869,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime2');
   });
 
-  it('test adding time', function() {
+  it('test adding time', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.time('foo');
       })
       .toSQL();
@@ -860,10 +881,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] time');
   });
 
-  it('test adding time stamp', function() {
+  it('test adding time stamp', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.timestamp('foo');
       })
       .toSQL();
@@ -872,10 +893,10 @@ describe('MSSQL SchemaBuilder', function() {
     expect(tableSql[0].sql).to.equal('ALTER TABLE [users] ADD [foo] datetime2');
   });
 
-  it('test adding time stamp with timezone', function() {
+  it('test adding time stamp with timezone', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.timestamp('foo', {
           useTz: true,
         });
@@ -888,10 +909,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding time stamps', function() {
+  it('test adding time stamps', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.timestamps();
       })
       .toSQL();
@@ -902,10 +923,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding binary', function() {
+  it('test adding binary', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.binary('foo');
       })
       .toSQL();
@@ -916,10 +937,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding decimal', function() {
+  it('test adding decimal', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.decimal('foo', 2, 6);
       })
       .toSQL();
@@ -930,10 +951,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('test adding multiple columns, #1348', function() {
+  it('test adding multiple columns, #1348', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function() {
+      .table('users', function () {
         this.integer('foo');
         this.integer('baa');
       })
@@ -945,10 +966,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('is possible to set raw statements in defaultTo, #146', function() {
+  it('is possible to set raw statements in defaultTo, #146', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('default_raw_test', function(t) {
+      .createTable('default_raw_test', function (t) {
         t.timestamp('created_at').defaultTo(client.raw('GETDATE()'));
       })
       .toSQL();
@@ -959,10 +980,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('allows dropping a unique compound index', function() {
+  it('allows dropping a unique compound index', function () {
     tableSql = client
       .schemaBuilder()
-      .table('composite_key_test', function(t) {
+      .table('composite_key_test', function (t) {
         t.dropUnique(['column_a', 'column_b']);
       })
       .toSQL();
@@ -973,10 +994,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('allows default as alias for defaultTo', function() {
+  it('allows default as alias for defaultTo', function () {
     tableSql = client
       .schemaBuilder()
-      .createTable('default_raw_test', function(t) {
+      .createTable('default_raw_test', function (t) {
         t.timestamp('created_at').default(client.raw('GETDATE()'));
       })
       .toSQL();
@@ -987,10 +1008,10 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {
+  it('#1430 - .primary & .dropPrimary takes columns and constraintName', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function(t) {
+      .table('users', function (t) {
         t.primary(['test1', 'test2'], 'testconstraintname');
       })
       .toSQL();
@@ -1000,7 +1021,7 @@ describe('MSSQL SchemaBuilder', function() {
 
     tableSql = client
       .schemaBuilder()
-      .createTable('users', function(t) {
+      .createTable('users', function (t) {
         t.string('test').primary('testconstraintname');
       })
       .toSQL();
@@ -1010,32 +1031,32 @@ describe('MSSQL SchemaBuilder', function() {
     );
   });
 
-  describe('queryContext', function() {
+  describe('queryContext', function () {
     let spy;
     let originalWrapIdentifier;
 
-    before(function() {
+    before(function () {
       spy = sinon.spy();
       originalWrapIdentifier = client.config.wrapIdentifier;
-      client.config.wrapIdentifier = function(value, wrap, queryContext) {
+      client.config.wrapIdentifier = function (value, wrap, queryContext) {
         spy(value, queryContext);
         return wrap(value);
       };
     });
 
-    beforeEach(function() {
+    beforeEach(function () {
       spy.resetHistory();
     });
 
-    after(function() {
+    after(function () {
       client.config.wrapIdentifier = originalWrapIdentifier;
     });
 
-    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function() {
+    it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('table context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id');
           table.string('email');
         })
@@ -1047,10 +1068,10 @@ describe('MSSQL SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
 
-    it('TableCompiler passes queryContext to wrapIdentifier', function() {
+    it('TableCompiler passes queryContext to wrapIdentifier', function () {
       client
         .schemaBuilder()
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');
         })
@@ -1062,11 +1083,11 @@ describe('MSSQL SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
     });
 
-    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function() {
+    it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('schema context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.queryContext('table context');
           table.increments('id');
           table.string('email');
@@ -1079,11 +1100,11 @@ describe('MSSQL SchemaBuilder', function() {
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
     });
 
-    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function() {
+    it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
       client
         .schemaBuilder()
         .queryContext('schema context')
-        .createTable('users', function(table) {
+        .createTable('users', function (table) {
           table.queryContext('table context');
           table.increments('id').queryContext('id context');
           table.string('email').queryContext('email context');
