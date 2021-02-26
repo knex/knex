@@ -473,7 +473,7 @@ module.exports = (knex) => {
               'create index "test_table_one_logins_index" on "test_table_one" ("logins")',
             ]);
             tester('mssql', [
-              "CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int default '1', [balance] float default '0', [about] nvarchar(max), [created_at] datetime2, [updated_at] datetime2)",
+              "CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int CONSTRAINT [test_table_one_logins_default] DEFAULT '1', [balance] float CONSTRAINT [test_table_one_balance_default] DEFAULT '0', [about] nvarchar(max), [created_at] datetime2, [updated_at] datetime2)",
               'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
               'CREATE UNIQUE INDEX [test_table_one_email_unique] ON [test_table_one] ([email]) WHERE [email] IS NOT NULL',
               'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])',
@@ -539,7 +539,7 @@ module.exports = (knex) => {
               'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
             ]);
             tester('mssql', [
-              "CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) default 'Lorem ipsum Qui quis qui in.', [metadata] nvarchar(max) default '{\"a\":10}', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))",
+              "CREATE TABLE [test_table_three] ([main] int not null, [paragraph] nvarchar(max) CONSTRAINT [test_table_three_paragraph_default] DEFAULT 'Lorem ipsum Qui quis qui in.', [metadata] nvarchar(max) CONSTRAINT [test_table_three_metadata_default] DEFAULT '{\"a\":10}', CONSTRAINT [test_table_three_pkey] PRIMARY KEY ([main]))",
             ]);
           })
           .then(() =>
@@ -827,7 +827,7 @@ module.exports = (knex) => {
               "create table \"bool_test\" (\"one\" number(1, 0) check (\"one\" in ('0', '1')), \"two\" number(1, 0) default '0' check (\"two\" in ('0', '1')), \"three\" number(1, 0) default '1' check (\"three\" in ('0', '1')), \"four\" number(1, 0) default '1' check (\"four\" in ('0', '1')), \"five\" number(1, 0) default '0' check (\"five\" in ('0', '1')))",
             ]);
             tester('mssql', [
-              "CREATE TABLE [bool_test] ([one] bit, [two] bit default '0', [three] bit default '1', [four] bit default '1', [five] bit default '0')",
+              "CREATE TABLE [bool_test] ([one] bit, [two] bit CONSTRAINT [bool_test_two_default] DEFAULT '0', [three] bit CONSTRAINT [bool_test_three_default] DEFAULT '1', [four] bit CONSTRAINT [bool_test_four_default] DEFAULT '1', [five] bit CONSTRAINT [bool_test_five_default] DEFAULT '0')",
             ]);
           })
           .then(() => knex.insert({ one: false }).into('bool_test')));
