@@ -218,6 +218,20 @@ describe('Schema', () => {
             });
           });
 
+          describe('alterColumns', () => {
+            it('recreates indices after altering a column', async () => {
+              const indicesBefore = await knex.raw(QUERY_TABLE_ONE_INDICES);
+
+              await knex.schema.alterTable('index_table_one', (table) => {
+                table.string('column_one').alter();
+              });
+
+              const indicesAfter = await knex.raw(QUERY_TABLE_ONE_INDICES);
+
+              expect(indicesAfter).to.deep.have.same.members(indicesBefore);
+            });
+          });
+
           describe('dropForeign', () => {
             it('recreates indices after dropping a foreign key', async () => {
               const indicesBefore = await knex.raw(QUERY_TABLE_ONE_INDICES);

@@ -1,0 +1,144 @@
+const { expect } = require('chai');
+const sinon = require('sinon');
+const {
+  Db,
+  getAllDbs,
+  getKnexForDb,
+} = require('../util/knex-instance-provider');
+
+const QUERY_TABLE =
+  'SELECT sql FROM sqlite_master WHERE type="table" AND tbl_name="alter_table"';
+
+describe('Schema', () => {
+  describe('Alter', () => {
+    getAllDbs()
+      .filter((db) => db === Db.SQLite)
+      .forEach((db) => {
+        describe(db, () => {
+          let knex;
+          before(() => {
+            sinon.stub(Math, 'random').returns(0.1);
+            knex = getKnexForDb(db);
+          });
+
+          after(() => {
+            sinon.restore();
+            return knex.destroy();
+          });
+
+          beforeEach(async () => {
+            await knex.schema.createTable('alter_table', (table) => {
+              table.integer('column_integer');
+              table.string('column_string');
+              table.dateTime('column_datetime');
+
+              table.integer('column_defaultTo').defaultTo(0);
+              table.string('column_notNullable').notNullable();
+              table
+                .dateTime('column_defaultToAndNotNullable')
+                .defaultTo(0)
+                .notNullable();
+            });
+
+            await knex('alter_table').insert({
+              column_integer: 1,
+              column_string: '1',
+              column_datetime: 1614349736,
+              column_notNullable: 'text',
+            });
+          });
+
+          afterEach(async () => {
+            await knex.schema.dropTable('alter_table');
+          });
+
+          describe('alterColumns', () => {
+            it('alters the type of columns', async () => {
+              await knex.schema.alterTable('alter_table', (table) => {
+                table.string('column_integer').alter();
+                table.integer('column_string').alter();
+                table.date('column_datetime').alter();
+              });
+
+              const item_one = (await knex('alter_table'))[0];
+              const tableAfter = (await knex.raw(QUERY_TABLE))[0].sql;
+
+              expect(item_one.column_integer).to.be.a('string');
+              expect(item_one.column_string).to.be.a('number');
+              expect(item_one.column_datetime).to.be.a('number');
+              expect(tableAfter).to.equal(
+                "CREATE TABLE \"alter_table\" (`column_integer` varchar(255), `column_string` integer, `column_datetime` date, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0')"
+              );
+            });
+
+            it('adds default and not null constraints', async () => {
+              await knex.schema.alterTable('alter_table', (table) => {
+                table.integer('column_integer').defaultTo(0).alter();
+                table.string('column_string').notNullable().alter();
+                table
+                  .dateTime('column_datetime')
+                  .defaultTo(0)
+                  .notNullable()
+                  .alter();
+              });
+
+              await knex('alter_table').insert({
+                column_string: '1',
+                column_notNullable: 'text',
+              });
+
+              const item_two = (await knex('alter_table'))[1];
+              const tableAfter = (await knex.raw(QUERY_TABLE))[0].sql;
+
+              expect(item_two.column_integer).to.equal(0);
+              expect(item_two.column_datetime).to.equal(0);
+              expect(
+                knex('alter_table').insert({ column_notNullable: 'text' })
+              ).to.be.rejectedWith(
+                Error,
+                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT: NOT NULL constraint failed: alter_table.column_string"
+              );
+              expect(tableAfter).to.equal(
+                "CREATE TABLE \"alter_table\" (`column_integer` integer DEFAULT '0', `column_string` varchar(255) NOT NULL, `column_datetime` datetime NOT NULL DEFAULT '0', `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0')"
+              );
+            });
+
+            it('removes not specified default and not null constraints', async () => {
+              await knex.schema.alterTable('alter_table', (table) => {
+                table.integer('column_defaultTo').alter();
+                table.string('column_notNullable').alter();
+                table.dateTime('column_defaultToAndNotNullable').alter();
+              });
+
+              await knex('alter_table').insert({});
+
+              const item_two = (await knex('alter_table'))[1];
+              const tableAfter = (await knex.raw(QUERY_TABLE))[0].sql;
+
+              expect(item_two.column_defaultTo).to.be.null;
+              expect(item_two.column_notNullable).to.be.null;
+              expect(item_two.column_defaultToAndNotNullable).to.be.null;
+              expect(tableAfter).to.equal(
+                'CREATE TABLE "alter_table" (`column_integer` integer, `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer, `column_notNullable` varchar(255), `column_defaultToAndNotNullable` datetime)'
+              );
+            });
+
+            it('generates correct SQL commands when altering columns', async () => {
+              const builder = knex.schema.alterTable('alter_table', (table) => {
+                table.string('column_integer').alter();
+              });
+
+              const queries = await builder.generateDdlCommands();
+
+              expect(queries).to.deep.equal([
+                "CREATE TABLE `_knex_temp_alter111` (`column_integer` varchar(255), `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0')",
+                'INSERT INTO _knex_temp_alter111 SELECT * FROM alter_table;',
+                'DROP TABLE "alter_table"',
+                'ALTER TABLE "_knex_temp_alter111" RENAME TO "alter_table"',
+              ]);
+            });
+          });
+        });
+      });
+  });
+});

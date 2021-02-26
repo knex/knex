@@ -9,9 +9,11 @@ const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 const client = new SQLite3_Client({ client: 'sqlite3' });
 const SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 const {
+  parseCreateTable,
   parseCreateIndex,
 } = require('../../../lib/dialects/sqlite3/schema/internal/parser');
 const {
+  compileCreateTable,
   compileCreateIndex,
 } = require('../../../lib/dialects/sqlite3/schema/internal/compiler');
 
@@ -79,20 +81,6 @@ describe('SQLite SchemaBuilder', function () {
       'alter table `users` add column `email` varchar(255)',
     ];
     expect(expected).to.eql(_.map(tableSql, 'sql'));
-  });
-
-  it('alter column not supported', function () {
-    try {
-      tableSql = client
-        .schemaBuilder()
-        .alterTable('users', function (table) {
-          table.string('email').notNull().alter();
-        })
-        .toSQL();
-      expect(false).to.eql('Should have thrown an error');
-    } catch (err) {
-      expect(err.message).to.eql('Sqlite does not support alter column.');
-    }
   });
 
   it('drop table', function () {
@@ -856,6 +844,2952 @@ describe('SQLite SchemaBuilder', function () {
 describe('SQLite parser and compiler', function () {
   const wrap = (v) => `"${v}"`;
 
+  describe('create table', function () {
+    it('basic', function () {
+      const sql = 'CREATE TABLE "users" ("foo")';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('temporary', function () {
+      const sql = 'CREATE TEMP TABLE "users" ("foo")';
+      const ast = {
+        temporary: true,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('if not exists', function () {
+      const sql = 'CREATE TABLE IF NOT EXISTS "users" ("foo")';
+      const ast = {
+        temporary: false,
+        exists: true,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('schema', function () {
+      const sql = 'CREATE TABLE "schema"."users" ("foo")';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: 'schema',
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('rowid', function () {
+      const sql = 'CREATE TABLE "users" ("foo") WITHOUT ROWID';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: true,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition type', function () {
+      const sql = 'CREATE TABLE "users" ("foo" INTEGER)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: 'INTEGER',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition type one parameter', function () {
+      const sql = 'CREATE TABLE "users" ("foo" VARYING CHARACTER(255))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: 'VARYING CHARACTER(255)',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition type two parameters', function () {
+      const sql = 'CREATE TABLE "users" ("foo" DECIMAL(+10, -5))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: 'DECIMAL(+10, -5)',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition multiple type', function () {
+      const sql = 'CREATE TABLE "users" ("foo" FLOAT, "bar" DECIMAL(4, 2))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: 'FLOAT',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'bar',
+            type: 'DECIMAL(4, 2)',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition primary key', function () {
+      const sql = 'CREATE TABLE "users" ("foo" PRIMARY KEY)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: {
+                name: null,
+                order: null,
+                conflict: null,
+                autoincrement: false,
+              },
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition primary key order', function () {
+      const sql = 'CREATE TABLE "users" ("foo" PRIMARY KEY ASC)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: {
+                name: null,
+                order: 'ASC',
+                conflict: null,
+                autoincrement: false,
+              },
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition primary key conflict', function () {
+      const sql = 'CREATE TABLE "users" ("foo" PRIMARY KEY ON CONFLICT ABORT)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: {
+                name: null,
+                order: null,
+                conflict: 'ABORT',
+                autoincrement: false,
+              },
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition primary key autoincrement', function () {
+      const sql = 'CREATE TABLE "users" ("foo" PRIMARY KEY AUTOINCREMENT)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: {
+                name: null,
+                order: null,
+                conflict: null,
+                autoincrement: true,
+              },
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition primary key all', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" PRIMARY KEY DESC ON CONFLICT FAIL AUTOINCREMENT)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: {
+                name: null,
+                order: 'DESC',
+                conflict: 'FAIL',
+                autoincrement: true,
+              },
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition not null', function () {
+      const sql = 'CREATE TABLE "users" ("foo" NOT NULL)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: {
+                name: null,
+                conflict: null,
+              },
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition not null conflict', function () {
+      const sql = 'CREATE TABLE "users" ("foo" NOT NULL ON CONFLICT IGNORE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: {
+                name: null,
+                conflict: 'IGNORE',
+              },
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition unique', function () {
+      const sql = 'CREATE TABLE "users" ("foo" UNIQUE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: {
+                name: null,
+                conflict: null,
+              },
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition unique conflict', function () {
+      const sql = 'CREATE TABLE "users" ("foo" UNIQUE ON CONFLICT REPLACE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: {
+                name: null,
+                conflict: 'REPLACE',
+              },
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition check', function () {
+      const sql = 'CREATE TABLE "users" ("foo" CHECK ("foo" != 42))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: {
+                name: null,
+                expression: ['"foo"', '!=', '42'],
+              },
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition default', function () {
+      const sql = `CREATE TABLE "users" ("foo" DEFAULT 'bar')`;
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: {
+                name: null,
+                value: `'bar'`,
+                expression: false,
+              },
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition default signed number', function () {
+      const sql = 'CREATE TABLE "users" ("foo" DEFAULT -42)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: {
+                name: null,
+                value: '-42',
+                expression: false,
+              },
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition default expression', function () {
+      const sql = 'CREATE TABLE "users" ("foo" DEFAULT (random()))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: {
+                name: null,
+                value: ['random', []],
+                expression: true,
+              },
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition collate', function () {
+      const sql = 'CREATE TABLE "users" ("foo" COLLATE RTRIM)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: {
+                name: null,
+                collation: 'RTRIM',
+              },
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references', function () {
+      const sql = 'CREATE TABLE "users" ("foo" REFERENCES "other")';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: [],
+                delete: null,
+                update: null,
+                match: null,
+                deferrable: null,
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references referenced column', function () {
+      const sql = 'CREATE TABLE "users" ("foo" REFERENCES "other" ("bar"))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: ['bar'],
+                delete: null,
+                update: null,
+                match: null,
+                deferrable: null,
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references multiple columns', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" REFERENCES "other" ("bar", "lar"))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: ['bar', 'lar'],
+                delete: null,
+                update: null,
+                match: null,
+                deferrable: null,
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references on delete', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" REFERENCES "other" ON DELETE SET NULL)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: [],
+                delete: 'SET NULL',
+                update: null,
+                match: null,
+                deferrable: null,
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references on update', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" REFERENCES "other" ON UPDATE CASCADE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: [],
+                delete: null,
+                update: 'CASCADE',
+                match: null,
+                deferrable: null,
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references match', function () {
+      const sql = 'CREATE TABLE "users" ("foo" REFERENCES "other" MATCH FULL)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: [],
+                delete: null,
+                update: null,
+                match: 'FULL',
+                deferrable: null,
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references deferrable', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" REFERENCES "other" NOT DEFERRABLE INITIALLY DEFERRED)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: [],
+                delete: null,
+                update: null,
+                match: null,
+                deferrable: {
+                  not: true,
+                  initially: 'DEFERRED',
+                },
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition references all', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" REFERENCES "other" ("bar") ON DELETE RESTRICT ON UPDATE NO ACTION MATCH PARTIAL DEFERRABLE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: ['bar'],
+                delete: 'RESTRICT',
+                update: 'NO ACTION',
+                match: 'PARTIAL',
+                deferrable: {
+                  not: false,
+                  initially: null,
+                },
+              },
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition as', function () {
+      const sql = 'CREATE TABLE "users" ("foo" AS (count(*)))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: {
+                name: null,
+                generated: false,
+                expression: ['count', ['*']],
+                mode: null,
+              },
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition as generated always', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" GENERATED ALWAYS AS (length(foo)))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: {
+                name: null,
+                generated: true,
+                expression: ['length', ['foo']],
+                mode: null,
+              },
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition as mode', function () {
+      const sql = 'CREATE TABLE "users" ("foo" AS (length(foo)) VIRTUAL)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: {
+                name: null,
+                generated: false,
+                expression: ['length', ['foo']],
+                mode: 'VIRTUAL',
+              },
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition all', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" TEXT PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE CHECK ("foo" != 42) DEFAULT NULL COLLATE BINARY REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE GENERATED ALWAYS AS (count(*)) STORED)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: 'TEXT',
+            constraints: {
+              primary: {
+                name: null,
+                order: 'DESC',
+                conflict: 'ROLLBACK',
+                autoincrement: true,
+              },
+              not: {
+                name: null,
+                conflict: 'FAIL',
+              },
+              unique: {
+                name: null,
+                conflict: 'REPLACE',
+              },
+              check: {
+                name: null,
+                expression: ['"foo"', '!=', '42'],
+              },
+              default: {
+                name: null,
+                value: 'NULL',
+                expression: false,
+              },
+              collate: {
+                name: null,
+                collation: 'BINARY',
+              },
+              references: {
+                name: null,
+                table: 'other',
+                columns: ['baz', 'bar', 'lar'],
+                delete: null,
+                update: 'SET NULL',
+                match: 'SIMPLE',
+                deferrable: {
+                  not: true,
+                  initially: null,
+                },
+              },
+              as: {
+                name: null,
+                generated: true,
+                expression: ['count', ['*']],
+                mode: 'STORED',
+              },
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition named', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" UNSIGNED BIG INT CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT CONSTRAINT "not_constraint" NOT NULL ON CONFLICT FAIL CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE CONSTRAINT "check_constraint" CHECK ("foo" != 42) CONSTRAINT "default_constraint" DEFAULT NULL CONSTRAINT "collate_constraint" COLLATE BINARY CONSTRAINT "references_constraint" REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: 'UNSIGNED BIG INT',
+            constraints: {
+              primary: {
+                name: 'primary_constraint',
+                order: 'DESC',
+                conflict: 'ROLLBACK',
+                autoincrement: true,
+              },
+              not: {
+                name: 'not_constraint',
+                conflict: 'FAIL',
+              },
+              unique: {
+                name: 'unique_constraint',
+                conflict: 'REPLACE',
+              },
+              check: {
+                name: 'check_constraint',
+                expression: ['"foo"', '!=', '42'],
+              },
+              default: {
+                name: 'default_constraint',
+                value: 'NULL',
+                expression: false,
+              },
+              collate: {
+                name: 'collate_constraint',
+                collation: 'BINARY',
+              },
+              references: {
+                name: 'references_constraint',
+                table: 'other',
+                columns: ['baz', 'bar', 'lar'],
+                delete: null,
+                update: 'SET NULL',
+                match: 'SIMPLE',
+                deferrable: {
+                  not: true,
+                  initially: null,
+                },
+              },
+              as: {
+                name: 'as_constraint',
+                generated: true,
+                expression: ['count', ['*']],
+                mode: 'STORED',
+              },
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition multiple', function () {
+      const sql =
+        'CREATE TABLE "users" ("primary_column" BLOB CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "not_column" DOUBLE PRECISION NOT NULL ON CONFLICT FAIL, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" INT8 DEFAULT NULL, "collate_column" CONSTRAINT "collate_constraint" COLLATE BINARY, "references_column" NUMERIC REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'primary_column',
+            type: 'BLOB',
+            constraints: {
+              primary: {
+                name: 'primary_constraint',
+                order: 'DESC',
+                conflict: 'ROLLBACK',
+                autoincrement: true,
+              },
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'not_column',
+            type: 'DOUBLE PRECISION',
+            constraints: {
+              primary: null,
+              not: {
+                name: null,
+                conflict: 'FAIL',
+              },
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'unique_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: {
+                name: 'unique_constraint',
+                conflict: 'REPLACE',
+              },
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'check_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: {
+                name: null,
+                expression: ['"foo"', '!=', '42'],
+              },
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'default_column',
+            type: 'INT8',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: {
+                name: null,
+                value: 'NULL',
+                expression: false,
+              },
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'collate_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: {
+                name: 'collate_constraint',
+                collation: 'BINARY',
+              },
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'references_column',
+            type: 'NUMERIC',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: ['baz', 'bar', 'lar'],
+                delete: null,
+                update: 'SET NULL',
+                match: 'SIMPLE',
+                deferrable: {
+                  not: true,
+                  initially: null,
+                },
+              },
+              as: null,
+            },
+          },
+          {
+            name: 'as_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: {
+                name: 'as_constraint',
+                generated: true,
+                expression: ['count', ['*']],
+                mode: 'STORED',
+              },
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint primary key', function () {
+      const sql = 'CREATE TABLE "users" ("foo", PRIMARY KEY ("foo"))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'PRIMARY KEY',
+            name: null,
+            columns: [
+              {
+                name: 'foo',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+            ],
+            conflict: null,
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint primary key conflict', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", PRIMARY KEY ("foo") ON CONFLICT ROLLBACK)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'PRIMARY KEY',
+            name: null,
+            columns: [
+              {
+                name: 'foo',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+            ],
+            conflict: 'ROLLBACK',
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint primary key column collation and order', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", PRIMARY KEY ("foo", "baz" COLLATE BINARY, "bar" ASC, "lar" COLLATE NOCASE DESC))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'PRIMARY KEY',
+            name: null,
+            columns: [
+              {
+                name: 'foo',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+              {
+                name: 'baz',
+                expression: false,
+                collation: 'BINARY',
+                order: null,
+              },
+              {
+                name: 'bar',
+                expression: false,
+                collation: null,
+                order: 'ASC',
+              },
+              {
+                name: 'lar',
+                expression: false,
+                collation: 'NOCASE',
+                order: 'DESC',
+              },
+            ],
+            conflict: null,
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint primary key column expression', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", PRIMARY KEY (abs(foo), random() COLLATE RTRIM, baz + bar ASC))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'PRIMARY KEY',
+            name: null,
+            columns: [
+              {
+                name: ['abs', ['foo']],
+                expression: true,
+                collation: null,
+                order: null,
+              },
+              {
+                name: ['random', []],
+                expression: true,
+                collation: 'RTRIM',
+                order: null,
+              },
+              {
+                name: ['baz', '+', 'bar'],
+                expression: true,
+                collation: null,
+                order: 'ASC',
+              },
+            ],
+            conflict: null,
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint unique', function () {
+      const sql = 'CREATE TABLE "users" ("foo", UNIQUE ("foo"))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'UNIQUE',
+            name: null,
+            columns: [
+              {
+                name: 'foo',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+            ],
+            conflict: null,
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint check', function () {
+      const sql = 'CREATE TABLE "users" ("foo", CHECK ("foo" IS NULL))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'CHECK',
+            name: null,
+            expression: ['"foo"', 'IS', 'NULL'],
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo") REFERENCES "other")';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo'],
+            references: {
+              table: 'other',
+              columns: [],
+              delete: null,
+              update: null,
+              match: null,
+              deferrable: null,
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key referenced column', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo") REFERENCES "other" ("bar"))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo'],
+            references: {
+              table: 'other',
+              columns: ['bar'],
+              delete: null,
+              update: null,
+              match: null,
+              deferrable: null,
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key multiple columns', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo", "baz") REFERENCES "other" ("bar", "lar"))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo', 'baz'],
+            references: {
+              table: 'other',
+              columns: ['bar', 'lar'],
+              delete: null,
+              update: null,
+              match: null,
+              deferrable: null,
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key on delete', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo") REFERENCES "other" ON DELETE SET NULL)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo'],
+            references: {
+              table: 'other',
+              columns: [],
+              delete: 'SET NULL',
+              update: null,
+              match: null,
+              deferrable: null,
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key on update', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo") REFERENCES "other" ON UPDATE CASCADE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo'],
+            references: {
+              table: 'other',
+              columns: [],
+              delete: null,
+              update: 'CASCADE',
+              match: null,
+              deferrable: null,
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key match', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo") REFERENCES "other" MATCH FULL)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo'],
+            references: {
+              table: 'other',
+              columns: [],
+              delete: null,
+              update: null,
+              match: 'FULL',
+              deferrable: null,
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key deferrable', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo") REFERENCES "other" NOT DEFERRABLE INITIALLY DEFERRED)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo'],
+            references: {
+              table: 'other',
+              columns: [],
+              delete: null,
+              update: null,
+              match: null,
+              deferrable: {
+                not: true,
+                initially: 'DEFERRED',
+              },
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint foreign key all', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", FOREIGN KEY ("foo") REFERENCES "other" ("bar") ON DELETE RESTRICT ON UPDATE NO ACTION MATCH PARTIAL DEFERRABLE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['foo'],
+            references: {
+              table: 'other',
+              columns: ['bar'],
+              delete: 'RESTRICT',
+              update: 'NO ACTION',
+              match: 'PARTIAL',
+              deferrable: {
+                not: false,
+                initially: null,
+              },
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint named', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", CONSTRAINT "primary_constraint" PRIMARY KEY ("foo"))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'PRIMARY KEY',
+            name: 'primary_constraint',
+            columns: [
+              {
+                name: 'foo',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+            ],
+            conflict: null,
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('table constraint multiple', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo", PRIMARY KEY ("foo", "baz" DESC) ON CONFLICT IGNORE, CHECK ("foo" IS NULL), CONSTRAINT "check_42" CHECK (count(foo) < 42 AND bar = 42), CONSTRAINT "unique_bar" UNIQUE ("bar"), FOREIGN KEY ("bar") REFERENCES "other" ("foo") ON DELETE SET DEFAULT ON UPDATE SET DEFAULT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT "foreign_other_multiple" FOREIGN KEY ("bar", "lar") REFERENCES "other" MATCH SIMPLE NOT DEFERRABLE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'PRIMARY KEY',
+            name: null,
+            columns: [
+              {
+                name: 'foo',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+              {
+                name: 'baz',
+                expression: false,
+                collation: null,
+                order: 'DESC',
+              },
+            ],
+            conflict: 'IGNORE',
+          },
+          {
+            type: 'CHECK',
+            name: null,
+            expression: ['"foo"', 'IS', 'NULL'],
+          },
+          {
+            type: 'CHECK',
+            name: 'check_42',
+            expression: ['count', ['foo'], '<', '42', 'AND', 'bar', '=', '42'],
+          },
+          {
+            type: 'UNIQUE',
+            name: 'unique_bar',
+            columns: [
+              {
+                name: 'bar',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+            ],
+            conflict: null,
+          },
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['bar'],
+            references: {
+              table: 'other',
+              columns: ['foo'],
+              delete: 'SET DEFAULT',
+              update: 'SET DEFAULT',
+              match: null,
+              deferrable: {
+                not: false,
+                initially: 'IMMEDIATE',
+              },
+            },
+          },
+          {
+            type: 'FOREIGN KEY',
+            name: 'foreign_other_multiple',
+            columns: ['bar', 'lar'],
+            references: {
+              table: 'other',
+              columns: [],
+              delete: null,
+              update: null,
+              match: 'SIMPLE',
+              deferrable: {
+                not: true,
+                initially: null,
+              },
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition multiple table constraint multiple', function () {
+      const sql =
+        'CREATE TABLE "users" ("primary_column" BLOB CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "not_column" DOUBLE PRECISION NOT NULL ON CONFLICT FAIL, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" TEXT DEFAULT NULL, "collate_column" CONSTRAINT "collate_constraint" COLLATE BINARY, "references_column" NUMERIC REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED, PRIMARY KEY ("foo", "baz" DESC) ON CONFLICT IGNORE, CHECK ("foo" IS NULL), CONSTRAINT "check_42" CHECK (count(foo) < 42 AND bar = 42), CONSTRAINT "unique_bar" UNIQUE ("bar"), FOREIGN KEY ("bar") REFERENCES "other" ("foo") ON DELETE SET DEFAULT ON UPDATE SET DEFAULT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT "foreign_other_multiple" FOREIGN KEY ("bar", "lar") REFERENCES "other" MATCH SIMPLE NOT DEFERRABLE)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'primary_column',
+            type: 'BLOB',
+            constraints: {
+              primary: {
+                name: 'primary_constraint',
+                order: 'DESC',
+                conflict: 'ROLLBACK',
+                autoincrement: true,
+              },
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'not_column',
+            type: 'DOUBLE PRECISION',
+            constraints: {
+              primary: null,
+              not: {
+                name: null,
+                conflict: 'FAIL',
+              },
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'unique_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: {
+                name: 'unique_constraint',
+                conflict: 'REPLACE',
+              },
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'check_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: {
+                name: null,
+                expression: ['"foo"', '!=', '42'],
+              },
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'default_column',
+            type: 'TEXT',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: {
+                name: null,
+                value: 'NULL',
+                expression: false,
+              },
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'collate_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: {
+                name: 'collate_constraint',
+                collation: 'BINARY',
+              },
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'references_column',
+            type: 'NUMERIC',
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: {
+                name: null,
+                table: 'other',
+                columns: ['baz', 'bar', 'lar'],
+                delete: null,
+                update: 'SET NULL',
+                match: 'SIMPLE',
+                deferrable: {
+                  not: true,
+                  initially: null,
+                },
+              },
+              as: null,
+            },
+          },
+          {
+            name: 'as_column',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: {
+                name: 'as_constraint',
+                generated: true,
+                expression: ['count', ['*']],
+                mode: 'STORED',
+              },
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'PRIMARY KEY',
+            name: null,
+            columns: [
+              {
+                name: 'foo',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+              {
+                name: 'baz',
+                expression: false,
+                collation: null,
+                order: 'DESC',
+              },
+            ],
+            conflict: 'IGNORE',
+          },
+          {
+            type: 'CHECK',
+            name: null,
+            expression: ['"foo"', 'IS', 'NULL'],
+          },
+          {
+            type: 'CHECK',
+            name: 'check_42',
+            expression: ['count', ['foo'], '<', '42', 'AND', 'bar', '=', '42'],
+          },
+          {
+            type: 'UNIQUE',
+            name: 'unique_bar',
+            columns: [
+              {
+                name: 'bar',
+                expression: false,
+                collation: null,
+                order: null,
+              },
+            ],
+            conflict: null,
+          },
+          {
+            type: 'FOREIGN KEY',
+            name: null,
+            columns: ['bar'],
+            references: {
+              table: 'other',
+              columns: ['foo'],
+              delete: 'SET DEFAULT',
+              update: 'SET DEFAULT',
+              match: null,
+              deferrable: {
+                not: false,
+                initially: 'IMMEDIATE',
+              },
+            },
+          },
+          {
+            type: 'FOREIGN KEY',
+            name: 'foreign_other_multiple',
+            columns: ['bar', 'lar'],
+            references: {
+              table: 'other',
+              columns: [],
+              delete: null,
+              update: null,
+              match: 'SIMPLE',
+              deferrable: {
+                not: true,
+                initially: null,
+              },
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('special character identifier', function () {
+      const sql =
+        'CREATE TABLE "$chem@"."users  table" (" ( ", "[`""foo""`]", " INTEGER ", " PRIMARY KEY ", " ) WITHOUT ROWID")';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: '$chem@',
+        table: 'users  table',
+        columns: [
+          {
+            name: ' ( ',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: '[`""foo""`]',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: ' INTEGER ',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: ' PRIMARY KEY ',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: ' ) WITHOUT ROWID',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('no wrap', function () {
+      const sql =
+        'CREATE TABLE users (note, foo, CONSTRAINT foreign_constraint FOREIGN KEY (note, foo) REFERENCES other (baz, bar))';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'note',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              not: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [
+          {
+            type: 'FOREIGN KEY',
+            name: 'foreign_constraint',
+            columns: ['note', 'foo'],
+            references: {
+              table: 'other',
+              columns: ['baz', 'bar'],
+              delete: null,
+              update: null,
+              match: null,
+              deferrable: null,
+            },
+          },
+        ],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('ordering', function () {
+      const sql =
+        'CREATE TABLE "users" ("foo" TEXT REFERENCES "other" ("baz", "bar", "lar") MATCH PARTIAL ON UPDATE NO ACTION ON DELETE RESTRICT DEFERRABLE CHECK ("foo" != 42) GENERATED ALWAYS AS (count(*)) STORED UNIQUE ON CONFLICT REPLACE NOT NULL ON CONFLICT FAIL PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT DEFAULT NULL COLLATE BINARY)';
+      const newSql =
+        'CREATE TABLE "users" ("foo" TEXT PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE CHECK ("foo" != 42) DEFAULT NULL COLLATE BINARY REFERENCES "other" ("baz", "bar", "lar") ON DELETE RESTRICT ON UPDATE NO ACTION MATCH PARTIAL DEFERRABLE GENERATED ALWAYS AS (count(*)) STORED)';
+
+      const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
+
+      expect(parsedSql).to.equal(newSql);
+    });
+
+    it('lowercase', function () {
+      const sql =
+        'create table "users" ("primary_column" blob constraint "primary_constraint" primary key desc on conflict rollback autoincrement, "not_column" double precision not null on conflict fail, "unique_column" constraint "unique_constraint" unique on conflict replace, "check_column" check ("foo" != 42), "default_column" text default null, "collate_column" constraint "collate_constraint" collate binary, "references_column" numeric references "other" ("baz", "bar", "lar") on update set null match simple not deferrable, "as_column" constraint "as_constraint" generated always as (count(*)) stored, primary key ("foo", "baz" desc) on conflict ignore, check ("foo" is null), constraint "check_42" check (count(foo) < 42 AND bar = 42), constraint "unique_bar" unique ("bar"), foreign key ("bar") references "other" ("foo") on delete set default on update set default deferrable initially immediate, constraint "foreign_other_multiple" foreign key ("bar", "lar") references "other" match simple not deferrable)';
+      const newSql =
+        'CREATE TABLE "users" ("primary_column" blob CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "not_column" double precision NOT NULL ON CONFLICT FAIL, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" text DEFAULT null, "collate_column" CONSTRAINT "collate_constraint" COLLATE binary, "references_column" numeric REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH simple NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED, PRIMARY KEY ("foo", "baz" DESC) ON CONFLICT IGNORE, CHECK ("foo" is null), CONSTRAINT "check_42" CHECK (count(foo) < 42 AND bar = 42), CONSTRAINT "unique_bar" UNIQUE ("bar"), FOREIGN KEY ("bar") REFERENCES "other" ("foo") ON DELETE SET DEFAULT ON UPDATE SET DEFAULT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT "foreign_other_multiple" FOREIGN KEY ("bar", "lar") REFERENCES "other" MATCH simple NOT DEFERRABLE)';
+
+      const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
+
+      expect(parsedSql).to.equal(newSql);
+    });
+
+    it('whitespaces', function () {
+      const sql =
+        'CREATE  TABLE   "users  table"("foo",\t"bar"CHECK("foo"\n!=\t42),    CONSTRAINT\r\n"foreign_constraint" \t FOREIGN \n KEY("foo","bar")REFERENCES \r\n "other"("baz","bar"))';
+      const newSql =
+        'CREATE TABLE "users  table" ("foo", "bar" CHECK ("foo" != 42), CONSTRAINT "foreign_constraint" FOREIGN KEY ("foo", "bar") REFERENCES "other" ("baz", "bar"))';
+
+      const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
+
+      expect(parsedSql).to.equal(newSql);
+    });
+
+    it('wrap', function () {
+      const sql =
+        'CREATE TABLE "schema".users (`foo`, [bar], CONSTRAINT [foreign_constraint] FOREIGN KEY (foo, `bar`) REFERENCES other ([baz], "bar"))';
+      const newSql =
+        'CREATE TABLE "schema"."users" ("foo", "bar", CONSTRAINT "foreign_constraint" FOREIGN KEY ("foo", "bar") REFERENCES "other" ("baz", "bar"))';
+
+      const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
+
+      expect(parsedSql).to.equal(newSql);
+    });
+  });
+
   describe('create index', function () {
     it('basic', function () {
       const sql = 'CREATE INDEX "users_index" on "users" ("foo")';
@@ -943,7 +3877,7 @@ describe('SQLite parser and compiler', function () {
 
     it('where', function () {
       const sql =
-        'CREATE INDEX "users_index" on "users" ("foo") where foo IS NOT NULL AND bar=42';
+        'CREATE INDEX "users_index" on "users" ("foo") where foo IS NOT NULL AND bar = 42';
       const ast = {
         unique: false,
         exists: false,
@@ -953,7 +3887,7 @@ describe('SQLite parser and compiler', function () {
         columns: [
           { name: 'foo', expression: false, collation: null, order: null },
         ],
-        where: 'foo IS NOT NULL AND bar=42',
+        where: ['foo', 'IS', 'NOT', 'NULL', 'AND', 'bar', '=', '42'],
       };
 
       const parsed = parseCreateIndex(sql);
@@ -1010,7 +3944,7 @@ describe('SQLite parser and compiler', function () {
 
     it('column expression', function () {
       const sql =
-        'CREATE INDEX "users_index" on "users" (abs(foo), lower(baz) COLLATE RTRIM, "bar()" ASC)';
+        'CREATE INDEX "users_index" on "users" (abs(foo), random() COLLATE RTRIM, baz + bar ASC)';
       const ast = {
         unique: false,
         exists: false,
@@ -1019,20 +3953,20 @@ describe('SQLite parser and compiler', function () {
         table: 'users',
         columns: [
           {
-            name: 'abs(foo)',
+            name: ['abs', ['foo']],
             expression: true,
             collation: null,
             order: null,
           },
           {
-            name: 'lower(baz)',
+            name: ['random', []],
             expression: true,
             collation: 'RTRIM',
             order: null,
           },
           {
-            name: 'bar()',
-            expression: false,
+            name: ['baz', '+', 'bar'],
+            expression: true,
             collation: null,
             order: 'ASC',
           },
@@ -1049,12 +3983,12 @@ describe('SQLite parser and compiler', function () {
 
     it('special character identifier', function () {
       const sql =
-        'CREATE INDEX "$chema"."users index" on "use-rs" (" ( ", " COLLATE ", " ""foo"" " ASC, "``b a z``" DESC, "[[``""bar""``]]") where foo IS NOT NULL';
+        'CREATE INDEX "$chema"."users  index" on "use-rs" (" ( ", " COLLATE ", " ""foo"" " ASC, "``b a z``" DESC, "[[``""bar""``]]") where foo IS NOT NULL';
       const ast = {
         unique: false,
         exists: false,
         schema: '$chema',
-        index: 'users index',
+        index: 'users  index',
         table: 'use-rs',
         columns: [
           {
@@ -1088,7 +4022,7 @@ describe('SQLite parser and compiler', function () {
             order: null,
           },
         ],
-        where: 'foo IS NOT NULL',
+        where: ['foo', 'IS', 'NOT', 'NULL'],
       };
 
       const parsed = parseCreateIndex(sql);
@@ -1100,7 +4034,7 @@ describe('SQLite parser and compiler', function () {
 
     it('no wrap', function () {
       const sql =
-        'CREATE INDEX users_index on users (foo COLLATE BINARY ASC) where foo IS NOT NULL';
+        'CREATE INDEX users_index on users (note COLLATE BINARY ASC) where foo IS NOT NULL';
       const ast = {
         unique: false,
         exists: false,
@@ -1109,13 +4043,13 @@ describe('SQLite parser and compiler', function () {
         table: 'users',
         columns: [
           {
-            name: 'foo',
+            name: 'note',
             expression: false,
             collation: 'BINARY',
             order: 'ASC',
           },
         ],
-        where: 'foo IS NOT NULL',
+        where: ['foo', 'IS', 'NOT', 'NULL'],
       };
 
       const parsed = parseCreateIndex(sql);
@@ -1138,9 +4072,9 @@ describe('SQLite parser and compiler', function () {
 
     it('whitespaces', function () {
       const sql =
-        'CREATE  INDEX   "users_index"\non\t"users"("foo"    COLLATE\tBINARY\nASC)\r\nwhere     "foo"\nIS\tNOT\r\nNULL';
+        'CREATE  INDEX   "users  index"\non\t"users"("foo"    COLLATE\tBINARY\nASC)\r\nwhere     "foo"\n  IS\tNOT\r\nNULL';
       const newSql =
-        'CREATE INDEX "users_index" on "users" ("foo" COLLATE BINARY ASC) where "foo" IS NOT NULL';
+        'CREATE INDEX "users  index" on "users" ("foo" COLLATE BINARY ASC) where "foo" IS NOT NULL';
 
       const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
 
