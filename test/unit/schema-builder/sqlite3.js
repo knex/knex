@@ -83,20 +83,6 @@ describe('SQLite SchemaBuilder', function () {
     expect(expected).to.eql(_.map(tableSql, 'sql'));
   });
 
-  it('alter column not supported', function () {
-    try {
-      tableSql = client
-        .schemaBuilder()
-        .alterTable('users', function (table) {
-          table.string('email').notNull().alter();
-        })
-        .toSQL();
-      expect(false).to.eql('Should have thrown an error');
-    } catch (err) {
-      expect(err.message).to.eql('Sqlite does not support alter column.');
-    }
-  });
-
   it('drop table', function () {
     tableSql = client.schemaBuilder().dropTable('users').toSQL();
     equal(1, tableSql.length);
