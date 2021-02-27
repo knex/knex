@@ -719,9 +719,16 @@ export default [
   {
     type: "method",
     method: "defaultTo",
-    example: "column.defaultTo(value)",
+    example: "column.defaultTo(value, options={[constraintName: string = undefined]))",
     description: "Sets the default value for the column on an insert.",
-    children: [    ]
+    children: [{
+      type: 'text',
+      content: "In MSSQL a constraintName option may be passed to ensure a specific constraint name:"
+    }, {
+      type: 'code',
+      language: 'js',
+      content: `column.defaultTo('value', { constraintName: 'df_table_value' });`
+    }]
   },
   {
     type: "method",
