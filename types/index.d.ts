@@ -1833,7 +1833,7 @@ export declare namespace Knex {
     references(columnName: string): ReferencingColumnBuilder;
     onDelete(command: string): ColumnBuilder;
     onUpdate(command: string): ColumnBuilder;
-    defaultTo(value: Value | null): ColumnBuilder;
+    defaultTo(value: Value | null, options?: DefaultToOptions): ColumnBuilder;
     unsigned(): ColumnBuilder;
     notNullable(): ColumnBuilder;
     nullable(): ColumnBuilder;
@@ -2307,6 +2307,11 @@ interface MsSqlConnectionConfigBase {
     existingType?: boolean;
     schemaName?: string;
     enumName: string;
+  }
+
+  interface DefaultToOptions {
+    // only supported by mssql driver
+    constraintName?: string;
   }
 
   //
