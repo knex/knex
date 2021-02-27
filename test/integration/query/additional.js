@@ -869,7 +869,118 @@ module.exports = function (knex) {
         });
     });
 
-    it('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async function () {
+    it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query in transaction', function () {
+      const driverName = knex.client.driverName;
+      if (driverName === 'sqlite3') {
+        return this.skip();
+      } //TODO -- No built-in support for sleeps
+      if (/redshift/.test(driverName)) {
+        return this.skip();
+      }
+
+      // There's unexpected behavior caused by knex releasing a connection back
+      // to the pool because of a timeout when a long query is still running.
+      // A subsequent query will acquire the connection (still in-use) and hang
+      // until the first query finishes. Setting a sleep time longer than the
+      // mocha timeout exposes this behavior.
+      const testQueries = {
+        pg: function () {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        mysql: function () {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        mysql2: function () {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        mssql: function () {
+          return knex.raw("WAITFOR DELAY '00:00:10'");
+        },
+        oracledb: function () {
+          return knex.raw('begin dbms_lock.sleep(10); end;');
+        },
+      };
+
+      if (!Object.prototype.hasOwnProperty.call(testQueries, driverName)) {
+        throw new Error('Missing test query for driverName: ' + driverName);
+      }
+
+      const query = testQueries[driverName]();
+
+      function addTimeout() {
+        return query.timeout(200, { cancel: true });
+      }
+
+      // Only mysql/postgres query cancelling supported for now
+      if (
+        !_.startsWith(driverName, 'mysql') &&
+        !_.startsWith(driverName, 'pg')
+      ) {
+        expect(addTimeout).to.throw(
+          'Query cancelling not supported for this dialect'
+        );
+        return; // TODO: Use `this.skip()` here?
+      }
+
+      const getProcessesQueries = {
+        pg: function () {
+          return knex.raw('SELECT * from pg_stat_activity');
+        },
+        mysql: function () {
+          return knex.raw('SHOW PROCESSLIST');
+        },
+        mysql2: function () {
+          return knex.raw('SHOW PROCESSLIST');
+        },
+      };
+
+      if (
+        !Object.prototype.hasOwnProperty.call(getProcessesQueries, driverName)
+      ) {
+        throw new Error('Missing test query for driverName: ' + driverName);
+      }
+
+      const getProcessesQuery = getProcessesQueries[driverName]();
+
+      return knex.transaction((trx) => addTimeout().transacting(trx))
+        .then(function () {
+          expect(true).to.equal(false);
+        })
+        .catch(function (error) {
+          expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+            timeout: 200,
+            name: 'KnexTimeoutError',
+            message:
+              'Defined query timeout of 200ms exceeded when running query.',
+          });
+
+          // Ensure sleep command is removed.
+          // This query will hang if a connection gets released back to the pool
+          // too early.
+          // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
+          return delay(50)
+            .then(function () {
+              return getProcessesQuery;
+            })
+            .then(function (results) {
+              let processes;
+              let sleepProcess;
+
+              if (_.startsWith(driverName, 'pg')) {
+                processes = results.rows;
+                sleepProcess = _.find(processes, { query: query.toString() });
+              } else {
+                processes = results[0];
+                sleepProcess = _.find(processes, {
+                  Info: 'SELECT SLEEP(10)',
+                });
+              }
+              expect(sleepProcess).to.equal(undefined);
+            });
+        });
+    });
+
+    it.skip('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async function () {
       // Only mysql/postgres query cancelling supported for now
       if (!isMysql(knex) && !isPostgreSQL(knex)) {
         return this.skip();
