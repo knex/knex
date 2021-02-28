@@ -1,9 +1,9 @@
 const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
-async function fetchDefaultConstraintName(knex, table, column) {
+async function fetchDefaultConstraint(knex, table, column) {
   const [result] = await knex.schema.raw(`
-    SELECT default_constraints.name
+    SELECT default_constraints.name, default_constraints.definition
     FROM sys.all_columns
     INNER JOIN sys.tables
         ON all_columns.object_id = tables.object_id
@@ -15,7 +15,7 @@ async function fetchDefaultConstraintName(knex, table, column) {
       AND tables.name = '${table}'
       AND all_columns.name = '${column}'
   `);
-  return result ? result.name : null;
+  return result || { name: null, definition: null };
 }
 
 describe('MSSQL dialect', () => {
@@ -43,41 +43,48 @@ describe('MSSQL dialect', () => {
             await knex.schema.dropTable('test');
           });
 
+          describe('changing default value', () => {
+            beforeEach(async () => {
+              await knex.schema.alterTable('test', function () {
+                this.string('name').defaultTo('test');
+              });
+            });
+            it('can change the default value', async () => {
+              await knex.schema.alterTable('test', function () {
+                this.string('name').defaultTo('test2').alter();
+              });
+              const { definition } = await fetchDefaultConstraint(
+                knex,
+                'test',
+                'name'
+              );
+              expect(definition).to.equal("('test2')");
+            });
+          });
+
           it('names default constraint', async () => {
             await knex.schema.alterTable('test', function () {
               this.string('name').defaultTo('knex');
             });
-            const result = await fetchDefaultConstraintName(
-              knex,
-              'test',
-              'name'
-            );
-            expect(result).to.equal('test_name_default');
+            const { name } = await fetchDefaultConstraint(knex, 'test', 'name');
+            expect(name).to.equal('test_name_default');
           });
           it('names default constraint with supplied name', async () => {
             const constraintName = 'DF_test_name';
             await knex.schema.alterTable('test', function () {
               this.string('name').defaultTo('knex', { constraintName });
             });
-            const result = await fetchDefaultConstraintName(
-              knex,
-              'test',
-              'name'
-            );
-            expect(result).to.equal('DF_test_name');
+            const { name } = await fetchDefaultConstraint(knex, 'test', 'name');
+            expect(name).to.equal('DF_test_name');
           });
           it("doesn't name default constraint", async () => {
             const constraintName = '';
             await knex.schema.alterTable('test', function () {
               this.string('name').defaultTo('knex', { constraintName });
             });
-            const result = await fetchDefaultConstraintName(
-              knex,
-              'test',
-              'name'
-            );
+            const { name } = await fetchDefaultConstraint(knex, 'test', 'name');
             // this is the default patten used by mssql if no constraint is defined
-            expect(result).to.match(/^DF__test__name__[0-9A-Z]+$/);
+            expect(name).to.match(/^DF__test__name__[0-9A-Z]+$/);
           });
         });
       });
