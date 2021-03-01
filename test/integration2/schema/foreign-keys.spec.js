@@ -65,7 +65,7 @@ describe('Schema', () => {
             const queries = await builder.generateDdlCommands();
 
             if (isSQLite(knex)) {
-              expect(queries).to.eql([
+              expect(queries.sql).to.eql([
                 'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`))',
                 'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
                 'DROP TABLE "foreign_keys_table_one"',
@@ -74,7 +74,7 @@ describe('Schema', () => {
             }
 
             if (isPostgreSQL(knex)) {
-              expect(queries).to.eql([
+              expect(queries.sql).to.eql([
                 {
                   bindings: [],
                   sql:
@@ -102,7 +102,7 @@ describe('Schema', () => {
 
             const queries = await builder.generateDdlCommands();
 
-            expect(queries).to.eql([
+            expect(queries.sql).to.eql([
               'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`) ON DELETE CASCADE)',
               'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
               'DROP TABLE "foreign_keys_table_one"',
@@ -128,7 +128,7 @@ describe('Schema', () => {
 
             const queries = await builder.generateDdlCommands();
 
-            expect(queries).to.eql([
+            expect(queries.sql).to.eql([
               'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`) ON UPDATE CASCADE)',
               'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
               'DROP TABLE "foreign_keys_table_one"',

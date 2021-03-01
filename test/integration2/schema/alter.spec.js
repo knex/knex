@@ -130,7 +130,7 @@ describe('Schema', () => {
 
               const queries = await builder.generateDdlCommands();
 
-              expect(queries).to.deep.equal([
+              expect(queries.sql).to.deep.equal([
                 "CREATE TABLE `_knex_temp_alter111` (`column_integer` varchar(255), `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0')",
                 'INSERT INTO _knex_temp_alter111 SELECT * FROM alter_table;',
                 'DROP TABLE "alter_table"',

@@ -1671,7 +1671,7 @@ export declare namespace Knex {
     readonly [Symbol.toStringTag]: string;
   }
   interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys>, StringTagSupport {
-    generateDdlCommands(): Promise<string[]>;
+    generateDdlCommands(): Promise<{ pre: string[], sql: string[], post: string[] }>;
     toQuery(): string;
     options(options: Readonly<{ [key: string]: any }>): this;
     connection(connection: any): this;
