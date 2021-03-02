@@ -70,7 +70,7 @@ interface Boxed<T> {
 // If T can't be assigned to TBase fallback to an alternate type TAlt
 type IncompatibleToAlt<T, TBase, TAlt> = T extends TBase ? T : TAlt;
 
-type ArrayIfAlready<T1, T2> = T1 extends any[] ? T2[] : T2;
+type ArrayIfAlready<T1, T2> = AnyToUnknown<T1> extends any[] ? T2[] : T2;
 
 // Boxing is necessary to prevent distribution of conditional types:
 // https://lorefnon.tech/2019/05/02/using-boxing-to-prevent-distribution-of-conditional-types/
