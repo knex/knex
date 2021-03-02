@@ -95,7 +95,7 @@ describe('Schema', () => {
 
               expect(item_two.column_integer).to.equal(0);
               expect(item_two.column_datetime).to.equal(0);
-              expect(
+              await expect(
                 knex('alter_table').insert({ column_notNullable: 'text' })
               ).to.be.rejectedWith(
                 Error,
@@ -133,7 +133,7 @@ describe('Schema', () => {
 
               const tableAfter = (await knex.raw(QUERY_TABLE))[0].sql;
 
-              expect(
+              await expect(
                 knex('alter_table').insert({ column_notNullable: 'text' })
               ).to.be.rejectedWith(
                 Error,
