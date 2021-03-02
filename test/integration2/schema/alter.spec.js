@@ -38,6 +38,8 @@ describe('Schema', () => {
                 .dateTime('column_defaultToAndNotNullable')
                 .defaultTo(0)
                 .notNullable();
+
+              table.boolean('column_nullable').nullable();
             });
 
             await knex('alter_table').insert({
@@ -45,6 +47,7 @@ describe('Schema', () => {
               column_string: '1',
               column_datetime: 1614349736,
               column_notNullable: 'text',
+              column_nullable: true,
             });
           });
 
@@ -67,7 +70,7 @@ describe('Schema', () => {
               expect(item_one.column_string).to.be.a('number');
               expect(item_one.column_datetime).to.be.a('number');
               expect(tableAfter).to.equal(
-                "CREATE TABLE \"alter_table\" (`column_integer` varchar(255), `column_string` integer, `column_datetime` date, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0')"
+                "CREATE TABLE \"alter_table\" (`column_integer` varchar(255), `column_string` integer, `column_datetime` date, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NULL)"
               );
             });
 
@@ -92,14 +95,14 @@ describe('Schema', () => {
 
               expect(item_two.column_integer).to.equal(0);
               expect(item_two.column_datetime).to.equal(0);
-              expect(
+              await expect(
                 knex('alter_table').insert({ column_notNullable: 'text' })
               ).to.be.rejectedWith(
                 Error,
                 "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT: NOT NULL constraint failed: alter_table.column_string"
               );
               expect(tableAfter).to.equal(
-                "CREATE TABLE \"alter_table\" (`column_integer` integer DEFAULT '0', `column_string` varchar(255) NOT NULL, `column_datetime` datetime NOT NULL DEFAULT '0', `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0')"
+                "CREATE TABLE \"alter_table\" (`column_integer` integer DEFAULT '0', `column_string` varchar(255) NOT NULL, `column_datetime` datetime NOT NULL DEFAULT '0', `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NULL)"
               );
             });
 
@@ -119,7 +122,25 @@ describe('Schema', () => {
               expect(item_two.column_notNullable).to.be.null;
               expect(item_two.column_defaultToAndNotNullable).to.be.null;
               expect(tableAfter).to.equal(
-                'CREATE TABLE "alter_table" (`column_integer` integer, `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer, `column_notNullable` varchar(255), `column_defaultToAndNotNullable` datetime)'
+                'CREATE TABLE "alter_table" (`column_integer` integer, `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer, `column_notNullable` varchar(255), `column_defaultToAndNotNullable` datetime, `column_nullable` boolean NULL)'
+              );
+            });
+
+            it('removes an existing null constraint if a not null constraint is added to a column', async () => {
+              await knex.schema.alterTable('alter_table', (table) => {
+                table.boolean('column_nullable').notNullable().alter();
+              });
+
+              const tableAfter = (await knex.raw(QUERY_TABLE))[0].sql;
+
+              await expect(
+                knex('alter_table').insert({ column_notNullable: 'text' })
+              ).to.be.rejectedWith(
+                Error,
+                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT: NOT NULL constraint failed: alter_table.column_nullable"
+              );
+              expect(tableAfter).to.equal(
+                "CREATE TABLE \"alter_table\" (`column_integer` integer, `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NOT NULL)"
               );
             });
 
@@ -131,7 +152,7 @@ describe('Schema', () => {
               const queries = await builder.generateDdlCommands();
 
               expect(queries.sql).to.deep.equal([
-                "CREATE TABLE `_knex_temp_alter111` (`column_integer` varchar(255), `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0')",
+                "CREATE TABLE `_knex_temp_alter111` (`column_integer` varchar(255), `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NULL)",
                 'INSERT INTO _knex_temp_alter111 SELECT * FROM alter_table;',
                 'DROP TABLE "alter_table"',
                 'ALTER TABLE "_knex_temp_alter111" RENAME TO "alter_table"',

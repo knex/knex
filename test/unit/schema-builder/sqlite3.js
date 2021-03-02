@@ -858,7 +858,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -892,7 +893,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -926,7 +928,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -960,7 +963,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -994,7 +998,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1028,7 +1033,8 @@ describe('SQLite parser and compiler', function () {
             type: 'INTEGER',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1062,7 +1068,8 @@ describe('SQLite parser and compiler', function () {
             type: 'VARYING CHARACTER(255)',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1096,7 +1103,8 @@ describe('SQLite parser and compiler', function () {
             type: 'DECIMAL(+10, -5)',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1130,7 +1138,8 @@ describe('SQLite parser and compiler', function () {
             type: 'FLOAT',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1144,7 +1153,8 @@ describe('SQLite parser and compiler', function () {
             type: 'DECIMAL(4, 2)',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1183,7 +1193,8 @@ describe('SQLite parser and compiler', function () {
                 conflict: null,
                 autoincrement: false,
               },
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1222,7 +1233,8 @@ describe('SQLite parser and compiler', function () {
                 conflict: null,
                 autoincrement: false,
               },
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1261,7 +1273,8 @@ describe('SQLite parser and compiler', function () {
                 conflict: 'ABORT',
                 autoincrement: false,
               },
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1300,7 +1313,8 @@ describe('SQLite parser and compiler', function () {
                 conflict: null,
                 autoincrement: true,
               },
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1340,7 +1354,8 @@ describe('SQLite parser and compiler', function () {
                 conflict: 'FAIL',
                 autoincrement: true,
               },
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1374,10 +1389,11 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: {
+              notnull: {
                 name: null,
                 conflict: null,
               },
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1411,9 +1427,86 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: {
+              notnull: {
                 name: null,
                 conflict: 'IGNORE',
+              },
+              null: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition null', function () {
+      const sql = 'CREATE TABLE "users" ("foo" NULL)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              notnull: null,
+              null: {
+                name: null,
+                conflict: null,
+              },
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+        ],
+        constraints: [],
+        rowid: false,
+      };
+
+      const parsed = parseCreateTable(sql);
+      const compiled = compileCreateTable(ast, wrap);
+
+      expect(parsed).to.deep.equal(ast);
+      expect(compiled).to.equal(sql);
+    });
+
+    it('column definition null conflict', function () {
+      const sql = 'CREATE TABLE "users" ("foo" NULL ON CONFLICT ABORT)';
+      const ast = {
+        temporary: false,
+        exists: false,
+        schema: null,
+        table: 'users',
+        columns: [
+          {
+            name: 'foo',
+            type: null,
+            constraints: {
+              primary: null,
+              notnull: null,
+              null: {
+                name: null,
+                conflict: 'ABORT',
               },
               unique: null,
               check: null,
@@ -1448,7 +1541,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: {
                 name: null,
                 conflict: null,
@@ -1485,7 +1579,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: {
                 name: null,
                 conflict: 'REPLACE',
@@ -1522,7 +1617,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: {
                 name: null,
@@ -1559,7 +1655,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: {
@@ -1597,7 +1694,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: {
@@ -1635,7 +1733,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: {
@@ -1673,7 +1772,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1710,7 +1810,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1752,7 +1853,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1795,7 +1897,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1838,7 +1941,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1881,7 +1985,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1923,7 +2028,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -1966,7 +2072,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2012,7 +2119,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2057,7 +2165,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2097,7 +2206,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2136,7 +2246,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2164,7 +2275,7 @@ describe('SQLite parser and compiler', function () {
 
     it('column definition all', function () {
       const sql =
-        'CREATE TABLE "users" ("foo" TEXT PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE CHECK ("foo" != 42) DEFAULT NULL COLLATE BINARY REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE GENERATED ALWAYS AS (count(*)) STORED)';
+        'CREATE TABLE "users" ("foo" TEXT PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT NOT NULL ON CONFLICT FAIL NULL ON CONFLICT IGNORE UNIQUE ON CONFLICT REPLACE CHECK ("foo" != 42) DEFAULT NULL COLLATE BINARY REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE GENERATED ALWAYS AS (count(*)) STORED)';
       const ast = {
         temporary: false,
         exists: false,
@@ -2181,9 +2292,13 @@ describe('SQLite parser and compiler', function () {
                 conflict: 'ROLLBACK',
                 autoincrement: true,
               },
-              not: {
+              notnull: {
                 name: null,
                 conflict: 'FAIL',
+              },
+              null: {
+                name: null,
+                conflict: 'IGNORE',
               },
               unique: {
                 name: null,
@@ -2236,7 +2351,7 @@ describe('SQLite parser and compiler', function () {
 
     it('column definition named', function () {
       const sql =
-        'CREATE TABLE "users" ("foo" UNSIGNED BIG INT CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT CONSTRAINT "not_constraint" NOT NULL ON CONFLICT FAIL CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE CONSTRAINT "check_constraint" CHECK ("foo" != 42) CONSTRAINT "default_constraint" DEFAULT NULL CONSTRAINT "collate_constraint" COLLATE BINARY CONSTRAINT "references_constraint" REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED)';
+        'CREATE TABLE "users" ("foo" UNSIGNED BIG INT CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT CONSTRAINT "notnull_constraint" NOT NULL ON CONFLICT FAIL CONSTRAINT "null_constraint" NULL ON CONFLICT IGNORE CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE CONSTRAINT "check_constraint" CHECK ("foo" != 42) CONSTRAINT "default_constraint" DEFAULT NULL CONSTRAINT "collate_constraint" COLLATE BINARY CONSTRAINT "references_constraint" REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED)';
       const ast = {
         temporary: false,
         exists: false,
@@ -2253,9 +2368,13 @@ describe('SQLite parser and compiler', function () {
                 conflict: 'ROLLBACK',
                 autoincrement: true,
               },
-              not: {
-                name: 'not_constraint',
+              notnull: {
+                name: 'notnull_constraint',
                 conflict: 'FAIL',
+              },
+              null: {
+                name: 'null_constraint',
+                conflict: 'IGNORE',
               },
               unique: {
                 name: 'unique_constraint',
@@ -2308,7 +2427,7 @@ describe('SQLite parser and compiler', function () {
 
     it('column definition multiple', function () {
       const sql =
-        'CREATE TABLE "users" ("primary_column" BLOB CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "not_column" DOUBLE PRECISION NOT NULL ON CONFLICT FAIL, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" INT8 DEFAULT NULL, "collate_column" CONSTRAINT "collate_constraint" COLLATE BINARY, "references_column" NUMERIC REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED)';
+        'CREATE TABLE "users" ("primary_column" BLOB CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "notnull_column" DOUBLE PRECISION NOT NULL ON CONFLICT FAIL, "null_column" NATIVE CHARACTER(70) NULL ON CONFLICT IGNORE, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" INT8 DEFAULT NULL, "collate_column" CONSTRAINT "collate_constraint" COLLATE BINARY, "references_column" NUMERIC REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED)';
       const ast = {
         temporary: false,
         exists: false,
@@ -2325,7 +2444,8 @@ describe('SQLite parser and compiler', function () {
                 conflict: 'ROLLBACK',
                 autoincrement: true,
               },
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2335,13 +2455,32 @@ describe('SQLite parser and compiler', function () {
             },
           },
           {
-            name: 'not_column',
+            name: 'notnull_column',
             type: 'DOUBLE PRECISION',
             constraints: {
               primary: null,
-              not: {
+              notnull: {
                 name: null,
                 conflict: 'FAIL',
+              },
+              null: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'null_column',
+            type: 'NATIVE CHARACTER(70)',
+            constraints: {
+              primary: null,
+              notnull: null,
+              null: {
+                name: null,
+                conflict: 'IGNORE',
               },
               unique: null,
               check: null,
@@ -2356,7 +2495,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: {
                 name: 'unique_constraint',
                 conflict: 'REPLACE',
@@ -2373,7 +2513,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: {
                 name: null,
@@ -2390,7 +2531,8 @@ describe('SQLite parser and compiler', function () {
             type: 'INT8',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: {
@@ -2408,7 +2550,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2425,7 +2568,8 @@ describe('SQLite parser and compiler', function () {
             type: 'NUMERIC',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2450,7 +2594,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2489,7 +2634,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2538,7 +2684,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2587,7 +2734,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2654,7 +2802,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2714,7 +2863,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2762,7 +2912,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2803,7 +2954,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2852,7 +3004,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2901,7 +3054,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2950,7 +3104,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -2999,7 +3154,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3048,7 +3204,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3097,7 +3254,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3149,7 +3307,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3201,7 +3360,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3250,7 +3410,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3348,7 +3509,7 @@ describe('SQLite parser and compiler', function () {
 
     it('column definition multiple table constraint multiple', function () {
       const sql =
-        'CREATE TABLE "users" ("primary_column" BLOB CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "not_column" DOUBLE PRECISION NOT NULL ON CONFLICT FAIL, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" TEXT DEFAULT NULL, "collate_column" CONSTRAINT "collate_constraint" COLLATE BINARY, "references_column" NUMERIC REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED, PRIMARY KEY ("foo", "baz" DESC) ON CONFLICT IGNORE, CHECK ("foo" IS NULL), CONSTRAINT "check_42" CHECK (count(foo) < 42 AND bar = 42), CONSTRAINT "unique_bar" UNIQUE ("bar"), FOREIGN KEY ("bar") REFERENCES "other" ("foo") ON DELETE SET DEFAULT ON UPDATE SET DEFAULT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT "foreign_other_multiple" FOREIGN KEY ("bar", "lar") REFERENCES "other" MATCH SIMPLE NOT DEFERRABLE)';
+        'CREATE TABLE "users" ("primary_column" BLOB CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "notnull_column" DOUBLE PRECISION NOT NULL ON CONFLICT FAIL, "null_column" NATIVE CHARACTER(70) NULL ON CONFLICT IGNORE, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" TEXT DEFAULT NULL, "collate_column" CONSTRAINT "collate_constraint" COLLATE BINARY, "references_column" NUMERIC REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH SIMPLE NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED, PRIMARY KEY ("foo", "baz" DESC) ON CONFLICT IGNORE, CHECK ("foo" IS NULL), CONSTRAINT "check_42" CHECK (count(foo) < 42 AND bar = 42), CONSTRAINT "unique_bar" UNIQUE ("bar"), FOREIGN KEY ("bar") REFERENCES "other" ("foo") ON DELETE SET DEFAULT ON UPDATE SET DEFAULT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT "foreign_other_multiple" FOREIGN KEY ("bar", "lar") REFERENCES "other" MATCH SIMPLE NOT DEFERRABLE)';
       const ast = {
         temporary: false,
         exists: false,
@@ -3365,7 +3526,8 @@ describe('SQLite parser and compiler', function () {
                 conflict: 'ROLLBACK',
                 autoincrement: true,
               },
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3375,13 +3537,32 @@ describe('SQLite parser and compiler', function () {
             },
           },
           {
-            name: 'not_column',
+            name: 'notnull_column',
             type: 'DOUBLE PRECISION',
             constraints: {
               primary: null,
-              not: {
+              notnull: {
                 name: null,
                 conflict: 'FAIL',
+              },
+              null: null,
+              unique: null,
+              check: null,
+              default: null,
+              collate: null,
+              references: null,
+              as: null,
+            },
+          },
+          {
+            name: 'null_column',
+            type: 'NATIVE CHARACTER(70)',
+            constraints: {
+              primary: null,
+              notnull: null,
+              null: {
+                name: null,
+                conflict: 'IGNORE',
               },
               unique: null,
               check: null,
@@ -3396,7 +3577,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: {
                 name: 'unique_constraint',
                 conflict: 'REPLACE',
@@ -3413,7 +3595,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: {
                 name: null,
@@ -3430,7 +3613,8 @@ describe('SQLite parser and compiler', function () {
             type: 'TEXT',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: {
@@ -3448,7 +3632,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3465,7 +3650,8 @@ describe('SQLite parser and compiler', function () {
             type: 'NUMERIC',
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3490,7 +3676,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3605,7 +3792,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3619,7 +3807,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3633,7 +3822,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3647,7 +3837,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3661,7 +3852,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3696,7 +3888,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3710,7 +3903,8 @@ describe('SQLite parser and compiler', function () {
             type: null,
             constraints: {
               primary: null,
-              not: null,
+              notnull: null,
+              null: null,
               unique: null,
               check: null,
               default: null,
@@ -3747,9 +3941,9 @@ describe('SQLite parser and compiler', function () {
 
     it('ordering', function () {
       const sql =
-        'CREATE TABLE "users" ("foo" TEXT REFERENCES "other" ("baz", "bar", "lar") MATCH PARTIAL ON UPDATE NO ACTION ON DELETE RESTRICT DEFERRABLE CHECK ("foo" != 42) GENERATED ALWAYS AS (count(*)) STORED UNIQUE ON CONFLICT REPLACE NOT NULL ON CONFLICT FAIL PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT DEFAULT NULL COLLATE BINARY)';
+        'CREATE TABLE "users" ("foo" TEXT REFERENCES "other" ("baz", "bar", "lar") MATCH PARTIAL ON UPDATE NO ACTION ON DELETE RESTRICT DEFERRABLE CHECK ("foo" != 42) GENERATED ALWAYS AS (count(*)) STORED UNIQUE ON CONFLICT REPLACE NOT NULL ON CONFLICT FAIL PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT DEFAULT NULL COLLATE BINARY NULL ON CONFLICT IGNORE)';
       const newSql =
-        'CREATE TABLE "users" ("foo" TEXT PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT REPLACE CHECK ("foo" != 42) DEFAULT NULL COLLATE BINARY REFERENCES "other" ("baz", "bar", "lar") ON DELETE RESTRICT ON UPDATE NO ACTION MATCH PARTIAL DEFERRABLE GENERATED ALWAYS AS (count(*)) STORED)';
+        'CREATE TABLE "users" ("foo" TEXT PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT NOT NULL ON CONFLICT FAIL NULL ON CONFLICT IGNORE UNIQUE ON CONFLICT REPLACE CHECK ("foo" != 42) DEFAULT NULL COLLATE BINARY REFERENCES "other" ("baz", "bar", "lar") ON DELETE RESTRICT ON UPDATE NO ACTION MATCH PARTIAL DEFERRABLE GENERATED ALWAYS AS (count(*)) STORED)';
 
       const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
 
@@ -3758,9 +3952,9 @@ describe('SQLite parser and compiler', function () {
 
     it('lowercase', function () {
       const sql =
-        'create table "users" ("primary_column" blob constraint "primary_constraint" primary key desc on conflict rollback autoincrement, "not_column" double precision not null on conflict fail, "unique_column" constraint "unique_constraint" unique on conflict replace, "check_column" check ("foo" != 42), "default_column" text default null, "collate_column" constraint "collate_constraint" collate binary, "references_column" numeric references "other" ("baz", "bar", "lar") on update set null match simple not deferrable, "as_column" constraint "as_constraint" generated always as (count(*)) stored, primary key ("foo", "baz" desc) on conflict ignore, check ("foo" is null), constraint "check_42" check (count(foo) < 42 AND bar = 42), constraint "unique_bar" unique ("bar"), foreign key ("bar") references "other" ("foo") on delete set default on update set default deferrable initially immediate, constraint "foreign_other_multiple" foreign key ("bar", "lar") references "other" match simple not deferrable)';
+        'create table "users" ("primary_column" blob constraint "primary_constraint" primary key desc on conflict rollback autoincrement, "notnull_column" double precision not null on conflict fail, "null_column" native character(70) null on conflict ignore, "unique_column" constraint "unique_constraint" unique on conflict replace, "check_column" check ("foo" != 42), "default_column" text default null, "collate_column" constraint "collate_constraint" collate binary, "references_column" numeric references "other" ("baz", "bar", "lar") on update set null match simple not deferrable, "as_column" constraint "as_constraint" generated always as (count(*)) stored, primary key ("foo", "baz" desc) on conflict ignore, check ("foo" is null), constraint "check_42" check (count(foo) < 42 AND bar = 42), constraint "unique_bar" unique ("bar"), foreign key ("bar") references "other" ("foo") on delete set default on update set default deferrable initially immediate, constraint "foreign_other_multiple" foreign key ("bar", "lar") references "other" match simple not deferrable)';
       const newSql =
-        'CREATE TABLE "users" ("primary_column" blob CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "not_column" double precision NOT NULL ON CONFLICT FAIL, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" text DEFAULT null, "collate_column" CONSTRAINT "collate_constraint" COLLATE binary, "references_column" numeric REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH simple NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED, PRIMARY KEY ("foo", "baz" DESC) ON CONFLICT IGNORE, CHECK ("foo" is null), CONSTRAINT "check_42" CHECK (count(foo) < 42 AND bar = 42), CONSTRAINT "unique_bar" UNIQUE ("bar"), FOREIGN KEY ("bar") REFERENCES "other" ("foo") ON DELETE SET DEFAULT ON UPDATE SET DEFAULT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT "foreign_other_multiple" FOREIGN KEY ("bar", "lar") REFERENCES "other" MATCH simple NOT DEFERRABLE)';
+        'CREATE TABLE "users" ("primary_column" blob CONSTRAINT "primary_constraint" PRIMARY KEY DESC ON CONFLICT ROLLBACK AUTOINCREMENT, "notnull_column" double precision NOT NULL ON CONFLICT FAIL, "null_column" native character(70) NULL ON CONFLICT IGNORE, "unique_column" CONSTRAINT "unique_constraint" UNIQUE ON CONFLICT REPLACE, "check_column" CHECK ("foo" != 42), "default_column" text DEFAULT null, "collate_column" CONSTRAINT "collate_constraint" COLLATE binary, "references_column" numeric REFERENCES "other" ("baz", "bar", "lar") ON UPDATE SET NULL MATCH simple NOT DEFERRABLE, "as_column" CONSTRAINT "as_constraint" GENERATED ALWAYS AS (count(*)) STORED, PRIMARY KEY ("foo", "baz" DESC) ON CONFLICT IGNORE, CHECK ("foo" is null), CONSTRAINT "check_42" CHECK (count(foo) < 42 AND bar = 42), CONSTRAINT "unique_bar" UNIQUE ("bar"), FOREIGN KEY ("bar") REFERENCES "other" ("foo") ON DELETE SET DEFAULT ON UPDATE SET DEFAULT DEFERRABLE INITIALLY IMMEDIATE, CONSTRAINT "foreign_other_multiple" FOREIGN KEY ("bar", "lar") REFERENCES "other" MATCH simple NOT DEFERRABLE)';
 
       const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
 
