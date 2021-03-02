@@ -31,7 +31,7 @@ describe('FS functions', () => {
       const directoryThatExists = await createTemp();
       const unexistingPath = path.join(directoryThatExists, 'abc/xyz/123');
 
-      expect(stat(unexistingPath)).to.eventually.be.rejected;
+      await expect(stat(unexistingPath)).to.eventually.be.rejected;
     });
   });
 

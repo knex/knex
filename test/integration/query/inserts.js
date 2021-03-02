@@ -798,7 +798,7 @@ module.exports = function (knex) {
     });
 
     it('should throw an error if the array passed in is empty', async function () {
-      expect(knex('account').insert([])).to.be.rejectedWith(
+      await expect(knex('account').insert([])).to.be.rejectedWith(
         Error,
         'The query is empty'
       );
