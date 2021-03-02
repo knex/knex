@@ -1,5 +1,9 @@
 # Master (Unreleased)
 
+# 0.21.19 - 02 March, 2021
+
+- SQLite: Made the constraint detection case-insensitive #4332
+
 # 0.21.18 - 22 February, 2021
 
 - CLI: Fix an issue with npm@7 and ESM when type was set to 'module' in package.json #4295
