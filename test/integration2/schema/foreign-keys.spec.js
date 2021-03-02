@@ -71,6 +71,32 @@ describe('Schema', () => {
               expect(err.message).to.include('constraint');
             }
           });
+
+          it('can drop added foreign keys in sqlite after a table rebuild', async () => {
+            if (knex.client.driverName !== 'sqlite3') {
+              return;
+            }
+
+            await knex.schema.alterTable('foreign_keys_table_one', (table) => {
+              table
+                .foreign('fkey_three')
+                .references('foreign_keys_table_three.id');
+            });
+
+            await knex.schema.alterTable('foreign_keys_table_one', (table) => {
+              // In sqlite this rebuilds a new foreign_keys_table_one table
+              table.foreign('fkey_two').references('foreign_keys_table_two.id');
+            });
+
+            await knex.schema.alterTable('foreign_keys_table_one', (table) => {
+              table.dropForeign('fkey_three');
+            });
+
+            const fks = await knex.raw(
+              `PRAGMA foreign_key_list('foreign_keys_table_one');`
+            );
+            expect(fks.length).to.equal(1);
+          });
         });
       });
     });
