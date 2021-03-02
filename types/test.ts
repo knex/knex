@@ -1458,42 +1458,42 @@ const main = async () => {
   // $ExpectType any[]
   await knexInstance('users').innerJoin(
     'departments',
-    'users.departmentid',
+    'users.departmentId',
     'departments.id'
   );
 
   // $ExpectType any[]
   await knexInstance<User>('users').innerJoin(
     'departments',
-    'users.departmentid',
+    'users.departmentId',
     'departments.id'
   );
 
   // $ExpectType any[]
   await knexInstance('users').innerJoin<Department>(
     'departments',
-    'users.departmentid',
+    'users.departmentId',
     'departments.id'
   );
 
   // $ExpectType (User & Department)[]
   await knexInstance<User>('users').innerJoin<Department>(
     'departments',
-    'users.departmentid',
+    'users.departmentId',
     'departments.id'
   );
 
   // $ExpectType (User & Department)[]
   await knexInstance('users_inferred').innerJoin(
     'departments_inferred',
-    'users_inferred.departmentid',
+    'users_inferred.departmentId',
     'departments_inferred.id'
   );
 
   // $ExpectType (User & Department)[]
   await knexInstance('users_composite').innerJoin(
     'departments_composite',
-    'users_composite.departmentid',
+    'users_composite.departmentId',
     'departments_composite.id'
   );
 
@@ -1501,7 +1501,7 @@ const main = async () => {
   await knexInstance<User>('users')
     .innerJoin<Department>(
       'departments',
-      'users.departmentid',
+      'users.departmentId',
       'departments.id'
     )
     .innerJoin<Article>('articles', 'articles.authorId', 'users.id');
@@ -1510,7 +1510,7 @@ const main = async () => {
   await knexInstance('users_inferred')
     .innerJoin(
       'departments_inferred',
-      'users_inferred.departmentid',
+      'users_inferred.departmentId',
       'departments_inferred.id'
     )
     .innerJoin('articles_inferred', 'articles_inferred.authorId', 'users_inferred.id');
@@ -1519,25 +1519,25 @@ const main = async () => {
   await knexInstance('users_composite')
     .innerJoin(
       'departments_composite',
-      'users_composite.departmentid',
+      'users_composite.departmentId',
       'departments_composite.id'
     )
     .innerJoin('articles_composite', 'articles_composite.authorId', 'users_composite.id');
 
   // $ExpectType any[]
   await knexInstance<User>('users')
-    .innerJoin('departments', 'users.departmentid', 'departments.id')
+    .innerJoin('departments', 'users.departmentId', 'departments.id')
     .innerJoin<Article>('articles', 'articles.authorId', 'users.id');
 
   // $ExpectType any[]
   await knexInstance('users_inferred')
-    .innerJoin('departments', 'users_inferred.departmentid', 'departments.id')
+    .innerJoin('departments', 'users_inferred.departmentId', 'departments.id')
     .innerJoin('articles_inferred', 'articles_inferred.authorId', 'users.id');
 
   // $ExpectType (User & Department)[]
   await knexInstance<User>('users').innerJoin<Department>(
     'departments',
-    'users.departmentid',
+    'users.departmentId',
     '=',
     'departments.id'
   );
@@ -1545,7 +1545,7 @@ const main = async () => {
   // $ExpectType (User & Department)[]
   await knexInstance('users_inferred').innerJoin(
     'departments_inferred',
-    'users_inferred.departmentid',
+    'users_inferred.departmentId',
     '=',
     'departments_inferred.id'
   );
@@ -1553,14 +1553,14 @@ const main = async () => {
   // $ExpectType (User & Department)[]
   await knexInstance('users_composite').innerJoin(
     'departments_composite',
-    'users_composite.departmentid',
+    'users_composite.departmentId',
     '=',
     'departments_composite.id'
   );
 
   // $ExpectType { username: any; }[]
   (await knexInstance<User>('users')
-    .innerJoin('departments', 'users.departmentid', 'departments.id'))
+    .innerJoin('departments', 'users.departmentId', 'departments.id'))
     .map(function(joined) {
       return {
         username: joined.name,
@@ -1571,7 +1571,7 @@ const main = async () => {
   (await knexInstance<User>('users')
     .innerJoin<Department>(
       'departments',
-      'users.departmentid',
+      'users.departmentId',
       'departments.id'
     ))
     .map(function(joined) {
@@ -1584,7 +1584,7 @@ const main = async () => {
   (await knexInstance('users_inferred')
     .innerJoin(
       'departments_inferred',
-      'users_inferred.departmentid',
+      'users_inferred.departmentId',
       'departments_inferred.id'
     ))
     .map(function(joined) {
@@ -1597,7 +1597,7 @@ const main = async () => {
   (await knexInstance('users_composite')
     .innerJoin(
       'departments_composite',
-      'users_composite.departmentid',
+      'users_composite.departmentId',
       'departments_composite.id'
     ))
     .map(function(joined) {
@@ -1610,7 +1610,7 @@ const main = async () => {
   (await knexInstance<User>('users')
     .innerJoin<Department>(
       'departments',
-      'users.departmentid',
+      'users.departmentId',
       'departments.id'
     )
     .select('*'))
@@ -1624,7 +1624,7 @@ const main = async () => {
   (await knexInstance('users_inferred')
     .innerJoin(
       'departments_inferred',
-      'users_inferred.departmentid',
+      'users_inferred.departmentId',
       'departments_inferred.id'
     )
     .select('*'))
@@ -1638,7 +1638,7 @@ const main = async () => {
   (await knexInstance('users_composite')
     .innerJoin<Department>(
       'departments_composite',
-      'users_composite.departmentid',
+      'users_composite.departmentId',
       'departments_composite.id'
     )
     .select('*'))
@@ -1652,7 +1652,7 @@ const main = async () => {
   (await knexInstance<User>('users')
     .innerJoin<Department>(
       'departments',
-      'users.departmentid',
+      'users.departmentId',
       'departments.id'
     )
     .select())
@@ -1666,7 +1666,7 @@ const main = async () => {
   (await knexInstance('users_inferred')
     .innerJoin(
       'departments_inferred',
-      'users_inferred.departmentid',
+      'users_inferred.departmentId',
       'departments_inferred.id'
     )
     .select())
@@ -1680,7 +1680,7 @@ const main = async () => {
   (await knexInstance('users_composite')
     .innerJoin(
       'departments_composite',
-      'users_composite.departmentid',
+      'users_composite.departmentId',
       'departments_composite.id'
     )
     .select())
@@ -1694,7 +1694,7 @@ const main = async () => {
   (await knexInstance<User>('users')
     .innerJoin<Department>(
       'departments',
-      'users.departmentid',
+      'users.departmentId',
       'departments.id'
     )
     .select('name', 'age'))
@@ -1708,7 +1708,7 @@ const main = async () => {
   (await knexInstance('users_inferred')
     .innerJoin(
       'departments_inferred',
-      'users_inferred.departmentid',
+      'users_inferred.departmentId',
       'departments_inferred.id'
     )
     .select('name', 'age'))
@@ -1722,7 +1722,7 @@ const main = async () => {
   (await knexInstance('users_composite')
     .innerJoin(
       'departments_composite',
-      'users_composite.departmentid',
+      'users_composite.departmentId',
       'departments_composite.id'
     )
     .select('name', 'age'))
@@ -1736,7 +1736,7 @@ const main = async () => {
   (await knexInstance<User>('users')
     .innerJoin<Department>(
       'departments',
-      'users.departmentid',
+      'users.departmentId',
       'departments.id'
     )
     .select('users.name', 'age'))
@@ -1750,7 +1750,7 @@ const main = async () => {
   (await knexInstance('users_inferred')
     .innerJoin(
       'departments_inferred',
-      'users_inferred.departmentid',
+      'users_inferred.departmentId',
       'departments_inferred.id'
     )
     .select('users_inferred.name', 'age'))
@@ -1764,7 +1764,7 @@ const main = async () => {
   (await knexInstance('users_composite')
     .innerJoin(
       'departments_composite',
-      'users_composite.departmentid',
+      'users_composite.departmentId',
       'departments_composite.id'
     )
     .select('users_composite.name', 'age'))
@@ -1798,7 +1798,7 @@ const main = async () => {
   await knexInstance<User>('users')
     .innerJoin<Department>(
       'departments',
-      'users.departmentid',
+      'users.departmentId',
       'departments.id'
     )
     .select('users.id', 'departments.id');
