@@ -2671,7 +2671,7 @@ export default [
     type: "method",
     method: "columnInfo",
     example: ".columnInfo([columnName])",
-    description: "Returns an object with the column info about the current table, or an individual column if one is passed, returning an object with the following keys:*   **defaultValue**: the default value for the column*   **type**: the column type*   **maxLength**: the max length set for the column*   **nullable**: whether the column may be null",
+    description: "Returns an object with the column info about the current table, or an individual column if one is passed, returning an object with the following keys:\n*   **defaultValue**: the default value for the column\n*   **type**: the column type\n*   **maxLength**: the max length set for the column\n*   **nullable**: whether the column may be null",
     children: [
       {
         type: "code",
