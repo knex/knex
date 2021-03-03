@@ -12,6 +12,8 @@ const config: Knex.Config = {} // this is a type from the Knex namespace
 const knexInstance: Knex = knex(config)
 ```
 
+* TypeScript version 4.1+ is needed when using knex types now.
+
 * MSSQL driver was completely reworked in order to address the multitude of connection pool, error handling and performance issues. Since the new implementation uses `tedious` library directly instead of `mssql`, please replace `mssql` with `tedious` in your dependencies if you are using a MSSQL database.
 
 * Transaction rollback does not trigger a promise rejection for transactions with specified handler. If you want to preserve previous behavior, pass `config` object with `doNotRejectOnRollback: false`:

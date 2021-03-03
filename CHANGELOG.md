@@ -1,5 +1,7 @@
 # Master (Unreleased)
 
+# 0.95.0 - 03 March, 2021
+
 ### New features:
 
 - Add transaction isolation support #4185
@@ -15,11 +17,14 @@
 - Events: introduce queryContext on query-error #4301
 - CLI: Use UTC timestamp for new migrations #4245  
 - MSSQL: Replace MSSQL dialect with Tedious.js implementation #2857 #4281
-  MSSQL: Use "nvarchar(max)" for ".json()" #4278
+- MSSQL: Use "nvarchar(max)" for ".json()" #4278
+- MSSQL: Schema builder - add predictable constraint names for default values #4319
+- MSSQL: Schema builder - attempt to drop default constraints when changing default value on columns #4321
 - SQLite: Fallback to json for sqlite3 when using jsonb #4186
 - SQLite: Return complete list of DDL commands for creating foreign keys #4194
 - SQLite: Support dropping composite foreign keys #4202
 - SQLite: Recreate indices when altering a table #4277
+- SQLite: Add support for altering columns #4322
 
 ### Bug fixes:
 
@@ -29,7 +34,10 @@
 - CLI: Fix an issue with npm@7 and ESM when `type` was set to `'module'` in `package.json` #4295
 - PostgreSQL: Add check to only create native enum once #3658
 - SQLite: Fix foreign key "on delete" when altering a table #4225
+- SQLite: Made the constraint detection case-insensitive #4330
 - MySQL: Keep auto increment after rename #4266
+- MSSQL: don't raise query-error twice #4314
+- MSSQL: Alter column must have its own query #4317
 
 ### Typings:
 
@@ -38,6 +46,8 @@
 - Fix type definition of Transaction #4172
 - Add typedefinitions for havingNotIn #4265
 - Include 'name' property in MigratorConfig #4300
+- Improve join and conflict types #4318
+- Fix ArrayIfAlready type #4331
 
 ### Test / internal changes:
 
