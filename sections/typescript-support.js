@@ -40,7 +40,9 @@ export default [
           users: User;
           // For more advanced types, you can specify separate type
           // for base model, "insert" type and "update" type.
-          // This is like specifying
+          // But first: notice that if you choose to use this, 
+          // the basic typing showed above can be discarded.
+          // So, this is like specifying
           //    knex
           //    .insert<{ name: string }>({ name: 'name' })
           //    .into<{ name: string, id: number }>('users')
