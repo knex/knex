@@ -144,7 +144,7 @@ describe('Schema', () => {
               );
             });
 
-            it('generates correct SQL commands when altering columns', async () => {
+            it.skip('generates correct SQL commands when altering columns', async () => {
               const builder = knex.schema.alterTable('alter_table', (table) => {
                 table.string('column_integer').alter();
               });
