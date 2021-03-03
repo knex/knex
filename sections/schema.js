@@ -136,6 +136,28 @@ export default [
   },
   {
     type: "method",
+    method: "generateDdlCommands",
+    example: "knex.schema.generateDdlCommands()",
+    description: "Generates complete SQL commands for applying described schema changes, without executing anything. Useful when knex is being used purely as a query builder. Generally produces same result as .toSQL(), with a notable exception with SQLite, which relies on asynchronous calls to the database for building part of its schema modification statements",
+    children: [
+      {
+        type: "runnable",
+        content: `
+            const ddlCommands = knex.schema.alterTable(
+              'users',
+              (table) => {
+                table
+                  .foreign('companyId')
+                  .references('company.companyId')
+                  .withKeyName('fk_fkey_company');
+              }
+            ).generateDdlCommands();
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "raw",
     example: "knex.schema.raw(statement)",
     description: "Run an arbitrary sql query in the schema builder chain.",

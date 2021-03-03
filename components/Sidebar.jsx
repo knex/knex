@@ -25,12 +25,13 @@ export default class Sidebar extends Component {
           <li><b><a href="#Installation-client">Config Options:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-client">client</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-debug">debug</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Installation-parametrization">Getting parametrized instance</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-asyncStackTraces">Async stacktraces</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Installation-pooling">pooling</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Installation-pooling">Pooling</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-pooling-afterCreate">afterCreate</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-acquireConnectionTimeout">acquireConnectionTimeout</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-fetchAsString">fetchAsString</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Installation-migrations">migrations</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Installation-migrations">Migrations</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-post-process-response">postProcessResponse</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-wrap-identifier">wrapIdentifier</a></li>
           <li>&nbsp;&nbsp;– <a href="#Installation-log">log</a></li>
@@ -89,6 +90,14 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-onBetween">onBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-onNotBetween">onNotBetween</a></li>
 
+          <li><b><a href="#Builder-clear">Clear Methods:</a></b></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clear">clear</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearSelect">clearSelect (deprecated)</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearWhere">clearWhere (deprecated)</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearOrder">clearOrder (deprecated)</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearHaving">clearHaving (deprecated)</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-clearCounters">clearCounters</a></li>
+
           <li><b><a href="#Builder-havings">Having Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-having">having</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingIn">havingIn</a></li>
@@ -100,14 +109,6 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-havingBetween">havingBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingNotBetween">havingNotBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-havingRaw">havingRaw</a></li>
-
-          <li><b><a href="#Builder-clear">Clear Methods:</a></b></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clear">clear</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearSelect">clearSelect (deprecated)</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearWhere">clearWhere (deprecated)</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearOrder">clearOrder (deprecated)</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearHaving">clearHaving (deprecated)</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Builder-clearCounters">clearCounters</a></li>
 
           <li>– <a href="#Builder-distinct">distinct</a></li>
           <li>– <a href="#Builder-distinctOn">distinctOn</a></li>
@@ -170,6 +171,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-hasTable">hasTable</a></li>
           <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
           <li>– <a href="#Schema-table">table</a></li>
+          <li>– <a href="#Schema-generateDdlCommands">generateDdlCommands</a></li>
           <li>– <a href="#Schema-raw">raw</a></li>
           <li>– <a href="#Schema-queryContext">queryContext</a></li>
           <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
