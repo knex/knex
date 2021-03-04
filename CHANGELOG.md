@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.95.1 - 04 March, 2021
+
+### Bug fixes:
+
+- CLI: fix `knex init` not finding default knexfile #4339
+
 # 0.95.0 - 03 March, 2021
 
 ### New features:
