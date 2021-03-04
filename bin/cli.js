@@ -178,7 +178,7 @@ function invoke() {
       const stubPath = `./knexfile.${type}`;
       readFile(
         path.dirname(env.modulePath) +
-          '/lib/migrate/stub/knexfile-' +
+          '/lib/migrations/migrate/stub/knexfile-' +
           type +
           '.stub'
       )
