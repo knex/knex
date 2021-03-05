@@ -3,13 +3,29 @@
 ### Upgrading to version 0.95.0+
 
 * TypeScript type exports changed significantly. While `import Knex from 'knex';` used to import the knex instantiation function, the namespace and the interface for the knex instantiation function/object, there is now a clear distinction between them:
-```
+```typescript
 import { knex } from 'knex' // this is a function that you call to instantiate knex
 import { Knex } from 'knex' // this is a namespace, and a type of a knex object
 import KnexTimeoutError = Knex.KnexTimeoutError; // this is a class from the Knex namespace
 
 const config: Knex.Config = {} // this is a type from the Knex namespace
 const knexInstance: Knex = knex(config)
+```
+
+If your code looked like this:
+```typescript
+import knex from 'knex'
+
+const config: knex.Config = {} // this is a type from the Knex namespace
+const knexInstance = knex(config)
+```
+
+Change it to
+```typescript
+import { knex, Knex } from 'knex'
+
+const config: Knex.Config = {} // this is a type from the Knex namespace
+const knexInstance = knex(config)
 ```
 
 * TypeScript version 4.1+ is needed when using knex types now.
