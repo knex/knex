@@ -31,7 +31,7 @@ export default [
   {
     type: "text",
     content: [
-      "The migration CLI accepts the following general command-line options. You can view help text and additional options for each command using `--help`. E.g. `knex migrate:latestVersion --help`."
+      "The migration CLI accepts the following general command-line options. You can view help text and additional options for each command using `--help`. E.g. `knex migrate:latest --help`."
     ]
   },
   {
