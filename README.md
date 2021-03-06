@@ -116,3 +116,33 @@ try {
   // error handling
 }
 ```
+
+## Usage as ESM module
+
+If you are launching your Node application with `--experimental-modules`, `knex.mjs` should be picked up automatically and named ESM import should work out-of-the-box.
+Otherwise, if you want to use named imports, you'll have to import knex like this:
+```js
+import { knex } from 'knex/knex.mjs'
+```
+
+You can also just do the default import:
+```js
+import knex from 'knex'
+```
+
+If you are not using TypeScript and would like the IntelliSense of your IDE to work correctly, it is recommended to set the type explicitly:
+```js
+/**
+ * @type {Knex}
+ */
+const database = knex({
+    client: 'mysql',
+    connection: {
+      host : '127.0.0.1',
+      user : 'your_database_user',
+      password : 'your_database_password',
+      database : 'myapp_test'
+    }
+  });
+database.migrate.latest();
+```
