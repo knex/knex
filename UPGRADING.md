@@ -28,6 +28,44 @@ const config: Knex.Config = {} // this is a type from the Knex namespace
 const knexInstance = knex(config)
 ```
 
+* If you were importing types such as `Config` or `QueryBuilder` directly, use `Knex` namespace instead.
+
+So change this:
+```ts
+import { QueryBuilder } from 'knex'
+
+const qb: QueryBuilder = knex('table').select('*')
+```
+
+to this:
+```ts
+import { Knex } from 'knex'
+
+const qb: Knex.QueryBuilder = knex('table').select('*')
+```
+
+* Syntax for QueryBuilder augmentation changed. Previously it looked like this:
+
+```ts
+declare module 'knex' {
+    interface QueryBuilder {
+      paginate<TResult = any[]>(params: IPaginateParams): KnexQB<any, IWithPagination<TResult>>;
+  }
+}
+```
+
+This should be changed into this:
+
+```ts
+declare module 'knex' {
+  namespace Knex {
+    interface QueryBuilder {
+      paginate<TResult = any[]>(params: IPaginateParams): KnexQB<any, IWithPagination<TResult>>;
+    }
+  }
+}
+```
+
 * TypeScript version 4.1+ is needed when using knex types now.
 
 * MSSQL driver was completely reworked in order to address the multitude of connection pool, error handling and performance issues. Since the new implementation uses `tedious` library directly instead of `mssql`, please replace `mssql` with `tedious` in your dependencies if you are using a MSSQL database.

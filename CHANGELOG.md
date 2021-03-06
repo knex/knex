@@ -8,6 +8,8 @@
 
 # 0.95.0 - 03 March, 2021
 
+Note: there are many breaking changes in this version, particularly in TypeScript support. Please see `UPGRADING.md` for details.
+
 ### New features:
 
 - Add transaction isolation support #4185
@@ -47,6 +49,7 @@
 
 ### Typings:
 
+- TypeScript 4.1+ is now required
 - Add missing onConflict overrides #4182
 - Introduce the "infamous triplet" export #4181
 - Fix type definition of Transaction #4172
