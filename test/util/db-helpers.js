@@ -1,35 +1,46 @@
+const { get } = require('lodash');
+const { DRIVER_NAMES: drivers } = require('../../lib/constants');
+
+function getDriverName(knex) {
+  return get(knex, 'client.driverName', '');
+}
+
 function isPostgreSQL(knex) {
-  return knex.client.driverName === 'pg';
+  return getDriverName(knex) === drivers.PostgreSQL;
+}
+
+function isPgBased(knex) {
+  return isOneOfDbs(knex, [drivers.PostgreSQL, drivers.Redshift]);
 }
 
 function isMssql(knex) {
-  return knex.client.driverName === 'mssql';
+  return getDriverName(knex) === drivers.MsSQL;
 }
 
 function isOracle(knex) {
-  return /oracle/i.test(knex.client.driverName);
+  return getDriverName(knex) === drivers.Oracle;
 }
 
 function isMysql(knex) {
-  return /mysql/i.test(knex.client.driverName);
+  return isOneOfDbs(knex, [drivers.MySQL, drivers.MySQL2]);
 }
 
 function isRedshift(knex) {
-  return knex.client.driverName === 'redshift';
+  return getDriverName(knex) === drivers.Redshift;
 }
 
 function isSQLite(knex) {
-  return knex.client.driverName === 'sqlite3';
+  return getDriverName(knex) === drivers.SQLite;
 }
 
 /**
  *
  * @param knex
- * @param {('pg'|'oracledb'|'mysql'|'mysql2'|'mssql'|'sqlite3')[]} supportedDbs - supported DB values
+ * @param {('pg'|'pg-redshift'|'oracledb'|'mysql'|'mysql2'|'mssql'|'sqlite3')[]} supportedDbs - supported DB values in DRIVER_NAMES from lib/constants.
  * @returns {*}
  */
 function isOneOfDbs(knex, supportedDbs) {
-  return supportedDbs.includes(knex.client.driverName);
+  return supportedDbs.includes(getDriverName(knex));
 }
 
 module.exports = {
@@ -38,6 +49,7 @@ module.exports = {
   isMssql,
   isOracle,
   isPostgreSQL,
+  isPgBased,
   isRedshift,
   isSQLite,
 };
