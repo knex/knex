@@ -1,5 +1,5 @@
 {
-  "name": "knex",
+  "name": "paradis-knex",
   "version": "0.95.1",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex.js",
