@@ -1,4 +1,4 @@
-import { Knex, knex } from '../types';
+import { knex } from '../types';
 import { expectType } from 'tsd';
 import { clientConfig } from './common';
 
@@ -18,7 +18,7 @@ declare module '../types' {
   }
 }
 
-Knex.QueryBuilder.extend('customSelect', function (value: number) {
+knex.QueryBuilder.extend('customSelect', function (value: number) {
   return this.select(this.client.raw(`${value} as value`));
 });
 

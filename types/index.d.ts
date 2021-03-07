@@ -397,6 +397,20 @@ export declare function knex<TRecord extends {} = any, TResult = unknown[]>(
   config: Knex.Config | string
 ): Knex<TRecord, TResult>;
 
+export declare namespace knex {
+  class QueryBuilder {
+    static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex.QueryBuilder<TRecord, TResult>,
+        ...args: any[]
+      ) => Knex.QueryBuilder<TRecord, TResult>
+    ): void;
+  }
+
+  export class KnexTimeoutError extends Error {}
+}
+
 export declare namespace Knex {
   //
   // Utility Types
@@ -2350,10 +2364,6 @@ interface MsSqlConnectionConfigBase {
     constraintName?: string;
   }
 
-  //
-  // Clients
-  //
-
   class Client extends events.EventEmitter {
     constructor(config: Config);
     config: Config;
@@ -2408,18 +2418,6 @@ interface MsSqlConnectionConfigBase {
     assertCanCancelQuery(): void;
     cancelQuery(): void;
   }
-
-  class QueryBuilder {
-    static extend(
-      methodName: string,
-      fn: <TRecord extends {} = any, TResult = unknown[]>(
-        this: QueryBuilder<TRecord, TResult>,
-        ...args: any[]
-      ) => QueryBuilder<TRecord, TResult>
-    ): void;
-  }
-
-  export class KnexTimeoutError extends Error {}
 }
 
 export default knex;
