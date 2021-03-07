@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 const _ = require('lodash');
 const { isString, isObject } = require('../../../lib/util/is');
+const { isPgBased, isMysql, isOracle, isPostgreSQL, isSQLite, isRedshift, isMssql } = require('../../util/db-helpers');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -34,7 +35,7 @@ module.exports = (knex) => {
   describe('Schema', () => {
     describe('errors for unsupported dialects', () => {
       it('throws an error if client does not support createSchema', async function () {
-        if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
+        if (isPgBased(knex)) {
           return this.skip();
         }
 
@@ -50,7 +51,7 @@ module.exports = (knex) => {
       });
 
       it('throws an error if client does not support createSchemaIfNotExists', async function () {
-        if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
+        if (isPgBased(knex)) {
           return this.skip();
         }
 
@@ -66,7 +67,7 @@ module.exports = (knex) => {
       });
 
       it('throws an error if client does not support dropSchema', async function () {
-        if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
+        if (isPgBased(knex)) {
           return this.skip();
         }
 
@@ -82,7 +83,7 @@ module.exports = (knex) => {
       });
 
       it('throws an error if client does not support dropSchemaIfExists', async function () {
-        if (!knex || !knex.client || /pg/i.test(knex.client.driverName)) {
+        if (isPgBased(knex)) {
           return this.skip();
         }
 
@@ -156,7 +157,7 @@ module.exports = (knex) => {
 
     describe('createTable', () => {
       describe('increments types - postgres', () => {
-        if (!knex || !knex.client || !/pg/i.test(knex.client.driverName)) {
+        if (!isPgBased(knex)) {
           return Promise.resolve();
         }
 
@@ -254,7 +255,7 @@ module.exports = (knex) => {
       });
 
       describe('increments types - mysql', () => {
-        if (!knex || !knex.client || !/mysql/i.test(knex.client.driverName)) {
+        if (!isMysql(knex)) {
           return Promise.resolve();
         }
 
@@ -320,7 +321,7 @@ module.exports = (knex) => {
       });
 
       describe('enum - postgres', () => {
-        if (!knex || !knex.client || !/pg/i.test(knex.client.driverName)) {
+        if (!isPgBased(knex)) {
           return Promise.resolve();
         }
 
@@ -417,7 +418,7 @@ module.exports = (knex) => {
       it('accepts the table name, and a "container" function', () =>
         knex.schema
           .createTable('test_table_one', (table) => {
-            if (/mysql/i.test(knex.client.driverName)) table.engine('InnoDB');
+            if (isMysql(knex)) table.engine('InnoDB');
             table.comment('A table comment.');
             table.bigIncrements('id');
             table.string('first_name').index();
@@ -425,7 +426,7 @@ module.exports = (knex) => {
             table.string('email').unique().nullable();
             table.integer('logins').defaultTo(1).index().comment();
             table.float('balance').defaultTo(0);
-            if (knex.client.driverName === 'oracledb') {
+            if (isOracle(knex)) {
               // use string instead to force varchar2 to avoid later problems with join and union
               table.string('about', 4000).comment('A comment.');
             } else {
@@ -483,12 +484,12 @@ module.exports = (knex) => {
       it('is possible to set the db engine with the table.engine', () =>
         knex.schema
           .createTable('test_table_two', (table) => {
-            if (/mysql/i.test(knex.client.driverName)) {
+            if (isMysql(knex)) {
               table.engine('InnoDB');
             }
             table.increments();
             table.integer('account_id');
-            if (knex.client.driverName === 'oracledb') {
+            if (isOracle(knex)) {
               // use string instead to force varchar2 to avoid later problems with join and union
               // e.g. where email (varchar2) = details (clob) does not work
               table.string('details', 4000);
@@ -508,13 +509,13 @@ module.exports = (knex) => {
         const defaultDetails = { b: { d: 20 } };
         return knex.schema
           .createTable('test_table_three', (table) => {
-            if (/mysql/i.test(knex.client.driverName)) {
+            if (isMysql(knex)) {
               table.engine('InnoDB');
             }
             table.integer('main').notNullable().primary();
             table.text('paragraph').defaultTo('Lorem ipsum Qui quis qui in.');
             table.json('metadata').defaultTo(defaultMetadata);
-            if (knex.client.driverName === 'pg') {
+            if (isPostgreSQL(knex)) {
               table.jsonb('details').defaultTo(defaultDetails);
             }
           })
@@ -552,12 +553,12 @@ module.exports = (knex) => {
           .then(() => knex('test_table_three').where({ main: 1 }).first())
           .then((result) => {
             expect(result.main).to.equal(1);
-            if (!knex.client.driverName.match(/^mysql/)) {
+            if (!isMysql(knex)) {
               // MySQL doesn't support default values in text columns
               expect(result.paragraph).to.eql('Lorem ipsum Qui quis qui in.');
               return;
             }
-            if (knex.client.driverName === 'pg') {
+            if (isPostgreSQL(knex)) {
               expect(result.metadata).to.eql(defaultMetadata);
               expect(result.details).to.eql(defaultDetails);
             } else if (isString(result.metadata)) {
@@ -571,7 +572,7 @@ module.exports = (knex) => {
       it('handles numeric length correctly', () =>
         knex.schema
           .createTable('test_table_numerics', (table) => {
-            if (/mysql/i.test(knex.client.driverName)) {
+            if (isMysql(knex)) {
               table.engine('InnoDB');
             }
             table.integer('integer_column', 5);
@@ -769,7 +770,7 @@ module.exports = (knex) => {
       it('is possible to set the table collation with table.charset and table.collate', () =>
         knex.schema
           .createTable('charset_collate_test', (table) => {
-            if (/mysql/i.test(knex.client.driverName)) {
+            if (isMysql(knex)) {
               table.charset('latin1');
               table.collate('latin1_general_ci');
               table.engine('InnoDB');
@@ -890,7 +891,7 @@ module.exports = (knex) => {
         }));
 
       it('allows adding multiple columns at once', function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
         return knex.schema
@@ -920,12 +921,7 @@ module.exports = (knex) => {
           .then(() => knex.schema.dropTable('test_table_numerics2')));
 
       it('allows alter column syntax', function () {
-        if (
-          knex.client.driverName.match('sqlite3') ||
-          knex.client.driverName.match('pg-redshift') ||
-          knex.client.driverName.match('mssql') ||
-          knex.client.driverName.match('oracledb')
-        ) {
+        if (isSQLite(knex) || isRedshift(knex) || isMssql(knex) || isOracle(knex)) {
           return;
         }
 
@@ -1039,11 +1035,7 @@ module.exports = (knex) => {
           }));
 
         describe('sqlite only', () => {
-          if (
-            !knex ||
-            !knex.client ||
-            !/sqlite3/i.test(knex.client.driverName)
-          ) {
+          if (!isSQLite(knex)) {
             return Promise.resolve();
           }
 
@@ -1060,14 +1052,7 @@ module.exports = (knex) => {
 
       describe('using processorss', () => {
         describe('sqlite and pg only', () => {
-          if (
-            !knex ||
-            !knex.client ||
-            !(
-              /sqlite3/i.test(knex.client.driverName) ||
-              /pg/i.test(knex.client.driverName)
-            )
-          ) {
+          if (!isSQLite(knex) && !isPostgreSQL(knex)) {
             return Promise.resolve();
           }
 
@@ -1091,7 +1076,7 @@ module.exports = (knex) => {
 
     describe('addColumn', () => {
       describe('mysql only', () => {
-        if (!knex || !knex.client || !/mysql/i.test(knex.client.driverName)) {
+        if (!isMysql(knex)) {
           return Promise.resolve(true);
         }
 
@@ -1242,43 +1227,41 @@ module.exports = (knex) => {
         it('#2767 - .renameColumn should not drop the auto incremental', () => {
           const tableName = 'rename_column_test';
 
-          if (knex && knex.client) {
-            if (/mssql/i.test(knex.client.driverName)) {
-              return knex
-                .raw(
-                  `select COLUMNPROPERTY(object_id(TABLE_SCHEMA+'.'+TABLE_NAME), COLUMN_NAME, 'IsIdentity') as Ident from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME =? AND COLUMN_NAME = ?;`,
-                  [tableName, 'id_new']
-                )
-                .then((res) => {
-                  const autoinc = res[0].Ident;
-                  expect(autoinc).to.equal(1);
-                });
-            } else if (/mysql/i.test(knex.client.driverName)) {
-              return knex.raw(`show fields from ${tableName}`).then((res) => {
-                const autoinc = res[0][0].Extra;
-                expect(autoinc).to.equal('auto_increment');
+          if (isMssql(knex)) {
+            return knex
+              .raw(
+                `select COLUMNPROPERTY(object_id(TABLE_SCHEMA+'.'+TABLE_NAME), COLUMN_NAME, 'IsIdentity') as Ident from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME =? AND COLUMN_NAME = ?;`,
+                [tableName, 'id_new']
+              )
+              .then((res) => {
+                const autoinc = res[0].Ident;
+                expect(autoinc).to.equal(1);
               });
-            } else if (/pg/i.test(knex.client.driverName)) {
-              return knex
-                .raw(
-                  `select pg_get_serial_sequence(table_name, column_name) as ident from INFORMATION_SCHEMA.COLUMNS where table_name =? AND column_name = ?;`,
-                  [tableName, 'id_new']
-                )
-                .then((res) => {
-                  const autoinc = !!res.rows[0].ident;
-                  expect(autoinc).to.equal(true);
-                });
-            } else if (/sqlite/i.test(knex.client.driverName)) {
-              return knex
-                .raw(
-                  `SELECT "is-autoincrement" as ident FROM sqlite_master WHERE tbl_name=? AND sql LIKE "%AUTOINCREMENT%"`,
-                  [tableName]
-                )
-                .then((res) => {
-                  const autoinc = !!res[0].ident;
-                  expect(autoinc).to.equal(true);
-                });
-            }
+          } else if (isMysql(knex)) {
+            return knex.raw(`show fields from ${tableName}`).then((res) => {
+              const autoinc = res[0][0].Extra;
+              expect(autoinc).to.equal('auto_increment');
+            });
+          } else if (isPgBased(knex)) {
+            return knex
+              .raw(
+                `select pg_get_serial_sequence(table_name, column_name) as ident from INFORMATION_SCHEMA.COLUMNS where table_name =? AND column_name = ?;`,
+                [tableName, 'id_new']
+              )
+              .then((res) => {
+                const autoinc = !!res.rows[0].ident;
+                expect(autoinc).to.equal(true);
+              });
+          } else if (isSQLite(knex)) {
+            return knex
+              .raw(
+                `SELECT "is-autoincrement" as ident FROM sqlite_master WHERE tbl_name=? AND sql LIKE "%AUTOINCREMENT%"`,
+                [tableName]
+              )
+              .then((res) => {
+                const autoinc = !!res[0].ident;
+                expect(autoinc).to.equal(true);
+              });
           }
 
           return Promise.resolve();
@@ -1287,7 +1270,7 @@ module.exports = (knex) => {
     });
 
     describe('dropColumn', () => {
-      if (knex.client.driverName === 'sqlite3') {
+      if (isSQLite(knex)) {
         describe('using wrapIdentifier and postProcessResponse', () => {
           const tableName = 'processor_drop_column_test';
 
@@ -1485,7 +1468,7 @@ module.exports = (knex) => {
 
     it('should warn attempting to create primary from nonexistent columns', () => {
       // Redshift only
-      if (!knex || !knex.client || !/redshift/i.test(knex.client.driverName)) {
+      if (!isRedshift(knex)) {
         return Promise.resolve(true);
       }
       const tableName = 'no_test_column';
@@ -1519,7 +1502,7 @@ module.exports = (knex) => {
 
     //Unit tests checks SQL -- This will test running those queries, no hard assertions here.
     it('#1430 - .primary() & .dropPrimary() same for all dialects', () => {
-      if (/sqlite/i.test(knex.client.driverName)) {
+      if (isSQLite(knex)) {
         return Promise.resolve();
       }
       const constraintName = 'testconstraintname';
@@ -1550,7 +1533,7 @@ module.exports = (knex) => {
       describe('sqlite3 only', () => {
         const tableName = 'invalid_field_test_sqlite3';
         const fieldName = 'field_foo';
-        if (!knex || !knex.client || !/sqlite3/i.test(knex.client.driverName)) {
+        if (!isSQLite(knex)) {
           return Promise.resolve();
         }
 
