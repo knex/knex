@@ -2,11 +2,17 @@
 
 const { expect } = require('chai');
 
-const _ = require('lodash');
 const assert = require('assert');
 const Runner = require('../../../lib/execution/runner');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
+const {
+  isMysql,
+  isPostgreSQL,
+  isMssql,
+  isSQLite,
+  isOracle,
+} = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Selects', function () {
@@ -315,7 +321,7 @@ module.exports = function (knex) {
     });
 
     it('allows you to stream with mysql dialect options', function () {
-      if (!_.includes(['mysql', 'mysql2'], knex.client.driverName)) {
+      if (!isMysql(knex)) {
         return this.skip();
       }
       const rows = [];
@@ -879,7 +885,7 @@ module.exports = function (knex) {
         .select('email', 'logins')
         .distinctOn('id')
         .orderBy('id');
-      if (knex.client.driverName !== 'pg') {
+      if (!isPostgreSQL(knex)) {
         let error;
         try {
           await builder;
@@ -963,7 +969,7 @@ module.exports = function (knex) {
     });
 
     it('handles multi-column "where in" cases', function () {
-      if (knex.client.driverName !== 'mssql') {
+      if (!isMssql(knex)) {
         return knex('composite_key_test')
           .whereIn(
             ['column_a', 'column_b'],
@@ -1075,10 +1081,7 @@ module.exports = function (knex) {
     });
 
     it('handles multi-column "where in" cases with where', function () {
-      if (
-        knex.client.driverName !== 'sqlite3' &&
-        knex.client.driverName !== 'mssql'
-      ) {
+      if (!isSQLite(knex) && !isMssql(knex)) {
         return knex('composite_key_test')
           .where('status', 1)
           .whereIn(
@@ -1166,7 +1169,7 @@ module.exports = function (knex) {
     });
 
     it('does where(raw)', function () {
-      if (knex.client.driverName === 'oracledb') {
+      if (isOracle(knex)) {
         // special case for oracle
         return knex('accounts')
           .whereExists(function () {
@@ -1201,7 +1204,7 @@ module.exports = function (knex) {
     });
 
     it('Allows for knex.Raw passed to the `where` clause', function () {
-      if (knex.client.driverName === 'oracledb') {
+      if (isOracle(knex)) {
         return knex('accounts')
           .where(knex.raw('"id" = 2'))
           .select('email', 'logins');
@@ -1232,7 +1235,7 @@ module.exports = function (knex) {
     });
 
     it('always returns the response object from raw', function () {
-      if (knex.client.driverName === 'pg') {
+      if (isPostgreSQL(knex)) {
         return knex.raw('select id from accounts').then(function (resp) {
           assert(Array.isArray(resp.rows) === true);
         });
@@ -1240,7 +1243,7 @@ module.exports = function (knex) {
     });
 
     it('properly escapes identifiers, #737', function () {
-      if (knex.client.driverName === 'pg') {
+      if (isPostgreSQL(knex)) {
         const query = knex.select('id","name').from('test').toSQL();
         assert(query.sql === 'select "id"",""name" from "test"');
       }
@@ -1263,7 +1266,7 @@ module.exports = function (knex) {
     });
 
     it('select for update locks selected row', function () {
-      if (knex.client.driverName === 'sqlite3') {
+      if (isSQLite(knex)) {
         return this.skip();
       }
 
@@ -1292,7 +1295,7 @@ module.exports = function (knex) {
     });
 
     it('select for update locks only some tables, #2834', function () {
-      if (knex.client.driverName !== 'pg') {
+      if (!isPostgreSQL(knex)) {
         return this.skip();
       }
 
@@ -1341,10 +1344,7 @@ module.exports = function (knex) {
     });
 
     it('select for share prevents updating in other transaction', function () {
-      if (
-        knex.client.driverName === 'sqlite3' ||
-        knex.client.driverName === 'oracledb'
-      ) {
+      if (isSQLite(knex) || isOracle(knex)) {
         return this.skip();
       }
 
@@ -1371,7 +1371,7 @@ module.exports = function (knex) {
             .catch((err) => {
               // mssql fails because it tires to rollback at the same time when update query is running
               // hopefully for share really works though...
-              if (knex.client.driverName == 'mssql') {
+              if (isMssql(knex)) {
                 expect(err.message).to.be.contain(
                   "Can't rollback transaction. There is a request in progress"
                 );
@@ -1386,7 +1386,7 @@ module.exports = function (knex) {
 
     it('forUpdate().skipLocked() with order by should return the first non-locked row', async function () {
       // Note: this test doesn't work properly on MySQL - see https://bugs.mysql.com/bug.php?id=67745
-      if (knex.client.driverName !== 'pg') {
+      if (!isPostgreSQL(knex)) {
         return this.skip();
       }
 
@@ -1419,10 +1419,7 @@ module.exports = function (knex) {
     });
 
     it('forUpdate().skipLocked() should return an empty set when all rows are locked', async function () {
-      if (
-        knex.client.driverName !== 'pg' &&
-        knex.client.driverName !== 'mysql'
-      ) {
+      if (!isPostgreSQL(knex) && !isMysql(knex)) {
         return this.skip();
       }
 
@@ -1449,10 +1446,7 @@ module.exports = function (knex) {
     });
 
     it('forUpdate().noWait() should throw an error immediately when a row is locked', async function () {
-      if (
-        knex.client.driverName !== 'pg' &&
-        knex.client.driverName !== 'mysql'
-      ) {
+      if (!isPostgreSQL(knex) && !isMysql(knex)) {
         return this.skip();
       }
 
@@ -1488,23 +1482,19 @@ module.exports = function (knex) {
         );
       } catch (err) {
         // check if we got the correct error from each db
-        switch (knex.client.driverName) {
-          case 'pg':
-            expect(err.message).to.contain('could not obtain lock on row');
-            break;
-          case 'mysql':
-          case 'mysql2':
-            // mysql
-            expect(err.message).to.contain(
-              'lock(s) could not be acquired immediately'
-            );
-            // mariadb
-            // TODO: detect if test is being run on mysql or mariadb to check for the correct error message
-            // expect(err.message).to.contain('Lock wait timeout exceeded');
-            break;
-          default:
-            // unsupported database
-            throw err;
+        if (isPostgreSQL(knex)) {
+          expect(err.message).to.contain('could not obtain lock on row');
+        } else if (isMysql(knex)) {
+          // mysql
+          expect(err.message).to.contain(
+            'lock(s) could not be acquired immediately'
+          );
+          // mariadb
+          // TODO: detect if test is being run on mysql or mariadb to check for the correct error message
+          // expect(err.message).to.contain('Lock wait timeout exceeded');
+        } else {
+          // unsupported database
+          throw err;
         }
       }
     });
@@ -1521,22 +1511,16 @@ module.exports = function (knex) {
             expect(knex.client.driverName).to.oneOf(['sqlite3', 'oracledb']);
           },
           (e) => {
-            switch (knex.client.driverName) {
-              case 'mysql':
-              case 'mysql2':
-                expect(e.errno).to.equal(1248);
-                break;
-              case 'pg':
-                expect(e.message).to.contain('must have an alias');
-                break;
-
-              case 'mssql':
-                expect(e.message).to.contain(
-                  "Incorrect syntax near the keyword 'order'"
-                );
-                break;
-              default:
-                throw e;
+            if (isMysql(knex)) {
+              expect(e.errno).to.equal(1248);
+            } else if (isPostgreSQL(knex)) {
+              expect(e.message).to.contain('must have an alias');
+            } else if (isMssql(knex)) {
+              expect(e.message).to.contain(
+                "Incorrect syntax near the keyword 'order'"
+              );
+            } else {
+              throw e;
             }
           }
         );

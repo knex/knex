@@ -2,9 +2,10 @@
 
 const tape = require('tape');
 const stream = require('stream');
+const { isPostgreSQL } = require('../util/db-helpers');
 
 module.exports = function (knex) {
-  if (knex.client.driverName === 'pg') {
+  if (isPostgreSQL(knex)) {
     tape('it streams properly in postgres', function (t) {
       const w = new stream.Writable({
         objectMode: true,

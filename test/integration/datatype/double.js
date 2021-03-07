@@ -1,11 +1,12 @@
 'use strict';
 
 const { expect } = require('chai');
+const { isMssql } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   it('#test decimal mssql should allow large numbers', function () {
     // https://github.com/tediousjs/tedious/issues/1058
-    if (!/mssql/i.test(knex.client.driverName)) {
+    if (!isMssql(knex)) {
       return Promise.resolve();
     }
     const tableName = 'decimal_test';
@@ -34,7 +35,7 @@ module.exports = function (knex) {
       });
   });
   it('#test decimal mssql should allow numbers with precision of 10', function () {
-    if (!/mssql/i.test(knex.client.driverName)) {
+    if (!isMssql(knex)) {
       return Promise.resolve();
     }
     const tableName = 'decimal_test';
@@ -64,7 +65,7 @@ module.exports = function (knex) {
   });
   it('#test decimal mssql should allow numbers with precision of 16', function () {
     // Plain JavaScript cannot handle higher numbers without losing precision.
-    if (!/mssql/i.test(knex.client.driverName)) {
+    if (!isMssql(knex)) {
       return Promise.resolve();
     }
     const tableName = 'decimal_test';

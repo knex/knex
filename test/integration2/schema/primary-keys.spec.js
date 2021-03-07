@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const { isMssql, isSQLite, isPostgreSQL } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
@@ -9,7 +10,7 @@ describe('Schema', () => {
 
         before(function () {
           knex = getKnexForDb(db);
-          if (knex.client.driverName === 'mssql') {
+          if (isMssql(knex)) {
             return this.skip();
           }
         });
@@ -42,12 +43,12 @@ describe('Schema', () => {
               await knex('primary_table').insert({ id_four: 1 });
               throw new Error(`Shouldn't reach this`);
             } catch (err) {
-              if (knex.client.driverName === 'sqlite3') {
+              if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
               }
-              if (knex.client.driverName === 'pg') {
+              if (isPostgreSQL(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_four") values ($1) - duplicate key value violates unique constraint "primary_table_pkey"'
                 );
@@ -65,12 +66,12 @@ describe('Schema', () => {
               await knex('primary_table').insert({ id_four: 1 });
               throw new Error(`Shouldn't reach this`);
             } catch (err) {
-              if (knex.client.driverName === 'sqlite3') {
+              if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
               }
-              if (knex.client.driverName === 'pg') {
+              if (isPostgreSQL(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_four") values ($1) - duplicate key value violates unique constraint "my_custom_constraint_name"'
                 );
@@ -96,12 +97,12 @@ describe('Schema', () => {
             try {
               await knex('primary_table').insert({ id_two: 1, id_three: 1 });
             } catch (err) {
-              if (knex.client.driverName === 'sqlite3') {
+              if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
               }
-              if (knex.client.driverName === 'pg') {
+              if (isPostgreSQL(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_three", "id_two") values ($1, $2) - duplicate key value violates unique constraint "primary_table_pkey"'
                 );
@@ -124,12 +125,12 @@ describe('Schema', () => {
             try {
               await knex('primary_table').insert({ id_two: 1, id_three: 1 });
             } catch (err) {
-              if (knex.client.driverName === 'sqlite3') {
+              if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
               }
-              if (knex.client.driverName === 'pg') {
+              if (isPostgreSQL(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_three", "id_two") values ($1, $2) - duplicate key value violates unique constraint "my_custom_constraint_name"'
                 );

@@ -2,6 +2,7 @@
 
 const { expect } = require('chai');
 const _ = require('lodash');
+const { DRIVER_NAMES } = require('../../lib/constants');
 const { isObject } = require('../../lib/util/is');
 
 const { TEST_TIMESTAMP } = require('../util/constants');
@@ -10,15 +11,7 @@ module.exports = function (knex) {
   const client = knex.client;
 
   // allowed driver name of a client
-  const allowedClients = [
-    'pg',
-    'mssql',
-    'mysql',
-    'mysql2',
-    'oracledb',
-    'pg-redshift',
-    'sqlite3',
-  ];
+  const allowedClients = Object.values(DRIVER_NAMES);
 
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {

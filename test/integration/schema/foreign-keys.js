@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const { isSQLite, isPostgreSQL } = require('../../util/db-helpers');
 
 module.exports = (knex) => {
   describe('Schema', () => {
@@ -63,12 +64,12 @@ module.exports = (knex) => {
           });
           throw new Error("Shouldn't reach this");
         } catch (err) {
-          if (knex.client.driverName === 'sqlite3') {
+          if (isSQLite(knex)) {
             expect(err.message).to.equal(
               `insert into \`foreign_keys_table_one\` (\`fkey_four_part1\`, \`fkey_four_part2\`, \`fkey_three\`, \`fkey_two\`) values ('a', 'b', 99, 9999) - SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`
             );
           }
-          if (knex.client.driverName === 'pg') {
+          if (isPostgreSQL(knex)) {
             expect(err.message).to.equal(
               `insert into "foreign_keys_table_one" ("fkey_four_part1", "fkey_four_part2", "fkey_three", "fkey_two") values ($1, $2, $3, $4) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "foreign_keys_table_one_fkey_two_foreign"`
             );

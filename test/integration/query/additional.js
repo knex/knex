@@ -10,10 +10,12 @@ const {
   isPostgreSQL,
   isOracle,
   isRedshift,
-  isOneOfDbs,
   isSQLite,
   isMysql,
+  isMssql,
+  isPgBased,
 } = require('../../util/db-helpers');
+const { DRIVER_NAMES: drivers } = require('../../util/constants');
 
 module.exports = function (knex) {
   describe('Additional', function () {
@@ -189,7 +191,7 @@ module.exports = function (knex) {
 
     describe('returning with wrapIdentifier and postProcessResponse` (TODO: fix to work on all possible dialects)', function () {
       const origHooks = {};
-      if (!isOneOfDbs(knex, ['pg', 'mssql'])) {
+      if (!isPostgreSQL(knex) || !isMssql(knex)) {
         return;
       }
 
@@ -289,15 +291,15 @@ module.exports = function (knex) {
 
     it('should allow raw queries directly with `knex.raw`', function () {
       const tables = {
-        mysql: 'SHOW TABLES',
-        mysql2: 'SHOW TABLES',
-        pg:
+        [drivers.MySQL]: 'SHOW TABLES',
+        [drivers.MySQL2]: 'SHOW TABLES',
+        [drivers.PostgreSQL]:
           "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
-        'pg-redshift':
+        [drivers.Redshift]:
           "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
-        sqlite3: "SELECT name FROM sqlite_master WHERE type='table';",
-        oracledb: 'select TABLE_NAME from USER_TABLES',
-        mssql:
+        [drivers.SQLite]: "SELECT name FROM sqlite_master WHERE type='table';",
+        [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
+        [drivers.MsSQL]:
           "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'",
       };
       return knex
@@ -530,7 +532,7 @@ module.exports = function (knex) {
         });
     });
 
-    if (knex.client.driverName === 'oracledb') {
+    if (isOracle(knex)) {
       const oracledb = require('oracledb');
       describe('test oracle stored procedures', function () {
         it('create stored procedure', function () {
@@ -578,17 +580,14 @@ module.exports = function (knex) {
 
     it('should allow renaming a column', function () {
       let countColumn;
-      switch (knex.client.driverName) {
-        case 'oracledb':
-          countColumn = 'COUNT(*)';
-          break;
-        case 'mssql':
-          countColumn = '';
-          break;
-        default:
-          countColumn = 'count(*)';
-          break;
+      if (isOracle(knex)) {
+        countColumn = 'COUNT(*)';
+      } else if (isMssql(knex)) {
+        countColumn = '';
+      } else {
+        countColumn = 'count(*)';
       }
+
       let count;
       const inserts = [];
       _.times(40, function (i) {
@@ -650,17 +649,14 @@ module.exports = function (knex) {
 
     it('should allow dropping a column', function () {
       let countColumn;
-      switch (knex.client.driverName) {
-        case 'oracledb':
-          countColumn = 'COUNT(*)';
-          break;
-        case 'mssql':
-          countColumn = '';
-          break;
-        default:
-          countColumn = 'count(*)';
-          break;
+      if (isOracle(knex)) {
+        countColumn = 'COUNT(*)';
+      } else if (isMssql(knex)) {
+        countColumn = '';
+      } else {
+        countColumn = 'count(*)';
       }
+
       let count;
       return knex
         .count('*')
@@ -716,26 +712,28 @@ module.exports = function (knex) {
 
     it('.timeout() should throw TimeoutError', function () {
       const driverName = knex.client.driverName;
-      if (driverName === 'sqlite3') {
+      if (isSQLite(knex)) {
         return this.skip();
       } //TODO -- No built-in support for sleeps
-      if (/redshift/.test(driverName)) {
+
+      if (isRedshift(knex)) {
         return this.skip();
       }
+
       const testQueries = {
-        pg: function () {
+        [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT pg_sleep(1)');
         },
-        mysql: function () {
+        [drivers.MySQL]: function () {
           return knex.raw('SELECT SLEEP(1)');
         },
-        mysql2: function () {
+        [drivers.MySQL2]: function () {
           return knex.raw('SELECT SLEEP(1)');
         },
-        mssql: function () {
+        [drivers.MsSQL]: function () {
           return knex.raw("WAITFOR DELAY '00:00:01'");
         },
-        oracledb: function () {
+        [drivers.Oracle]: function () {
           return knex.raw('begin dbms_lock.sleep(1); end;');
         },
       };
@@ -775,19 +773,19 @@ module.exports = function (knex) {
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
       const testQueries = {
-        pg: function () {
+        [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT pg_sleep(10)');
         },
-        mysql: function () {
+        [drivers.MySQL]: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mysql2: function () {
+        [drivers.MySQL2]: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mssql: function () {
+        [drivers.MsSQL]: function () {
           return knex.raw("WAITFOR DELAY '00:00:10'");
         },
-        oracledb: function () {
+        [drivers.Oracle]: function () {
           return knex.raw('begin dbms_lock.sleep(10); end;');
         },
       };
@@ -812,13 +810,13 @@ module.exports = function (knex) {
       }
 
       const getProcessesQueries = {
-        pg: function () {
+        [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT * from pg_stat_activity');
         },
-        mysql: function () {
+        [drivers.MySQL]: function () {
           return knex.raw('SHOW PROCESSLIST');
         },
-        mysql2: function () {
+        [drivers.MySQL2]: function () {
           return knex.raw('SHOW PROCESSLIST');
         },
       };
@@ -855,7 +853,7 @@ module.exports = function (knex) {
               let processes;
               let sleepProcess;
 
-              if (_.startsWith(driverName, 'pg')) {
+              if (isPgBased(knex)) {
                 processes = results.rows;
                 sleepProcess = _.find(processes, { query: query.toString() });
               } else {
@@ -885,19 +883,19 @@ module.exports = function (knex) {
       const knexDb = new Knex(knexConfig);
 
       const testQueries = {
-        pg: function () {
+        [drivers.PostgreSQL]: function () {
           return knexDb.raw('SELECT pg_sleep(10)');
         },
-        mysql: function () {
+        [drivers.MySQL]: function () {
           return knexDb.raw('SELECT SLEEP(10)');
         },
-        mysql2: function () {
+        [drivers.MySQL2]: function () {
           return knexDb.raw('SELECT SLEEP(10)');
         },
-        mssql: function () {
+        [drivers.MsSQL]: function () {
           return knexDb.raw("WAITFOR DELAY '00:00:10'");
         },
-        oracle: function () {
+        [drivers.Oracle]: function () {
           return knexDb.raw('begin dbms_lock.sleep(10); end;');
         },
       };
@@ -937,7 +935,8 @@ module.exports = function (knex) {
       knexConfig.pool.acquireTimeoutMillis = 100;
 
       const rawTestQueries = {
-        pg: (sleepSeconds) => `SELECT pg_sleep(${sleepSeconds})`,
+        [drivers.PostgreSQL]: (sleepSeconds) =>
+          `SELECT pg_sleep(${sleepSeconds})`,
       };
 
       const driverName = knex.client.driverName;
