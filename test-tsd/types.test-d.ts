@@ -5,7 +5,7 @@ import knexDefault, { Knex, knex } from '../types';
 import * as knexStar from '../types';
 import knexCjsImport = require('../');
 import QueryBuilder = Knex.QueryBuilder;
-import KnexTimeoutError = Knex.KnexTimeoutError;
+import KnexTimeoutError = knex.KnexTimeoutError;
 
 const knexCjs = require('../knex');
 const { knex: knexCjsNamed } = require('../knex');
@@ -16,8 +16,8 @@ expectType<Knex<any, unknown[]>>(knexStar.default({}));
 expectType<Knex<any, unknown[]>>(knexStar.knex({}));
 expectType<Knex<any, unknown[]>>(knexCjsImport.default({}));
 expectType<Knex<any, unknown[]>>(knexCjsImport.knex({}));
-expectType<KnexTimeoutError>(new KnexTimeoutError());
-expectType<KnexTimeoutError>(new KnexTimeoutError());
+expectType<KnexTimeoutError>(new knex.KnexTimeoutError());
+expectType<KnexTimeoutError>(new knex.KnexTimeoutError());
 
 // eslint-disable-next-line
 expectType<any>(knexCjs({}));
