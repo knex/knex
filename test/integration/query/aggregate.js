@@ -1,5 +1,7 @@
 'use strict';
 
+const { isMysql, isPostgreSQL } = require("../../util/db-helpers");
+
 module.exports = function (knex) {
   describe('Aggregate', function () {
     it('has a sum', function () {
@@ -521,8 +523,7 @@ module.exports = function (knex) {
         });
     });
 
-    const testWithMultipleColumns =
-      knex.client.driverName === 'mysql' || knex.client.driverName === 'pg';
+    const testWithMultipleColumns = isMysql(knex) || isPostgreSQL(knex);
 
     it('supports countDistinct with multiple columns', function () {
       if (!testWithMultipleColumns) {

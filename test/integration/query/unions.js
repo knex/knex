@@ -1,6 +1,7 @@
 'use strict';
 
 const expect = require('chai').expect;
+const { isMssql, isOracle, isPgBased, isSQLite } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('unions', function () {
@@ -91,11 +92,7 @@ module.exports = function (knex) {
     });
   });
 
-  if (
-    ['pg', 'mssql', 'pg-redshift', 'oracledb', 'sqlite3'].includes(
-      knex.client.driverName
-    )
-  ) {
+  if (isPgBased(knex) || isMssql(knex) || isOracle(knex) || isSQLite(knex)) {
     describe('intersects', function () {
       before(function () {
         return knex.schema.createTable('intersect_test', function (t) {

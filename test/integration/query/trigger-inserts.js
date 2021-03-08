@@ -3,6 +3,7 @@
 const _ = require('lodash');
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
+const { isMssql, isRedshift, isPostgreSQL, isSQLite, isOracle, isMysql } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Insert with Triggers', function () {
@@ -10,7 +11,7 @@ module.exports = function (knex) {
     const insertTriggerOptions = { includeTriggerModifications: true };
 
     before(function () {
-      if (knex.client.driverName !== 'mssql') {
+      if (!isMssql(knex)) {
         this.skip('This test is MSSQL only');
       }
     });
@@ -30,7 +31,7 @@ module.exports = function (knex) {
 
       // Create proper environment for tests
       before(async function () {
-        if (knex.client.driverName !== 'mssql') {
+        if (!isMssql(knex)) {
           this.skip('This test is MSSQL only');
         }
 
@@ -74,7 +75,7 @@ module.exports = function (knex) {
 
       // Clean-up test specific tables
       after(async function () {
-        if (knex.client.driverName !== 'mssql') {
+        if (!isMssql(knex)) {
           return;
         }
 
@@ -175,7 +176,7 @@ module.exports = function (knex) {
 
     describe('Re-test all Insert Functions with trigger option and returns', function () {
       before(async function () {
-        if (knex.client.driverName !== 'mssql') {
+        if (!isMssql(knex)) {
           this.skip('This test is MSSQL only');
         }
 
@@ -673,7 +674,7 @@ module.exports = function (knex) {
       });
 
       it('will fail when multiple inserts are made into a unique column', function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
         return knex('accounts')
@@ -1090,11 +1091,11 @@ module.exports = function (knex) {
             );
           })
           .then(function (rows) {
-            if (/redshift/.test(knex.client.driverName)) {
+            if (isRedshift(knex)) {
               return expect(rows).to.equal(1);
             }
             expect(rows.length).to.equal(1);
-            if (knex.client.driverName === 'pg') {
+            if (isPostgreSQL(knex)) {
               expect(_.keys(rows[0]).length).to.equal(2);
               expect(rows[0].account_id).to.equal(insertData.account_id);
               expect(rows[0].details).to.equal(insertData.details);
@@ -1103,7 +1104,7 @@ module.exports = function (knex) {
       });
 
       it('should allow a * for returning in postgres and oracle', function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
         const insertData = {
@@ -1180,7 +1181,7 @@ module.exports = function (knex) {
           })
           .then(function (rows) {
             expect(rows.length).to.equal(1);
-            if (knex.client.driverName === 'pg') {
+            if (isPostgreSQL(knex)) {
               expect(_.keys(rows[0]).length).to.equal(5);
               expect(rows[0].account_id).to.equal(insertData.account_id);
               expect(rows[0].details).to.equal(insertData.details);
@@ -1191,7 +1192,7 @@ module.exports = function (knex) {
       });
 
       it('should replace undefined keys in multi insert with DEFAULT', function () {
-        if (knex.client.driverName === 'sqlite3') {
+        if (isSQLite(knex)) {
           return true;
         }
         return knex('accounts')
@@ -1239,7 +1240,7 @@ module.exports = function (knex) {
       });
 
       it('will silently do nothing when multiple inserts are made into a unique column and ignore is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1285,7 +1286,7 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1302,7 +1303,7 @@ module.exports = function (knex) {
       });
 
       it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1354,7 +1355,7 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1371,7 +1372,7 @@ module.exports = function (knex) {
       });
 
       it('updates columns when inserting a duplicate key to unique column and merge is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1417,7 +1418,7 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1434,7 +1435,7 @@ module.exports = function (knex) {
       });
 
       it('conditionally updates rows when inserting a duplicate key to unique column and merge with where clause matching row(s) is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1478,12 +1479,12 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
           }
-          if (/mysql|mysql2/i.test(knex.client.driverName)) {
+          if (isMysql(knex)) {
             expect(err).to.be.an('error');
             if (
               err.message.includes(
@@ -1504,7 +1505,7 @@ module.exports = function (knex) {
       });
 
       it('will silently do nothing when inserting a duplicate key to unique column and merge with where clause matching no rows is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1548,12 +1549,12 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
           }
-          if (/mysql|mysql2/i.test(knex.client.driverName)) {
+          if (isMysql(knex)) {
             expect(err).to.be.an('error');
             if (
               err.message.includes(
@@ -1574,7 +1575,7 @@ module.exports = function (knex) {
       });
 
       it('updates columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1625,7 +1626,7 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1642,7 +1643,7 @@ module.exports = function (knex) {
       });
 
       it('updates columns with raw value when inserting a duplicate key to unique column and merge with updates is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1694,7 +1695,7 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1711,7 +1712,7 @@ module.exports = function (knex) {
       });
 
       it('updates and inserts columns when inserting multiple rows merge is specified', async function () {
-        if (/redshift/i.test(knex.client.driverName)) {
+        if (isRedshift(knex)) {
           return this.skip();
         }
 
@@ -1760,7 +1761,7 @@ module.exports = function (knex) {
               );
             });
         } catch (err) {
-          if (/oracle|mssql/i.test(knex.client.driverName)) {
+          if (isOracle(knex) || isMssql(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;

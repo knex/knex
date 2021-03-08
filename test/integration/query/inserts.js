@@ -6,7 +6,14 @@ const _ = require('lodash');
 const sinon = require('sinon');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const { isRedshift, isPostgreSQL } = require('../../util/db-helpers');
+const {
+  isRedshift,
+  isPostgreSQL,
+  isSQLite,
+  isMssql,
+  isMysql,
+  isOracle,
+} = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Inserts', function () {
@@ -740,7 +747,7 @@ module.exports = function (knex) {
           function () {
             // No errors happen in sqlite3, which doesn't have native support
             // for the enum type.
-            if (knex.client.driverName !== 'sqlite3') {
+            if (!isSQLite(knex)) {
               throw new Error(
                 'There should be an error for invalid enum inserts'
               );
@@ -766,10 +773,7 @@ module.exports = function (knex) {
           function () {
             // No errors happen in sqlite3 or mysql, which don't have native support
             // for the uuid type.
-            if (
-              knex.client.driverName === 'pg' ||
-              knex.client.driverName === 'mssql'
-            ) {
+            if (isPostgreSQL(knex) || isMssql(knex)) {
               throw new Error(
                 'There should be an error in postgresql for uuids'
               );
@@ -1102,7 +1106,7 @@ module.exports = function (knex) {
         })
         .then(function (rows) {
           expect(rows.length).to.equal(1);
-          if (knex.client.driverName === 'pg') {
+          if (isPostgreSQL(knex)) {
             expect(_.keys(rows[0]).length).to.equal(5);
             expect(rows[0].account_id).to.equal(insertData.account_id);
             expect(rows[0].details).to.equal(insertData.details);
@@ -1113,7 +1117,6 @@ module.exports = function (knex) {
     });
 
     describe('batchInsert', function () {
-      const driverName = knex.client.driverName;
       const fiftyLengthString =
         'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
       const items = [];
@@ -1144,7 +1147,7 @@ module.exports = function (knex) {
           .returning(['Col1', 'Col2'])
           .then(function (result) {
             //Returning only supported by some dialects.
-            if (['pg', 'oracledb'].indexOf(driverName) !== -1) {
+            if (isPostgreSQL(knex) || isOracle(knex)) {
               result.forEach(function (item) {
                 expect(item.Col1).to.equal(fiftyLengthString);
                 expect(item.Col2).to.equal(fiftyLengthString);
@@ -1246,7 +1249,7 @@ module.exports = function (knex) {
     });
 
     it('should replace undefined keys in multi insert with DEFAULT', function () {
-      if (knex.client.driverName === 'sqlite3') {
+      if (isSQLite(knex)) {
         return true;
       }
       return knex('accounts')
@@ -1335,7 +1338,7 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
@@ -1399,7 +1402,7 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
@@ -1458,7 +1461,7 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
@@ -1515,12 +1518,12 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
         }
-        if (/mysql|mysql2/i.test(knex.client.driverName)) {
+        if (isMysql(knex)) {
           expect(err).to.be.an('error');
           if (
             err.message.includes(
@@ -1581,12 +1584,12 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
         }
-        if (/mysql|mysql2/i.test(knex.client.driverName)) {
+        if (isMysql(knex)) {
           expect(err).to.be.an('error');
           if (
             err.message.includes(
@@ -1657,7 +1660,7 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
@@ -1725,7 +1728,7 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
@@ -1793,7 +1796,7 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
@@ -1858,7 +1861,7 @@ module.exports = function (knex) {
             );
           });
       } catch (err) {
-        if (/oracle|mssql/i.test(knex.client.driverName)) {
+        if (isOracle(knex) || isMssql(knex)) {
           expect(err).to.be.an('error');
           if (err.message.includes('.onConflict() is not supported for'))
             return;
@@ -1879,7 +1882,7 @@ module.exports = function (knex) {
     });
 
     it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function () {
-      if (knex.client.driverName === 'sqlite3') {
+      if (isSQLite(knex)) {
         return true;
       }
       return knex.transaction(function (trx) {

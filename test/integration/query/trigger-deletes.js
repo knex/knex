@@ -2,6 +2,7 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
+const { isMssql } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Deletes with Triggers', function () {
@@ -9,7 +10,7 @@ module.exports = function (knex) {
     const triggerOptions = { includeTriggerModifications: true };
 
     before(function () {
-      if (knex.client.driverName !== 'mssql') {
+      if (!isMssql(knex)) {
         this.skip('This test is MSSQL only');
       }
     });
@@ -29,7 +30,7 @@ module.exports = function (knex) {
 
       // Create proper environment for tests
       before(async function () {
-        if (knex.client.driverName !== 'mssql') {
+        if (!isMssql(knex)) {
           this.skip('This test is MSSQL only');
         }
 
@@ -72,7 +73,7 @@ module.exports = function (knex) {
 
       // Clean-up test specific tables
       after(async function () {
-        if (knex.client.driverName !== 'mssql') {
+        if (!isMssql(knex)) {
           return;
         }
 
@@ -202,7 +203,7 @@ module.exports = function (knex) {
 
     describe('Re-test all Delete Functions with trigger option and returns', function () {
       before(async function () {
-        if (knex.client.driverName !== 'mssql') {
+        if (!isMssql(knex)) {
           this.skip('This test is MSSQL only');
         }
 

@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { isOracle } = require('../util/db-helpers');
 
 module.exports = function (knex) {
   const sinon = require('sinon');
@@ -13,7 +14,7 @@ module.exports = function (knex) {
       return knex.destroy();
     });
 
-    if (this.driverName === 'oracledb') {
+    if (isOracle(knex)) {
       describe('Oracledb driver tests', function () {
         this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
         require('./dialects/oracledb');

@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
+const { isOracle, isMssql } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Joins', function () {
@@ -1791,7 +1792,7 @@ module.exports = function (knex) {
     });
 
     it('supports joins with overlapping column names', function () {
-      if (knex.client.driverName === 'oracledb') {
+      if (isOracle(knex)) {
         return this.skip();
       }
 
@@ -1890,7 +1891,7 @@ module.exports = function (knex) {
         });
     });
 
-    if (knex.client.driverName !== 'mssql') {
+    if (!isMssql(knex)) {
       it('Can use .using()', () => {
         const joinName = 'accounts_join_test';
 

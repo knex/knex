@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { isMssql } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   const bigintTimestamp = 1464294366973;
@@ -9,7 +10,7 @@ module.exports = function (knex) {
   const negativeUnsafeBigint = -99071992547409911;
 
   it('#test number mssql should not allow unsafe bigint', function () {
-    if (!/mssql/i.test(knex.client.driverName)) {
+    if (!isMssql(knex)) {
       return Promise.resolve();
     }
     const constraintName = 'pk_id';
@@ -92,7 +93,7 @@ module.exports = function (knex) {
   });
 
   it('#1781 - decimal value must not be converted to integer', function () {
-    if (!/mssql/i.test(knex.client.driverName)) {
+    if (!isMssql(knex)) {
       return this.skip();
     }
 

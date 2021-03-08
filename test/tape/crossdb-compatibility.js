@@ -1,6 +1,7 @@
 'use strict';
 const tape = require('tape');
 const { expect } = require('chai');
+const { isOracle } = require('../util/db-helpers');
 
 /**
  * Collection of tests for making sure that certain features are cross database compatible
@@ -8,7 +9,7 @@ const { expect } = require('chai');
 module.exports = function (knex) {
   const driverName = knex.client.driverName;
 
-  if (driverName === 'oracledb') {
+  if (isOracle(knex)) {
     // TODO: FIX ORACLE TO WORK THE SAME WAY WITH OTHER DIALECTS IF POSSIBLE
     return;
   }

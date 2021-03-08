@@ -7,11 +7,13 @@ const _ = require('lodash');
 const sinon = require('sinon');
 const { KnexTimeoutError } = require('../../../lib/util/timeout');
 const delay = require('../../../lib/execution/internal/delay');
+const { isRedshift, isOracle, isMssql, isPostgreSQL } = require('../../util/db-helpers');
+const { DRIVER_NAMES: drivers } = require('../../util/constants');
 
 module.exports = function (knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
   // then pick an id to use as the "foreign key" just for testing transactions.
-  const constid = /redshift/.test(knex.client.driverName);
+  const constid = isRedshift(knex);
   let fkid = 1;
 
   describe('Transactions', function () {
@@ -37,10 +39,7 @@ module.exports = function (knex) {
 
     it('supports direct retrieval of a transaction without a callback', () => {
       const trxPromise = knex.transaction();
-      const query =
-        knex.client.driverName === 'oracledb'
-          ? '1 as "result" from DUAL'
-          : '1 as result';
+      const query = isOracle(knex) ? '1 as "result" from DUAL' : '1 as result';
 
       let transaction;
       return trxPromise
@@ -233,11 +232,7 @@ module.exports = function (knex) {
         })
         .catch(function (msg) {
           // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-          const expectedCount =
-            knex.client.driverName === 'oracledb' ||
-            knex.client.driverName === 'mssql'
-              ? 2
-              : 4;
+          const expectedCount = isOracle(knex) || isMssql(knex) ? 2 : 4;
           expect(count).to.equal(expectedCount);
           expect(msg).to.equal(err);
           return knex('accounts').where('id', id).select('first_name');
@@ -251,7 +246,7 @@ module.exports = function (knex) {
       let __knexUid,
         count = 0;
       const err = new Error('error message');
-      if (knex.client.driverName === 'pg') {
+      if (isPostgreSQL(knex)) {
         return knex
           .transaction(function (trx) {
             return trx.schema
@@ -326,9 +321,9 @@ module.exports = function (knex) {
             expect(__knexUid).to.equal(obj.__knexUid);
           })
           .then(function () {
-            if (knex.client.driverName === 'mssql') {
+            if (isMssql(knex)) {
               expect(count).to.equal(3);
-            } else if (knex.client.driverName === 'oracledb') {
+            } else if (isOracle(knex)) {
               expect(count).to.equal(4);
             } else {
               expect(count).to.equal(5);
@@ -369,7 +364,7 @@ module.exports = function (knex) {
     });
 
     it('should allow for nested transactions', function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return Promise.resolve();
       }
       return knex.transaction(function (trx) {
@@ -385,7 +380,7 @@ module.exports = function (knex) {
     });
 
     it('#2213 - should wait for sibling transactions to finish', function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -404,7 +399,7 @@ module.exports = function (knex) {
     });
 
     it('#2213 - should not evaluate a Transaction container until all previous siblings have completed', async function () {
-      if (/redshift/i.test(knex.client.driverName)) {
+      if (isRedshift(knex)) {
         return this.skip();
       }
 
@@ -465,9 +460,9 @@ module.exports = function (knex) {
 
       await knexDb.transaction(function (trx) {
         let sql = 'SELECT 1';
-        if (knex.client.driverName === 'oracledb') {
+        if (isOracle(knex)) {
           sql = 'SELECT 1 FROM DUAL';
-        } else if (knex.client.dialect === 'mssql') {
+        } else if (isMssql(knex)) {
           // MSSQL does not have a boolean type.
           sql = 'SELECT CASE WHEN 1 = 1 THEN 1 ELSE 0 END';
         }
@@ -525,7 +520,7 @@ module.exports = function (knex) {
      * An example of this type of auto-aborting error is creating a table with
      * a foreign key that references a non-existent table.
      */
-    if (knex.client.driverName === 'mssql') {
+    if (isMssql(knex)) {
       it('should rollback when transaction aborts', function () {
         let insertedId = null;
         let originalError = null;
@@ -681,9 +676,9 @@ module.exports = function (knex) {
       const mysqlKillConnection = async (connection) =>
         knex.raw('KILL ?', [connection.threadId]);
       const killConnectionMap = {
-        mysql: mysqlKillConnection,
-        mysql2: mysqlKillConnection,
-        pg: async (connection) =>
+        [drivers.MySQL]: mysqlKillConnection,
+        [drivers.MySQL2]: mysqlKillConnection,
+        [drivers.PostgreSQL]: async (connection) =>
           knex.raw('SELECT pg_terminate_backend(?)', [connection.processID]),
         /* TODO FIX
         mssql: async (connection, trx) => {

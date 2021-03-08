@@ -13,6 +13,7 @@ const config = require('../../knexfile');
 const delay = require('../../../lib/execution/internal/delay');
 const _ = require('lodash');
 const testMemoryMigrations = require('./memory-migrations');
+const { isPostgreSQL, isOracle, isMssql, isMysql, isSQLite, isRedshift } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   rimraf.sync(path.join(__dirname, './migration'));
@@ -62,7 +63,7 @@ module.exports = function (knex) {
         });
     });
 
-    if (knex.client.driverName === 'pg') {
+    if (isPostgreSQL(knex)) {
       it('should not fail drop-and-recreate-column operation when using promise chain and schema', () => {
         return knex.migrate
           .latest({
@@ -77,7 +78,7 @@ module.exports = function (knex) {
       });
     }
 
-    if (knex.client.driverName === 'sqlite3') {
+    if (isSQLite(knex)) {
       it('should not fail rename-and-drop-column with multiline sql from legacy db', async () => {
         const knexConfig = _.extend({}, config.sqlite3, {
           connection: {
@@ -109,7 +110,7 @@ module.exports = function (knex) {
         });
     });
 
-    if (knex.client.driverName === 'pg') {
+    if (isPostgreSQL(knex)) {
       it('should not fail drop-and-recreate-column operation when using async/await and schema', () => {
         return knex.migrate
           .latest({
@@ -219,7 +220,7 @@ module.exports = function (knex) {
           })
           .then(function () {
             // Cleanup the added migrations
-            if (/redshift/.test(knex.client.driverName)) {
+            if (isRedshift(knex)) {
               return knex('knex_migrations')
                 .where('name', 'like', '%foobar%')
                 .del();
@@ -275,7 +276,7 @@ module.exports = function (knex) {
       });
 
       it('should work with concurent calls to _lockMigrations', async function () {
-        if (knex.client.driverName == 'sqlite3') {
+        if (isSQLite(knex)) {
           // sqlite doesn't support concurrency
           this.skip();
           return;
@@ -373,7 +374,7 @@ module.exports = function (knex) {
       });
 
       it('should run the migrations from oldest to newest', function () {
-        if (knex.client.driverName === 'oracledb') {
+        if (isOracle(knex)) {
           return knex('knex_migrations')
             .orderBy('migration_time', 'asc')
             .select('*')
@@ -744,7 +745,7 @@ module.exports = function (knex) {
       });
     });
 
-    if (knex.client.driverName === 'pg' || knex.client.driverName === 'mssql') {
+    if (isPostgreSQL(knex) || isMssql(knex)) {
       it('is able to run two migrations in parallel (if no implicit DDL commits)', function () {
         return Promise.all([
           knex.migrate.latest({ directory: 'test/integration/migrate/test' }),
@@ -884,11 +885,7 @@ module.exports = function (knex) {
             // MySQL / Oracle commit transactions implicit for most common
             // migration statements (e.g. CREATE TABLE, ALTER TABLE, DROP TABLE),
             // so we need to check for dialect
-            if (
-              knex.client.driverName === 'mysql' ||
-              knex.client.driverName === 'mysql2' ||
-              knex.client.driverName === 'oracledb'
-            ) {
+            if (isMysql(knex) || isOracle(knex)) {
               expect(exists).to.equal(true);
             } else {
               expect(exists).to.equal(false);
@@ -903,7 +900,7 @@ module.exports = function (knex) {
       });
     });
 
-    if (knex.client.driverName === 'pg') {
+    if (isPostgreSQL(knex)) {
       describe('knex.migrate.latest with specific changelog schema', function () {
         before(() => {
           return knex.raw(`CREATE SCHEMA IF NOT EXISTS "testschema"`);
