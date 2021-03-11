@@ -24,6 +24,8 @@ expectType<any>(knexCjs({}));
 // eslint-disable-next-line
 expectType<any>(knexCjsNamed({}));
 
+knex({}).schema.createTable("table", (t: Knex.AlterTableBuilder) => {})
+
 const knexInstance = knexDefault(clientConfig);
 
 // ToDo remove this copy-pasted type after we can export it as a named properly
