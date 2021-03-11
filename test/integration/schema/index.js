@@ -4,7 +4,15 @@ const { expect } = require('chai');
 
 const _ = require('lodash');
 const { isString, isObject } = require('../../../lib/util/is');
-const { isPgBased, isMysql, isOracle, isPostgreSQL, isSQLite, isRedshift, isMssql } = require('../../util/db-helpers');
+const {
+  isPgBased,
+  isMysql,
+  isOracle,
+  isPostgreSQL,
+  isSQLite,
+  isRedshift,
+  isMssql,
+} = require('../../util/db-helpers');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -475,6 +483,8 @@ module.exports = (knex) => {
             ]);
             tester('mssql', [
               "CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int CONSTRAINT [test_table_one_logins_default] DEFAULT '1', [balance] float CONSTRAINT [test_table_one_balance_default] DEFAULT '0', [about] nvarchar(max), [created_at] datetime2, [updated_at] datetime2)",
+              "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_table_one', NULL, NULL))\n  EXEC sys.sp_updateextendedproperty N'MS_Description', N'A table comment.', N'Schema', N'dbo', N'Table', N'test_table_one'\nELSE\n  EXEC sys.sp_addextendedproperty N'MS_Description', N'A table comment.', N'Schema', N'dbo', N'Table', N'test_table_one'",
+              "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'))\n  EXEC sys.sp_updateextendedproperty N'MS_Description', N'A comment.', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'\nELSE\n  EXEC sys.sp_addextendedproperty N'MS_Description', N'A comment.', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'",
               'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
               'CREATE UNIQUE INDEX [test_table_one_email_unique] ON [test_table_one] ([email]) WHERE [email] IS NOT NULL',
               'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])',
@@ -921,7 +931,12 @@ module.exports = (knex) => {
           .then(() => knex.schema.dropTable('test_table_numerics2')));
 
       it('allows alter column syntax', function () {
-        if (isSQLite(knex) || isRedshift(knex) || isMssql(knex) || isOracle(knex)) {
+        if (
+          isSQLite(knex) ||
+          isRedshift(knex) ||
+          isMssql(knex) ||
+          isOracle(knex)
+        ) {
           return;
         }
 
