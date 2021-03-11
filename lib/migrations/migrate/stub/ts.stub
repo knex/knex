@@ -1,8 +1,8 @@
-import * as Knex from "knex";
+import { Knex } from "knex";
 
 <% if (d.tableName) { %>
 export async function up(knex: Knex): Promise<Knex.SchemaBuilder> {
-    return knex.schema.createTable("<%= d.tableName %>", (t: Knex.AlterTableBuilder) => {
+    return knex.schema.createTable("<%= d.tableName %>", (t) => {
         t.increments();
         t.timestamps();
     });
