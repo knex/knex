@@ -1,5 +1,24 @@
 # Master (Unreleased)
 
+# 0.95.2 - 11 March, 2021
+
+### New features:
+
+- Improve ESM import support #4350
+
+### Bug fixes:
+
+- CLI: update ts.stub files to new TypeScript namespace #4344
+- CLI: fix TypeScript migration stub after 0.95.0 changes #4366
+
+### Typings:
+
+- Move QueryBuilder and KnexTimeoutError into knex namespace #4358
+
+### Test / internal changes:
+
+- Unify db test helpers #4356
+
 # 0.95.1 - 04 March, 2021
 
 ### Bug fixes:
