@@ -136,6 +136,31 @@ describe('Schema', () => {
             ]);
           });
 
+          it('generates correct SQL for the new foreign key operation with an on update clause', async () => {
+            if (!isSQLite(knex)) {
+              return;
+            }
+
+            const builder = knex.schema.alterTable(
+              'foreign_keys_table_one',
+              (table) => {
+                table
+                  .foreign('fkey_three')
+                  .references('foreign_keys_table_three.id')
+                  .deferred();
+              }
+            );
+
+            const queries = await builder.generateDdlCommands();
+
+            expect(queries.sql).to.eql([
+              'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`) deferrable initially immediate )',
+              'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
+              'DROP TABLE "foreign_keys_table_one"',
+              'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
+            ]);
+          });
+
           it('creates new foreign key', async () => {
             await knex('foreign_keys_table_two').insert({});
             await knex('foreign_keys_table_three').insert({});
