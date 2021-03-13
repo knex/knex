@@ -152,13 +152,11 @@ describe('Schema', () => {
             );
 
             const queries = await builder.generateDdlCommands();
-
-            expect(queries.sql).to.eql([
-              'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`) deferrable initially immediate )',
-              'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
-              'DROP TABLE "foreign_keys_table_one"',
-              'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
-            ]);
+            expect(queries.sql).to.eql({
+              bindings: '',
+              sql:
+                'alter table "foreign_keys_table_one" add constraint "foreign_keys_table_one_fkey_three_foreign" foreign key ("fkey_three") references "foreign_keys_table_three" ("id") deferrable initially immediate ',
+            });
           });
 
           it('creates new foreign key', async () => {
