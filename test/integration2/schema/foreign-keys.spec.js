@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isPostgreSQL, isSQLite } = require('../../util/db-helpers');
+const { isPostgreSQL, isSQLite, isOracle } = require('../../util/db-helpers');
 
 describe('Schema', () => {
   describe('Foreign keys', () => {
@@ -137,7 +137,7 @@ describe('Schema', () => {
           });
 
           it('generates correct SQL for the new foreign key operation with an on deferred constraint', async () => {
-            if (isSQLite(knex)) {
+            if (!(isPostgreSQL(knex) || isOracle())) {
               return;
             }
 
