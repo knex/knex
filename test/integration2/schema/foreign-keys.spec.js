@@ -152,11 +152,14 @@ describe('Schema', () => {
             );
 
             const queries = await builder.generateDdlCommands();
-            expect(queries.sql).to.eql({
-              bindings: '',
-              sql:
-                'alter table "foreign_keys_table_one" add constraint "foreign_keys_table_one_fkey_three_foreign" foreign key ("fkey_three") references "foreign_keys_table_three" ("id") deferrable initially immediate ',
-            });
+            console.log(queries.sql);
+            expect(queries.sql).to.eql([
+              {
+                bindings: [],
+                sql:
+                  'alter table "foreign_keys_table_one" add constraint "foreign_keys_table_one_fkey_three_foreign" foreign key ("fkey_three") references "foreign_keys_table_three" ("id") deferrable initially immediate ',
+              },
+            ]);
           });
 
           it('creates new foreign key', async () => {
