@@ -136,8 +136,8 @@ describe('Schema', () => {
             ]);
           });
 
-          it('generates correct SQL for the new foreign key operation with an on update clause', async () => {
-            if (!isSQLite(knex)) {
+          it('generates correct SQL for the new foreign key operation with an on deferred constraint', async () => {
+            if (isSQLite(knex)) {
               return;
             }
 
