@@ -264,12 +264,12 @@ export default [
   },
   {
     type: "text",
-    content: "To run a specific seed file, execute:"
+    content: "To run specific seed files, execute:"
   },
   {
     type: "code",
     content: `
-      $ knex seed:run --specific=seed-filename.js
+      $ knex seed:run --specific=seed-filename.js --specific=another-seed-filename.js
     `
   },
   {
