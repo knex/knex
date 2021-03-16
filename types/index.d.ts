@@ -1419,6 +1419,16 @@ export declare namespace Knex {
   interface TypePreservingAggregation<TRecord = any, TResult = unknown[], TValue = any> {
     <
       TKey extends keyof ResolveTableType<TRecord>,
+      TOptions extends { "as": string },
+      TResult2 = AggregationQueryResult<TResult, {
+        [k in TOptions["as"]]: ResolveTableType<TRecord>[TKey]
+      }>
+    >(
+      columnName: Readonly<TKey>,
+      options: Readonly<TOptions>
+    ): QueryBuilder<TRecord, TResult2>;
+    <
+      TKey extends keyof ResolveTableType<TRecord>,
       TResult2 = AggregationQueryResult<TResult, Dict<ResolveTableType<TRecord>[TKey]>>
     >(
       ...columnNames: readonly TKey[]
