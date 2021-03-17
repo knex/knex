@@ -19,30 +19,30 @@ async function fetchDefaultConstraint(knex, table, column) {
 }
 
 describe('MSSQL dialect', () => {
-  describe('Connection configuration', () => {
-    getAllDbs()
-      .filter((db) => db.startsWith('mssql'))
-      .forEach((db) => {
-        describe(db, () => {
-          let knex;
-          before(async () => {
-            knex = getKnexForDb(db);
-          });
+  getAllDbs()
+    .filter((db) => db.startsWith('mssql'))
+    .forEach((db) => {
+      describe(db, () => {
+        let knex;
+        before(async () => {
+          knex = getKnexForDb(db);
+        });
 
-          beforeEach(async () => {
-            await knex.schema.createTable('test', function () {
-              this.increments('id').primary();
-            });
+        beforeEach(async () => {
+          await knex.schema.createTable('test', function () {
+            this.increments('id').primary();
           });
+        });
 
-          after(async () => {
-            await knex.destroy();
-          });
+        after(async () => {
+          await knex.destroy();
+        });
 
-          afterEach(async () => {
-            await knex.schema.dropTable('test');
-          });
+        afterEach(async () => {
+          await knex.schema.dropTable('test');
+        });
 
+        describe('column default handling', () => {
           describe('changing default value', () => {
             beforeEach(async () => {
               await knex.schema.alterTable('test', function () {
@@ -88,5 +88,5 @@ describe('MSSQL dialect', () => {
           });
         });
       });
-  });
+    });
 });
