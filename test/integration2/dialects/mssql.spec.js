@@ -133,16 +133,37 @@ describe('MSSQL dialect', () => {
           // Characters in the supplementary plane need 4 bytes in UTF-16.
           // (They also happen to need 4 in UTF-8, so this estimate is a useful worst-case for a UTF-8 collation, as well.)
           const N = 7500 / 4;
-          it(`worst-case allows at most ${N} characters in an nvarchar`, async () => {
+          it(`worst-case allows at most ${N} characters with string length ${
+            2 * N
+          } in an nvarchar`, async () => {
             const astralPlaneCharacter = '\u{1D306}';
-            const worstCaseComment = astralPlaneCharacter.repeat(N)
-            const asNvarcharLiteral = (text) => `N'${text}'`
-            await expect(comment(knex, 'add', asNvarcharLiteral(worstCaseComment), columnTarget))
-              .to.eventually.be.fulfilled;
+            const worstCaseComment = astralPlaneCharacter.repeat(N);
 
-            const oneMoreCharIsTooMuch = 'X' + worstCaseComment
+            // This works out because characters outside the BMP are counted as having length 2 by JavaScript's string.
+            expect(worstCaseComment).to.have.property('length', 2 * N);
+
+            // This length is the "shortest (in string.length), longest (in byte length)" comment that will fit.
+            // Thus, for anything larger than 7500/2, we need to warn that the comment might be too many bytes.
+            const asNvarcharLiteral = (text) => `N'${text}'`;
             await expect(
-              comment(knex, 'update', asNvarcharLiteral(oneMoreCharIsTooMuch), columnTarget)
+              comment(
+                knex,
+                'add',
+                asNvarcharLiteral(worstCaseComment),
+                columnTarget
+              )
+            ).to.eventually.be.fulfilled;
+
+            // One more JS char (2 more bytes) is too much!
+            const oneMoreCharIsTooMuch = 'X' + worstCaseComment;
+            expect(oneMoreCharIsTooMuch).to.have.property('length', 2 * N + 1);
+            await expect(
+              comment(
+                knex,
+                'update',
+                asNvarcharLiteral(oneMoreCharIsTooMuch),
+                columnTarget
+              )
             ).to.eventually.be.rejectedWith(
               'The size associated with an extended property cannot be more than 7,500 bytes.'
             );
