@@ -980,7 +980,7 @@ module.exports = function (knex) {
         });
     });
 
-    it.skip('.timeout(ms, {cancel: true}) should throw error if cancellation cannot acquire connection', async function () {
+    it('.timeout(ms, {cancel: true}) should cancel slow query even if connection pool is exhausted', async function () {
       // Only mysql/postgres query cancelling supported for now
       if (!isMysql(knex) && !isPostgreSQL(knex)) {
         return this.skip();
@@ -1020,15 +1020,45 @@ module.exports = function (knex) {
 
       const query = testQueries[driverName]();
 
+      // We must use the original knex instance without the exhausted pool to list running queries
+      const getProcessesForDriver = {
+        pg: async () => {
+          const results = await knex.raw('SELECT * from pg_stat_activity');
+          return _.map(_.filter(results.rows, {state: 'active'}), 'query');
+        },
+        mysql: async () => {
+          const results = await knex.raw('SHOW PROCESSLIST');
+          return _.map(results[0], 'Info');
+        },
+        mysql2: async () => {
+          const results = await knex.raw('SHOW PROCESSLIST');
+          return _.map(results[0], 'Info');
+        },
+      };
+
+      if (
+        !Object.prototype.hasOwnProperty.call(getProcessesForDriver, driverName)
+      ) {
+        throw new Error('Missing test query for driverName: ' + driverName);
+      }
+
+      const getProcesses = getProcessesForDriver[driverName];
+
       try {
-        await expect(
-          query.timeout(1, { cancel: true })
-        ).to.eventually.be.rejected.and.to.deep.include({
-          timeout: 1,
+        const promise = query.timeout(50, { cancel: true }).then(_.identity)
+
+        await delay(10)
+        const processesBeforeTimeout = await getProcesses();
+        expect(processesBeforeTimeout).to.include(query.toString())
+
+        await expect(promise).to.eventually.be.rejected.and.to.deep.include({
+          timeout: 50,
           name: 'KnexTimeoutError',
-          message:
-            'After query timeout of 1ms exceeded, cancelling of query failed.',
+          message: 'Defined query timeout of 50ms exceeded when running query.',
         });
+
+        const processesAfterTimeout = await getProcesses();
+        expect(processesAfterTimeout).to.not.include(query.toString())
       } finally {
         await knexDb.destroy();
       }
