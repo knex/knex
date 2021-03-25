@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.95.2",
+  "version": "0.95.3",
   "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
   "main": "knex",
   "types": "types/index.d.ts",

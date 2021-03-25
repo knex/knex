@@ -1,5 +1,24 @@
 # Master (Unreleased)
 
+# 0.95.3 - 25 March, 2021
+
+### New features:
+
+- PostgreSQL: Add "same" as operator #4372
+- MSSQL: Improve an estimate of the max comment length #4362
+- Throw an error if negative offset is provided #4361
+
+### Bug fixes:
+
+- Fix timeout method #4324
+- SQLite: prevent dropForeign from being silently ignored #4376
+
+### Typings:
+
+- Allow config.client to be non-client instance #4367
+- Add dropForeign arg type for single column #4363
+- Update typings for TypePreservingAggregation and stream #4377
+
 # 0.95.2 - 11 March, 2021
 
 ### New features:
