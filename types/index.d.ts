@@ -1859,7 +1859,7 @@ export declare namespace Knex {
       columns: readonly string[],
       foreignKeyName?: string
     ): MultikeyForeignConstraintBuilder;
-    dropForeign(columnNames: readonly string[], foreignKeyName?: string): TableBuilder;
+    dropForeign(columnNames: string | readonly string[], foreignKeyName?: string): TableBuilder;
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
