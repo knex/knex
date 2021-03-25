@@ -156,6 +156,21 @@ module.exports = function (knex) {
         });
     });
 
+    it('#4335 - should throw an error when negative offset provided', function (ok) {
+      try {
+        knex.from('accounts').limit(20).offset(-20);
+        throw new Error('no error was thrown for negative offset!');
+      } catch (error) {
+        if (
+          error.message === 'A non-negative integer must be provided to offset.'
+        ) {
+          ok();
+        } else {
+          throw error;
+        }
+      }
+    });
+
     it('#4199 - adheres to hint comments', async function () {
       const expectedErrors = {
         mysql: {
