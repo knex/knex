@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.95.4 - 26 March, 2021
+
+### Typings:
+
+- Fix mistyping of stream #4400
+
 # 0.95.3 - 25 March, 2021
 
 ### New features:
