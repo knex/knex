@@ -1737,7 +1737,7 @@ export declare namespace Knex {
     connection(connection: any): this;
     debug(enabled: boolean): this;
     transacting(trx: Transaction): this;
-    stream(): AsyncIterable<ArrayMember<T>>;
+    stream(): stream.PassThrough & AsyncIterable<ArrayMember<T>>;
     stream(handler: (readable: stream.PassThrough) => any): Promise<any>;
     stream(
       options: Readonly<{ [key: string]: any }>,

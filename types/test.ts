@@ -132,8 +132,11 @@ const main = async () => {
       [ null ]
   );
 
-  // $ExpectType AsyncIterable<User>
+  // $ExpectType PassThrough & AsyncIterable<User>
   knexInstance<User>('users').select('*').stream();
+
+  // $ExpectType PassThrough
+  knexInstance<User>('users').select('*').stream().pipe(new PassThrough());
 
   // $ExpectType User[]
   await knexInstance<User>('user').where('name', ['a', 'b', 'c']);
