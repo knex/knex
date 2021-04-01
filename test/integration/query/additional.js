@@ -978,6 +978,79 @@ module.exports = function (knex) {
         });
     });
 
+    it('.timeout(ms, {cancel: true}) should cancel all parallel slow queries run in a single transaction', async function () {
+      // Only mysql/postgres query cancelling supported for now
+      if (!isMysql(knex) && !isPostgreSQL(knex)) {
+        return this.skip();
+      }
+
+      const testQueries = {
+        [drivers.PostgreSQL]: function () {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        [drivers.MySQL]: function () {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        [drivers.MySQL2]: function () {
+          return knex.raw('SELECT SLEEP(10)');
+        },
+        [drivers.MsSQL]: function () {
+          return knex.raw("WAITFOR DELAY '00:00:10'");
+        },
+        [drivers.Oracle]: function () {
+          return knex.raw('begin dbms_lock.sleep(10); end;');
+        },
+      };
+
+      const driverName = knex.client.driverName;
+      if (!Object.prototype.hasOwnProperty.call(testQueries, driverName)) {
+        throw new Error('Missing test query for dialect: ' + driverName);
+      }
+
+      const query = testQueries[driverName]();
+
+      const getProcessesForDriver = {
+        pg: async () => {
+          const results = await knex.raw('SELECT * from pg_stat_activity');
+          return _.map(_.filter(results.rows, {state: 'active'}), 'query');
+        },
+        mysql: async () => {
+          const results = await knex.raw('SHOW PROCESSLIST');
+          return _.map(results[0], 'Info');
+        },
+        mysql2: async () => {
+          const results = await knex.raw('SHOW PROCESSLIST');
+          return _.map(results[0], 'Info');
+        },
+      };
+
+      if (!Object.prototype.hasOwnProperty.call(getProcessesForDriver, driverName)) {
+        throw new Error('Missing test query for driverName: ' + driverName);
+      }
+
+      const getProcesses = getProcessesForDriver[driverName];
+
+      return knex.transaction(async (trx) => {
+        const promise = Promise.all(_.range(5).map(async () => {
+          await query.timeout(50, { cancel: true }).transacting(trx);
+        }));
+
+        await delay(10);
+        const processesBeforeTimeout = await getProcesses();
+        expect(processesBeforeTimeout).to.include(query.toString());
+
+        await expect(promise).to.eventually.be.rejected.and.to.deep.include({
+          timeout: 50,
+          name: 'KnexTimeoutError',
+          message: 'Defined query timeout of 50ms exceeded when running query.',
+        });
+
+        await delay(10);
+        const processesAfterTimeout = await getProcesses();
+        expect(processesAfterTimeout).to.not.include(query.toString());
+      });
+    });
+
     it('.timeout(ms, {cancel: true}) should cancel slow query even if connection pool is exhausted', async function () {
       // Only mysql/postgres query cancelling supported for now
       if (!isMysql(knex) && !isPostgreSQL(knex)) {
