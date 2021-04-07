@@ -391,6 +391,7 @@ export interface Knex<TRecord extends {} = any, TResult = unknown[]>
   ref: Knex.RefBuilder;
   userParams: Record<string, any>;
   withUserParams(params: Record<string, any>): Knex;
+  isTransaction?: boolean;
 }
 
 export declare function knex<TRecord extends {} = any, TResult = unknown[]>(
