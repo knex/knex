@@ -724,6 +724,9 @@ module.exports = function (knex) {
         [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT pg_sleep(1)');
         },
+        [drivers.PgNative]: function () {
+          return knex.raw('SELECT pg_sleep(1)');
+        },
         [drivers.MySQL]: function () {
           return knex.raw('SELECT SLEEP(1)');
         },
@@ -774,6 +777,9 @@ module.exports = function (knex) {
       // mocha timeout exposes this behavior.
       const testQueries = {
         [drivers.PostgreSQL]: function () {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        [drivers.PgNative]: function () {
           return knex.raw('SELECT pg_sleep(10)');
         },
         [drivers.MySQL]: function () {
@@ -882,19 +888,22 @@ module.exports = function (knex) {
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
       const testQueries = {
-        pg: function () {
+        [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT pg_sleep(10)');
         },
-        mysql: function () {
+        [drivers.PgNative]: function () {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        [drivers.MySQL]: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mysql2: function () {
+        [drivers.MySQL2]: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mssql: function () {
+        [drivers.MsSQL]: function () {
           return knex.raw("WAITFOR DELAY '00:00:10'");
         },
-        oracledb: function () {
+        [drivers.Oracle]: function () {
           return knex.raw('begin dbms_lock.sleep(10); end;');
         },
       };
@@ -996,6 +1005,9 @@ module.exports = function (knex) {
 
       const testQueries = {
         [drivers.PostgreSQL]: function () {
+          return knexDb.raw('SELECT pg_sleep(10)');
+        },
+        [drivers.PgNative]: function () {
           return knexDb.raw('SELECT pg_sleep(10)');
         },
         [drivers.MySQL]: function () {
