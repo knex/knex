@@ -107,7 +107,7 @@ test('it should error when invalid open flags are selected for sqlite3', functio
       t.fail('Should not get here');
     })
     .catch((err) => {
-      t.equal(err.message, 'flags NON_EXISTING not supported by node-sqlite3');
+      t.equal(err.message, 'flag NON_EXISTING not supported by node-sqlite3');
     })
     .finally(() => {
       knexObj.destroy();
