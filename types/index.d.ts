@@ -2263,6 +2263,7 @@ interface MsSqlConnectionConfigBase {
   /** Used with SQLite3 adapter */
   interface Sqlite3ConnectionConfig {
     filename: string;
+    mode: string[];
     debug?: boolean;
     expirationChecker?(): boolean;
   }
