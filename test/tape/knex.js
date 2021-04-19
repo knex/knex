@@ -67,14 +67,14 @@ test('it should use knex supported dialect', function (t) {
   knexObj.destroy();
 });
 
-test('it should support mode selection for sqlite3', function (t) {
+test('it should support open flags selection for sqlite3', function (t) {
   t.plan(1);
   const knexObj = knex({
     client: 'sqlite3',
     connection: {
       filename: 'file:memdb-test?mode=memory',
       // allow the filename to be interpreted as a URI
-      mode: ['OPEN_URI'],
+      flags: ['OPEN_URI'],
     },
   });
   // run a query so a connection is created
@@ -89,15 +89,15 @@ test('it should support mode selection for sqlite3', function (t) {
     });
 });
 
-test('it should error when invalid mode is selected for sqlite3', function (t) {
+test('it should error when invalid open flags are selected for sqlite3', function (t) {
   t.plan(2);
 
-  // Test invalid mode
+  // Test invalid flags
   let knexObj = knex({
     client: 'sqlite3',
     connection: {
       filename: ':memory:',
-      mode: ['NON_EXISTING'],
+      flags: ['NON_EXISTING'],
     },
   });
   // run a query so a connection is created
@@ -107,7 +107,7 @@ test('it should error when invalid mode is selected for sqlite3', function (t) {
       t.fail('Should not get here');
     })
     .catch((err) => {
-      t.equal(err.message, 'Mode NON_EXISTING not supported by node-sqlite3');
+      t.equal(err.message, 'flags NON_EXISTING not supported by node-sqlite3');
     })
     .finally(() => {
       knexObj.destroy();
@@ -118,7 +118,7 @@ test('it should error when invalid mode is selected for sqlite3', function (t) {
     client: 'sqlite3',
     connection: {
       filename: ':memory:',
-      mode: 'OPEN_URI',
+      flags: 'OPEN_URI',
     },
   });
   // run a query so a connection is created
@@ -128,7 +128,7 @@ test('it should error when invalid mode is selected for sqlite3', function (t) {
       t.fail('Should not get here');
     })
     .catch((err) => {
-      t.equal(err.message, 'Mode must be an array of strings');
+      t.equal(err.message, 'flags must be an array of strings');
     })
     .finally(() => {
       knexObj.destroy();
