@@ -1220,6 +1220,12 @@ export declare namespace Knex {
     orOn(column1: string, column2: string): JoinClause;
     orOn(column1: string, raw: Raw): JoinClause;
     orOn(column1: string, operator: string, column2: string | Raw): JoinClause;
+    onVal(column1: string, value: Value): JoinClause;
+    onVal(column1: string, operator: string, value: Value): JoinClause;
+    andOnVal(column1: string, value: Value): JoinClause;
+    andOnVal(column1: string, operator: string, value: Value): JoinClause;
+    orOnVal(column1: string, value: Value): JoinClause;
+    orOnVal(column1: string, operator: string, value: Value): JoinClause;
     onIn(column1: string, values: readonly any[]): JoinClause;
     andOnIn(column1: string, values: readonly any[]): JoinClause;
     orOnIn(column1: string, values: readonly any[]): JoinClause;
