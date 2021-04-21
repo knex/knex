@@ -109,6 +109,23 @@ export default [
   },
   {
     type: "info",
+    content: "Note: When you use the SQLite3 adapter, you can set flags used to open the connection. For example:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      const knex = require('knex')({
+        client: 'sqlite3',
+        connection: {
+          filename: "file:memDb1?mode=memory&cache=shared"
+          flags: ['OPEN_URI', 'OPEN_SHAREDCACHE']
+        }
+      });
+    `
+  },
+  {
+    type: "info",
     content: "Note: The database version can be added in knex configuration, when you use the PostgreSQL adapter to connect a non-standard database."
   },
   {
@@ -262,7 +279,7 @@ export default [
       const knex = require('knex')({
         // Params
       });
-      
+
       const knexWithParams = knex.withUserParams({customUserParam: 'table1'});
       const customUserParam = knexWithParams.userParams.customUserParam;
     `
