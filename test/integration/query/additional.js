@@ -1051,6 +1051,66 @@ module.exports = function (knex) {
       });
     });
 
+    it('.timeout(ms, {cancel: true}) should not cancel earlier queries in a transaction before the timeouted query', async function () {
+      // Only mysql/postgres query cancelling supported for now
+      // Postgres automatically aborts the entire transaction if one query is canceled
+      if (!isMysql(knex)) {
+        return this.skip();
+      }
+
+      const getProcessesForDriver = {
+        pg: async () => {
+          const results = await knex.raw('SELECT * from pg_stat_activity');
+          return _.map(_.filter(results.rows, {state: 'active'}), 'query');
+        },
+        mysql: async () => {
+          const results = await knex.raw('SHOW PROCESSLIST');
+          return _.map(results[0], 'Info');
+        },
+        mysql2: async () => {
+          const results = await knex.raw('SHOW PROCESSLIST');
+          return _.map(results[0], 'Info');
+        },
+      };
+
+      const driverName = knex.client.driverName;
+      if (!Object.prototype.hasOwnProperty.call(getProcessesForDriver, driverName)) {
+        throw new Error('Missing test query for driverName: ' + driverName);
+      }
+
+      const getProcesses = getProcessesForDriver[driverName];
+
+      return knex.transaction(async (trx) => {
+        const queryA = trx.raw('SELECT SLEEP(0.1)');
+        const queryB = trx.raw('SELECT SLEEP(0.2)');
+        const promiseA = Promise.all([queryA])
+        const promiseB = Promise.all([queryB.timeout(50, {cancel: true})])
+
+        await delay(10);
+        const processesBeforeTimeout = await getProcesses();
+        expect(processesBeforeTimeout).to.include(queryA.toString());
+        expect(processesBeforeTimeout).to.not.include(queryB.toString());
+
+        await expect(promiseB).to.eventually.be.rejected.and.to.deep.include({
+          timeout: 50,
+          name: 'KnexTimeoutError',
+          message: 'Defined query timeout of 50ms exceeded when running query.',
+        });
+
+        await delay(10);
+        const processesAfterTimeout = await getProcesses();
+        expect(processesAfterTimeout).to.include(queryA.toString());
+        expect(processesAfterTimeout).to.not.include(queryB.toString());
+
+        await expect(promiseA).to.eventually.be.fulfilled.and.to.be.an('array');
+
+        await delay(10);
+        const processesAfterCompletion = await getProcesses();
+        expect(processesAfterCompletion).to.not.include(queryA.toString());
+        expect(processesAfterCompletion).to.not.include(queryB.toString());
+      });
+    });
+
     it('.timeout(ms, {cancel: true}) should cancel slow query even if connection pool is exhausted', async function () {
       // Only mysql/postgres query cancelling supported for now
       if (!isMysql(knex) && !isPostgreSQL(knex)) {
