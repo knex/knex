@@ -862,11 +862,10 @@ describe('QueryBuilder', () => {
       mssql: 'select * from [users] where [id] = 1',
     });
   });
-  
+
   it('uses whereLike, #2265', () => {
     testsql(qb().select('*').from('users').whereLike('name', 'luk%'), {
-      mysql:
-        "select * from `users` where `name` like 'luk%' COLLATE utf8mb4_bin",
+      mysql: "select * from `users` where `name` like 'luk%' COLLATE utf8_bin",
       pg: 'select * from "users" where "name" like \'luk%\'',
       mssql:
         "select * from [users] where [name] collate SQL_Latin1_General_CP1_CS_AS like 'luk%'",
