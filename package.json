@@ -87,7 +87,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^14.14.28",
+    "@types/node": "^15.0.1",
     "chai": "^4.3.3",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^3.0.0",
