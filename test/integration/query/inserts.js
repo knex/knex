@@ -107,7 +107,7 @@ module.exports = function (knex) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
-            ['1']
+            [{ id: '1' }]
           );
           tester(
             'mssql',
@@ -272,7 +272,7 @@ module.exports = function (knex) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
-            ['2', '3']
+            [{ id: '2' }, { id: '3' }]
           );
           tester(
             'mssql',
@@ -353,7 +353,7 @@ module.exports = function (knex) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
-            ['1', '2', '3']
+            [{ id: '1' }, { id: '2' }, { id: '3' }]
           );
         })
         .asCallback(function (err) {
@@ -497,7 +497,7 @@ module.exports = function (knex) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
-            ['4', '5']
+            [{ id: '4' }, { id: '5' }]
           );
           tester(
             'mssql',
@@ -710,7 +710,7 @@ module.exports = function (knex) {
                 return v.toString() === '[object ReturningHelper:id]';
               },
             ],
-            ['7']
+            [{ id: '7' }]
           );
           tester(
             'mssql',
@@ -874,7 +874,7 @@ module.exports = function (knex) {
                     return v.toString() === '[object ReturningHelper:id]';
                   },
                 ],
-                ['1']
+                [{ id: '1' }]
               );
               tester(
                 'mssql',
@@ -930,7 +930,7 @@ module.exports = function (knex) {
                     return v.toString() === '[object ReturningHelper:id]';
                   },
                 ],
-                ['1']
+                [{ id: '1' }]
               );
               tester(
                 'mssql',
