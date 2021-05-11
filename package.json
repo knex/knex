@@ -56,13 +56,6 @@
     "tarn": "^3.0.1",
     "tildify": "2.0.0"
   },
-  "peerDependencies": {
-    "mysql": "^2.18.1",
-    "mysql2": "^2.2.5",
-    "pg": "^8.5.1",
-    "sqlite3": "^5.0.0",
-    "tedious": "^11.0.5"
-  },
   "peerDependenciesMeta": {
     "tedious": {
       "optional": true
