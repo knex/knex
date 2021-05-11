@@ -116,6 +116,30 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - SQLite: Use SQLite "rename column" instead of a DDL helper #4200
 - SQLite: Simplify reinsert logic when altering a table #4272
 
+# 0.21.19 - 02 March, 2021
+
+- SQLite: Made the constraint detection case-insensitive #4332
+
+# 0.21.18 - 22 February, 2021
+
+- CLI: Fix an issue with npm@7 and ESM when type was set to 'module' in package.json #4295
+
+# 0.21.17 - 30 January, 2021
+
+### Bug fixes:
+
+- SQLite: Fix SQLite foreign on delete when altering a table #4261
+
+### New features:
+
+- Add support for optimizer hints (see https://github.com/knex/documentation/pull/306 for documentation) #4243
+
+# 0.21.16 - 17 January, 2021
+
+### Bug fixes:
+
+- MSSQL: Avoid passing unsupported pool param. Fixes node-mssql 7+ support #4236
+
 # 0.21.15 - 26 December, 2020
 
 ### New features:
