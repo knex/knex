@@ -17,7 +17,7 @@ export default [
   },
   {
     type: "text",
-    content: "The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL and Amazon Redshift, [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`mssql`](https://github.com/patriksimek/node-mssql) for MSSQL."
+    content: "The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL and Amazon Redshift, [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`tedious`](https://github.com/tediousjs/tedious) for MSSQL."
   },
   {
     type: "code",
@@ -30,7 +30,7 @@ export default [
       $ npm install mysql
       $ npm install mysql2
       $ npm install oracledb
-      $ npm install mssql
+      $ npm install tedious
     `
   },
   {
