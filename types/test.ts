@@ -2864,3 +2864,5 @@ const main = async () => {
   await knexInstance<User>('users')
     .update<'active', 'name'>('active', knexInstance.raw<boolean>('true'), ['name']);
 };
+
+class ExcelClient extends knex.Client { }
