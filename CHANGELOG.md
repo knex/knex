@@ -1,5 +1,23 @@
 # Master (Unreleased)
 
+# 0.95.5 - 11 May, 2021
+
+### New features:
+
+- SQLite: Add support for file open flags #4446
+- Add .cjs extension to Seeder.js to support Node ESM #4381 #4382
+
+### Bug fixes:
+
+- Remove peerDependencies to avoid auto-install on npm 7 #4480
+
+### Typings:
+
+- Fix typing for increments and bigIncrements #4406
+- Add typings for on JoinClause for onVal #4436
+- Adding Type Definition for isTransaction #4418
+- Export client class from knex namespace #4479
+
 # 0.95.4 - 26 March, 2021
 
 ### Typings:
