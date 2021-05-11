@@ -410,6 +410,8 @@ export declare namespace knex {
   }
 
   export class KnexTimeoutError extends Error {}
+
+  export const Client: Knex.Client;
 }
 
 export declare namespace Knex {
