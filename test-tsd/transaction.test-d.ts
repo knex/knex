@@ -14,6 +14,8 @@ interface Article {
 const main = async () => {
   // # Select:
 
+  expectType<Knex.TransactionProvider>(knexInstance.transactionProvider())
+
   expectType<any[]>(await knexInstance.transaction((trx) => {
     return trx.insert({ name: 'Old Books' }, 'id').into('articles');
   }));
