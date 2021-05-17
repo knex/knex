@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.95.6 - 17 May, 2021
+
+### Typings:
+
+- Export TransactionProvider type #4489
+
 # 0.95.5 - 11 May, 2021
 
 ### New features:
