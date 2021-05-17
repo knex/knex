@@ -354,7 +354,7 @@ export interface Knex<TRecord extends {} = any, TResult = unknown[]>
 
   transactionProvider(
     config?: TransactionConfig
-  ): () => Promise<Knex.Transaction>;
+  ): Knex.TransactionProvider;
   transaction(
     config?: TransactionConfig
   ): Promise<Knex.Transaction>;
@@ -1776,6 +1776,8 @@ export declare namespace Knex {
     commit(value?: any): QueryBuilder<TRecord, TResult>;
     rollback(error?: any): QueryBuilder<TRecord, TResult>;
   }
+
+  type TransactionProvider = () => Promise<Transaction>;
 
   //
   // Schema builder
