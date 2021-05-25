@@ -328,17 +328,6 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
-export declare namespace Knex {
-  // Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
-  type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
-  interface TransactionConfig {
-    isolationLevel?: IsolationLevels;
-    userParams?: Record<string, any>;
-    doNotRejectOnRollback?: boolean;
-    connection?: any;
-  }
-}
-
 export interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
@@ -1759,6 +1748,15 @@ export declare namespace Knex {
       options?: Readonly<{ [key: string]: any }>
     ): stream.PassThrough;
     asCallback(callback: Function): Promise<T>;
+  }
+
+  // Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
+  type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
+  interface TransactionConfig {
+    isolationLevel?: IsolationLevels;
+    userParams?: Record<string, any>;
+    doNotRejectOnRollback?: boolean;
+    connection?: any;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any[]>
