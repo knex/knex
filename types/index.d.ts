@@ -328,13 +328,15 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
-// Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
-type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
-interface TransactionConfig {
-  isolationLevel?: IsolationLevels;
-  userParams?: Record<string, any>;
-  doNotRejectOnRollback?: boolean;
-  connection?: any;
+export declare namespace Knex {
+  // Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
+  type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
+  interface TransactionConfig {
+    isolationLevel?: IsolationLevels;
+    userParams?: Record<string, any>;
+    doNotRejectOnRollback?: boolean;
+    connection?: any;
+  }
 }
 
 export interface Knex<TRecord extends {} = any, TResult = unknown[]>
@@ -353,18 +355,18 @@ export interface Knex<TRecord extends {} = any, TResult = unknown[]>
   raw: Knex.RawBuilder<TRecord>;
 
   transactionProvider(
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Knex.TransactionProvider;
   transaction(
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Promise<Knex.Transaction>;
   transaction(
     transactionScope?: null,
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Promise<Knex.Transaction>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | void,
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Promise<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
