@@ -1354,6 +1354,103 @@ module.exports = function (knex) {
       expect(rows[0].name).to.equal('BEFORE');
     });
 
+    it('will silently do nothing when inserts do not comply with any unique index and ignore is specified', async function () {
+      if (isRedshift(knex)) {
+        return this.skip();
+      }
+
+      // Setup: Create table with unique email and username column
+      await knex.schema.dropTableIfExists('upsert_tests');
+      await knex.schema.createTable('upsert_tests', (table) => {
+        table.string('name');
+        table.string('username');
+        table.string('email');
+        table.unique('username');
+        table.unique('email');
+      });
+
+      // Setup: Create row to conflict against
+      await knex('upsert_tests').insert({
+        email: 'ignoretest@example.com',
+        username: 'ignoretest',
+        name: 'BEFORE',
+      });
+
+      // Test: Insert..ignore with same email and username as existing row
+      try {
+        await knex('upsert_tests')
+          .insert(
+            [
+              {
+                email: 'ignoretest@example.com',
+                username: 'ignoretest2',
+                name: 'AFTER',
+              },
+              {
+                email: 'ignoretest2@example.com',
+                username: 'ignoretest',
+                name: 'AFTER',
+              },
+            ],
+            'email'
+          )
+          .onConflict()
+          .ignore()
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert ignore into `upsert_tests` (`email`, `name`, `username`) values (?, ?, ?), (?, ?, ?)',
+              [
+                'ignoretest@example.com',
+                'AFTER',
+                'ignoretest2',
+                'ignoretest2@example.com',
+                'AFTER',
+                'ignoretest',
+              ]
+            );
+            tester(
+              'pg',
+              'insert into "upsert_tests" ("email", "name", "username") values (?, ?, ?), (?, ?, ?) on conflict do nothing returning "email"',
+              [
+                'ignoretest@example.com',
+                'AFTER',
+                'ignoretest2',
+                'ignoretest2@example.com',
+                'AFTER',
+                'ignoretest',
+              ]
+            );
+            tester(
+              'sqlite3',
+              'insert into `upsert_tests` (`email`, `name`, `username`) select ? as `email`, ? as `name`, ? as `username` union all select ? as `email`, ? as `name`, ? as `username` where true on conflict do nothing',
+              [
+                'ignoretest@example.com',
+                'AFTER',
+                'ignoretest2',
+                'ignoretest2@example.com',
+                'AFTER',
+                'ignoretest',
+              ]
+            );
+          });
+      } catch (err) {
+        if (isOracle(knex) || isMssql(knex)) {
+          expect(err).to.be.an('error');
+          if (err.message.includes('.onConflict() is not supported for'))
+            return;
+        }
+        throw err;
+      }
+
+      // Assert: there is still only 1 row, and that it HAS NOT been updated
+      const rows = await knex('upsert_tests')
+        .where({ email: 'ignoretest@example.com' })
+        .select();
+      expect(rows.length).to.equal(1);
+      expect(rows[0].name).to.equal('BEFORE');
+    });
+
     it('will silently do nothing when multiple inserts are made into a composite unique column and ignore is specified', async function () {
       if (isRedshift(knex)) {
         return this.skip();
