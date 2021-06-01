@@ -5,7 +5,7 @@
 //                 Satana Charuwichitratana <https://github.com/micksatana>
 //                 Shrey Jain <https://github.com/shreyjain1994>
 // TypeScript Version: 4.1
-
+ 
 import tarn = require('tarn');
 import events = require('events');
 import stream = require('stream');
