@@ -113,7 +113,7 @@
     "tape": "^5.2.2",
     "tedious": "^11.0.5",
     "toxiproxy-node-client": "^2.0.6",
-    "ts-node": "^9.1.1",
+    "ts-node": "^10.0.0",
     "tsd": "^0.17.0",
     "typescript": "4.3.4"
   },
