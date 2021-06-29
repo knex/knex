@@ -1275,6 +1275,21 @@ const main = async () => {
     .count({a: 'age'})
     .from('users_composite');
 
+  // Analytic
+  // $ExpectType (Pick<User, "age"> & Dict<number>)[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age');
+
+  // $ExpectType (Pick<User, "age"> & Dict<number>)[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', ['age']);
+
+  // $ExpectType (Pick<User, "age"> & Dict<number>)[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', (builder) => {
+    builder.orderBy('age');
+  });
+
+  // $ExpectType (Pick<User, "age"> & Dict<number>)[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age', 'departmentId');
+
   // ## With inner query:
 
   // ### For column selection:

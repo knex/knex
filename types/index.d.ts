@@ -638,6 +638,11 @@ export declare namespace Knex {
       amount?: number
     ): QueryBuilder<TRecord, number>;
 
+    // Analytics
+    rank: AnalyticFunction<TRecord, TResult>;
+    denseRank: AnalyticFunction<TRecord, TResult>;
+    rowNumber: AnalyticFunction<TRecord, TResult>;
+
     // Others
     first: Select<TRecord, DeferredKeySelection.AddUnionMember<UnwrapArrayMember<TResult>, undefined>>;
 
@@ -1455,6 +1460,14 @@ export declare namespace Knex {
     <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
       ...columnNames: ReadonlyArray<Readonly<Record<string, string | readonly string[] | Knex.Raw>> | Knex.Raw | string>
     ): QueryBuilder<TRecord, TResult2>;
+  }
+
+  interface AnalyticFunction<TRecord = any, TResult = unknown[]> {
+    <TResult2 = AggregationQueryResult<TResult, Dict<number>>>(alias: string, raw: Raw | QueryCallback): QueryBuilder<TRecord, TResult2>;
+    <TResult2 = AggregationQueryResult<TResult, Dict<number>>>(alias: string, orderBy: string | string[], partitionBy?: string | string[]): QueryBuilder<
+      TRecord,
+      TResult2
+    >;
   }
 
   interface GroupBy<TRecord = any, TResult = unknown[]>
