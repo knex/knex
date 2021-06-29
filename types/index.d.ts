@@ -562,6 +562,9 @@ export declare namespace Knex {
     orderBy: OrderBy<TRecord, TResult>;
     orderByRaw: RawQueryBuilder<TRecord, TResult>;
 
+    // Partition by
+    partitionBy: PartitionBy<TRecord, TResult>;
+
     // Intersect
     intersect: Intersect<TRecord, TResult>;
 
@@ -1463,7 +1466,7 @@ export declare namespace Knex {
   }
 
   interface AnalyticFunction<TRecord = any, TResult = unknown[]> {
-    <TResult2 = AggregationQueryResult<TResult, Dict<number>>>(alias: string, raw: Raw | QueryCallback): QueryBuilder<TRecord, TResult2>;
+    <TResult2 = AggregationQueryResult<TResult, Dict<number>>>(alias: string, raw: Raw | QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult2>;
     <TResult2 = AggregationQueryResult<TResult, Dict<number>>>(alias: string, orderBy: string | string[], partitionBy?: string | string[]): QueryBuilder<
       TRecord,
       TResult2
@@ -1495,6 +1498,10 @@ export declare namespace Knex {
       }>>
     ): QueryBuilder<TRecord, TResult>;
   }
+
+  interface PartitionBy<TRecord = any, TResult = unknown[]>
+    extends RawQueryBuilder<TRecord, TResult>,
+      ColumnNameQueryBuilder<TRecord, TResult> {}
 
   interface Intersect<TRecord = any, TResult = unknown[]> {
     (

@@ -1290,6 +1290,14 @@ const main = async () => {
   // $ExpectType (Pick<User, "age"> & Dict<number>)[]
   await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age', 'departmentId');
 
+  // $ExpectType (Pick<User, "age"> & Dict<number>)[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age', ['departmentId', 'active']);
+
+  // $ExpectType (Pick<User, "age"> & Dict<number>)[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', (builder) => {
+    builder.orderBy('age').partitionBy('departmentId');
+  });
+
   // ## With inner query:
 
   // ### For column selection:
