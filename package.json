@@ -44,7 +44,7 @@
   "dependencies": {
     "colorette": "1.2.1",
     "commander": "^7.1.0",
-    "debug": "4.3.1",
+    "debug": "4.3.2",
     "escalade": "^3.1.1",
     "esm": "^3.2.25",
     "getopts": "2.2.5",
@@ -87,7 +87,7 @@
     "cli-testlab": "^2.2.0",
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.3",
-    "dtslint": "4.1.0",
+    "dtslint": "4.1.2",
     "eslint": "^7.20.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-import": "^2.22.1",
