@@ -87,7 +87,7 @@
     "cli-testlab": "^2.2.0",
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.3",
-    "dtslint": "4.1.0",
+    "dtslint": "4.1.2",
     "eslint": "^7.20.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-import": "^2.22.1",
