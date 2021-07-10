@@ -1421,6 +1421,13 @@ export declare namespace Knex {
   // is significant.
 
   interface AsymmetricAggregation<TRecord = any, TResult = unknown[], TValue = any> {
+    <
+      TOptions extends { "as": string },
+      TResult2 = AggregationQueryResult<TResult, {[k in TOptions["as"]]: TValue}>
+    >(
+      columnName: Readonly<keyof ResolveTableType<TRecord>>,
+      options: Readonly<TOptions>
+    ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
       ...columnNames: readonly (keyof ResolveTableType<TRecord>)[]
     ): QueryBuilder<TRecord, TResult2>;
