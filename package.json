@@ -50,7 +50,7 @@
     "getopts": "2.2.5",
     "interpret": "^2.2.0",
     "lodash": "^4.17.21",
-    "pg-connection-string": "2.4.0",
+    "pg-connection-string": "2.5.0",
     "rechoir": "^0.7.0",
     "resolve-from": "^5.0.0",
     "tarn": "^3.0.1",
