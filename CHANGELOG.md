@@ -1,5 +1,18 @@
 # Master (Unreleased)
 
+# 0.95.7 - 10 July, 2021
+
+### New features:
+
+- Add ability to omit columns on an onConflict().ignore() #4557
+- CLI: Log error message #4534
+
+### Typings:
+
+- Export Knex.TransactionConfig #4498
+- Include options object in count(Distinct) typings #4491
+- Add types for analytic functions #4544
+
 # 0.95.6 - 17 May, 2021
 
 ### Typings:
