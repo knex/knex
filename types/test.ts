@@ -1029,6 +1029,12 @@ const main = async () => {
   // $ExpectType Dict<string | number>[]
   await knexInstance('users').count('age');
 
+  // $ExpectType { c: string | number; }[]
+  await knexInstance<User>('users').count('id', { as: 'c' });
+
+  // $ExpectType (Pick<User, "departmentId"> & { c: string | number; })[]
+  await knexInstance<User>('users').select('departmentId').count('id', { as: 'c' });
+
   // $ExpectType { count: number; }
   await knexInstance('foo').first().count<{count: number}>({count: '*'});
 
