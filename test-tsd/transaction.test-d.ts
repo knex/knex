@@ -95,4 +95,12 @@ const main = async () => {
         .catch(trx.rollback);
     }
   ));
+
+  const transactionConfig: Knex.TransactionConfig = {
+    isolationLevel: 'serializable',
+    userParams: {},
+    doNotRejectOnRollback: true,
+    connection: {}
+  }
+  expectType<Knex.TransactionConfig>(transactionConfig)
 }
