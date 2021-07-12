@@ -8,6 +8,7 @@ Plugins and tools maintained by the knex team are listed under [Core](#core) whi
 - [`knex-tablecleaner`](https://github.com/kibertoad/knex-tablecleaner) Library for deleting all rows from a given list of DB tables.
 
 #### [Community](#community)
+- [`knemm`](https://github.com/asteinarson/knemm) A CLI tool to manage SQL schema in declarative YAML files (`claims` and `states`). It allows for database dependencies between loosely coupled modules. 
 - [`knex-paginate`](https://github.com/felixmosh/knex-paginate) Extension of the query builder with `paginate` method that helps with pagination tasks.
 - [`knex-postgis`](https://github.com/jfgodoy/knex-postgis) Extension of Knex with [PostGIS](https://postgis.net/) (geographic objects in PostgreSQL) support.
 - [`knex-serverless-mysql`](https://github.com/MatissJanis/knex-serverless-mysql) Knex dialect for usage with [`serverless-mysql`](https://github.com/jeremydaly/serverless-mysql): persist database connection over multiple serverless (such as AWS Lambda) function invocations.
