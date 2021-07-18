@@ -143,7 +143,7 @@ export default [
       },
       {
         type: "text",
-        content: `Seed an migration files need to follow Knex conventions`
+        content: `Seed and migration files need to follow Knex conventions`
       },
       {
         type: "code",
