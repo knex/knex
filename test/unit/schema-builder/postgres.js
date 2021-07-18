@@ -1155,11 +1155,37 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding default datetime', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
+    );
+  });
+
   it('adding timestamp with timezone', () => {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', false);
+        table.timestamp('foo', true);
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
+    );
+  });
+
+  it('adding datetime with timezone', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', true);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1172,7 +1198,20 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', true);
+        table.timestamp('foo', false);
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamp'
+    );
+  });
+
+  it('adding datetime without timezone', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', false);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1194,6 +1233,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding datetime with precision', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', undefined, 3);
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
+    );
+  });
+
   it('adding timestamp with options object', () => {
     tableSql = client
       .schemaBuilder()
@@ -1207,6 +1259,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding timestamp with options object but no timestamp', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamp('foo', { precision: 3 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
+    );
+  });
+
+  it('adding timestamp with empty options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamp('foo', { precision: 3 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
+    );
+  });
+
   it('adding datetime with options object', () => {
     tableSql = client
       .schemaBuilder()
@@ -1217,6 +1295,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "foo" timestamp(3)'
+    );
+  });
+
+  it('adding datetime with options object but no timestamp', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', { precision: 3 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
+    );
+  });
+
+  it('adding datetime with options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', {});
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
     );
   });
 
