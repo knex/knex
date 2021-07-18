@@ -1172,7 +1172,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', true);
+        table.timestamp('foo', false);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1185,7 +1185,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.datetime('foo', true);
+        table.datetime('foo', false);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1198,7 +1198,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', false);
+        table.timestamp('foo', true);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1211,7 +1211,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.datetime('foo', false);
+        table.datetime('foo', true);
       })
       .toSQL();
     equal(1, tableSql.length);
