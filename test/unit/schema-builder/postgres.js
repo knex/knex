@@ -1276,7 +1276,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
-        table.timestamp('foo', { precision: 3 });
+        table.timestamp('foo', {});
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1311,7 +1311,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
-  it('adding datetime with options object', () => {
+  it('adding datetime with empty options object', () => {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
