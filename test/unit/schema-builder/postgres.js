@@ -357,6 +357,23 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adds foreign key with deferred', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .notNull()
+          .references('users.id')
+          .deferrable('immediate');
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") deferrable initially immediate '
+    );
+  });
+
   it('rename table', function () {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
     equal(1, tableSql.length);
