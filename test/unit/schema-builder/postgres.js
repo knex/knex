@@ -357,7 +357,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
-  it('adds foreign key with deferred', function () {
+  it('adds foreign key with deferrable initially immediate', function () {
     tableSql = client
       .schemaBuilder()
       .createTable('person', function (table) {
@@ -371,6 +371,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(2, tableSql.length);
     expect(tableSql[1].sql).to.equal(
       'alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") deferrable initially immediate '
+    );
+  });
+
+  it('adds unique constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').unique('user_id_index', 'immediate');
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_index" unique ("user_id") deferrable initially immediate'
+    );
+  });
+
+  it('adds primary constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').primary('user_id_primary', 'immediate');
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_primary" primary key ("user_id") deferrable initially immediate'
     );
   });
 
