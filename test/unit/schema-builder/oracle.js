@@ -375,7 +375,7 @@ describe('Oracle SchemaBuilder', function () {
     );
   });
 
-  it('adds foreign key with deferrable initially imeediate', function () {
+  it('adds foreign key with deferrable initially immediate', function () {
     tableSql = client
       .schemaBuilder()
       .createTable('person', function (table) {
