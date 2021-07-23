@@ -1,6 +1,5 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const { isMssql, isOracle, isPostgreSQL } = require('../../util/db-helpers');
-const { expect } = require('chai');
 
 describe('Transaction', () => {
   describe('setDeferrableConstraint', () => {
@@ -62,25 +61,21 @@ describe('Transaction', () => {
         });
 
         it('deferred unique constraint are only checked when transaction is committed', async () => {
-          try {
-            if (isPostgreSQL(knex) || isOracle(knex) || isOracle(knex)) {
-              await knex.schema.table(tableName, (table) => {
-                table.integer('value').unique('unique_value', 'deferred');
-              });
-              const trx = await knex.transaction({
-                isolationLevel: 'read committed',
-              });
-              await trx(tableName).insert({ id: 1, value: 1 });
-              await trx(tableName).insert({ id: 2, value: 2 });
-              //This usually fail but deferrable initially deferred allow constraint to be checked at the commit instead
-              await trx(tableName).insert({ id: 3, value: 1 });
-              await trx(tableName).insert({ id: 4, value: 2 });
-              await trx(tableName).delete().where({ id: 3 });
-              await trx(tableName).delete().where({ id: 4 });
-              await trx.commit();
-            }
-          } catch (error) {
-            console.log(error);
+          if (isPostgreSQL(knex) || isOracle(knex) || isOracle(knex)) {
+            await knex.schema.table(tableName, (table) => {
+              table.integer('value').unique('unique_value', 'deferred');
+            });
+            const trx = await knex.transaction({
+              isolationLevel: 'read committed',
+            });
+            await trx(tableName).insert({ id: 1, value: 1 });
+            await trx(tableName).insert({ id: 2, value: 2 });
+            //This usually fail but deferrable initially deferred allow constraint to be checked at the commit instead
+            await trx(tableName).insert({ id: 3, value: 1 });
+            await trx(tableName).insert({ id: 4, value: 2 });
+            await trx(tableName).delete().where({ id: 3 });
+            await trx(tableName).delete().where({ id: 4 });
+            await trx.commit();
           }
         });
 
