@@ -10,7 +10,9 @@ describe('Transaction', () => {
         const tableName1 = 'deferrableTestTable1';
         before(() => {
           knex = getKnexForDb(db);
-
+          if (!isPostgreSQL(knex) && !isOracle(knex)) {
+            this.skip();
+          }
           if (isMssql(knex)) {
             // Enable the snapshot isolation level required by certain transaction tests.
             return knex.raw(
@@ -39,80 +41,74 @@ describe('Transaction', () => {
         });
 
         it('deferrable initially immediate unique constraint all row are checked at end of update', async () => {
-          if (isPostgreSQL(knex) || isOracle(knex) || isOracle(knex)) {
-            await knex.schema.table(tableName, (table) => {
-              table.integer('value').unique('unique_value', 'immediate');
-            });
-            await knex.schema.table(tableName1, (table) => {
-              table.integer('value').unique('unique_value1', 'immediate');
-            });
-            const trx = await knex.transaction({
-              isolationLevel: 'read committed',
-            });
-            await trx(tableName).select();
-            await trx(tableName).insert({ id: 1, value: 1 });
-            await trx(tableName).insert({ id: 2, value: 2 });
-            //This usually fail but deferrable initially immediate allow check to be performed at the end of update isntead
-            await trx(tableName).update({
-              value: knex.raw('?? + 1', ['value']),
-            });
-            await trx.commit();
-          }
+          await knex.schema.table(tableName, (table) => {
+            table.integer('value').unique({ deferrable: 'immediate' });
+          });
+          await knex.schema.table(tableName1, (table) => {
+            table.integer('value').unique({ deferrable: 'immediate' });
+          });
+          const trx = await knex.transaction({
+            isolationLevel: 'read committed',
+          });
+          await trx(tableName).select();
+          await trx(tableName).insert({ id: 1, value: 1 });
+          await trx(tableName).insert({ id: 2, value: 2 });
+          //This usually fail but deferrable initially immediate allow check to be performed at the end of update isntead
+          await trx(tableName).update({
+            value: knex.raw('?? + 1', ['value']),
+          });
+          await trx.commit();
         });
 
         it('deferred unique constraint are only checked when transaction is committed', async () => {
-          if (isPostgreSQL(knex) || isOracle(knex) || isOracle(knex)) {
-            await knex.schema.table(tableName, (table) => {
-              table.integer('value').unique('unique_value', 'deferred');
-            });
-            const trx = await knex.transaction({
-              isolationLevel: 'read committed',
-            });
-            await trx(tableName).insert({ id: 1, value: 1 });
-            await trx(tableName).insert({ id: 2, value: 2 });
-            //This usually fail but deferrable initially deferred allow constraint to be checked at the commit instead
-            await trx(tableName).insert({ id: 3, value: 1 });
-            await trx(tableName).insert({ id: 4, value: 2 });
-            await trx(tableName).delete().where({ id: 3 });
-            await trx(tableName).delete().where({ id: 4 });
-            await trx.commit();
-          }
+          await knex.schema.table(tableName, (table) => {
+            table.integer('value').unique({ deferrable: 'deferred' });
+          });
+          const trx = await knex.transaction({
+            isolationLevel: 'read committed',
+          });
+          await trx(tableName).insert({ id: 1, value: 1 });
+          await trx(tableName).insert({ id: 2, value: 2 });
+          //This usually fail but deferrable initially deferred allow constraint to be checked at the commit instead
+          await trx(tableName).insert({ id: 3, value: 1 });
+          await trx(tableName).insert({ id: 4, value: 2 });
+          await trx(tableName).delete().where({ id: 3 });
+          await trx(tableName).delete().where({ id: 4 });
+          await trx.commit();
         });
 
         it('deferred foreign constraint are only checked when transaction is committed', async () => {
-          if (isPostgreSQL(knex) || isOracle(knex) || isOracle(knex)) {
-            await knex.schema.table(tableName, (table) => {
-              table.integer('value');
-              table
-                .foreign('value')
-                .deferrable('deferred')
-                .references(`${tableName1}.id`)
-                .withKeyName('fk1');
-            });
-            await knex.schema.table(tableName1, (table) => {
-              table.integer('value');
-              table
-                .foreign('value')
-                .deferrable('deferred')
-                .references(`${tableName}.id`)
-                .withKeyName('fk');
-            });
-            const trx = await knex.transaction({
-              isolationLevel: 'read committed',
-            });
-            await trx(tableName).select();
-            await trx(tableName).insert({ id: 1, value: 1 });
-            await trx(tableName).insert({ id: 2, value: 2 });
-            await trx(tableName1).insert({ id: 1, value: 1 });
-            await trx(tableName1).insert({ id: 2, value: 2 });
-            await trx.commit();
-            await knex.schema.table(tableName, (table) => {
-              table.dropForeign('value', 'fk1');
-            });
-            await knex.schema.table(tableName1, (table) => {
-              table.dropForeign('value', 'fk');
-            });
-          }
+          await knex.schema.table(tableName, (table) => {
+            table.integer('value');
+            table
+              .foreign('value')
+              .deferrable('deferred')
+              .references(`${tableName1}.id`)
+              .withKeyName('fk1');
+          });
+          await knex.schema.table(tableName1, (table) => {
+            table.integer('value');
+            table
+              .foreign('value')
+              .deferrable('deferred')
+              .references(`${tableName}.id`)
+              .withKeyName('fk');
+          });
+          const trx = await knex.transaction({
+            isolationLevel: 'read committed',
+          });
+          await trx(tableName).select();
+          await trx(tableName).insert({ id: 1, value: 1 });
+          await trx(tableName).insert({ id: 2, value: 2 });
+          await trx(tableName1).insert({ id: 1, value: 1 });
+          await trx(tableName1).insert({ id: 2, value: 2 });
+          await trx.commit();
+          await knex.schema.table(tableName, (table) => {
+            table.dropForeign('value', 'fk1');
+          });
+          await knex.schema.table(tableName1, (table) => {
+            table.dropForeign('value', 'fk');
+          });
         });
       });
     });
