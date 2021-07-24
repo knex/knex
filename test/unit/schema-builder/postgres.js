@@ -380,7 +380,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .createTable('person', function (table) {
         table
           .integer('user_id')
-          .unique({ constraintName: 'user_id_index', deferrable: 'immediate' });
+          .unique({ indexName: 'user_id_index', deferrable: 'immediate' });
       })
       .toSQL();
     equal(2, tableSql.length);
@@ -393,12 +393,10 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .createTable('person', function (table) {
-        table
-          .integer('user_id')
-          .primary({
-            constraintName: 'user_id_primary',
-            deferrable: 'immediate',
-          });
+        table.integer('user_id').primary({
+          constraintName: 'user_id_primary',
+          deferrable: 'immediate',
+        });
       })
       .toSQL();
     equal(2, tableSql.length);
