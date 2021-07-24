@@ -8,10 +8,10 @@ describe('Transaction', () => {
         let knex;
         const tableName = 'deferrableTestTable';
         const tableName1 = 'deferrableTestTable1';
-        before(() => {
+        before(function () {
           knex = getKnexForDb(db);
           if (!isPostgreSQL(knex) && !isOracle(knex)) {
-            this.skip();
+            return this.skip();
           }
           if (isMssql(knex)) {
             // Enable the snapshot isolation level required by certain transaction tests.
