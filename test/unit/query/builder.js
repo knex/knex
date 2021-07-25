@@ -9602,6 +9602,65 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('should warn to user when use `.returning()` function in MySQL', () => {
+    const loggerConfigForTestingWarnings = {
+      log: {
+        warn: (message) => {
+          if (
+            message ===
+            '.returning() is not supported by mysql and mariadb < 10.5.0 and will not have any effect.'
+          ) {
+            throw new Error(message);
+          }
+        },
+      },
+    };
+
+    const mysqlClientForWarnings = new MySQL_Client(
+      Object.assign({
+        client: 'mysql',
+        version: '8.0.26',
+      }, loggerConfigForTestingWarnings)
+    );
+
+    expect(() => {
+      testsql(
+        qb().into('users').insert({ email: 'foo' }).returning('id'),
+        {
+          mysql: {
+            sql: 'insert into `users` (`email`) values (?)',
+            bindings: ['foo'],
+          },
+        },
+        {
+          mysql: mysqlClientForWarnings,
+        }
+      );
+    }).to.throw(Error);
+  });
+
+  it('should NOT warn to user when use `.returning()` function in MariaDB >= 10.5.0', () => {
+    const mysqlClient = new MySQL_Client({
+      client: 'mysql',
+      version: '10.5.0',
+    });
+
+    expect(() => {
+      testsql(
+        qb().into('users').insert({ email: 'foo' }).returning('id'),
+        {
+          mysql: {
+            sql: 'insert into `users` (`email`) values (?) returning id',
+            bindings: ['foo'],
+          },
+        },
+        {
+          mysql: mysqlClient,
+        }
+      );
+    });
+  });
+
   it('should warn to user when use `.returning()` function in SQLite3', () => {
     const loggerConfigForTestingWarnings = {
       log: {
