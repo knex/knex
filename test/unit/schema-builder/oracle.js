@@ -375,6 +375,54 @@ describe('Oracle SchemaBuilder', function () {
     );
   });
 
+  it('adds foreign key with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .notNull()
+          .references('users.id')
+          .deferrable('immediate');
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") deferrable initially immediate '
+    );
+  });
+
+  it('adds unique constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .unique({ indexName: 'user_id_index', deferrable: 'immediate' });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_index" unique ("user_id") deferrable initially immediate'
+    );
+  });
+
+  it('adds primary constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').primary({
+          constraintName: 'user_id_primary',
+          deferrable: 'immediate',
+        });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_primary" primary key ("user_id") deferrable initially immediate'
+    );
+  });
+
   it('test adding incrementing id', function () {
     tableSql = client
       .schemaBuilder()

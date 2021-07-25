@@ -385,6 +385,24 @@ module.exports = function (dialect) {
       );
     });
 
+    it('adds foreign key with deferred throw error ', function () {
+      const addDeferredConstraint = () => {
+        client
+          .schemaBuilder()
+          .createTable('person', function (table) {
+            table
+              .integer('user_id')
+              .notNull()
+              .references('users.id')
+              .deferrable('immediate');
+          })
+          .toSQL();
+      };
+      expect(addDeferredConstraint).to.throw(
+        'mysql does not support deferrable'
+      );
+    });
+
     it('adds foreign key with onUpdate and onDelete', function () {
       tableSql = client
         .schemaBuilder()
