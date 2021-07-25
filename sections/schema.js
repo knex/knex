@@ -549,8 +549,8 @@ export default [
   {
     type: "method",
     method: "unique",
-    example: "table.unique(columns, [indexName])",
-    description: "Adds an unique index to a table over the given `columns`. A default index name using the columns is used unless indexName is specified.",
+    example: "table.unique(columns, options={[indexName:string],[deferrable:'not deferrable'|'immediate'|'deferred']})",
+    description: "Adds an unique index to a table over the given `columns`. A default index name using the columns is used unless indexName is specified. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.",
     children: [{
       type: 'code',
       language: 'js',
@@ -559,7 +559,7 @@ export default [
           t.unique('email')
         })
         knex.schema.alterTable('job', function(t) {
-          t.unique(['account_id', 'program_id'])
+          t.unique(['account_id', 'program_id'],{indexName:'users_composite_index',deferrable:'deferred'})
         })
       `
     }]
@@ -567,18 +567,28 @@ export default [
   {
     type: "method",
     method: "foreign",
-    example: "table.foreign(columns, [foreignKeyName])[.onDelete(statement).onUpdate(statement).withKeyName(foreignKeyName)]",
-    description: "Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns).inTable(table)`. A default key name using the columns is used unless foreignKeyName is specified. You can also chain onDelete() and/or onUpdate() to set the reference option (RESTRICT, CASCADE, SET NULL, NO ACTION) for the operation. You can also chain withKeyName() to override default key name that is generated from table and column names (result is identical to specifying second parameter to function foreign()). Note that using foreign() is the same as column.references(column) but it works for existing columns.",
-    children: [{
-      type: 'code',
-      language: 'js',
-      content: `
-        knex.schema.table('users', function (table) {
-          table.integer('user_id').unsigned()
-          table.foreign('user_id').references('Items.user_id_in_items')
-        })
-      `
-    }]
+    example: "table.foreign(columns, [foreignKeyName])[.onDelete(statement).onUpdate(statement).withKeyName(foreignKeyName).deferrable(type)]",
+    description: "Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns).inTable(table)`.",
+    children: [
+      {
+        type: "text",
+        content: [
+          "A default key name using the columns is used unless `foreignKeyName` is specified.",
+          "You can also chain `onDelete()` and/or `onUpdate()` to set the reference option `(RESTRICT, CASCADE, SET NULL, NO ACTION)` for the operation. You can also chain `withKeyName()` to override default key name that is generated from table and column names (result is identical to specifying second parameter to function `foreign()`).",
+          "Deferrable foreign constraint is supported on Postgres and Oracle and can be set by chaining `.deferrable(type)`", 
+          "Note that using `foreign()` is the same as `column.references(column)` but it works for existing columns."
+        ]
+      },
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          knex.schema.table('users', function (table) {
+            table.integer('user_id').unsigned()
+            table.foreign('user_id').references('Items.user_id_in_items').deferrable('deferred')
+          })`
+      }
+    ]
   },
   {
     type: "method",
@@ -699,16 +709,35 @@ export default [
   {
     type: "method",
     method: "primary",
-    example: "column.primary([constraintName]); table.primary(columns, [constraintName])",
-    description: "When called on a single column it will set that column as the primary key for a table. If you need to create a composite primary key, call it on a table with an array of column names instead. Constraint name defaults to `tablename_pkey` unless `constraintName` is specified. On Amazon Redshift, all columns included in a primary key must be not nullable.",
-    children: [    ]
+    example: "column.primary(options=({[constraintName:string],[deferrable:'not deferrable'|'deferred'|'immediate']})); table.primary(columns, options=({[constraintName:string],[deferrable:'not deferrable'|'deferred'|'immediate']})",
+    description: "When called on a single column it will set that column as the primary key for a table. If you need to create a composite primary key, call it on a table with an array of column names instead. Constraint name defaults to `tablename_pkey` unless `constraintName` is specified. On Amazon Redshift, all columns included in a primary key must be not nullable. Deferrable primary constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.",
+    children: [{
+      type: 'code',
+      language: 'js',
+      content: `
+        knex.schema.alterTable('users', function(t) {
+          t.unique('email')
+        })
+        knex.schema.alterTable('job', function(t) {
+          t.primary('email',{constraintName:'users_primary_key',deferrable:'deferred'})
+        })
+      `
+    }]
   },
   {
     type: "method",
     method: "unique",
-    example: "column.unique()",
-    description: "Sets the column as unique. On Amazon Redshift, this constraint is not enforced, but it is used by the query planner.",
-    children: [    ]
+    example: "column.unique(options={[indexName:string],[deferrable:'not deferrable'|'immediate'|'deferred']})",
+    description: "Sets the column as unique. On Amazon Redshift, this constraint is not enforced, but it is used by the query planner. Deferrable unqiue constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.",
+    children: [{
+      type: 'code',
+      language: 'js',
+      content: `
+      knex.schema.table('users', function (table) {
+        table.integer('user_id').unique({indexName:'user_unqiue_id', deferrable:'immediate'})
+      })
+      `
+    }]
   },
   {
     type: "method",
