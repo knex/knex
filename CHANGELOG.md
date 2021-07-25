@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 0.95.8 - 25 July, 2021
+
+### New features:
+
+- Add deferrable support for constraint #4584
+- Implement delete with join #4568
+- Add DPI error codes for Oracle #4536
+
+### Bug fixes:
+
+- Fixing PostgreSQL datetime and timestamp column created with wrong format #4578
+
+### Typings:
+
+- Improve analytic types #4576
+- MSSQL: Add trustServerCertificate option #4500
+
 # 0.95.7 - 10 July, 2021
 
 ### New features:
