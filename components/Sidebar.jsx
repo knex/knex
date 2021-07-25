@@ -205,7 +205,8 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-specificType">specificType</a></li>
           <li>– <a href="#Schema-index">index</a></li>
           <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
-          <li>– <a href="#Schema-unique">unique</a></li>
+          <li>– <a href="#Schema-table-primary">primary</a></li>
+          <li>– <a href="#Schema-table-unique">unique</a></li>
           <li>– <a href="#Schema-foreign">foreign</a></li>
           <li>– <a href="#Schema-dropForeign">dropForeign</a></li>
           <li>– <a href="#Schema-dropUnique">dropUnique</a></li>
@@ -214,8 +215,8 @@ export default class Sidebar extends Component {
           <li><a href="#Chainable"><b>Chainable:</b></a></li>
           <li>– <a href="#Schema-alter">alter</a></li>
           <li>– <a href="#Schema-index">index</a></li>
-          <li>– <a href="#Schema-primary">primary</a></li>
-          <li>– <a href="#Schema-unique">unique</a></li>
+          <li>– <a href="#Schema-column-primary">primary</a></li>
+          <li>– <a href="#Schema-column-unique">unique</a></li>
           <li>– <a href="#Schema-references">references</a></li>
           <li>– <a href="#Schema-inTable">inTable</a></li>
           <li>– <a href="#Schema-onDelete">onDelete</a></li>
