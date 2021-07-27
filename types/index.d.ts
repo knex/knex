@@ -1910,9 +1910,8 @@ export declare namespace Knex {
     comment(val: string): TableBuilder;
     specificType(columnName: string, type: string): ColumnBuilder;
     primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
-    /**@deprecated*/
+    /** @deprecated */
     primary(columnNames: readonly string[], constraintName?: string): TableBuilder;
-    
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
@@ -1965,7 +1964,7 @@ export declare namespace Knex {
     withKeyName(keyName: string): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
-    deferrable(type: deferrableType);
+    deferrable(type: deferrableType): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
