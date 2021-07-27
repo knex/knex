@@ -2405,7 +2405,7 @@ interface MsSqlConnectionConfigBase {
   }
 
   interface SeederConfig<V extends {} = any> {
-    extension?: string;cd
+    extension?: string;
     directory?: string | readonly string[];
     loadExtensions?: readonly string[];
     specific?: string;
