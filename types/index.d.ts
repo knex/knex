@@ -1884,6 +1884,7 @@ export declare namespace Knex {
     boolean(columnName: string): ColumnBuilder;
     date(columnName: string): ColumnBuilder;
     dateTime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
+    datetime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
     time(columnName: string): ColumnBuilder;
     timestamp(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
     /** @deprecated */
@@ -1908,12 +1909,16 @@ export declare namespace Knex {
     uuid(columnName: string): ColumnBuilder;
     comment(val: string): TableBuilder;
     specificType(columnName: string, type: string): ColumnBuilder;
+    primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
+    /** @deprecated */
     primary(columnNames: readonly string[], constraintName?: string): TableBuilder;
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
       indexType?: string
     ): TableBuilder;
+    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): TableBuilder;
+    /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
     foreign(
@@ -1936,10 +1941,15 @@ export declare namespace Knex {
   }
 
   interface AlterTableBuilder extends TableBuilder {}
-
+  type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
+    primary(options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    /** @deprecated */
     primary(constraintName?: string): ColumnBuilder;
+
+    unique(options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    /** @deprecated */
     unique(indexName?: string): ColumnBuilder;
     references(columnName: string): ReferencingColumnBuilder;
     onDelete(command: string): ColumnBuilder;
@@ -1954,6 +1964,7 @@ export declare namespace Knex {
     withKeyName(keyName: string): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
+    deferrable(type: deferrableType): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
