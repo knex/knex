@@ -1964,7 +1964,7 @@ export declare namespace Knex {
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
   }
-  interface ForeignConstraintBuilder{
+  interface ForeignConstraintBuilder {
     references(columnName: string): ReferencingColumnBuilder;
   }
 
@@ -1976,7 +1976,7 @@ export declare namespace Knex {
     index(indexName?: string, indexType?: string): ColumnBuilder;
   }
 
-  interface ReferencingColumnBuilder extends ColumnBuilder{
+  interface ReferencingColumnBuilder extends ColumnBuilder {
     inTable(tableName: string): ReferencingColumnBuilder;
     deferrable(type: deferrableType): ReferencingColumnBuilder;
     withKeyName(keyName: string): ReferencingColumnBuilder;
