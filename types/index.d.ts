@@ -1965,7 +1965,12 @@ export declare namespace Knex {
     first(): ColumnBuilder;
   }
 
-  interface ForeignConstraintBuilder {
+  interface ForeignKeyBuilder extends ColumnBuilder{
+    deferrable(type: deferrableType): ForeignKeyBuilder;
+    withKeyName(keyName: string): ForeignKeyBuilder;
+  }
+
+  interface ForeignConstraintBuilder{
     references(columnName: string): ReferencingColumnBuilder;
   }
 
@@ -1977,10 +1982,8 @@ export declare namespace Knex {
     index(indexName?: string, indexType?: string): ColumnBuilder;
   }
 
-  interface ReferencingColumnBuilder extends ColumnBuilder {
+  interface ReferencingColumnBuilder extends ColumnBuilder, ForeignKeyBuilder {
     inTable(tableName: string): ColumnBuilder;
-    deferrable(type: deferrableType): ColumnBuilder;
-    withKeyName(keyName: string): ColumnBuilder;
   }
 
   interface AlterColumnBuilder extends ColumnBuilder {}
