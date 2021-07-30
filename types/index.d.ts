@@ -1961,10 +1961,8 @@ export declare namespace Knex {
     comment(value: string): ColumnBuilder;
     alter(): ColumnBuilder;
     queryContext(context: any): ColumnBuilder;
-    withKeyName(keyName: string): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
-    deferrable(type: deferrableType): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
@@ -1981,6 +1979,8 @@ export declare namespace Knex {
 
   interface ReferencingColumnBuilder extends ColumnBuilder {
     inTable(tableName: string): ColumnBuilder;
+    deferrable(type: deferrableType): ColumnBuilder;
+    withKeyName(keyName: string): ColumnBuilder;
   }
 
   interface AlterColumnBuilder extends ColumnBuilder {}
