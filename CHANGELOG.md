@@ -1,5 +1,16 @@
 # Master (Unreleased)
 
+# 0.95.9 - 31 July, 2021
+
+### New features:
+
+- Oracle: support specifying schema for dropTable and dropSequence #4596
+- Oracle: support specifying schema for autoincrement #4594
+
+### Typings:
+
+- Add TypeScript support for deferrable, new Primary/Unique syntax #4589
+
 # 0.95.8 - 25 July, 2021
 
 ### New features:
