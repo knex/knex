@@ -76,6 +76,9 @@ const main = async () => {
     table.integer('num').references('non_exist.id').withKeyName('non_for5').deferrable('deferred').onDelete('CASCADE');
     table.integer('num').references('id').inTable('non_exist').withKeyName('non_for6').deferrable('deferred').onDelete('CASCADE');
     table.integer('num').references('id').withKeyName('non_for7').deferrable('deferred').inTable('non_exist').onDelete('CASCADE');
+    table.integer('num').references('id').inTable('non_exist').onDelete('CASCADE').withKeyName('non_for6').deferrable('deferred');
+    table.integer('num').references('id').withKeyName('non_for7').onDelete('CASCADE').deferrable('deferred').inTable('non_exist');
+    table.integer('num').references('id').withKeyName('non_for7').onDelete('CASCADE').deferrable('deferred').inTable('non_exist');
   })
 };
 
