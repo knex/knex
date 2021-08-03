@@ -1980,6 +1980,8 @@ export declare namespace Knex {
     inTable(tableName: string): ReferencingColumnBuilder;
     deferrable(type: deferrableType): ReferencingColumnBuilder;
     withKeyName(keyName: string): ReferencingColumnBuilder;
+    onDelete(command: string): ReferencingColumnBuilder;
+    onUpdate(command: string): ReferencingColumnBuilder;
   }
 
   interface AlterColumnBuilder extends ColumnBuilder {}
