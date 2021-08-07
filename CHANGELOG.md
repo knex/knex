@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.21.20 - 07 August, 2021
+
+### Typings:
+
+- Added option to mssql connection configuration for trustServerCertificate boolean #4606
+
 # 0.21.19 - 02 March, 2021
 
 - SQLite: Made the constraint detection case-insensitive #4332
