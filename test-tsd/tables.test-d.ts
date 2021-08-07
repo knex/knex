@@ -1,6 +1,6 @@
 import { knex, Knex } from '../types';
 import { clientConfig, User, Department, Article } from './common';
-import { expectType } from 'tsd';
+import { expectType, expectAssignable } from 'tsd';
 
 const knexInstance = knex(clientConfig);
 
@@ -65,4 +65,20 @@ const main = async () => {
   expectType<Pick<User, 'id'> | undefined>(
     await knexInstance.first('id').from('users_composite')
   );
+
+  //These tests simply check if type work by showing that it does not throw syntax error
+
+  knexInstance.schema.createTable('testTable',(table) => {
+    table.foreign('fkey_three').references('non_exist.id').withKeyName('non_for1').deferrable('deferred');
+    table.foreign('fkey_threee').references('non_exist.id').deferrable('deferred').withKeyName('non_for2');
+    table.integer('num').references('non_exist.id').deferrable('immediate').withKeyName('non_for3');
+    table.integer('num').references('non_exist.id').withKeyName('non_for4').deferrable('deferred').onDelete('CASCADE');
+    table.integer('num').references('non_exist.id').withKeyName('non_for5').deferrable('deferred').onDelete('CASCADE');
+    table.integer('num').references('id').inTable('non_exist').withKeyName('non_for6').deferrable('deferred').onDelete('CASCADE');
+    table.integer('num').references('id').withKeyName('non_for7').deferrable('deferred').inTable('non_exist').onDelete('CASCADE');
+    table.integer('num').references('id').inTable('non_exist').onDelete('CASCADE').withKeyName('non_for6').deferrable('deferred');
+    table.integer('num').references('id').withKeyName('non_for7').onDelete('CASCADE').deferrable('deferred').inTable('non_exist');
+    table.integer('num').references('id').withKeyName('non_for7').onDelete('CASCADE').deferrable('deferred').inTable('non_exist');
+  })
 };
+
