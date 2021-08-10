@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 0.21.21 - 10 August, 2021
+
+### Bug fixes:
+
+- CLI: Fix line terminators causing knex migrations to fail
+
 # 0.21.20 - 07 August, 2021
 
 ### Typings:
