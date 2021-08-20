@@ -1,5 +1,15 @@
 # Master (Unreleased)
 
+# 0.95.10 - 20 August, 2021
+
+### Improvements:
+
+- Use sys info function instead of connection db name #4623
+
+### Typings:
+
+- Deferrable and withkeyName should not be in ColumnBuilder #4600
+
 # 0.95.9 - 31 July, 2021
 
 ### New features:
