@@ -7854,6 +7854,29 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('row_number with object', function () {
+    testsql(
+      qb()
+        .select('*')
+        .from('accounts')
+        .rowNumber(null, { column: 'email', order: 'asc' }, [
+          { column: 'address', order: 'asc' },
+          'phone',
+        ]),
+      {
+        mssql: {
+          sql: 'select *, row_number() over (partition by [address] asc, [phone] order by [email] asc) from [accounts]',
+        },
+        pg: {
+          sql: 'select *, row_number() over (partition by "address" asc, "phone" order by "email" asc) from "accounts"',
+        },
+        oracledb: {
+          sql: 'select *, row_number() over (partition by "address" asc, "phone" order by "email" asc) from "accounts"',
+        },
+      }
+    );
+  });
+
   it('row_number with string', function () {
     testsql(
       qb().select('*').from('accounts').rowNumber(null, 'email', 'address'),
