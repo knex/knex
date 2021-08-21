@@ -300,7 +300,7 @@ module.exports = function (knex) {
         [drivers.SQLite]: "SELECT name FROM sqlite_master WHERE type='table';",
         [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
         [drivers.MsSQL]:
-          "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'",
+          "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='dbo'",
       };
       return knex
         .raw(tables[knex.client.driverName])
@@ -417,7 +417,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             ['datatype_test', 'knex_test'],
             {
               enum_value: {
@@ -493,7 +493,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             null,
             {
               defaultValue: null,
