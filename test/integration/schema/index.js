@@ -1463,6 +1463,49 @@ module.exports = (knex) => {
             .then(() =>
               knex.schema.withSchema(testSchemaName).dropTableIfExists('test2')
             ));
+
+        describe('case-sensitive collation support', () => {
+          let k;
+          const databaseName = 'knex_test_CS_AS_SC';
+          const collation = 'Latin1_General_100_CS_AS_SC';
+          const tableName = 'Test';
+          before(async () => {
+            await knex.schema.raw(
+              `IF EXISTS(SELECT name FROM sys.databases WHERE name = :databaseName) DROP DATABASE :databaseName:; CREATE DATABASE :databaseName: COLLATE ${collation}`,
+              { databaseName }
+            );
+
+            const Knex = require('../../../knex');
+            const config = require('../../knexfile');
+            k = Knex({
+              client: 'mssql',
+              connection: {
+                ...config.mssql.connection,
+                database: databaseName,
+              },
+            });
+
+            // Verify configuration is using the correct database.
+            const [{ name }] = await k.raw('SELECT DB_NAME() AS name');
+            expect(name).to.equal(databaseName);
+
+            await k.schema.createTable(tableName, function () {
+              this.increments();
+            });
+          });
+          after(async () => {
+            await k.schema.dropTable(tableName);
+            await k.destroy();
+            await knex.schema.raw(
+              `IF EXISTS(SELECT name FROM sys.databases WHERE name = :databaseName) DROP DATABASE :databaseName:`,
+              { databaseName }
+            );
+          });
+          it('should get columnInfo from a case-sensitive database', async () => {
+            const info = await k(tableName).columnInfo();
+            expect(info).not.to.equal(undefined);
+          });
+        });
       });
     });
 
