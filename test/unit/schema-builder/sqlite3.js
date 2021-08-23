@@ -3974,9 +3974,9 @@ describe('SQLite parser and compiler', function () {
 
     it('wrap', function () {
       const sql =
-        'CREATE TABLE "schema".users (`foo`, [bar], CONSTRAINT [foreign_constraint] FOREIGN KEY (foo, `bar`) REFERENCES other ([baz], "bar"))';
+        'CREATE TABLE "schema".users (`foo`, [bar], \'baz\' DEFAULT "lar", CONSTRAINT [foreign_constraint] FOREIGN KEY (foo, `bar`) REFERENCES other ([baz], "bar"))';
       const newSql =
-        'CREATE TABLE "schema"."users" ("foo", "bar", CONSTRAINT "foreign_constraint" FOREIGN KEY ("foo", "bar") REFERENCES "other" ("baz", "bar"))';
+        'CREATE TABLE "schema"."users" ("foo", "bar", "baz" DEFAULT "lar", CONSTRAINT "foreign_constraint" FOREIGN KEY ("foo", "bar") REFERENCES "other" ("baz", "bar"))';
 
       const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
 
@@ -4277,9 +4277,9 @@ describe('SQLite parser and compiler', function () {
 
     it('wrap', function () {
       const sql =
-        'CREATE INDEX "schema".[users index] on `users` ("foo " ASC, [b a z] DESC, ` bar`)';
+        'CREATE INDEX "schema".[users index] on `users` ("foo " ASC, [b a z] DESC, ` bar`, \'lar\')';
       const newSql =
-        'CREATE INDEX "schema"."users index" on "users" ("foo " ASC, "b a z" DESC, " bar")';
+        'CREATE INDEX "schema"."users index" on "users" ("foo " ASC, "b a z" DESC, " bar", "lar")';
 
       const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
 
