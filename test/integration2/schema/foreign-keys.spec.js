@@ -195,6 +195,27 @@ describe('Schema', () => {
             }
           });
 
+          it('can add a new column with a foreign key constraint', async () => {
+            await knex.schema.alterTable('foreign_keys_table_one', (table) => {
+              table
+                .integer('fkey_new')
+                .unsigned()
+                .notNull()
+                .references('foreign_keys_table_two.id');
+            });
+
+            await knex('foreign_keys_table_two').insert({});
+            await knex('foreign_keys_table_three').insert({});
+
+            await expect(
+              knex('foreign_keys_table_one').insert({
+                fkey_two: 1,
+                fkey_three: 1,
+                fkey_new: 2,
+              })
+            ).to.be.eventually.rejected;
+          });
+
           it('can drop added foreign keys in sqlite after a table rebuild', async () => {
             if (!isSQLite(knex)) {
               return;
