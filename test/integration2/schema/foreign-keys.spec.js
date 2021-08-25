@@ -77,8 +77,7 @@ describe('Schema', () => {
               expect(queries.sql).to.eql([
                 {
                   bindings: [],
-                  sql:
-                    'alter table "foreign_keys_table_one" add constraint "fk_fkey_threeee" foreign key ("fkey_three") references "foreign_keys_table_three" ("id")',
+                  sql: 'alter table "foreign_keys_table_one" add constraint "fk_fkey_threeee" foreign key ("fkey_three") references "foreign_keys_table_three" ("id")',
                 },
               ]);
             }
@@ -194,6 +193,27 @@ describe('Schema', () => {
               }
               expect(err.message).to.include('constraint');
             }
+          });
+
+          it('can add a new column with a foreign key constraint', async () => {
+            await knex.schema.alterTable('foreign_keys_table_one', (table) => {
+              table
+                .integer('fkey_new')
+                .unsigned()
+                .notNull()
+                .references('foreign_keys_table_two.id');
+            });
+
+            await knex('foreign_keys_table_two').insert({});
+            await knex('foreign_keys_table_three').insert({});
+
+            await expect(
+              knex('foreign_keys_table_one').insert({
+                fkey_two: 1,
+                fkey_three: 1,
+                fkey_new: 2,
+              })
+            ).to.be.eventually.rejected;
           });
 
           it('can drop added foreign keys in sqlite after a table rebuild', async () => {
