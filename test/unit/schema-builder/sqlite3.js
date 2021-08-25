@@ -7,7 +7,6 @@ let tableSql;
 const sinon = require('sinon');
 const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 const client = new SQLite3_Client({ client: 'sqlite3' });
-const SQLite3_DDL = require('../../../lib/dialects/sqlite3/schema/ddl');
 const {
   parseCreateTable,
   parseCreateIndex,
@@ -722,35 +721,6 @@ describe('SQLite SchemaBuilder', function () {
       tableSql[0].sql,
       'create table `users` (`user_id` varchar(36), foreign key(`user_id`) references `user`(`id`) on delete CASCADE)'
     );
-  });
-
-  describe('SQLite3_DDL.prototype._doReplace', function () {
-    it('should not change a query that has no matches', function () {
-      return client
-        .schemaBuilder()
-        .table('foo', function () {
-          const doReplace = SQLite3_DDL.prototype._doReplace;
-
-          const sql1 =
-            'CREATE TABLE `foo` (`id` integer not null primary key autoincrement, ' +
-            '"parent_id_test" integer, foreign key("parent_id") references `foo`(`id`))';
-          const sql2 =
-            'CREATE TABLE `foo` (`id` integer not null primary key autoincrement, ' +
-            '"parent_id_test" integer, foreign key("parent_id") references `bar`(`id`))';
-
-          const sql1b =
-            'CREATE TABLE `foo` ("id_foo" integer not null primary key autoincrement, ' +
-            '"parent_id_test" integer, foreign key("parent_id") references `foo`("id_foo"))';
-          const sql2b =
-            'CREATE TABLE `foo` ("id_foo" integer not null primary key autoincrement, ' +
-            '"parent_id_test" integer, foreign key("parent_id") references `bar`(`id`))';
-
-          expect(doReplace(sql1, '`bar`', '"lar"')).to.equal(sql1);
-          expect(doReplace(sql1, '`id`', '"id_foo"')).to.equal(sql1b);
-          expect(doReplace(sql2, '`id`', '"id_foo"')).to.equal(sql2b);
-        })
-        .toSQL();
-    });
   });
 
   describe('queryContext', function () {
@@ -3974,9 +3944,9 @@ describe('SQLite parser and compiler', function () {
 
     it('wrap', function () {
       const sql =
-        'CREATE TABLE "schema".users (`foo`, [bar], CONSTRAINT [foreign_constraint] FOREIGN KEY (foo, `bar`) REFERENCES other ([baz], "bar"))';
+        'CREATE TABLE "schema".users (`foo`, [bar], \'baz\' DEFAULT "lar", CONSTRAINT [foreign_constraint] FOREIGN KEY (foo, `bar`) REFERENCES other ([baz], "bar"))';
       const newSql =
-        'CREATE TABLE "schema"."users" ("foo", "bar", CONSTRAINT "foreign_constraint" FOREIGN KEY ("foo", "bar") REFERENCES "other" ("baz", "bar"))';
+        'CREATE TABLE "schema"."users" ("foo", "bar", "baz" DEFAULT "lar", CONSTRAINT "foreign_constraint" FOREIGN KEY ("foo", "bar") REFERENCES "other" ("baz", "bar"))';
 
       const parsedSql = compileCreateTable(parseCreateTable(sql), wrap);
 
@@ -4277,9 +4247,9 @@ describe('SQLite parser and compiler', function () {
 
     it('wrap', function () {
       const sql =
-        'CREATE INDEX "schema".[users index] on `users` ("foo " ASC, [b a z] DESC, ` bar`)';
+        'CREATE INDEX "schema".[users index] on `users` ("foo " ASC, [b a z] DESC, ` bar`, \'lar\')';
       const newSql =
-        'CREATE INDEX "schema"."users index" on "users" ("foo " ASC, "b a z" DESC, " bar")';
+        'CREATE INDEX "schema"."users index" on "users" ("foo " ASC, "b a z" DESC, " bar", "lar")';
 
       const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
 

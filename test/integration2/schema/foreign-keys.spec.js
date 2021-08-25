@@ -66,7 +66,7 @@ describe('Schema', () => {
 
             if (isSQLite(knex)) {
               expect(queries.sql).to.eql([
-                'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`))',
+                'CREATE TABLE `_knex_temp_alter111` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `fkey_two` integer NOT NULL, `fkey_three` integer NOT NULL, CONSTRAINT `fk_fkey_threeee` FOREIGN KEY (`fkey_three`) REFERENCES `foreign_keys_table_three` (`id`))',
                 'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
                 'DROP TABLE "foreign_keys_table_one"',
                 'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
@@ -77,8 +77,7 @@ describe('Schema', () => {
               expect(queries.sql).to.eql([
                 {
                   bindings: [],
-                  sql:
-                    'alter table "foreign_keys_table_one" add constraint "fk_fkey_threeee" foreign key ("fkey_three") references "foreign_keys_table_three" ("id")',
+                  sql: 'alter table "foreign_keys_table_one" add constraint "fk_fkey_threeee" foreign key ("fkey_three") references "foreign_keys_table_three" ("id")',
                 },
               ]);
             }
@@ -103,7 +102,7 @@ describe('Schema', () => {
             const queries = await builder.generateDdlCommands();
 
             expect(queries.sql).to.eql([
-              'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`) ON DELETE CASCADE)',
+              'CREATE TABLE `_knex_temp_alter111` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `fkey_two` integer NOT NULL, `fkey_three` integer NOT NULL, CONSTRAINT `fk_fkey_threeee` FOREIGN KEY (`fkey_three`) REFERENCES `foreign_keys_table_three` (`id`) ON DELETE CASCADE)',
               'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
               'DROP TABLE "foreign_keys_table_one"',
               'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
@@ -129,7 +128,7 @@ describe('Schema', () => {
             const queries = await builder.generateDdlCommands();
 
             expect(queries.sql).to.eql([
-              'CREATE TABLE `_knex_temp_alter111` (`id` integer not null primary key autoincrement, `fkey_two` integer not null, `fkey_three` integer not null, CONSTRAINT fk_fkey_threeee FOREIGN KEY (`fkey_three`)  REFERENCES `foreign_keys_table_three` (`id`) ON UPDATE CASCADE)',
+              'CREATE TABLE `_knex_temp_alter111` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `fkey_two` integer NOT NULL, `fkey_three` integer NOT NULL, CONSTRAINT `fk_fkey_threeee` FOREIGN KEY (`fkey_three`) REFERENCES `foreign_keys_table_three` (`id`) ON UPDATE CASCADE)',
               'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
               'DROP TABLE "foreign_keys_table_one"',
               'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
