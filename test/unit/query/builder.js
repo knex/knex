@@ -9401,7 +9401,30 @@ describe('QueryBuilder', () => {
         // FIXME: oracledb does not allow the RECURSIVE keyword, but does require a list of column aliases for a recursive query. [#4514]
         // https://github.com/knex/knex/issues/4514#issuecomment-903727391
         oracledb:
-          'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+          'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
+      }
+    );
+  });
+
+  it('Oracle: withRecursive with column list', function () {
+    // FIXME: This is not actually valid Oracle SQL - Oracle requires a column list in recursive WITH.
+    // Supporting this requires changes to the QueryBuilder API.
+    testsql(
+      qb()
+        .withRecursive('hasColumns', function () {
+          this.select('id', 'nickname')
+            .from('users')
+            .unionAll(function () {
+              this.select('id', 'firstname')
+                .from('users')
+                .join('hasColumns', 'hasColumns.nickname', 'users.firstname');
+            });
+        })
+        .select('name')
+        .from('hasColumns'),
+      {
+        oracledb:
+          'with "hasColumns" as (select "id", "nickname" from "users" union all select "id", "firstname" from "users" inner join "hasColumns" on "hasColumns"."nickname" = "users"."firstname") select "name" from "hasColumns"',
       }
     );
   });

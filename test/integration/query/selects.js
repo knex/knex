@@ -1234,7 +1234,8 @@ module.exports = function (knex) {
         await knex('rcte').insert({name: 'nope'})
       })
       it('supports recursive CTEs', async function () {
-        // FIXME: Oracle requires to omit RECURSIVE. [#4514]
+        // FIXME: Oracle requires column list for recursive CTEs. [#4514]
+        // Error: ORA-32039: recursive WITH clause must have column alias list
         if (isOracle(knex)) {
           return this.skip()
         }
