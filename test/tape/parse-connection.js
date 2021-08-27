@@ -274,7 +274,10 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
   t.plan(2);
 
   t.deepLooseEqual(
-    parseConnection('mysql://user:password@host:0000/database?ssl={\"ca\": \"should exist\"}'),
+    /* eslint-disable-next-line no-useless-escape */
+    parseConnection(
+      'mysql://user:password@host:0000/database?ssl={"ca": "should exist"}'
+    ),
     {
       client: 'mysql',
       connection: {
@@ -284,14 +287,17 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
         password: 'password',
         database: 'database',
         ssl: {
-          ca: "should exist"
+          ca: 'should exist',
         },
       },
     }
   );
 
   t.deepLooseEqual(
-    parseConnection('mariadb://user:password@host:0000/database?ssl={\"ca\": \"should exist\"}'),
+    /* eslint-disable-next-line no-useless-escape */
+    parseConnection(
+      'mariadb://user:password@host:0000/database?ssl={"ca": "should exist"}'
+    ),
     {
       client: 'mariadb',
       connection: {
@@ -301,9 +307,9 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
         password: 'password',
         database: 'database',
         ssl: {
-          ca: "should exist"
+          ca: 'should exist',
         },
       },
     }
   );
-})
+});
