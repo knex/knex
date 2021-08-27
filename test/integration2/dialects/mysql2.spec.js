@@ -64,11 +64,10 @@ describe('MySQL dialect', () => {
           let knex;
           before(() => {
             knex = getKnexForDb(db, {
-              /* eslint-disable-next-line no-useless-escape */
               connection: `${db.replace(
                 'mysql2',
                 'mysql'
-              )}://testuser:testpassword@127.0.0.1:23306/knex_test?ssl={\"rejectUnauthorized\": false}`,
+              )}://testuser:testpassword@127.0.0.1:23306/knex_test?ssl={"rejectUnauthorized": false}`,
             });
           });
 

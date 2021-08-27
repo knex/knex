@@ -274,7 +274,6 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
   t.plan(2);
 
   t.deepLooseEqual(
-    /* eslint-disable-next-line no-useless-escape */
     parseConnection(
       'mysql://user:password@host:0000/database?ssl={"ca": "should exist"}'
     ),
@@ -294,7 +293,6 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
   );
 
   t.deepLooseEqual(
-    /* eslint-disable-next-line no-useless-escape */
     parseConnection(
       'mariadb://user:password@host:0000/database?ssl={"ca": "should exist"}'
     ),
