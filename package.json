@@ -115,7 +115,7 @@
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.2.1",
     "tsd": "^0.17.0",
-    "typescript": "4.3.5"
+    "typescript": "4.4.2"
   },
   "buildDependencies": [
     "rimraf"
