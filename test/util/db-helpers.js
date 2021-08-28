@@ -33,6 +33,10 @@ function isSQLite(knex) {
   return getDriverName(knex) === drivers.SQLite;
 }
 
+function isCockroachDB(knex) {
+  return getDriverName(knex) === drivers.CockroachDB;
+}
+
 /**
  *
  * @param knex
@@ -45,6 +49,7 @@ function isOneOfDbs(knex, supportedDbs) {
 
 module.exports = {
   isOneOfDbs,
+  isCockroachDB,
   isMysql,
   isMssql,
   isOracle,

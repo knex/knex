@@ -1,5 +1,10 @@
 const { expect } = require('chai');
-const { isMssql, isSQLite, isPostgreSQL } = require('../../util/db-helpers');
+const {
+  isMssql,
+  isSQLite,
+  isPostgreSQL,
+  isCockroachDB,
+} = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
@@ -34,7 +39,7 @@ describe('Schema', () => {
         describe('createPrimaryKey', () => {
           it('creates a new primary key', async () => {
             await knex.schema.alterTable('primary_table', (table) => {
-              table.integer('id_four').primary();
+              table.integer('id_four').notNull().primary();
             });
 
             await knex('primary_table').insert({ id_four: 1 });
@@ -56,9 +61,17 @@ describe('Schema', () => {
             }
           });
 
-          it('creates a primary key with a custom constraint name', async () => {
+          it('creates a primary key with a custom constraint name', async function () {
+            // CockroachDB 21.1 throws "(72): unimplemented: primary key dropped without subsequent addition of new primary key in same transaction"
+            if (isCockroachDB(knex)) {
+              return this.skip();
+            }
+
             await knex.schema.alterTable('primary_table', (table) => {
-              table.integer('id_four').primary('my_custom_constraint_name');
+              table
+                .integer('id_four')
+                .notNull()
+                .primary('my_custom_constraint_name');
             });
 
             await knex('primary_table').insert({ id_four: 1 });
