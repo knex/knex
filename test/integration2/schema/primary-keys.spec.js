@@ -100,8 +100,11 @@ describe('Schema', () => {
 
           it('creates a compound primary key', async () => {
             await knex.schema.alterTable('primary_table', (table) => {
-              table.dropNullable('id_two');
-              table.dropNullable('id_three');
+              // CockroachDB does not support nullable primary keys
+              if (isCockroachDB()) {
+                table.dropNullable('id_two');
+                table.dropNullable('id_three');
+              }
               table.primary(['id_two', 'id_three']);
             });
 
@@ -132,8 +135,11 @@ describe('Schema', () => {
             }
 
             await knex.schema.alterTable('primary_table', (table) => {
-              table.dropNullable('id_two');
-              table.dropNullable('id_three');
+              // CockroachDB does not support nullable primary keys
+              if (isCockroachDB()) {
+                table.dropNullable('id_two');
+                table.dropNullable('id_three');
+              }
               table.primary(
                 ['id_two', 'id_three'],
                 'my_custom_constraint_name'
