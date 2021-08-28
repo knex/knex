@@ -1952,8 +1952,6 @@ export declare namespace Knex {
     /** @deprecated */
     unique(indexName?: string): ColumnBuilder;
     references(columnName: string): ReferencingColumnBuilder;
-    onDelete(command: string): ColumnBuilder;
-    onUpdate(command: string): ColumnBuilder;
     defaultTo(value: Value | null, options?: DefaultToOptions): ColumnBuilder;
     unsigned(): ColumnBuilder;
     notNullable(): ColumnBuilder;
