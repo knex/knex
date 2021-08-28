@@ -1,5 +1,43 @@
 # Master (Unreleased)
 
+# 0.95.10 - 20 August, 2021
+
+### Improvements:
+
+- Use sys info function instead of connection db name #4623
+
+### Typings:
+
+- Deferrable and withkeyName should not be in ColumnBuilder #4600
+
+# 0.95.9 - 31 July, 2021
+
+### New features:
+
+- Oracle: support specifying schema for dropTable and dropSequence #4596
+- Oracle: support specifying schema for autoincrement #4594
+
+### Typings:
+
+- Add TypeScript support for deferrable, new Primary/Unique syntax #4589
+
+# 0.95.8 - 25 July, 2021
+
+### New features:
+
+- Add deferrable support for constraint #4584
+- Implement delete with join #4568
+- Add DPI error codes for Oracle #4536
+
+### Bug fixes:
+
+- Fixing PostgreSQL datetime and timestamp column created with wrong format #4578
+
+### Typings:
+
+- Improve analytic types #4576
+- MSSQL: Add trustServerCertificate option #4500
+
 # 0.95.7 - 10 July, 2021
 
 ### New features:

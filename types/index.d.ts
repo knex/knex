@@ -1464,8 +1464,15 @@ export declare namespace Knex {
   }
 
   interface AnalyticFunction<TRecord = any, TResult = unknown[]> {
-    <TResult2 = AggregationQueryResult<TResult, Dict<number>>>(alias: string, raw: Raw | QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = AggregationQueryResult<TResult, Dict<number>>>(alias: string, orderBy: string | string[], partitionBy?: string | string[]): QueryBuilder<
+    <
+      TAlias extends string,
+      TResult2 = AggregationQueryResult<TResult, {[x in TAlias]: number}>
+    >(alias: TAlias, raw: Raw | QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult2>;
+    <
+      TAlias extends string,
+      TKey extends keyof ResolveTableType<TRecord>,
+      TResult2 = AggregationQueryResult<TResult, {[x in TAlias]: number}>
+    >(alias: TAlias, orderBy: TKey | TKey[], partitionBy?: TKey | TKey[]): QueryBuilder<
       TRecord,
       TResult2
     >;
@@ -1877,6 +1884,7 @@ export declare namespace Knex {
     boolean(columnName: string): ColumnBuilder;
     date(columnName: string): ColumnBuilder;
     dateTime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
+    datetime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
     time(columnName: string): ColumnBuilder;
     timestamp(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
     /** @deprecated */
@@ -1901,12 +1909,16 @@ export declare namespace Knex {
     uuid(columnName: string): ColumnBuilder;
     comment(val: string): TableBuilder;
     specificType(columnName: string, type: string): ColumnBuilder;
+    primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
+    /** @deprecated */
     primary(columnNames: readonly string[], constraintName?: string): TableBuilder;
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
       indexType?: string
     ): TableBuilder;
+    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): TableBuilder;
+    /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
     foreign(
@@ -1929,10 +1941,15 @@ export declare namespace Knex {
   }
 
   interface AlterTableBuilder extends TableBuilder {}
-
+  type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
+    primary(options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    /** @deprecated */
     primary(constraintName?: string): ColumnBuilder;
+
+    unique(options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    /** @deprecated */
     unique(indexName?: string): ColumnBuilder;
     references(columnName: string): ReferencingColumnBuilder;
     onDelete(command: string): ColumnBuilder;
@@ -1944,11 +1961,9 @@ export declare namespace Knex {
     comment(value: string): ColumnBuilder;
     alter(): ColumnBuilder;
     queryContext(context: any): ColumnBuilder;
-    withKeyName(keyName: string): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
   }
-
   interface ForeignConstraintBuilder {
     references(columnName: string): ReferencingColumnBuilder;
   }
@@ -1962,7 +1977,11 @@ export declare namespace Knex {
   }
 
   interface ReferencingColumnBuilder extends ColumnBuilder {
-    inTable(tableName: string): ColumnBuilder;
+    inTable(tableName: string): ReferencingColumnBuilder;
+    deferrable(type: deferrableType): ReferencingColumnBuilder;
+    withKeyName(keyName: string): ReferencingColumnBuilder;
+    onDelete(command: string): ReferencingColumnBuilder;
+    onUpdate(command: string): ReferencingColumnBuilder;
   }
 
   interface AlterColumnBuilder extends ColumnBuilder {}
@@ -2167,6 +2186,7 @@ interface MsSqlConnectionConfigBase {
       maxRetriesOnTransientErrors?: number;
       multiSubnetFailover?: boolean;
       packetSize?: number;
+      trustServerCertificate?: boolean;
     }>;
     pool?: Readonly<{
       min?: number;

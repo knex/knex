@@ -357,6 +357,54 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adds foreign key with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .notNull()
+          .references('users.id')
+          .deferrable('immediate');
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") deferrable initially immediate '
+    );
+  });
+
+  it('adds unique constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .unique({ indexName: 'user_id_index', deferrable: 'immediate' });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_index" unique ("user_id") deferrable initially immediate'
+    );
+  });
+
+  it('adds primary constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').primary({
+          constraintName: 'user_id_primary',
+          deferrable: 'immediate',
+        });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_primary" primary key ("user_id") deferrable initially immediate'
+    );
+  });
+
   it('rename table', function () {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
     equal(1, tableSql.length);
@@ -1155,11 +1203,37 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding default datetime', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
+    );
+  });
+
   it('adding timestamp with timezone', () => {
     tableSql = client
       .schemaBuilder()
       .table('users', (table) => {
         table.timestamp('foo', false);
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
+    );
+  });
+
+  it('adding datetime with timezone', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', false);
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -1181,6 +1255,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding datetime without timezone', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', true);
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamp'
+    );
+  });
+
   it('adding timestamp with precision', () => {
     tableSql = client
       .schemaBuilder()
@@ -1191,6 +1278,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "foo" timestamptz(2)'
+    );
+  });
+
+  it('adding datetime with precision', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', undefined, 3);
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
     );
   });
 
@@ -1207,6 +1307,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding timestamp with options object but no timestamp', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamp('foo', { precision: 3 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
+    );
+  });
+
+  it('adding timestamp with empty options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamp('foo', {});
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
+    );
+  });
+
   it('adding datetime with options object', () => {
     tableSql = client
       .schemaBuilder()
@@ -1217,6 +1343,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "foo" timestamp(3)'
+    );
+  });
+
+  it('adding datetime with options object but no timestamp', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', { precision: 3 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz(3)'
+    );
+  });
+
+  it('adding datetime with empty options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', {});
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamptz'
     );
   });
 

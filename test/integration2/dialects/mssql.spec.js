@@ -169,6 +169,138 @@ describe('MSSQL dialect', () => {
             );
           });
         });
+
+        describe('comment support', () => {
+          const schemaName = 'dbo';
+          const tableName = 'test_attaches_comments';
+          const columnName = 'column_with_comment';
+          const columnWithoutComment = 'column_without_comment';
+
+          // Comments intentionally include single quotes, which require escaping in strings.
+          const tableComment = "table's comment";
+          const columnComment = "``column comment''";
+
+          const tableWithoutComment = 'table_without_comment';
+
+          before(async () => {
+            await knex.schema.createTable(tableName, function () {
+              this.comment(tableComment);
+              this.string(columnName).comment(columnComment);
+              this.string(columnWithoutComment);
+            });
+            await knex.schema.createTable(tableWithoutComment, function () {
+              this.increments();
+            });
+          });
+
+          after(async () => {
+            await knex.schema.dropTable(tableName);
+            await knex.schema.dropTable(tableWithoutComment);
+          });
+
+          it('attaches table comments', async () => {
+            const commentText = await commentFor(knex, {
+              schemaName,
+              tableName,
+            });
+
+            expect(commentText).to.equal(tableComment);
+          });
+
+          it('attaches column comments', async () => {
+            const commentText = await commentFor(knex, {
+              schemaName,
+              tableName,
+              columnName,
+            });
+
+            expect(commentText).to.equal(columnComment);
+          });
+
+          it('updates table comments', async () => {
+            const updatedTableComment = 'updated table comment';
+            await knex.schema.alterTable(tableName, function () {
+              this.comment(updatedTableComment);
+            });
+
+            const commentText = await commentFor(knex, {
+              schemaName,
+              tableName,
+            });
+
+            expect(commentText).to.equal(updatedTableComment);
+          });
+
+          it('updates column comments', async () => {
+            const updatedColumnComment = 'updated column comment';
+            await knex.schema.alterTable(tableName, function () {
+              this.string(columnName).comment(updatedColumnComment).alter();
+            });
+
+            const commentText = await commentFor(knex, {
+              schemaName,
+              tableName,
+              columnName,
+            });
+
+            expect(commentText).to.equal(updatedColumnComment);
+          });
+
+          it('adds column comments when altering and no pre-existing comment', async () => {
+            const expectedComment = 'well it has a comment now';
+            await knex.schema.alterTable(tableName, function () {
+              this.string(columnWithoutComment)
+                .comment(expectedComment)
+                .alter();
+            });
+
+            const commentText = await commentFor(knex, {
+              schemaName,
+              tableName,
+              columnName: columnWithoutComment,
+            });
+
+            expect(commentText).to.equal(expectedComment);
+          });
+
+          it('adds table comments when updating and no pre-existing comment', async () => {
+            const tableName = tableWithoutComment;
+            const expectedComment = 'comment';
+            await knex.schema.alterTable(tableName, function () {
+              this.comment(expectedComment);
+            });
+
+            const commentText = await commentFor(knex, {
+              schemaName,
+              tableName,
+            });
+
+            expect(commentText).to.equal(expectedComment);
+          });
+
+          /**
+           * Returns the comment for `target`, if any.
+           *
+           * @param {Knex} knex
+           * @param {{schemaName: string, tableName: string, columnName?: string}} target
+           * @returns {Promise<string|undefined>}
+           */
+          async function commentFor(knex, target) {
+            const columnSpecifier = target.columnName
+              ? `N'Column', :columnName`
+              : 'NULL, NULL';
+            const result = await knex
+              .from(
+                knex.raw(
+                  `fn_listextendedproperty(N'MS_Description', N'Schema', :schemaName, N'Table', :tableName, ${columnSpecifier})`,
+                  target
+                )
+              )
+              .select('value AS comment')
+              .first();
+            return result ? result.comment : undefined;
+          }
+        });
       });
     });
 });

@@ -300,7 +300,7 @@ module.exports = function (knex) {
         [drivers.SQLite]: "SELECT name FROM sqlite_master WHERE type='table';",
         [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
         [drivers.MsSQL]:
-          "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'",
+          "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='dbo'",
       };
       return knex
         .raw(tables[knex.client.driverName])
@@ -346,7 +346,7 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
             null,
             {
               enum_value: {
@@ -417,7 +417,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             ['datatype_test', 'knex_test'],
             {
               enum_value: {
@@ -454,7 +454,7 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
             null,
             {
               defaultValue: null,
@@ -493,7 +493,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             null,
             {
               defaultValue: null,
@@ -940,7 +940,8 @@ module.exports = function (knex) {
 
       const getProcessesQuery = getProcessesQueries[driverName]();
 
-      return knex.transaction((trx) => addTimeout().transacting(trx))
+      return knex
+        .transaction((trx) => addTimeout().transacting(trx))
         .then(function () {
           expect(true).to.equal(false);
         })
@@ -1022,7 +1023,7 @@ module.exports = function (knex) {
       const getProcessesForDriver = {
         pg: async () => {
           const results = await knex.raw('SELECT * from pg_stat_activity');
-          return _.map(_.filter(results.rows, {state: 'active'}), 'query');
+          return _.map(_.filter(results.rows, { state: 'active' }), 'query');
         },
         mysql: async () => {
           const results = await knex.raw('SHOW PROCESSLIST');
@@ -1043,11 +1044,11 @@ module.exports = function (knex) {
       const getProcesses = getProcessesForDriver[driverName];
 
       try {
-        const promise = query.timeout(50, { cancel: true }).then(_.identity)
+        const promise = query.timeout(50, { cancel: true }).then(_.identity);
 
-        await delay(10)
+        await delay(10);
         const processesBeforeTimeout = await getProcesses();
-        expect(processesBeforeTimeout).to.include(query.toString())
+        expect(processesBeforeTimeout).to.include(query.toString());
 
         await expect(promise).to.eventually.be.rejected.and.to.deep.include({
           timeout: 50,
@@ -1056,7 +1057,7 @@ module.exports = function (knex) {
         });
 
         const processesAfterTimeout = await getProcesses();
-        expect(processesAfterTimeout).to.not.include(query.toString())
+        expect(processesAfterTimeout).to.not.include(query.toString());
       } finally {
         await knexDb.destroy();
       }
