@@ -12,6 +12,7 @@ const {
   isSQLite,
   isRedshift,
   isMssql,
+  isCockroachDB,
 } = require('../../util/db-helpers');
 
 const wrapIdentifier = (value, wrap) => {
@@ -1562,32 +1563,25 @@ module.exports = (knex) => {
     });
 
     //Unit tests checks SQL -- This will test running those queries, no hard assertions here.
-    it('#1430 - .primary() & .dropPrimary() same for all dialects', () => {
+    it('#1430 - .primary() & .dropPrimary() same for all dialects', async () => {
       if (isSQLite(knex)) {
         return Promise.resolve();
       }
       const constraintName = 'testconstraintname';
       const tableName = 'primarytest';
-      return knex.transaction((tr) =>
-        tr.schema
-          .dropTableIfExists(tableName)
-          .then(() =>
-            tr.schema.createTable(tableName, (table) => {
-              table.string('test').primary(constraintName);
-              table.string('test2').notNullable();
-            })
-          )
-          .then((res) =>
-            tr.schema.table(tableName, (table) => {
-              table.dropPrimary(constraintName);
-            })
-          )
-          .then(() =>
-            tr.schema.table(tableName, (table) => {
-              table.primary(['test', 'test2'], constraintName);
-            })
-          )
-      );
+      await knex.schema.dropTableIfExists(tableName);
+      await knex.transaction(async (tr) => {
+        await tr.schema.createTable(tableName, (table) => {
+          table.string('test').primary(constraintName).notNull();
+          table.string('test2').notNullable();
+        });
+        await tr.schema.table(tableName, (table) => {
+          table.dropPrimary(constraintName);
+        });
+        await tr.schema.table(tableName, (table) => {
+          table.primary(['test', 'test2'], constraintName);
+        });
+      });
     });
 
     describe('invalid field', () => {
@@ -1648,7 +1642,7 @@ module.exports = (knex) => {
           .dropTableIfExists(tableName)
           .then(() =>
             tr.schema.createTable(tableName, (table) => {
-              table.string('test').primary(constraintName);
+              table.string('test').primary(constraintName).notNull();
               table.string('test2');
             })
           )
@@ -1671,15 +1665,18 @@ module.exports = (knex) => {
                 });
             } else {
               return tr.schema.table(tableName, (table) => {
-                // For everything else just drop the constraint by name to check existence
-                table.dropPrimary(constraintName);
+                // CockroachDB requires primary column to exist
+                if (!isCockroachDB(knex)) {
+                  // For everything else just drop the constraint by name to check existence
+                  table.dropPrimary(constraintName);
+                }
               });
             }
           })
           .then(() => tr.schema.dropTableIfExists(tableName))
           .then(() =>
             tr.schema.createTable(tableName, (table) => {
-              table.string('test');
+              table.string('test').notNull();
               table.string('test2');
               table.primary('test', constraintName);
             })
@@ -1703,16 +1700,19 @@ module.exports = (knex) => {
                 });
             } else {
               return tr.schema.table(tableName, (table) => {
-                // For everything else just drop the constraint by name to check existence
-                table.dropPrimary(constraintName);
+                // CockroachDB requires primary column to exist
+                if (!isCockroachDB(knex)) {
+                  // For everything else just drop the constraint by name to check existence
+                  table.dropPrimary(constraintName);
+                }
               });
             }
           })
           .then(() => tr.schema.dropTableIfExists(tableName))
           .then(() =>
             tr.schema.createTable(tableName, (table) => {
-              table.string('test');
-              table.string('test2');
+              table.string('test').notNull();
+              table.string('test2').notNull();
               table.primary(['test', 'test2'], constraintName);
             })
           )
@@ -1748,8 +1748,11 @@ module.exports = (knex) => {
                 });
             } else {
               return tr.schema.table(tableName, (table) => {
-                // For everything else just drop the constraint by name to check existence
-                table.dropPrimary(constraintName);
+                // CockroachDB requires primary column to exist
+                if (!isCockroachDB(knex)) {
+                  // For everything else just drop the constraint by name to check existence
+                  table.dropPrimary(constraintName);
+                }
               });
             }
           })
@@ -1892,13 +1895,13 @@ module.exports = (knex) => {
           .then(() => tr.schema.dropTableIfExists(groupTableName))
           .then(() =>
             tr.schema.createTable(userTableName, (table) => {
-              table.uuid('id').primary();
+              table.uuid('id').primary().notNull();
               table.string('name').unique();
             })
           )
           .then(() =>
             tr.schema.createTable(groupTableName, (table) => {
-              table.uuid('id').primary();
+              table.uuid('id').primary().notNull();
               table.string('name').unique();
             })
           )
@@ -1906,10 +1909,11 @@ module.exports = (knex) => {
             tr.schema.createTable(joinTableName, (table) => {
               table
                 .uuid('user')
+                .notNull()
                 .references('id')
                 .inTable(userTableName)
                 .withKeyName(['fk', joinTableName, userTableName].join('-'));
-              table.uuid('group');
+              table.uuid('group').notNull();
               table.primary(['user', 'group']);
               table
                 .foreign(
