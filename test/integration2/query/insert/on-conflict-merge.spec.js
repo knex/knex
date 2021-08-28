@@ -2,7 +2,11 @@ const {
   getAllDbs,
   getKnexForDb,
 } = require('../../util/knex-instance-provider');
-const { isPostgreSQL, isMysql } = require('../../../util/db-helpers');
+const {
+  isPostgreSQL,
+  isMysql,
+  isCockroachDB,
+} = require('../../../util/db-helpers');
 
 describe('Insert', () => {
   describe('onConflict merge', () => {
@@ -29,7 +33,7 @@ describe('Insert', () => {
         });
 
         it('inserts large amount of entries correctly', async function () {
-          if (!isMysql(knex) && !isPostgreSQL(knex)) {
+          if (!isMysql(knex) && !isPostgreSQL(knex) && !isCockroachDB(knex)) {
             return this.skip();
           }
 
@@ -43,7 +47,7 @@ describe('Insert', () => {
         });
 
         it('inserts large amount of entries correctly (raw)', async function () {
-          if (!isPostgreSQL(knex)) {
+          if (!isPostgreSQL(knex) && !isCockroachDB(knex)) {
             return this.skip();
           }
 
