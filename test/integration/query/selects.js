@@ -1598,7 +1598,7 @@ module.exports = function (knex) {
               expect('Second query should have timed out').to.be.false;
             })
             .catch((err) => {
-              // mssql fails because it tires to rollback at the same time when update query is running
+              // mssql fails because it tries to rollback at the same time when update query is running
               // hopefully for share really works though...
               if (isMssql(knex)) {
                 expect(err.message).to.be.contain(

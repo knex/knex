@@ -255,6 +255,7 @@ module.exports = function (knex) {
         .testSql(function (tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('pg', 'truncate "test_table_two" restart identity');
+          tester('pgnative', 'truncate "test_table_two" restart identity');
           tester('pg-redshift', 'truncate "test_table_two"');
           tester('sqlite3', 'delete from `test_table_two`');
           tester('oracledb', 'truncate table "test_table_two"');
@@ -367,6 +368,25 @@ module.exports = function (knex) {
             }
           );
           tester(
+            'pgnative',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
+            null,
+            {
+              enum_value: {
+                defaultValue: null,
+                maxLength: null,
+                nullable: true,
+                type: 'text',
+              },
+              uuid: {
+                defaultValue: null,
+                maxLength: null,
+                nullable: false,
+                type: 'uuid',
+              },
+            }
+          );
+          tester(
             'pg-redshift',
             'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
             null,
@@ -457,6 +477,17 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
+            null,
+            {
+              defaultValue: null,
+              maxLength: null,
+              nullable: false,
+              type: 'uuid',
+            }
+          );
+          tester(
+            'pgnative',
             'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
             null,
             {
@@ -616,6 +647,9 @@ module.exports = function (knex) {
               tester('pg', [
                 'alter table "accounts" rename "about" to "about_col"',
               ]);
+              tester('pgnative', [
+                'alter table "accounts" rename "about" to "about_col"',
+              ]);
               tester('pg-redshift', [
                 'alter table "accounts" rename "about" to "about_col"',
               ]);
@@ -675,6 +709,9 @@ module.exports = function (knex) {
             .testSql(function (tester) {
               tester('mysql', ['alter table `accounts` drop `first_name`']);
               tester('pg', ['alter table "accounts" drop column "first_name"']);
+              tester('pgnative', [
+                'alter table "accounts" drop column "first_name"',
+              ]);
               tester('pg-redshift', [
                 'alter table "accounts" drop column "first_name"',
               ]);
@@ -1071,7 +1108,7 @@ module.exports = function (knex) {
       try {
         const promise = query.timeout(50, { cancel: true }).then(_.identity);
 
-        await delay(10);
+        await delay(15);
         const processesBeforeTimeout = await getProcesses();
         expect(processesBeforeTimeout).to.include(query.toString());
 
@@ -1090,7 +1127,7 @@ module.exports = function (knex) {
 
     it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', async function () {
       // Only mysql/postgres query cancelling supported for now
-      if (!isPostgreSQL(knex)) {
+      if (!isPostgreSQL(knex) || isPgNative(knex)) {
         return this.skip();
       }
 
@@ -1124,11 +1161,15 @@ module.exports = function (knex) {
       const originalWrappedCancelQueryCall =
         knexPrototype._wrappedCancelQueryCall;
 
-      knexPrototype._wrappedCancelQueryCall = (conn) => {
-        return knexPrototype.query(conn, {
-          method: 'raw',
-          sql: 'TestError',
-        });
+      knexPrototype._wrappedCancelQueryCall = (conn, connectionToKill) => {
+        if (isPgNative(knex)) {
+          throw new Error('END THIS');
+        } else {
+          return knexPrototype.query(conn, {
+            method: 'raw',
+            sql: 'TestError',
+          });
+        }
       };
 
       const queryTimeout = 10;
@@ -1139,7 +1180,7 @@ module.exports = function (knex) {
           getTestQuery().timeout(queryTimeout, { cancel: true })
         ).to.be.eventually.rejected.and.deep.include({
           timeout: queryTimeout,
-          name: isPgNative(knex) ? 'Error' : 'error',
+          name: 'error',
           message: `After query timeout of ${queryTimeout}ms exceeded, cancelling of query failed.`,
         });
 
