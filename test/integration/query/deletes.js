@@ -1,6 +1,8 @@
 'use strict';
 
+const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
+const { isSQLite, isPostgreSQL, isOracle } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Deletes', function () {
@@ -81,6 +83,62 @@ module.exports = function (knex) {
             ]
           );
         });
+    });
+
+    describe('Delete with join', function () {
+      it('should handle basic delete with join', async function () {
+        const query = knex('test_table_two')
+          .join('accounts', 'accounts.id', 'test_table_two.account_id')
+          .where({ 'accounts.email': 'test3@example.com' })
+          .del();
+        if (isSQLite(knex) || isPostgreSQL(knex) || isOracle(knex)) {
+          await expect(query).to.be.rejected;
+          return;
+        }
+        return query.testSql(function (tester) {
+          tester(
+            'mysql',
+            'delete `test_table_two` from `test_table_two` inner join `accounts` on `accounts`.`id` = `test_table_two`.`account_id` where `accounts`.`email` = ?',
+            ['test3@example.com'],
+            1
+          );
+          tester(
+            'mssql',
+            'delete [test_table_two] from [test_table_two] inner join [accounts] on [accounts].[id] = [test_table_two].[account_id] where [accounts].[email] = ?;select @@rowcount',
+            ['test3@example.com'],
+            1
+          );
+        });
+      });
+      it('should handle returning', async function () {
+        await knex('test_table_two').insert({
+          account_id: 4,
+          details: '',
+          status: 1,
+        });
+        const query = knex('test_table_two')
+          .join('accounts', 'accounts.id', 'test_table_two.account_id')
+          .where({ 'accounts.email': 'test4@example.com' })
+          .del('*');
+        if (isSQLite(knex) || isPostgreSQL(knex) || isOracle(knex)) {
+          await expect(query).to.be.rejected;
+          return;
+        }
+        return query.testSql(function (tester) {
+          tester(
+            'mysql',
+            'delete `test_table_two` from `test_table_two` inner join `accounts` on `accounts`.`id` = `test_table_two`.`account_id` where `accounts`.`email` = ?',
+            ['test4@example.com'],
+            1
+          );
+          tester(
+            'mssql',
+            'delete [test_table_two] output deleted.* from [test_table_two] inner join [accounts] on [accounts].[id] = [test_table_two].[account_id] where [accounts].[email] = ?',
+            ['test4@example.com'],
+            [{ id: 11, account_id: 4, details: '', status: 1, json_data: null }]
+          );
+        });
+      });
     });
   });
 };

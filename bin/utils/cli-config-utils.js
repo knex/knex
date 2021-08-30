@@ -59,6 +59,9 @@ function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
 
 function exit(text) {
   if (text instanceof Error) {
+    if (text.message) {
+      console.error(color.red(text.message));
+    }
     console.error(
       color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
     );

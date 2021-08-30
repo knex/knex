@@ -1029,6 +1029,12 @@ const main = async () => {
   // $ExpectType Dict<string | number>[]
   await knexInstance('users').count('age');
 
+  // $ExpectType { c: string | number; }[]
+  await knexInstance<User>('users').count('id', { as: 'c' });
+
+  // $ExpectType (Pick<User, "departmentId"> & { c: string | number; })[]
+  await knexInstance<User>('users').select('departmentId').count('id', { as: 'c' });
+
   // $ExpectType { count: number; }
   await knexInstance('foo').first().count<{count: number}>({count: '*'});
 
@@ -1274,6 +1280,39 @@ const main = async () => {
     .select({dep: 'departmentId'})
     .count({a: 'age'})
     .from('users_composite');
+
+  // Analytic
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age');
+
+  await knexInstance<User>('users')
+    .select('age')
+    // $ExpectError
+    .rowNumber('rowNum', 'non_existing_field');
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', ['age']);
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', (builder) => {
+    builder.orderBy('age');
+  });
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age', 'departmentId');
+
+  await knexInstance<User>('users')
+    .select('age')
+    // $ExpectError
+    .rowNumber('rowNum', 'age', 'non_existing_field');
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age', ['departmentId', 'active']);
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', (builder) => {
+    builder.orderBy('age').partitionBy('departmentId');
+  });
 
   // ## With inner query:
 

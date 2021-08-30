@@ -328,15 +328,6 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
-// Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
-type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
-interface TransactionConfig {
-  isolationLevel?: IsolationLevels;
-  userParams?: Record<string, any>;
-  doNotRejectOnRollback?: boolean;
-  connection?: any;
-}
-
 export interface Knex<TRecord extends {} = any, TResult = unknown[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
@@ -353,18 +344,18 @@ export interface Knex<TRecord extends {} = any, TResult = unknown[]>
   raw: Knex.RawBuilder<TRecord>;
 
   transactionProvider(
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Knex.TransactionProvider;
   transaction(
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Promise<Knex.Transaction>;
   transaction(
     transactionScope?: null,
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Promise<Knex.Transaction>;
   transaction<T>(
     transactionScope: (trx: Knex.Transaction) => Promise<T> | void,
-    config?: TransactionConfig
+    config?: Knex.TransactionConfig
   ): Promise<T>;
   initialize(config?: Knex.Config): void;
   destroy(callback: Function): void;
@@ -562,6 +553,9 @@ export declare namespace Knex {
     orderBy: OrderBy<TRecord, TResult>;
     orderByRaw: RawQueryBuilder<TRecord, TResult>;
 
+    // Partition by
+    partitionBy: PartitionBy<TRecord, TResult>;
+
     // Intersect
     intersect: Intersect<TRecord, TResult>;
 
@@ -637,6 +631,11 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
+
+    // Analytics
+    rank: AnalyticFunction<TRecord, TResult>;
+    denseRank: AnalyticFunction<TRecord, TResult>;
+    rowNumber: AnalyticFunction<TRecord, TResult>;
 
     // Others
     first: Select<TRecord, DeferredKeySelection.AddUnionMember<UnwrapArrayMember<TResult>, undefined>>;
@@ -1413,6 +1412,13 @@ export declare namespace Knex {
   // is significant.
 
   interface AsymmetricAggregation<TRecord = any, TResult = unknown[], TValue = any> {
+    <
+      TOptions extends { "as": string },
+      TResult2 = AggregationQueryResult<TResult, {[k in TOptions["as"]]: TValue}>
+    >(
+      columnName: Readonly<keyof ResolveTableType<TRecord>>,
+      options: Readonly<TOptions>
+    ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
       ...columnNames: readonly (keyof ResolveTableType<TRecord>)[]
     ): QueryBuilder<TRecord, TResult2>;
@@ -1457,6 +1463,21 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
+  interface AnalyticFunction<TRecord = any, TResult = unknown[]> {
+    <
+      TAlias extends string,
+      TResult2 = AggregationQueryResult<TResult, {[x in TAlias]: number}>
+    >(alias: TAlias, raw: Raw | QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult2>;
+    <
+      TAlias extends string,
+      TKey extends keyof ResolveTableType<TRecord>,
+      TResult2 = AggregationQueryResult<TResult, {[x in TAlias]: number}>
+    >(alias: TAlias, orderBy: TKey | TKey[], partitionBy?: TKey | TKey[]): QueryBuilder<
+      TRecord,
+      TResult2
+    >;
+  }
+
   interface GroupBy<TRecord = any, TResult = unknown[]>
     extends RawQueryBuilder<TRecord, TResult>,
       ColumnNameQueryBuilder<TRecord, TResult> {}
@@ -1482,6 +1503,10 @@ export declare namespace Knex {
       }>>
     ): QueryBuilder<TRecord, TResult>;
   }
+
+  interface PartitionBy<TRecord = any, TResult = unknown[]>
+    extends RawQueryBuilder<TRecord, TResult>,
+      ColumnNameQueryBuilder<TRecord, TResult> {}
 
   interface Intersect<TRecord = any, TResult = unknown[]> {
     (
@@ -1759,6 +1784,15 @@ export declare namespace Knex {
     asCallback(callback: Function): Promise<T>;
   }
 
+  // Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
+  type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
+  interface TransactionConfig {
+    isolationLevel?: IsolationLevels;
+    userParams?: Record<string, any>;
+    doNotRejectOnRollback?: boolean;
+    connection?: any;
+  }
+
   interface Transaction<TRecord extends {} = any, TResult = any[]>
     extends Knex<TRecord, TResult> {
     executionPromise: Promise<TResult>;
@@ -1850,6 +1884,7 @@ export declare namespace Knex {
     boolean(columnName: string): ColumnBuilder;
     date(columnName: string): ColumnBuilder;
     dateTime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
+    datetime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
     time(columnName: string): ColumnBuilder;
     timestamp(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
     /** @deprecated */
@@ -1874,12 +1909,16 @@ export declare namespace Knex {
     uuid(columnName: string): ColumnBuilder;
     comment(val: string): TableBuilder;
     specificType(columnName: string, type: string): ColumnBuilder;
+    primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
+    /** @deprecated */
     primary(columnNames: readonly string[], constraintName?: string): TableBuilder;
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
       indexType?: string
     ): TableBuilder;
+    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): TableBuilder;
+    /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
     foreign(
@@ -1902,10 +1941,15 @@ export declare namespace Knex {
   }
 
   interface AlterTableBuilder extends TableBuilder {}
-
+  type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
+    primary(options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    /** @deprecated */
     primary(constraintName?: string): ColumnBuilder;
+
+    unique(options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    /** @deprecated */
     unique(indexName?: string): ColumnBuilder;
     references(columnName: string): ReferencingColumnBuilder;
     onDelete(command: string): ColumnBuilder;
@@ -1917,11 +1961,9 @@ export declare namespace Knex {
     comment(value: string): ColumnBuilder;
     alter(): ColumnBuilder;
     queryContext(context: any): ColumnBuilder;
-    withKeyName(keyName: string): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
   }
-
   interface ForeignConstraintBuilder {
     references(columnName: string): ReferencingColumnBuilder;
   }
@@ -1935,7 +1977,11 @@ export declare namespace Knex {
   }
 
   interface ReferencingColumnBuilder extends ColumnBuilder {
-    inTable(tableName: string): ColumnBuilder;
+    inTable(tableName: string): ReferencingColumnBuilder;
+    deferrable(type: deferrableType): ReferencingColumnBuilder;
+    withKeyName(keyName: string): ReferencingColumnBuilder;
+    onDelete(command: string): ReferencingColumnBuilder;
+    onUpdate(command: string): ReferencingColumnBuilder;
   }
 
   interface AlterColumnBuilder extends ColumnBuilder {}
@@ -2140,6 +2186,7 @@ interface MsSqlConnectionConfigBase {
       maxRetriesOnTransientErrors?: number;
       multiSubnetFailover?: boolean;
       packetSize?: number;
+      trustServerCertificate?: boolean;
     }>;
     pool?: Readonly<{
       min?: number;

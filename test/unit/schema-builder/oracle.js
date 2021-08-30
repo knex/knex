@@ -10,6 +10,23 @@ describe('Oracle SchemaBuilder', function () {
   let tableSql;
   const equal = require('assert').equal;
 
+  it('test increments supports withSchema', function () {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('scm')
+      .createTable('users', function (table) {
+        table.increments('id');
+        table.string('email');
+      });
+    equal(2, tableSql.toSQL().length);
+    expect(tableSql.toSQL()[0].sql).to.equal(
+      'create table "scm"."users" ("id" integer not null primary key, "email" varchar2(255))'
+    );
+    expect(tableSql.toSQL()[1].sql).to.equal(
+      'DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE "scm"."users_seq"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = \'scm\'  AND cols.table_name = \'users\';  execute immediate (\'create or replace trigger "scm"."users_autoinc_trg"  BEFORE INSERT on "scm"."users"  for each row  declare  checking number := 1;  begin    if (:new."\' || PK_NAME || \'" is null) then      while checking >= 1 loop        select "scm"."users_seq".nextval into :new."\' || PK_NAME || \'" from dual;        select count("\' || PK_NAME || \'") into checking from "scm"."users"        where "\' || PK_NAME || \'" = :new."\' || PK_NAME || \'";      end loop;    end if;  end;\'); END;'
+    );
+  });
+
   it('test basic create table with charset and collate', function () {
     tableSql = client.schemaBuilder().createTable('users', function (table) {
       table.increments('id');
@@ -372,6 +389,54 @@ describe('Oracle SchemaBuilder', function () {
     );
     expect(tableSql[2].sql).to.equal(
       'alter table "person" add constraint "person_account_id_foreign" foreign key ("account_id") references "accounts" ("id") on update cascade'
+    );
+  });
+
+  it('adds foreign key with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .notNull()
+          .references('users.id')
+          .deferrable('immediate');
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "person_user_id_foreign" foreign key ("user_id") references "users" ("id") deferrable initially immediate '
+    );
+  });
+
+  it('adds unique constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .unique({ indexName: 'user_id_index', deferrable: 'immediate' });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_index" unique ("user_id") deferrable initially immediate'
+    );
+  });
+
+  it('adds primary constraint with deferrable initially immediate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').primary({
+          constraintName: 'user_id_primary',
+          deferrable: 'immediate',
+        });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_primary" primary key ("user_id") deferrable initially immediate'
     );
   });
 
