@@ -2483,169 +2483,219 @@ export default [
     type: "method",
     method: "denseRank",
     example: ".denseRank(alias, ~mixed~)",
-    children: [    ]
-  },
-  {
-    type: "text",
-    content: "Add a dense_rank() call to your query. For all the following queries, alias can be set to a falsy value if not needed."
-  },
-  {
-    type: "text",
-    content: "String Syntax — .denseRank(alias, orderByClause, [partitionByClause]) :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').denseRank('alias_name', 'email', 'firstName')
-    `
-  },
-  {
-    type: "text",
-    content: "It also accepts arrays of strings as argument :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').denseRank('alias_name', ['email', 'address'], ['firstName', 'lastName'])
-    `
-  },
-  {
-    type: "text",
-    content: "Raw Syntax — .denseRank(alias, rawQuery) :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').denseRank('alias_name', knex.raw('order by ??', ['email']))
-    `
-  },
-  {
-    type: "text",
-    content: "Function Syntax — .denseRank(alias, function) :",
-  },
-  {
-    type: "text",
-    content: "Use orderBy() and partitionBy() (both chainable) to build your query :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').denseRank('alias_name', function() {
-        this.orderBy('email').partitionBy('firstName')
-      })
-    `
+    children: [
+      {
+        type: "text",
+        content: "Add a dense_rank() call to your query. For all the following queries, alias can be set to a falsy value if not needed."
+      },
+      {
+        type: "text",
+        content: "String Syntax — .denseRank(alias, orderByClause, [partitionByClause]) :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').denseRank('alias_name', 'email', 'firstName')
+        `
+      },
+      {
+        type: "text",
+        content: "It also accepts arrays of strings as argument :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').denseRank('alias_name', ['email', 'address'], ['firstName', 'lastName'])
+        `
+      },
+      {
+        type: "text",
+        content: "Raw Syntax — .denseRank(alias, rawQuery) :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').denseRank('alias_name', knex.raw('order by ??', ['email']))
+        `
+      },
+      {
+        type: "text",
+        content: "Function Syntax — .denseRank(alias, function) :",
+      },
+      {
+        type: "text",
+        content: "Use orderBy() and partitionBy() (both chainable) to build your query :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').denseRank('alias_name', function() {
+            this.orderBy('email').partitionBy('firstName')
+          })
+        `
+      }
+    ]
   },
   {
     type: "method",
     method: "rank",
     example: ".rank(alias, ~mixed~)",
-    children: [    ]
-  },
-  {
-    type: "text",
-    content: "Add a rank() call to your query. For all the following queries, alias can be set to a falsy value if not needed."
-  },
-  {
-    type: "text",
-    content: "String Syntax — .rank(alias, orderByClause, [partitionByClause]) :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rank('alias_name', 'email', 'firstName')
-    `
-  },
-  {
-    type: "text",
-    content: "It also accepts arrays of strings as argument :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rank('alias_name', ['email', 'address'], ['firstName', 'lastName'])
-    `
-  },
-  {
-    type: "text",
-    content: "Raw Syntax — .rank(alias, rawQuery) :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rank('alias_name', knex.raw('order by ??', ['email']))
-    `
-  },
-  {
-    type: "text",
-    content: "Function Syntax — .rank(alias, function) :",
-  },
-  {
-    type: "text",
-    content: "Use orderBy() and partitionBy() (both chainable) to build your query :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rank('alias_name', function() {
-        this.orderBy('email').partitionBy('firstName')
-      })
-    `
+    children: [
+      {
+        type: "text",
+        content: "Add a rank() call to your query. For all the following queries, alias can be set to a falsy value if not needed."
+      },
+      {
+        type: "text",
+        content: "String Syntax — .rank(alias, orderByClause, [partitionByClause]) :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rank('alias_name', 'email', 'firstName')
+        `
+      },
+      {
+        type: "text",
+        content: "It also accepts arrays of strings as argument :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rank('alias_name', ['email', 'address'], ['firstName', 'lastName'])
+        `
+      },
+      {
+        type: "text",
+        content: "Raw Syntax — .rank(alias, rawQuery) :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rank('alias_name', knex.raw('order by ??', ['email']))
+        `
+      },
+      {
+        type: "text",
+        content: "Function Syntax — .rank(alias, function) :",
+      },
+      {
+        type: "text",
+        content: "Use orderBy() and partitionBy() (both chainable) to build your query :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rank('alias_name', function() {
+            this.orderBy('email').partitionBy('firstName')
+          })
+        `
+      }
+    ]
   },
   {
     type: "method",
     method: "rowNumber",
     example: ".rowNumber(alias, ~mixed~)",
-    children: [    ]
+    children: [
+      {
+        type: "text",
+        content: "Add a row_number() call to your query. For all the following queries, alias can be set to a falsy value if not needed."
+      },
+      {
+        type: "text",
+        content: "String Syntax — .rowNumber(alias, orderByClause, [partitionByClause]) :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rowNumber('alias_name', 'email', 'firstName')
+        `
+      },
+      {
+        type: "text",
+        content: "It also accepts arrays of strings as argument :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rowNumber('alias_name', ['email', 'address'], ['firstName', 'lastName'])
+        `
+      },
+      {
+        type: "text",
+        content: "Raw Syntax — .rowNumber(alias, rawQuery) :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rowNumber('alias_name', knex.raw('order by ??', ['email']))
+        `
+      },
+      {
+        type: "text",
+        content: "Function Syntax — .rowNumber(alias, function) :",
+      },
+      {
+        type: "text",
+        content: "Use orderBy() and partitionBy() (both chainable) to build your query :",
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').select('*').rowNumber('alias_name', function() {
+            this.orderBy('email').partitionBy('firstName')
+          })
+        `
+      }
+    ]
   },
   {
-    type: "text",
-    content: "Add a row_number() call to your query. For all the following queries, alias can be set to a falsy value if not needed."
-  },
-  {
-    type: "text",
-    content: "String Syntax — .rowNumber(alias, orderByClause, [partitionByClause]) :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rowNumber('alias_name', 'email', 'firstName')
-    `
-  },
-  {
-    type: "text",
-    content: "It also accepts arrays of strings as argument :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rowNumber('alias_name', ['email', 'address'], ['firstName', 'lastName'])
-    `
-  },
-  {
-    type: "text",
-    content: "Raw Syntax — .rowNumber(alias, rawQuery) :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rowNumber('alias_name', knex.raw('order by ??', ['email']))
-    `
-  },
-  {
-    type: "text",
-    content: "Function Syntax — .rowNumber(alias, function) :",
-  },
-  {
-    type: "text",
-    content: "Use orderBy() and partitionBy() (both chainable) to build your query :",
-  },
-  {
-    type: "runnable",
-    content: `
-      knex('users').select('*').rowNumber('alias_name', function() {
-        this.orderBy('email').partitionBy('firstName')
-      })
-    `
+    type: "method",
+    method: "partitionBy",
+    example: ".partitionBy(column, direction)",
+    description: "Partitions rowNumber, denseRank, rank after a specific column or columns. If direction is not supplied it will default to ascending order.",
+    children: [
+      {
+        type: "text",
+        content: "No direction sort :",
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+        knex('users').select('*').rowNumber('alias_name', function() {
+          this.partitionBy('firstName');
+        });
+        `
+      },
+      {
+        type: "text",
+        content: "With direction sort :",
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+        knex('users').select('*').rowNumber('alias_name', function() {
+          this.partitionBy('firstName', 'desc');
+        });
+        `
+      },
+      {
+        type: "text",
+        content: "With multiobject :",
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+        knex('users').select('*').rowNumber('alias_name', function() {
+          this.partitionBy([{ column: 'firstName', order: 'asc' }, { column: 'lastName', order: 'desc' }]);
+        });
+        `
+      }
+    ]
   },
   {
     type: "method",

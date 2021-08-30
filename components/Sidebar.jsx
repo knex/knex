@@ -144,6 +144,10 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-pluck">pluck</a></li>
           <li>– <a href="#Builder-first">first</a></li>
           <li>– <a href="#Builder-clone">clone</a></li>
+          <li>– <a href="#Builder-rank">rank</a></li>
+          <li>– <a href="#Builder-denseRank">denseRank</a></li>
+          <li>– <a href="#Builder-rowNumber">rowNumber</a></li>
+          <li>– <a href="#Builder-partitionBy">partitionBy</a></li>
           <li>– <a href="#Builder-modify">modify</a></li>
           <li>– <a href="#Builder-columnInfo">columnInfo</a></li>
           <li>– <a href="#Builder-debug">debug</a></li>
@@ -242,12 +246,12 @@ export default class Sidebar extends Component {
         </ul>
 
         <a className="toc_title" href="#Ref">
-         Ref
+          Ref
         </a>
         <ul className="toc_section">
-         <li>– <a href="#Ref-Usage">Usage</a></li>
-         <li>– <a href="#Ref-withSchema">withSchema</a></li>
-         <li>– <a href="#Ref-alias">alias</a></li>
+          <li>– <a href="#Ref-Usage">Usage</a></li>
+          <li>– <a href="#Ref-withSchema">withSchema</a></li>
+          <li>– <a href="#Ref-alias">alias</a></li>
         </ul>
 
 
@@ -287,23 +291,23 @@ export default class Sidebar extends Component {
 
         <ul className="toc_section">
           <li><a href="#Migrations-CLI"><b>CLI</b></a></li>
-            <li>– <a href="#Migrations-CLI">Migrations</a></li>
-            <li>– <a href="#Seeds-CLI">Seed files</a></li>
-            <li>– <a href="#knexfile">knexfile.js</a></li>
-            <li>– <a href="#esm-interop">esm</a></li>
+          <li>– <a href="#Migrations-CLI">Migrations</a></li>
+          <li>– <a href="#Seeds-CLI">Seed files</a></li>
+          <li>– <a href="#knexfile">knexfile.js</a></li>
+          <li>– <a href="#esm-interop">esm</a></li>
           <li><a href="#Migrations-API"><b>Migration API</b></a></li>
-            <li>– <a href="#Migrations-make">make</a></li>
-            <li>– <a href="#Migrations-latest">latest</a></li>
-            <li>– <a href="#Migrations-rollback">rollback</a></li>
-            <ii>- <a href="#Migrations-up">up</a></ii>
-            <ii>- <a href="#Migrations-down">down</a></ii>
-            <li>– <a href="#Migrations-currentVersion">currentVersion</a></li>
-            <li>– <a href="#Migrations-list">list</a></li>
-            <li>– <a href="#Migrations-unlock">unlock</a></li>
+          <li>– <a href="#Migrations-make">make</a></li>
+          <li>– <a href="#Migrations-latest">latest</a></li>
+          <li>– <a href="#Migrations-rollback">rollback</a></li>
+          <ii>- <a href="#Migrations-up">up</a></ii>
+          <ii>- <a href="#Migrations-down">down</a></ii>
+          <li>– <a href="#Migrations-currentVersion">currentVersion</a></li>
+          <li>– <a href="#Migrations-list">list</a></li>
+          <li>– <a href="#Migrations-unlock">unlock</a></li>
           <li><a href="#Notes-about-locks"><b>Notes about locks</b></a></li>
           <li><a href="#Seeds-API"><b>Seed API</b></a></li>
-            <li>– <a href="#Seeds-make">make</a></li>
-            <li>– <a href="#Seeds-run">run</a></li>
+          <li>– <a href="#Seeds-make">make</a></li>
+          <li>– <a href="#Seeds-run">run</a></li>
         </ul>
 
         <a className="toc_title" href="#support">
