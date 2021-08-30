@@ -275,13 +275,13 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
 
   t.deepLooseEqual(
     parseConnection(
-      'mysql://user:password@host:0000/database?ssl={"ca": "should exist"}'
+      'mysql://user:password@host:1234/database?ssl={"ca": "should exist"}'
     ),
     {
       client: 'mysql',
       connection: {
         host: 'host',
-        port: '0000',
+        port: '1234',
         user: 'user',
         password: 'password',
         database: 'database',
@@ -294,13 +294,13 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
 
   t.deepLooseEqual(
     parseConnection(
-      'mariadb://user:password@host:0000/database?ssl={"ca": "should exist"}'
+      'mariadb://user:password@host:1234/database?ssl={"ca": "should exist"}'
     ),
     {
       client: 'mariadb',
       connection: {
         host: 'host',
-        port: '0000',
+        port: '1234',
         user: 'user',
         password: 'password',
         database: 'database',
