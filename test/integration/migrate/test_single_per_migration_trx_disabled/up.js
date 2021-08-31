@@ -1,13 +1,8 @@
 'use strict';
 
 exports.up = async function (knex) {
-  const first = (await knex.schema.raw('SELECT txid_current()')).rows[0]
-    .txid_current;
-  const second = (await knex.schema.raw('SELECT txid_current()')).rows[0]
-    .txid_current;
-  if (first === second) {
-    throw new Error('Should not be called within transaction');
-  }
+  await knex.table('test_transactions').update({ value: 1 });
+  throw new Error('Up failed');
 };
 
 exports.down = async function () {};

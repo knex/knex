@@ -673,31 +673,41 @@ module.exports = function (knex) {
         });
       });
 
-      if (isPostgreSQL(knex)) {
-        describe('with transactions disabled (postgres)', () => {
-          afterEach(async () => {
-            await knex.migrate.rollback(
-              {
-                directory:
-                  'test/integration/migrate/test_single_per_migration_trx_disabled',
-              },
-              true
-            );
+      describe('with transactions disabled', () => {
+        beforeEach(async () => {
+          await knex.migrate.up({
+            directory:
+              'test/integration/migrate/test_single_per_migration_trx_disabled',
+            name: 'create_table.js',
           });
-
-          it('should run', async () => {
-            // migration has no effect other than throwing an error if run
-            // within a migration
-            await expect(
-              knex.migrate.up({
-                directory:
-                  'test/integration/migrate/test_single_per_migration_trx_disabled',
-                name: 'up.js',
-              })
-            ).to.eventually.be.fulfilled;
-          });
+          await knex.table('test_transactions').insert({ value: 0 });
         });
-      }
+
+        afterEach(async () => {
+          await knex.migrate.rollback(
+            {
+              directory:
+                'test/integration/migrate/test_single_per_migration_trx_disabled',
+            },
+            true
+          );
+        });
+
+        it('should partially run', async () => {
+          await expect(
+            knex.migrate.up({
+              directory:
+                'test/integration/migrate/test_single_per_migration_trx_disabled',
+              name: 'up.js',
+            })
+          ).to.eventually.be.rejected;
+          const { value } = await knex
+            .table('test_transactions')
+            .select('value')
+            .first();
+          expect(value).to.equal(1); // updated by migration before error
+        });
+      });
     });
 
     describe('knex.migrate.down', () => {
@@ -749,36 +759,46 @@ module.exports = function (knex) {
         });
       });
 
-      if (isPostgreSQL(knex)) {
-        describe('with transactions disabled', () => {
-          afterEach(async () => {
-            await knex.migrate.rollback(
-              {
-                directory:
-                  'test/integration/migrate/test_single_per_migration_trx_disabled',
-              },
-              true
-            );
+      describe('with transactions disabled', () => {
+        beforeEach(async () => {
+          await knex.migrate.up({
+            directory:
+              'test/integration/migrate/test_single_per_migration_trx_disabled',
+            name: 'create_table.js',
           });
+          await knex.table('test_transactions').insert({ value: 0 });
+        });
 
-          it('should run', async () => {
-            // these migrations do nothing except throw errors if run up or down within
-            // a transaction
-            await knex.migrate.up({
+        afterEach(async () => {
+          await knex.migrate.rollback(
+            {
+              directory:
+                'test/integration/migrate/test_single_per_migration_trx_disabled/rollback',
+            },
+            true
+          );
+        });
+
+        it('should partially run', async () => {
+          await knex.migrate.up({
+            directory:
+              'test/integration/migrate/test_single_per_migration_trx_disabled',
+            name: 'down.js',
+          });
+          await expect(
+            knex.migrate.down({
               directory:
                 'test/integration/migrate/test_single_per_migration_trx_disabled',
               name: 'down.js',
-            });
-            await expect(
-              knex.migrate.down({
-                directory:
-                  'test/integration/migrate/test_single_per_migration_trx_disabled',
-                name: 'down.js',
-              })
-            ).to.eventually.be.fulfilled;
-          });
+            })
+          ).to.eventually.be.rejected;
+          const { value } = await knex
+            .table('test_transactions')
+            .select('value')
+            .first();
+          expect(value).to.equal(-1); // updated by migration before error
         });
-      }
+      });
     });
 
     after(function () {
