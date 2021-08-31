@@ -702,68 +702,50 @@ module.exports = function (knex) {
 
     describe('knex.migrate.down', () => {
       describe('with transactions enabled', () => {
-        beforeEach(() => {
-          return knex.migrate.latest({
+        beforeEach(async () => {
+          await knex.migrate.latest({
             directory: ['test/integration/migrate/test'],
           });
         });
 
-        afterEach(() => {
-          return knex.migrate.rollback(
+        afterEach(async () => {
+          await knex.migrate.rollback(
             { directory: ['test/integration/migrate/test'] },
             true
           );
         });
 
-        it('should only undo the last migration that was run if all migrations have run', function () {
-          return knex.migrate
-            .down({
-              directory: ['test/integration/migrate/test'],
-            })
-            .then(() => {
-              return knex('knex_migrations')
-                .select('*')
-                .then((data) => {
-                  expect(data).to.have.length(1);
-                  expect(path.basename(data[0].name)).to.equal(
-                    '20131019235242_migration_1.js'
-                  );
-                });
-            });
+        it('should only undo the last migration that was run if all migrations have run', async () => {
+          await knex.migrate.down({
+            directory: ['test/integration/migrate/test'],
+          });
+          const data = await knex('knex_migrations').select('*');
+          expect(data).to.have.length(1);
+          expect(path.basename(data[0].name)).to.equal(
+            '20131019235242_migration_1.js'
+          );
         });
 
-        it('should only undo the last migration that was run if there are other migrations that have not yet run', function () {
-          return knex.migrate
-            .down({
-              directory: ['test/integration/migrate/test'],
-            })
-            .then(() => {
-              return knex.migrate
-                .down({
-                  directory: ['test/integration/migrate/test'],
-                })
-                .then(() => {
-                  return knex('knex_migrations')
-                    .select('*')
-                    .then((data) => {
-                      expect(data).to.have.length(0);
-                    });
-                });
-            });
+        it('should only undo the last migration that was run if there are other migrations that have not yet run', async () => {
+          await knex.migrate.down({
+            directory: ['test/integration/migrate/test'],
+          });
+          await knex.migrate.down({
+            directory: ['test/integration/migrate/test'],
+          });
+          const data = await knex('knex_migrations').select('*');
+          expect(data).to.have.length(0);
         });
 
-        it('should not error if all migrations have already been undone', function () {
-          return knex.migrate
-            .rollback({ directory: ['test/integration/migrate/test'] }, true)
-            .then(() => {
-              return knex.migrate
-                .down({
-                  directory: ['test/integration/migrate/test'],
-                })
-                .then((data) => {
-                  expect(data).to.be.an('array');
-                });
-            });
+        it('should not error if all migrations have already been undone', async () => {
+          await knex.migrate.rollback(
+            { directory: ['test/integration/migrate/test'] },
+            true
+          );
+          const data = await knex.migrate.down({
+            directory: ['test/integration/migrate/test'],
+          });
+          expect(data).to.be.an('array');
         });
       });
 
