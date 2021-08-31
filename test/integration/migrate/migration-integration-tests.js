@@ -673,27 +673,31 @@ module.exports = function (knex) {
         });
       });
 
-      describe('with transactions disabled', () => {
-        afterEach(async () => {
-          await knex.migrate.rollback(
-            {
-              directory:
-                'test/integration/migrate/test_single_per_migration_trx_disabled',
-            },
-            true
-          );
-        });
+      if (isPostgreSQL(knex)) {
+        describe('with transactions disabled (postgres)', () => {
+          afterEach(async () => {
+            await knex.migrate.rollback(
+              {
+                directory:
+                  'test/integration/migrate/test_single_per_migration_trx_disabled',
+              },
+              true
+            );
+          });
 
-        it('should run', async () => {
-          await expect(
-            knex.migrate.up({
-              directory:
-                'test/integration/migrate/test_single_per_migration_trx_disabled',
-              name: 'up.js',
-            })
-          ).to.eventually.be.fulfilled;
+          it('should run', async () => {
+            // migration has no effect other than throwing an error if run
+            // within a migration
+            await expect(
+              knex.migrate.up({
+                directory:
+                  'test/integration/migrate/test_single_per_migration_trx_disabled',
+                name: 'up.js',
+              })
+            ).to.eventually.be.fulfilled;
+          });
         });
-      });
+      }
     });
 
     describe('knex.migrate.down', () => {
@@ -763,32 +767,36 @@ module.exports = function (knex) {
         });
       });
 
-      describe('with transactions disabled', () => {
-        afterEach(async () => {
-          await knex.migrate.rollback(
-            {
-              directory:
-                'test/integration/migrate/test_single_per_migration_trx_disabled',
-            },
-            true
-          );
-        });
-
-        it('should run', async () => {
-          await knex.migrate.up({
-            directory:
-              'test/integration/migrate/test_single_per_migration_trx_disabled',
-            name: 'down.js',
+      if (isPostgreSQL(knex)) {
+        describe('with transactions disabled', () => {
+          afterEach(async () => {
+            await knex.migrate.rollback(
+              {
+                directory:
+                  'test/integration/migrate/test_single_per_migration_trx_disabled',
+              },
+              true
+            );
           });
-          await expect(
-            knex.migrate.down({
+
+          it('should run', async () => {
+            // these migrations do nothing except throw errors if run up or down within
+            // a transaction
+            await knex.migrate.up({
               directory:
                 'test/integration/migrate/test_single_per_migration_trx_disabled',
               name: 'down.js',
-            })
-          ).to.eventually.be.fulfilled;
+            });
+            await expect(
+              knex.migrate.down({
+                directory:
+                  'test/integration/migrate/test_single_per_migration_trx_disabled',
+                name: 'down.js',
+              })
+            ).to.eventually.be.fulfilled;
+          });
         });
-      });
+      }
     });
 
     after(function () {
