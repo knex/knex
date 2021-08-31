@@ -145,7 +145,7 @@ module.exports = function (knex) {
     describe('columnInfo with wrapIdentifier and postProcessResponse', () => {
       before('setup hooks', () => {
         knex.client.config.postProcessResponse = (response) => {
-          return _.mapKeys(response, (val, key) => {
+          return _.mapKeys(response, (value, key) => {
             return _.camelCase(key);
           });
         };
@@ -346,7 +346,7 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
+            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
             null,
             {
               enum_value: {
@@ -454,7 +454,7 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
+            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
             null,
             {
               defaultValue: null,
@@ -494,7 +494,7 @@ module.exports = function (knex) {
           tester(
             'mssql',
             "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
-            null,
+            ['datatype_test', 'knex_test'],
             {
               defaultValue: null,
               maxLength: null,
@@ -506,33 +506,68 @@ module.exports = function (knex) {
     });
 
     it('#4492: gets the columnInfo using a ref', function () {
-      return knex(knex.ref('datatype_test').withSchema('public'))
-        .columnInfo()
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            'select * from information_schema.columns where table_name = ? and table_schema = ?',
-            null,
-            {
-              enum_value: {
-                defaultValue: null,
-                maxLength: 1,
-                nullable: true,
-                type: 'enum',
-              },
-              uuid: {
-                defaultValue: null,
-                maxLength: 36,
-                nullable: false,
-                type: 'char',
-              },
-            }
-          );
-          tester(
-            'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
-            null,
-            {
+      return Promise.all([
+        knex(knex.ref('datatype_test').withSchema('public'))
+          .columnInfo()
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select * from information_schema.columns where table_name = ? and table_schema = ?',
+              ['datatype_test', 'knex_test'],
+              {
+                enum_value: {
+                  defaultValue: null,
+                  maxLength: 1,
+                  nullable: true,
+                  type: 'enum',
+                },
+                uuid: {
+                  defaultValue: null,
+                  maxLength: 36,
+                  nullable: false,
+                  type: 'char',
+                },
+              }
+            );
+            tester(
+              'pg',
+              'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
+              ['datatype_test', 'knex_test', 'public'],
+              {
+                enum_value: {
+                  defaultValue: null,
+                  maxLength: null,
+                  nullable: true,
+                  type: 'text',
+                },
+                uuid: {
+                  defaultValue: null,
+                  maxLength: null,
+                  nullable: false,
+                  type: 'uuid',
+                },
+              }
+            );
+            tester(
+              'pg-redshift',
+              'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
+              ['datatype_test', 'knex_test', 'public'],
+              {
+                enum_value: {
+                  defaultValue: null,
+                  maxLength: 255,
+                  nullable: true,
+                  type: 'character varying',
+                },
+                uuid: {
+                  defaultValue: null,
+                  maxLength: 36,
+                  nullable: false,
+                  type: 'character',
+                },
+              }
+            );
+            tester('sqlite3', 'PRAGMA table_info(`datatype_test`)', [], {
               enum_value: {
                 defaultValue: null,
                 maxLength: null,
@@ -541,152 +576,129 @@ module.exports = function (knex) {
               },
               uuid: {
                 defaultValue: null,
+                maxLength: '36',
+                nullable: false,
+                type: 'char',
+              },
+            });
+            tester(
+              'oracledb',
+              "select * from xmltable( '/ROWSET/ROW'\n      passing dbms_xmlgen.getXMLType('\n      select char_col_decl_length, column_name, data_type, data_default, nullable\n      from all_tab_columns where table_name = ''datatype_test'' ')\n      columns\n      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),\n      DATA_DEFAULT clob, NULLABLE varchar2(1))",
+              [],
+              {
+                enum_value: {
+                  defaultValue: null,
+                  nullable: true,
+                  maxLength: 1,
+                  type: 'VARCHAR2',
+                },
+                uuid: {
+                  defaultValue: null,
+                  nullable: false,
+                  maxLength: 36,
+                  type: 'CHAR',
+                },
+              }
+            );
+          }),
+        knex(knex.ref('datatype_test').withSchema('dbo'))
+          .columnInfo()
+          .testSql(function (tester) {
+            tester(
+              'mssql',
+              'select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = ?',
+              ['datatype_test', 'knex_test', 'dbo'],
+              {
+                enum_value: {
+                  defaultValue: null,
+                  maxLength: 100,
+                  nullable: true,
+                  type: 'nvarchar',
+                },
+                uuid: {
+                  defaultValue: null,
+                  maxLength: null,
+                  nullable: false,
+                  type: 'uniqueidentifier',
+                },
+              }
+            );
+          }),
+      ]);
+    });
+
+    it('#4492: gets the columnInfo with columntype using a ref', function () {
+      return Promise.all([
+        knex(knex.ref('datatype_test').withSchema('public'))
+          .columnInfo('uuid')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select * from information_schema.columns where table_name = ? and table_schema = ?',
+              ['datatype_test', 'knex_test'],
+              {
+                defaultValue: null,
+                maxLength: 36,
+                nullable: false,
+                type: 'char',
+              }
+            );
+            tester(
+              'pg',
+              'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
+              ['datatype_test', 'knex_test', 'public'],
+              {
+                defaultValue: null,
                 maxLength: null,
                 nullable: false,
                 type: 'uuid',
-              },
-            }
-          );
-          tester(
-            'pg-redshift',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
-            null,
-            {
-              enum_value: {
-                defaultValue: null,
-                maxLength: 255,
-                nullable: true,
-                type: 'character varying',
-              },
-              uuid: {
+              }
+            );
+            tester(
+              'pg-redshift',
+              'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
+              ['datatype_test', 'knex_test', 'public'],
+              {
                 defaultValue: null,
                 maxLength: 36,
                 nullable: false,
                 type: 'character',
-              },
-            }
-          );
-          tester('sqlite3', 'PRAGMA table_info(`datatype_test`)', [], {
-            enum_value: {
-              defaultValue: null,
-              maxLength: null,
-              nullable: true,
-              type: 'text',
-            },
-            uuid: {
+              }
+            );
+            tester('sqlite3', 'PRAGMA table_info(`datatype_test`)', [], {
               defaultValue: null,
               maxLength: '36',
               nullable: false,
               type: 'char',
-            },
-          });
-          tester(
-            'oracledb',
-            "select * from xmltable( '/ROWSET/ROW'\n      passing dbms_xmlgen.getXMLType('\n      select char_col_decl_length, column_name, data_type, data_default, nullable\n      from all_tab_columns where table_name = ''datatype_test'' ')\n      columns\n      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),\n      DATA_DEFAULT clob, NULLABLE varchar2(1))",
-            [],
-            {
-              enum_value: {
+            });
+            tester(
+              'oracledb',
+              "select * from xmltable( '/ROWSET/ROW'\n      passing dbms_xmlgen.getXMLType('\n      select char_col_decl_length, column_name, data_type, data_default, nullable\n      from all_tab_columns where table_name = ''datatype_test'' ')\n      columns\n      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),\n      DATA_DEFAULT clob, NULLABLE varchar2(1))",
+              [],
+              {
                 defaultValue: null,
-                nullable: true,
-                maxLength: 1,
-                type: 'VARCHAR2',
-              },
-              uuid: {
-                defaultValue: null,
-                nullable: false,
                 maxLength: 36,
+                nullable: false,
                 type: 'CHAR',
-              },
-            }
-          );
-          tester(
-            'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
-            ['datatype_test', 'knex_test'],
-            {
-              enum_value: {
-                defaultValue: null,
-                maxLength: 100,
-                nullable: true,
-                type: 'nvarchar',
-              },
-              uuid: {
+              }
+            );
+          }),
+        knex(knex.ref('datatype_test').withSchema('dbo'))
+          .columnInfo('uuid')
+          .testSql(function (tester) {
+            tester(
+              'mssql',
+              'select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = ?',
+              ['datatype_test', 'knex_test', 'dbo'],
+              {
                 defaultValue: null,
                 maxLength: null,
                 nullable: false,
                 type: 'uniqueidentifier',
-              },
-            }
-          );
-        });
-    });
-
-    it('#4492: gets the columnInfo with columntype using a ref', function () {
-      return knex(knex.ref('datatype_test').withSchema('public'))
-        .columnInfo('uuid')
-        .testSql(function (tester) {
-          tester(
-            'mysql',
-            'select * from information_schema.columns where table_name = ? and table_schema = ?',
-            null,
-            {
-              defaultValue: null,
-              maxLength: 36,
-              nullable: false,
-              type: 'char',
-            }
-          );
-          tester(
-            'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
-            null,
-            {
-              defaultValue: null,
-              maxLength: null,
-              nullable: false,
-              type: 'uuid',
-            }
-          );
-          tester(
-            'pg-redshift',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?',
-            null,
-            {
-              defaultValue: null,
-              maxLength: 36,
-              nullable: false,
-              type: 'character',
-            }
-          );
-          tester('sqlite3', 'PRAGMA table_info(`datatype_test`)', [], {
-            defaultValue: null,
-            maxLength: '36',
-            nullable: false,
-            type: 'char',
-          });
-          tester(
-            'oracledb',
-            "select * from xmltable( '/ROWSET/ROW'\n      passing dbms_xmlgen.getXMLType('\n      select char_col_decl_length, column_name, data_type, data_default, nullable\n      from all_tab_columns where table_name = ''datatype_test'' ')\n      columns\n      CHAR_COL_DECL_LENGTH number, COLUMN_NAME varchar2(200), DATA_TYPE varchar2(106),\n      DATA_DEFAULT clob, NULLABLE varchar2(1))",
-            [],
-            {
-              defaultValue: null,
-              maxLength: 36,
-              nullable: false,
-              type: 'CHAR',
-            }
-          );
-          tester(
-            'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
-            null,
-            {
-              defaultValue: null,
-              maxLength: null,
-              nullable: false,
-              type: 'uniqueidentifier',
-            }
-          );
-        });
+              }
+            );
+          }),
+      ]);
     });
 
     it('#2184 - should properly escape table name for SQLite columnInfo', function () {
