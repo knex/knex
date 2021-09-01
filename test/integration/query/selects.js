@@ -1215,43 +1215,52 @@ module.exports = function (knex) {
     });
 
     describe('recursive CTE support', function () {
-      before(async function() {
-        await knex.schema.dropTableIfExists('rcte')
+      before(async function () {
+        await knex.schema.dropTableIfExists('rcte');
         await knex.schema.createTable('rcte', (table) => {
-          table.string('name')
-          table.string('parentName').nullable()
-        })
+          table.string('name');
+          table.string('parentName').nullable();
+        });
 
         // We will check later that this name was found by chaining up parentId using an rCTE.
-        await knex('rcte').insert({name: 'parent'})
-        let parentName = 'parent'
+        await knex('rcte').insert({ name: 'parent' });
+        let parentName = 'parent';
         for (const name of ['child', 'grandchild']) {
-          await knex('rcte').insert({name, parentName})
-          parentName = name
+          await knex('rcte').insert({ name, parentName });
+          parentName = name;
         }
 
         // We will check later that this name is not returned.
-        await knex('rcte').insert({name: 'nope'})
-      })
+        await knex('rcte').insert({ name: 'nope' });
+      });
       it('supports recursive CTEs', async function () {
-        // FIXME: Oracle requires column list for recursive CTEs. [#4514]
-        // Error: ORA-32039: recursive WITH clause must have column alias list
-        if (isOracle(knex)) {
-          return this.skip()
-        }
+        const results = await knex
+          .withRecursive('family', ['name', 'parentName'], (qb) => {
+            qb.select('name', 'parentName')
+              .from('rcte')
+              .where({ name: 'grandchild' })
+              .unionAll((qb) =>
+                qb
+                  .select('rcte.name', 'rcte.parentName')
+                  .from('rcte')
+                  .join(
+                    'family',
+                    knex.ref('family.parentName'),
+                    knex.ref('rcte.name')
+                  )
+              );
+          })
+          .select('name')
+          .from('family');
+        const names = results.map(({ name }) => name);
 
-        const results = await knex.withRecursive('family', (qb) => {
-          qb.select('name', 'parentName').from('rcte').where({name: 'grandchild'}).unionAll(
-            (qb) => qb.select('rcte.name', 'rcte.parentName').from('rcte').join('family', knex.ref('family.parentName'), knex.ref('rcte.name'))
-          )
-        }).select('name').from('family')
-        const names = results.map(({name}) => name)
-
-        expect(names).to.have.length('parent child grandchild'.split(' ').length)
-        expect(names).to.contain('parent')
-        expect(names).not.to.contain('nope')
-      })
-    })
+        expect(names).to.have.length(
+          'parent child grandchild'.split(' ').length
+        );
+        expect(names).to.contain('parent');
+        expect(names).not.to.contain('nope');
+      });
+    });
 
     it('supports the <> operator', function () {
       return knex('accounts').where('id', '<>', 2).select('email', 'logins');

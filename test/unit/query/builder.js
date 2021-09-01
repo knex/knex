@@ -9407,8 +9407,6 @@ describe('QueryBuilder', () => {
   });
 
   it('Oracle: withRecursive with column list', function () {
-    // FIXME: This is not actually valid Oracle SQL - Oracle requires a column list in recursive WITH.
-    // Supporting this requires changes to the QueryBuilder API.
     testsql(
       qb()
         .withRecursive('hasColumns', ['id', 'nickname'], function () {
@@ -9424,7 +9422,7 @@ describe('QueryBuilder', () => {
         .from('hasColumns'),
       {
         oracledb:
-          'with "hasColumns" as (select "id", "nickname" from "users" union all select "id", "firstname" from "users" inner join "hasColumns" on "hasColumns"."nickname" = "users"."firstname") select "name" from "hasColumns"',
+          'with "hasColumns"("id", "nickname") as (select "id", "nickname" from "users" union all select "id", "firstname" from "users" inner join "hasColumns" on "hasColumns"."nickname" = "users"."firstname") select "name" from "hasColumns"',
       }
     );
   });
