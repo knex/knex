@@ -145,7 +145,7 @@ module.exports = function (knex) {
     describe('columnInfo with wrapIdentifier and postProcessResponse', () => {
       before('setup hooks', () => {
         knex.client.config.postProcessResponse = (response) => {
-          return _.mapKeys(response, (value, key) => {
+          return _.mapKeys(response, (val, key) => {
             return _.camelCase(key);
           });
         };
