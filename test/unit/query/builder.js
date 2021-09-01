@@ -9411,7 +9411,7 @@ describe('QueryBuilder', () => {
     // Supporting this requires changes to the QueryBuilder API.
     testsql(
       qb()
-        .withRecursive('hasColumns', function () {
+        .withRecursive('hasColumns', ['id', 'nickname'], function () {
           this.select('id', 'nickname')
             .from('users')
             .unionAll(function () {
