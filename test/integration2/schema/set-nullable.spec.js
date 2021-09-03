@@ -52,10 +52,9 @@ describe('Schema', () => {
             });
 
             let errorMessage;
-            if (isPostgreSQL()) {
+            if (isPostgreSQL(knex)) {
               errorMessage = 'violates not-null constraint';
-            }
-            if (isMysql()) {
+            } else if (isMysql(knex)) {
               errorMessage = 'cannot be null';
             }
 
