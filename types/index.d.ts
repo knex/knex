@@ -1275,6 +1275,11 @@ export declare namespace Knex {
       TRecord,
       TResult
     >;
+    (alias: string, columnList: string[], raw: Raw | QueryBuilder): QueryBuilder<TRecord, TResult>;
+    (alias: string, columnList: string[], sql: string, bindings?: readonly Value[] | Object): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface WithSchema<TRecord = any, TResult = unknown[]> {
@@ -1285,6 +1290,12 @@ export declare namespace Knex {
     (alias: string, queryBuilder: QueryBuilder): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
+      callback: (queryBuilder: QueryBuilder) => any
+    ): QueryBuilder<TRecord, TResult>;
+    (alias: string, columnList: string[], queryBuilder: QueryBuilder): QueryBuilder<TRecord, TResult>;
+    (
+      alias: string,
+      columnList: string[],
       callback: (queryBuilder: QueryBuilder) => any
     ): QueryBuilder<TRecord, TResult>;
   }
