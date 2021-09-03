@@ -22,8 +22,6 @@
 - Add .mjs migration and seed stubs #4631
 - SQLite: Clean up DDL handling and move all operations to the parser-based approach #4648
 
-### Typings:
-
 # 0.95.10 - 20 August, 2021
 
 ### Improvements:
