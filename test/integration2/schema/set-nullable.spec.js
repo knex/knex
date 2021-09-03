@@ -1,7 +1,12 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const expect = chai.expect;
-const { isSQLite, isPostgreSQL, isMysql } = require('../../util/db-helpers');
+const {
+  isSQLite,
+  isPostgreSQL,
+  isMysql,
+  isOracle,
+} = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
@@ -56,6 +61,8 @@ describe('Schema', () => {
               errorMessage = 'violates not-null constraint';
             } else if (isMysql(knex)) {
               errorMessage = 'cannot be null';
+            } else if (isOracle(knex)) {
+              errorMessage = 'ORA-01400: cannot insert NULL into';
             }
 
             await expect(
