@@ -1738,11 +1738,11 @@ export default [
         type: "runnable",
         content: `
           knex('tableName')
-            .insert(
+            .insert([
               { email: "john@example.com", name: "John Doe" },
               { email: "jane@example.com", name: "Jane Doe" },
               { email: "alex@example.com", name: "Alex Doe" },
-            )
+            ])
             .onConflict('email')
             .merge()
         `
