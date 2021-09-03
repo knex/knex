@@ -1,5 +1,29 @@
 # Master (Unreleased)
 
+# 0.95.11 - 03 September, 2021
+
+### New features:
+
+- Add support for nullability modification via schema builder (table.setNullable() and table.dropNullable()) #4657
+- MySQL: Add support for mysql/mariadb-client JSON parameters in connectionURIs #4629
+- MSSQL: Support comments as MS_Description properties #4632
+
+### Bug fixes:
+
+- Fix Analytic orderBy and partitionBy to follow the SQL documentation #4602
+- CLI: fix migrate:up for migrations disabling transactions #4550
+- SQLite: Fix adding a column with a foreign key constraint in SQLite #4649
+- MSSQL: columnInfo() support case-sensitive database collations #4633
+- MSSQL: Generate valid SQL for withRecursive() #4514
+- Oracle: withRecursive: omit invalid RECURSIVE keyword, include column list #4514
+
+### Improvements:
+
+- Add .mjs migration and seed stubs #4631
+- SQLite: Clean up DDL handling and move all operations to the parser-based approach #4648
+
+### Typings:
+
 # 0.95.10 - 20 August, 2021
 
 ### Improvements:
