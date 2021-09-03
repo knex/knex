@@ -209,6 +209,8 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-specificType">specificType</a></li>
           <li>– <a href="#Schema-index">index</a></li>
           <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
+          <li>– <a href="#Schema-setNullable">setNullable</a></li>
+          <li>– <a href="#Schema-dropNullable">dropNullable</a></li>
           <li>– <a href="#Schema-table-primary">primary</a></li>
           <li>– <a href="#Schema-table-unique">unique</a></li>
           <li>– <a href="#Schema-foreign">foreign</a></li>

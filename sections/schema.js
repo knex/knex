@@ -548,6 +548,20 @@ export default [
   },
   {
     type: "method",
+    method: "setNullable",
+    example: "table.setNullable(column)",
+    description: "Makes table column nullable.",
+    children: [    ]
+  },
+  {
+    type: "method",
+    method: "dropNullable",
+    example: "table.dropNullable(column)",
+    description: "Makes table column not nullable. Note that this operation will fail if there are already null values in this column.",
+    children: [    ]
+  },
+  {
+    type: "method",
     method: "primary",
     href:"Schema-table-primary",
     example: "table.primary(columns, options=({[constraintName:string],[deferrable:'not deferrable'|'deferred'|'immediate']})",
@@ -588,7 +602,7 @@ export default [
           knex.schema.alterTable('job', function(t) {
             t.unique(['account_id', 'program_id'],{indexName:'users_composite_index',deferrable:'deferred'})
           })
-        ` 
+        `
       },
       {
         type: "info",
@@ -607,7 +621,7 @@ export default [
         content: [
           "A default key name using the columns is used unless `foreignKeyName` is specified.",
           "You can also chain `onDelete()` and/or `onUpdate()` to set the reference option `(RESTRICT, CASCADE, SET NULL, NO ACTION)` for the operation. You can also chain `withKeyName()` to override default key name that is generated from table and column names (result is identical to specifying second parameter to function `foreign()`).",
-          "Deferrable foreign constraint is supported on Postgres and Oracle and can be set by chaining `.deferrable(type)`", 
+          "Deferrable foreign constraint is supported on Postgres and Oracle and can be set by chaining `.deferrable(type)`",
           "Note that using `foreign()` is the same as `column.references(column)` but it works for existing columns."
         ]
       },
