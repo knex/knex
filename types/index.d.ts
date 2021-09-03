@@ -1927,8 +1927,8 @@ export declare namespace Knex {
       indexName?: string,
       indexType?: string
     ): TableBuilder;
-    setNullable(): TableBuilder;
-    dropNullable(): TableBuilder;
+    setNullable(column: string): TableBuilder;
+    dropNullable(column: string): TableBuilder;
     unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): TableBuilder;
     /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
