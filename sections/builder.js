@@ -114,7 +114,7 @@ export default [
 
         if (someCondition) {
           // This select will not change the type of usersQueryBuilder
-          // We can not change the type of a pre-declared variabe in TypeScript
+          // We can not change the type of a pre-declared variable in TypeScript
           usersQueryBuilder.select('age');
         }
         usersQueryBuilder.then((users) => {
@@ -283,13 +283,19 @@ export default [
   {
     type: "method",
     method: "with",
-    example: ".with(alias, function|raw)",
-    description: "Add a \"with\" clause to the query. \"With\" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL.",
+    example: ".with(alias, [columns], callback|builder|raw)",
+    description: "Add a \"with\" clause to the query. \"With\" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL. An optional column list can be provided after the alias; if provided, it must include at least one column name.",
     children: [
       {
         type: "runnable",
         content: `
           knex.with('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.with('with_alias', ["title"], knex.raw('select "title" from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
         `
       },
       {
@@ -305,8 +311,8 @@ export default [
   {
     type: "method",
     method: "withRecursive",
-    example: ".withRecursive(alias, function|raw)",
-    description: "Indentical to the `with` method except \"recursive\" is appended to \"with\" to make self-referential CTEs possible.",
+    example: ".withRecursive(alias, [columns], callback|builder|raw)",
+    description: "Identical to the `with` method except \"recursive\" is appended to \"with\" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE.",
     children: [
       {
         type: "runnable",
@@ -316,6 +322,28 @@ export default [
               qb.select('*').from('people').join('ancestors', 'ancestors.parentId', 'people.id')
             })
           }).select('*').from('ancestors')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.withRecursive('family', ['name', 'parentName'], (qb) => {
+            qb.select('name', 'parentName')
+              .from('folks')
+              .where({ name: 'grandchild' })
+              .unionAll((qb) =>
+                qb
+                  .select('folks.name', 'folks.parentName')
+                  .from('folks')
+                  .join(
+                    'family',
+                    knex.ref('family.parentName'),
+                    knex.ref('folks.name')
+                  )
+              )
+          })
+          .select('name')
+          .from('family')
         `
       }
     ]
@@ -1107,7 +1135,7 @@ export default [
     type: "method",
     method: "clear",
     example: ".clear(statement)",
-    description: "Clears the specified operator from the query. Avalilables: 'select' alias 'columns', 'with', 'select', 'columns', 'where', 'union', 'join', 'group', 'order', 'having', 'limit', 'offset', 'counter', 'counters'. Counter(s) alias for method .clearCounter()",
+    description: "Clears the specified operator from the query. Available operators: 'select' alias 'columns', 'with', 'select', 'columns', 'where', 'union', 'join', 'group', 'order', 'having', 'limit', 'offset', 'counter', 'counters'. Counter(s) alias for method .clearCounter()",
     children: [
       {
         type: "runnable",
@@ -1224,7 +1252,7 @@ export default [
       {
         type: "runnable",
         content: `
-            // select which eleminates duplicate rows
+            // select which eliminates duplicate rows
            knex('customers')
             .distinct()
         `
@@ -1645,7 +1673,7 @@ export default [
         type: "code",
         language: "js",
         content: `
-          // Adding the option includeTriggerModifications allows you to 
+          // Adding the option includeTriggerModifications allows you to
           // run statements on tables that contain triggers. Only affects MSSQL.
           knex('books')
             .insert({title: 'Alice in Wonderland'}, ['id'], { includeTriggerModifications: true })
@@ -1685,7 +1713,7 @@ export default [
     children: [
       {
         type: "text",
-        content: "Note: For PostgreSQL and SQLite, the column(s) specified by this method must either be the table's PRIMARY KEY or have a UNIQUE index on them, or the query will fail to execute. When specifying multiple columns, they must be a composite PRIMARY KEY or have composite UNIQUE index. MySQL will ignore the specified columns and always use the table's PRIMARY KEY. For cross-platform support across PostgreSQL, MySQL, and SQLite you must both explicitly specifiy the columns in .onConflict() and those column(s) must be the table's PRIMARY KEY."
+        content: "Note: For PostgreSQL and SQLite, the column(s) specified by this method must either be the table's PRIMARY KEY or have a UNIQUE index on them, or the query will fail to execute. When specifying multiple columns, they must be a composite PRIMARY KEY or have composite UNIQUE index. MySQL will ignore the specified columns and always use the table's PRIMARY KEY. For cross-platform support across PostgreSQL, MySQL, and SQLite you must both explicitly specify the columns in .onConflict() and those column(s) must be the table's PRIMARY KEY."
       },
       {
         type: "text",
@@ -1770,7 +1798,7 @@ export default [
       },
       {
         type: "text",
-        content: "It is also possible to specify data to update seperately from the data to insert. This is useful if you want to update with different data to the insert. For example, you may want to change a value if the row already exists:"
+        content: "It is also possible to specify data to update separately from the data to insert. This is useful if you want to update with different data to the insert. For example, you may want to change a value if the row already exists:"
       },
       {
         type: "code",
@@ -1857,7 +1885,7 @@ export default [
         type: "code",
         language: "js",
         content: `
-          // Adding the option includeTriggerModifications allows you 
+          // Adding the option includeTriggerModifications allows you
           // to run statements on tables that contain triggers. Only affects MSSQL.
           knex('books')
             .update({title: 'Alice in Wonderland'}, ['id', 'title'], { includeTriggerModifications: true })
@@ -1887,7 +1915,7 @@ export default [
         type: "code",
         language: "js",
         content: `
-          // Adding the option includeTriggerModifications allows you 
+          // Adding the option includeTriggerModifications allows you
           // to run statements on tables that contain triggers. Only affects MSSQL.
           knex('books')
             .where('title', 'Alice in Wonderland')
@@ -1937,7 +1965,7 @@ export default [
         type: "code",
         language: "js",
         content: `
-          // Adding the option includeTriggerModifications allows you 
+          // Adding the option includeTriggerModifications allows you
           // to run statements on tables that contain triggers. Only affects MSSQL.
           knex('books')
             .returning(['id','title'], { includeTriggerModifications: true })
