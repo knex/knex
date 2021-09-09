@@ -9,6 +9,7 @@ const { TEST_TIMESTAMP } = require('../../util/constants');
 const {
   isMysql,
   isPostgreSQL,
+  isPgNative,
   isMssql,
   isSQLite,
   isOracle,
@@ -34,6 +35,12 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
+            'select "id" from "accounts" order by "id" asc',
+            [],
+            ['1', '2', '3', '4', '5', '7']
+          );
+          tester(
+            'pgnative',
             'select "id" from "accounts" order by "id" asc',
             [],
             ['1', '2', '3', '4', '5', '7']
@@ -84,6 +91,12 @@ module.exports = function (knex) {
             ['1', '2', '3', '4', '5', '7']
           );
           tester(
+            'pgnative',
+            'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
+            [],
+            ['1', '2', '3', '4', '5', '7']
+          );
+          tester(
             'pg-redshift',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
@@ -125,6 +138,12 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
+            'select "id" from "accounts" order by "id" asc offset ?',
+            [2],
+            ['3', '4', '5', '7']
+          );
+          tester(
+            'pgnative',
             'select "id" from "accounts" order by "id" asc offset ?',
             [2],
             ['3', '4', '5', '7']
@@ -228,6 +247,19 @@ module.exports = function (knex) {
             ]
           );
           tester(
+            'pgnative',
+            'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
+            [],
+            [
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '4' },
+              { id: '5' },
+              { id: '7' },
+            ]
+          );
+          tester(
             'pg-redshift',
             'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
             [],
@@ -287,6 +319,12 @@ module.exports = function (knex) {
             { id: '1', first_name: 'Test' }
           );
           tester(
+            'pgnative',
+            'select "id", "first_name" from "accounts" order by "id" asc limit ?',
+            [1],
+            { id: '1', first_name: 'Test' }
+          );
+          tester(
             'pg-redshift',
             'select "id", "first_name" from "accounts" order by "id" asc limit ?',
             [1],
@@ -314,6 +352,9 @@ module.exports = function (knex) {
     });
 
     it('allows you to stream', function () {
+      if (isPgNative(knex)) {
+        return this.skip();
+      }
       let count = 0;
       return knex('accounts')
         .stream(function (rowStream) {
@@ -327,6 +368,10 @@ module.exports = function (knex) {
     });
 
     it('returns a stream if not passed a function', function (done) {
+      if (isPgNative(knex)) {
+        return this.skip();
+      }
+
       let count = 0;
       const stream = knex('accounts').stream();
       stream.on('data', function () {
@@ -499,6 +544,17 @@ module.exports = function (knex) {
               ]
             );
             tester(
+              'pgnative',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                },
+              ]
+            );
+            tester(
               'pg-redshift',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
               [1],
@@ -573,6 +629,17 @@ module.exports = function (knex) {
               ]
             );
             tester(
+              'pgnative',
+              'select "first_name", "last_name" from "accounts" where "id" = ?',
+              [1],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                },
+              ]
+            );
+            tester(
               'pg-redshift',
               'select "first_name", "last_name" from "accounts" where "id" = ?',
               [1],
@@ -635,6 +702,11 @@ module.exports = function (knex) {
               [1]
             );
             tester(
+              'pgnative',
+              'select "email", "logins" from "accounts" where "id" > ?',
+              [1]
+            );
+            tester(
               'pg-redshift',
               'select "email", "logins" from "accounts" where "id" > ?',
               [1]
@@ -683,6 +755,25 @@ module.exports = function (knex) {
             );
             tester(
               'pg',
+              'select * from "accounts" where "id" = ?',
+              [1],
+              [
+                {
+                  id: '1',
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test@example.com',
+                  logins: 1,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                },
+              ]
+            );
+            tester(
+              'pgnative',
               'select * from "accounts" where "id" = ?',
               [1],
               [
@@ -797,6 +888,12 @@ module.exports = function (knex) {
               []
             );
             tester(
+              'pgnative',
+              'select "first_name", "email" from "accounts" where "id" is null',
+              [],
+              []
+            );
+            tester(
               'pg-redshift',
               'select "first_name", "email" from "accounts" where "id" is null',
               [],
@@ -830,6 +927,12 @@ module.exports = function (knex) {
           .testSql(function (tester) {
             tester('mysql', 'select * from `accounts` where `id` = ?', [0], []);
             tester('pg', 'select * from "accounts" where "id" = ?', [0], []);
+            tester(
+              'pgnative',
+              'select * from "accounts" where "id" = ?',
+              [0],
+              []
+            );
             tester(
               'pg-redshift',
               'select * from "accounts" where "id" = ?',
@@ -915,6 +1018,37 @@ module.exports = function (knex) {
       return builder.testSql(function (tester) {
         tester(
           'pg',
+          'select distinct on ("id") "email", "logins" from "accounts" order by "id" asc',
+          [],
+          [
+            {
+              email: 'test@example.com',
+              logins: 1,
+            },
+            {
+              email: 'test2@example.com',
+              logins: 1,
+            },
+            {
+              email: 'test3@example.com',
+              logins: 2,
+            },
+            {
+              email: 'test4@example.com',
+              logins: 2,
+            },
+            {
+              email: 'test5@example.com',
+              logins: 2,
+            },
+            {
+              email: 'test6@example.com',
+              logins: 2,
+            },
+          ]
+        );
+        tester(
+          'pgnative',
           'select distinct on ("id") "email", "logins" from "accounts" order by "id" asc',
           [],
           [
@@ -1035,6 +1169,25 @@ module.exports = function (knex) {
               ]
             );
             tester(
+              'pgnative',
+              'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
+              [1, 1, 1, 2],
+              [
+                {
+                  column_a: 1,
+                  column_b: 1,
+                  details: 'One, One, One',
+                  status: 1,
+                },
+                {
+                  column_a: 1,
+                  column_b: 2,
+                  details: 'One, Two, Zero',
+                  status: 0,
+                },
+              ]
+            );
+            tester(
               'pg-redshift',
               'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
               [1, 1, 1, 2],
@@ -1135,6 +1288,19 @@ module.exports = function (knex) {
               ]
             );
             tester(
+              'pgnative',
+              'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
+              [1, 1, 1, 1, 2],
+              [
+                {
+                  column_a: 1,
+                  column_b: 1,
+                  details: 'One, One, One',
+                  status: 1,
+                },
+              ]
+            );
+            tester(
               'pg-redshift',
               'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
               [1, 1, 1, 1, 2],
@@ -1212,6 +1378,54 @@ module.exports = function (knex) {
           this.select('account_id').from('test_table_two').where('status', 1);
         })
         .select('first_name', 'last_name');
+    });
+
+    describe('recursive CTE support', function () {
+      before(async function () {
+        await knex.schema.dropTableIfExists('rcte');
+        await knex.schema.createTable('rcte', (table) => {
+          table.string('name');
+          table.string('parentName').nullable();
+        });
+
+        // We will check later that this name was found by chaining up parentId using an rCTE.
+        await knex('rcte').insert({ name: 'parent' });
+        let parentName = 'parent';
+        for (const name of ['child', 'grandchild']) {
+          await knex('rcte').insert({ name, parentName });
+          parentName = name;
+        }
+
+        // We will check later that this name is not returned.
+        await knex('rcte').insert({ name: 'nope' });
+      });
+      it('supports recursive CTEs', async function () {
+        const results = await knex
+          .withRecursive('family', ['name', 'parentName'], (qb) => {
+            qb.select('name', 'parentName')
+              .from('rcte')
+              .where({ name: 'grandchild' })
+              .unionAll((qb) =>
+                qb
+                  .select('rcte.name', 'rcte.parentName')
+                  .from('rcte')
+                  .join(
+                    'family',
+                    knex.ref('family.parentName'),
+                    knex.ref('rcte.name')
+                  )
+              );
+          })
+          .select('name')
+          .from('family');
+        const names = results.map(({ name }) => name);
+
+        expect(names).to.have.length(
+          'parent child grandchild'.split(' ').length
+        );
+        expect(names).to.contain('parent');
+        expect(names).not.to.contain('nope');
+      });
     });
 
     it('supports the <> operator', function () {
@@ -1384,7 +1598,7 @@ module.exports = function (knex) {
               expect('Second query should have timed out').to.be.false;
             })
             .catch((err) => {
-              // mssql fails because it tires to rollback at the same time when update query is running
+              // mssql fails because it tries to rollback at the same time when update query is running
               // hopefully for share really works though...
               if (isMssql(knex)) {
                 expect(err.message).to.be.contain(

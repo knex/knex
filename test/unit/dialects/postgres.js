@@ -2,7 +2,6 @@ const knex = require('../../../knex');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const pgDialect = require('../../../lib/dialects/postgres/index.js');
-const pg = require('pg');
 const _ = require('lodash');
 const { isFunction } = require('../../../lib/util/is');
 
@@ -25,10 +24,9 @@ describe('Postgres Unit Tests', function () {
       .callsFake(function () {
         return Promise.resolve('9.6');
       });
-
-    sinon.stub(pg.Client.prototype, 'connect').callsFake(function (cb) {
-      cb(null, fakeConnection);
-    });
+    sinon
+      .stub(pgDialect.prototype, '_acquireOnlyConnection')
+      .returns(Promise.resolve(fakeConnection));
   });
   afterEach(() => {
     querySpy.resetHistory();
@@ -37,18 +35,17 @@ describe('Postgres Unit Tests', function () {
     sinon.restore();
   });
 
-  it('does not resolve client version if specified explicitly', (done) => {
+  it('does not resolve client version if specified explicitly', () => {
     const knexInstance = knex({
-      client: 'postgresql',
+      client: 'postgres',
       version: '10.5',
       connection: {
         pool: {},
       },
     });
-    knexInstance.raw('select 1 as 1').then((result) => {
+    return knexInstance.raw('select 1 as 1').then((result) => {
       expect(checkVersionStub.notCalled).to.equal(true);
       knexInstance.destroy();
-      done();
     });
   });
 
@@ -75,17 +72,16 @@ describe('Postgres Unit Tests', function () {
     );
   });
 
-  it('resolve client version if not specified explicitly', (done) => {
+  it('resolve client version if not specified explicitly', () => {
     const knexInstance = knex({
       client: 'postgresql',
       connection: {
         pool: {},
       },
     });
-    knexInstance.raw('select 1 as 1').then((result) => {
+    return knexInstance.raw('select 1 as 1').then((result) => {
       expect(checkVersionStub.calledOnce).to.equal(true);
       knexInstance.destroy();
-      done();
     });
   });
 
@@ -130,12 +126,13 @@ describe('Postgres Unit Tests', function () {
         );
       });
   });
-  it('Uses documented query config as param when providing bindings', (done) => {
+
+  it('Uses documented query config as param when providing bindings', () => {
     const knexInstance = knex({
       client: 'postgresql',
       connection: {},
     });
-    knexInstance.raw('select 1 as ?', ['foo']).then((result) => {
+    return knexInstance.raw('select 1 as ?', ['foo']).then((result) => {
       sinon.assert.calledOnce(querySpy);
       sinon.assert.calledWithExactly(
         querySpy,
@@ -146,7 +143,6 @@ describe('Postgres Unit Tests', function () {
         sinon.match.func
       );
       knexInstance.destroy();
-      done();
     });
   });
 });

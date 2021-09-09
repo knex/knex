@@ -4,7 +4,15 @@ const { expect } = require('chai');
 
 const _ = require('lodash');
 const { isString, isObject } = require('../../../lib/util/is');
-const { isPgBased, isMysql, isOracle, isPostgreSQL, isSQLite, isRedshift, isMssql } = require('../../util/db-helpers');
+const {
+  isPgBased,
+  isMysql,
+  isOracle,
+  isPostgreSQL,
+  isSQLite,
+  isRedshift,
+  isMssql,
+} = require('../../util/db-helpers');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -475,6 +483,8 @@ module.exports = (knex) => {
             ]);
             tester('mssql', [
               "CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int CONSTRAINT [test_table_one_logins_default] DEFAULT '1', [balance] float CONSTRAINT [test_table_one_balance_default] DEFAULT '0', [about] nvarchar(max), [created_at] datetime2, [updated_at] datetime2)",
+              "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_table_one', NULL, NULL))\n  EXEC sys.sp_updateextendedproperty N'MS_Description', N'A table comment.', N'Schema', N'dbo', N'Table', N'test_table_one'\nELSE\n  EXEC sys.sp_addextendedproperty N'MS_Description', N'A table comment.', N'Schema', N'dbo', N'Table', N'test_table_one'",
+              "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'))\n  EXEC sys.sp_updateextendedproperty N'MS_Description', N'A comment.', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'\nELSE\n  EXEC sys.sp_addextendedproperty N'MS_Description', N'A comment.', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'",
               'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
               'CREATE UNIQUE INDEX [test_table_one_email_unique] ON [test_table_one] ([email]) WHERE [email] IS NOT NULL',
               'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])',
@@ -921,7 +931,12 @@ module.exports = (knex) => {
           .then(() => knex.schema.dropTable('test_table_numerics2')));
 
       it('allows alter column syntax', function () {
-        if (isSQLite(knex) || isRedshift(knex) || isMssql(knex) || isOracle(knex)) {
+        if (
+          isSQLite(knex) ||
+          isRedshift(knex) ||
+          isMssql(knex) ||
+          isOracle(knex)
+        ) {
           return;
         }
 
@@ -1316,6 +1331,9 @@ module.exports = (knex) => {
 
         context('when table is created using raw create table', () => {
           beforeEach(async () => {
+            await knex.schema.raw(`create table bar(
+              \`i3\` integer primary key
+            )`);
             await knex.schema.raw(`create table TEST(
               "i0" integer,
               'i1' integer,
@@ -1349,33 +1367,33 @@ module.exports = (knex) => {
             expect(await hasCol('i0')).to.equal(false);
             // Constraint i0 should be unaffected:
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE "TEST"(\'i1\' integer, [i2] integer, `i3` integer, i4 ' +
-                'integer, I5 integer, unique(i4, i5), constraint i0 primary ' +
-                'key([i3], "i4"), unique([i2]), foreign key (i1) references bar ' +
-                '("i3") )'
+              'CREATE TABLE "TEST" (`i1` integer, `i2` integer, `i3` integer, `i4` ' +
+                'integer, `I5` integer, UNIQUE (`i4`, `i5`), CONSTRAINT `i0` PRIMARY ' +
+                'KEY (`i3`, `i4`), UNIQUE (`i2`), FOREIGN KEY (`i1`) REFERENCES `bar` ' +
+                '(`i3`))'
             );
             await dropCol('i1');
             expect(await hasCol('i1')).to.equal(false);
             // Foreign key on i1 should also be dropped:
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE "TEST"([i2] integer, `i3` integer, i4 integer, I5 integer, ' +
-                'unique(i4, i5), constraint i0 primary key([i3], "i4"), unique([i2]))'
+              'CREATE TABLE "TEST" (`i2` integer, `i3` integer, `i4` integer, `I5` integer, ' +
+                'UNIQUE (`i4`, `i5`), CONSTRAINT `i0` PRIMARY KEY (`i3`, `i4`), UNIQUE (`i2`))'
             );
             await dropCol('i2');
             expect(await hasCol('i2')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE "TEST"(`i3` integer, i4 integer, I5 integer, ' +
-                'unique(i4, i5), constraint i0 primary key([i3], "i4"))'
+              'CREATE TABLE "TEST" (`i3` integer, `i4` integer, `I5` integer, ' +
+                'UNIQUE (`i4`, `i5`), CONSTRAINT `i0` PRIMARY KEY (`i3`, `i4`))'
             );
             await dropCol('i3');
             expect(await hasCol('i3')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE "TEST"(i4 integer, I5 integer, unique(i4, i5))'
+              'CREATE TABLE "TEST" (`i4` integer, `I5` integer, UNIQUE (`i4`, `i5`))'
             );
             await dropCol('i4');
             expect(await hasCol('i4')).to.equal(false);
             expect(await getCreateTableExpr()).to.equal(
-              'CREATE TABLE "TEST"(I5 integer)'
+              'CREATE TABLE "TEST" (`I5` integer)'
             );
             let lastColDeletionError;
             await knex.schema
@@ -1463,6 +1481,49 @@ module.exports = (knex) => {
             .then(() =>
               knex.schema.withSchema(testSchemaName).dropTableIfExists('test2')
             ));
+
+        describe('case-sensitive collation support', () => {
+          let k;
+          const databaseName = 'knex_test_CS_AS_SC';
+          const collation = 'Latin1_General_100_CS_AS_SC';
+          const tableName = 'Test';
+          before(async () => {
+            await knex.schema.raw(
+              `IF EXISTS(SELECT name FROM sys.databases WHERE name = :databaseName) DROP DATABASE :databaseName:; CREATE DATABASE :databaseName: COLLATE ${collation}`,
+              { databaseName }
+            );
+
+            const Knex = require('../../../knex');
+            const config = require('../../knexfile');
+            k = Knex({
+              client: 'mssql',
+              connection: {
+                ...config.mssql.connection,
+                database: databaseName,
+              },
+            });
+
+            // Verify configuration is using the correct database.
+            const [{ name }] = await k.raw('SELECT DB_NAME() AS name');
+            expect(name).to.equal(databaseName);
+
+            await k.schema.createTable(tableName, function () {
+              this.increments();
+            });
+          });
+          after(async () => {
+            await k.schema.dropTable(tableName);
+            await k.destroy();
+            await knex.schema.raw(
+              `IF EXISTS(SELECT name FROM sys.databases WHERE name = :databaseName) DROP DATABASE :databaseName:`,
+              { databaseName }
+            );
+          });
+          it('should get columnInfo from a case-sensitive database', async () => {
+            const info = await k(tableName).columnInfo();
+            expect(info).not.to.equal(undefined);
+          });
+        });
       });
     });
 

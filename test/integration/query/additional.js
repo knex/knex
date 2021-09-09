@@ -14,6 +14,7 @@ const {
   isMysql,
   isMssql,
   isPgBased,
+  isPgNative,
 } = require('../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../util/constants');
 
@@ -254,6 +255,7 @@ module.exports = function (knex) {
         .testSql(function (tester) {
           tester('mysql', 'truncate `test_table_two`');
           tester('pg', 'truncate "test_table_two" restart identity');
+          tester('pgnative', 'truncate "test_table_two" restart identity');
           tester('pg-redshift', 'truncate "test_table_two"');
           tester('sqlite3', 'delete from `test_table_two`');
           tester('oracledb', 'truncate table "test_table_two"');
@@ -295,12 +297,14 @@ module.exports = function (knex) {
         [drivers.MySQL2]: 'SHOW TABLES',
         [drivers.PostgreSQL]:
           "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+        [drivers.PgNative]:
+          "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         [drivers.Redshift]:
           "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
         [drivers.SQLite]: "SELECT name FROM sqlite_master WHERE type='table';",
         [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
         [drivers.MsSQL]:
-          "SELECT table_name FROM information_schema.tables WHERE table_schema='dbo'",
+          "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='dbo'",
       };
       return knex
         .raw(tables[knex.client.driverName])
@@ -346,7 +350,26 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
+            null,
+            {
+              enum_value: {
+                defaultValue: null,
+                maxLength: null,
+                nullable: true,
+                type: 'text',
+              },
+              uuid: {
+                defaultValue: null,
+                maxLength: null,
+                nullable: false,
+                type: 'uuid',
+              },
+            }
+          );
+          tester(
+            'pgnative',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
             null,
             {
               enum_value: {
@@ -417,7 +440,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             ['datatype_test', 'knex_test'],
             {
               enum_value: {
@@ -454,7 +477,18 @@ module.exports = function (knex) {
           );
           tester(
             'pg',
-            'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = current_schema()',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
+            null,
+            {
+              defaultValue: null,
+              maxLength: null,
+              nullable: false,
+              type: 'uuid',
+            }
+          );
+          tester(
+            'pgnative',
+            'select * from information_schema.columns where table_name = ? and table_catalog = current_database() and table_schema = current_schema()',
             null,
             {
               defaultValue: null,
@@ -493,7 +527,7 @@ module.exports = function (knex) {
           );
           tester(
             'mssql',
-            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
+            "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = ? and table_catalog = ? and table_schema = 'dbo'",
             null,
             {
               defaultValue: null,
@@ -613,6 +647,9 @@ module.exports = function (knex) {
               tester('pg', [
                 'alter table "accounts" rename "about" to "about_col"',
               ]);
+              tester('pgnative', [
+                'alter table "accounts" rename "about" to "about_col"',
+              ]);
               tester('pg-redshift', [
                 'alter table "accounts" rename "about" to "about_col"',
               ]);
@@ -672,6 +709,9 @@ module.exports = function (knex) {
             .testSql(function (tester) {
               tester('mysql', ['alter table `accounts` drop `first_name`']);
               tester('pg', ['alter table "accounts" drop column "first_name"']);
+              tester('pgnative', [
+                'alter table "accounts" drop column "first_name"',
+              ]);
               tester('pg-redshift', [
                 'alter table "accounts" drop column "first_name"',
               ]);
@@ -722,6 +762,9 @@ module.exports = function (knex) {
 
       const testQueries = {
         [drivers.PostgreSQL]: function () {
+          return knex.raw('SELECT pg_sleep(1)');
+        },
+        [drivers.PgNative]: function () {
           return knex.raw('SELECT pg_sleep(1)');
         },
         [drivers.MySQL]: function () {
@@ -776,6 +819,9 @@ module.exports = function (knex) {
         [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT pg_sleep(10)');
         },
+        [drivers.PgNative]: function () {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
         [drivers.MySQL]: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
@@ -811,6 +857,9 @@ module.exports = function (knex) {
 
       const getProcessesQueries = {
         [drivers.PostgreSQL]: function () {
+          return knex.raw('SELECT * from pg_stat_activity');
+        },
+        [drivers.PgNative]: function () {
           return knex.raw('SELECT * from pg_stat_activity');
         },
         [drivers.MySQL]: function () {
@@ -882,19 +931,22 @@ module.exports = function (knex) {
       // until the first query finishes. Setting a sleep time longer than the
       // mocha timeout exposes this behavior.
       const testQueries = {
-        pg: function () {
+        [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT pg_sleep(10)');
         },
-        mysql: function () {
+        [drivers.PgNative]: function () {
+          return knex.raw('SELECT pg_sleep(10)');
+        },
+        [drivers.MySQL]: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mysql2: function () {
+        [drivers.MySQL2]: function () {
           return knex.raw('SELECT SLEEP(10)');
         },
-        mssql: function () {
+        [drivers.MsSQL]: function () {
           return knex.raw("WAITFOR DELAY '00:00:10'");
         },
-        oracledb: function () {
+        [drivers.Oracle]: function () {
           return knex.raw('begin dbms_lock.sleep(10); end;');
         },
       };
@@ -921,13 +973,16 @@ module.exports = function (knex) {
       }
 
       const getProcessesQueries = {
-        pg: function () {
+        [drivers.PostgreSQL]: function () {
           return knex.raw('SELECT * from pg_stat_activity');
         },
-        mysql: function () {
+        [drivers.PgNative]: function () {
+          return knex.raw('SELECT * from pg_stat_activity');
+        },
+        [drivers.MySQL]: function () {
           return knex.raw('SHOW PROCESSLIST');
         },
-        mysql2: function () {
+        [drivers.MySQL2]: function () {
           return knex.raw('SHOW PROCESSLIST');
         },
       };
@@ -940,7 +995,8 @@ module.exports = function (knex) {
 
       const getProcessesQuery = getProcessesQueries[driverName]();
 
-      return knex.transaction((trx) => addTimeout().transacting(trx))
+      return knex
+        .transaction((trx) => addTimeout().transacting(trx))
         .then(function () {
           expect(true).to.equal(false);
         })
@@ -997,6 +1053,9 @@ module.exports = function (knex) {
         [drivers.PostgreSQL]: function () {
           return knexDb.raw('SELECT pg_sleep(10)');
         },
+        [drivers.PgNative]: function () {
+          return knexDb.raw('SELECT pg_sleep(10)');
+        },
         [drivers.MySQL]: function () {
           return knexDb.raw('SELECT SLEEP(10)');
         },
@@ -1020,15 +1079,19 @@ module.exports = function (knex) {
 
       // We must use the original knex instance without the exhausted pool to list running queries
       const getProcessesForDriver = {
-        pg: async () => {
+        [drivers.PostgreSQL]: async () => {
           const results = await knex.raw('SELECT * from pg_stat_activity');
-          return _.map(_.filter(results.rows, {state: 'active'}), 'query');
+          return _.map(_.filter(results.rows, { state: 'active' }), 'query');
         },
-        mysql: async () => {
+        [drivers.PgNative]: async () => {
+          const results = await knex.raw('SELECT * from pg_stat_activity');
+          return _.map(_.filter(results.rows, { state: 'active' }), 'query');
+        },
+        [drivers.MySQL]: async () => {
           const results = await knex.raw('SHOW PROCESSLIST');
           return _.map(results[0], 'Info');
         },
-        mysql2: async () => {
+        [drivers.MySQL2]: async () => {
           const results = await knex.raw('SHOW PROCESSLIST');
           return _.map(results[0], 'Info');
         },
@@ -1043,11 +1106,11 @@ module.exports = function (knex) {
       const getProcesses = getProcessesForDriver[driverName];
 
       try {
-        const promise = query.timeout(50, { cancel: true }).then(_.identity)
+        const promise = query.timeout(50, { cancel: true }).then(_.identity);
 
-        await delay(10)
+        await delay(15);
         const processesBeforeTimeout = await getProcesses();
-        expect(processesBeforeTimeout).to.include(query.toString())
+        expect(processesBeforeTimeout).to.include(query.toString());
 
         await expect(promise).to.eventually.be.rejected.and.to.deep.include({
           timeout: 50,
@@ -1056,7 +1119,7 @@ module.exports = function (knex) {
         });
 
         const processesAfterTimeout = await getProcesses();
-        expect(processesAfterTimeout).to.not.include(query.toString())
+        expect(processesAfterTimeout).to.not.include(query.toString());
       } finally {
         await knexDb.destroy();
       }
@@ -1064,7 +1127,7 @@ module.exports = function (knex) {
 
     it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', async function () {
       // Only mysql/postgres query cancelling supported for now
-      if (!isPostgreSQL(knex)) {
+      if (!isPostgreSQL(knex) || isPgNative(knex)) {
         return this.skip();
       }
 
@@ -1077,6 +1140,8 @@ module.exports = function (knex) {
 
       const rawTestQueries = {
         [drivers.PostgreSQL]: (sleepSeconds) =>
+          `SELECT pg_sleep(${sleepSeconds})`,
+        [drivers.PgNative]: (sleepSeconds) =>
           `SELECT pg_sleep(${sleepSeconds})`,
       };
 
@@ -1096,11 +1161,15 @@ module.exports = function (knex) {
       const originalWrappedCancelQueryCall =
         knexPrototype._wrappedCancelQueryCall;
 
-      knexPrototype._wrappedCancelQueryCall = (conn) => {
-        return knexPrototype.query(conn, {
-          method: 'raw',
-          sql: 'TestError',
-        });
+      knexPrototype._wrappedCancelQueryCall = (conn, connectionToKill) => {
+        if (isPgNative(knex)) {
+          throw new Error('END THIS');
+        } else {
+          return knexPrototype.query(conn, {
+            method: 'raw',
+            sql: 'TestError',
+          });
+        }
       };
 
       const queryTimeout = 10;
