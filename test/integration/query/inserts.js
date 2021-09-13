@@ -1130,35 +1130,32 @@ module.exports = function (knex) {
         items.push(item);
       }
 
-      beforeEach(function () {
-        return knex.schema.dropTableIfExists('BatchInsert').then(function () {
-          return knex.schema.createTable('BatchInsert', function (table) {
-            for (let i = 0; i < amountOfColumns; i++) {
-              table.string('Col' + i, 50);
-            }
-          });
+      beforeEach(async () => {
+        await knex.schema.dropTableIfExists('BatchInsert');
+        await knex.schema.createTable('BatchInsert', (table) => {
+          for (let i = 0; i < amountOfColumns; i++) {
+            table.string('Col' + i, 50);
+          }
         });
       });
 
-      it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', function () {
+      it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', async function () {
         this.timeout(30000);
-        return knex
+        const result = await knex
           .batchInsert('BatchInsert', items, 30)
-          .returning(['Col1', 'Col2'])
-          .then(function (result) {
-            //Returning only supported by some dialects.
-            if (isPostgreSQL(knex) || isOracle(knex)) {
-              result.forEach(function (item) {
-                expect(item.Col1).to.equal(fiftyLengthString);
-                expect(item.Col2).to.equal(fiftyLengthString);
-              });
-            }
-            return knex('BatchInsert').select();
-          })
-          .then(function (result) {
-            const count = result.length;
-            expect(count).to.equal(amountOfItems);
+          .returning(['Col1', 'Col2']);
+
+        //Returning only supported by some dialects.
+        if (isPostgreSQL(knex) || isOracle(knex)) {
+          result.forEach(function (item) {
+            expect(item.Col1).to.equal(fiftyLengthString);
+            expect(item.Col2).to.equal(fiftyLengthString);
           });
+        }
+
+        const selectResult = await knex('BatchInsert').select();
+        const count = selectResult.length;
+        expect(count).to.equal(amountOfItems);
       });
 
       it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', async function () {
