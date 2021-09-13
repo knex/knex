@@ -1984,7 +1984,7 @@ export declare namespace Knex {
     withKeyName(keyName: string): ReferencingColumnBuilder;
     onDelete(command: string): ReferencingColumnBuilder;
     onUpdate(command: string): ReferencingColumnBuilder;
-  }
+  };
 
   interface AlterColumnBuilder extends ColumnBuilder {}
 
