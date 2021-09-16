@@ -113,7 +113,7 @@
     "pg": "^8.7.1",
     "pg-native": "^3.0.0",
     "pg-query-stream": "^4.2.1",
-    "prettier": "2.4.0",
+    "prettier": "2.4.1",
     "rimraf": "^3.0.2",
     "sinon": "^11.1.2",
     "sinon-chai": "^3.7.0",
