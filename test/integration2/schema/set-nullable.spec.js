@@ -17,9 +17,6 @@ describe('Schema', () => {
 
         before(function () {
           knex = getKnexForDb(db);
-          if (isSQLite(knex)) {
-            return this.skip();
-          }
         });
 
         after(() => {
@@ -63,6 +60,9 @@ describe('Schema', () => {
               errorMessage = 'cannot be null';
             } else if (isOracle(knex)) {
               errorMessage = 'ORA-01400: cannot insert NULL into';
+            } else if (isSQLite(knex)) {
+              errorMessage =
+                'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - SQLITE_CONSTRAINT: NOT NULL constraint failed: primary_table.id_nullable';
             }
 
             await expect(
