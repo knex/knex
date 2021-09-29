@@ -15,9 +15,6 @@ describe('Schema', () => {
 
         before(function () {
           knex = getKnexForDb(db);
-          if (isMssql(knex)) {
-            return this.skip();
-          }
         });
 
         after(() => {
@@ -100,8 +97,8 @@ describe('Schema', () => {
 
           it('creates a compound primary key', async () => {
             await knex.schema.alterTable('primary_table', (table) => {
-              // CockroachDB does not support nullable primary keys
-              if (isCockroachDB(knex)) {
+              // CockroachDB and mssql do not support nullable primary keys
+              if (isCockroachDB(knex) || isMssql(knex)) {
                 table.dropNullable('id_two');
                 table.dropNullable('id_three');
               }
@@ -135,8 +132,8 @@ describe('Schema', () => {
             }
 
             await knex.schema.alterTable('primary_table', (table) => {
-              // CockroachDB does not support nullable primary keys
-              if (isCockroachDB()) {
+              // CockroachDB and mssql do not support nullable primary keys
+              if (isCockroachDB(knex) || isMssql(knex)) {
                 table.dropNullable('id_two');
                 table.dropNullable('id_three');
               }
