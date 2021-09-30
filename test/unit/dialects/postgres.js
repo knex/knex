@@ -145,4 +145,17 @@ describe('Postgres Unit Tests', function () {
       knexInstance.destroy();
     });
   });
+  it('Resolves Ref in columnInfo query', () => {
+    const knexPg = knex({
+      client: 'pg',
+    });
+
+    const sql = knexPg(knexPg.ref('test').withSchema('foo'))
+      .columnInfo()
+      .toSQL();
+    expect(sql.sql).to.equal(
+      'select * from information_schema.columns where table_name = ? and table_catalog = ? and table_schema = ?'
+    );
+    expect(sql.bindings).to.deep.equal(['test', undefined, 'foo']);
+  });
 });
