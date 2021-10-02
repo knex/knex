@@ -55,6 +55,9 @@ jobs:
       - name: Run npm install
         run: npm install
 
+      - name: Install pg-native
+        run: npm i pg-native
+
       - name: Run Tests
         run: npm run test:db
         env:
