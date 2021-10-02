@@ -137,7 +137,7 @@ export default [
   },
   {
     type: "text",
-    content: "Streams are a powerful way of piping data through as it comes in, rather than all at once. You can read more about streams [here at substack's stream handbook](https://github.com/substack/stream-handbook). See the following for example uses of stream & pipe. If you wish to use streams with PostgreSQL, you must also install the [pg-query-stream](https://github.com/brianc/node-pg-query-stream) module. On an HTTP server, make sure to [manually close your streams](https://github.com/tgriesser/knex/wiki/Manually-Closing-Streams) if a request is aborted."
+    content: "Streams are a powerful way of piping data through as it comes in, rather than all at once. You can read more about streams [here at substack's stream handbook](https://github.com/substack/stream-handbook). See the following for example uses of stream & pipe. If you wish to use streams with PostgreSQL, you must also install the [pg-query-stream](https://github.com/brianc/node-pg-query-stream) module. If you wish to use streams with the `pgnative` dialect, please be aware that the results will not be streamed as they are received, but rather streamed after the entire result set has returned. On an HTTP server, make sure to [manually close your streams](https://github.com/tgriesser/knex/wiki/Manually-Closing-Streams) if a request is aborted."
   },
   {
     type: "method",

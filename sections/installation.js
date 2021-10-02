@@ -17,7 +17,7 @@ export default [
   },
   {
     type: "text",
-    content: "The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL and Amazon Redshift, [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`tedious`](https://github.com/tediousjs/tedious) for MSSQL."
+    content: "The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL and Amazon Redshift, [`pg-native`](https://github.com/brianc/node-pg-native) for PostgreSQL with native C++ `libpq` bindings (requires PostgresSQL installed to link against), [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`tedious`](https://github.com/tediousjs/tedious) for MSSQL."
   },
   {
     type: "code",
@@ -26,6 +26,7 @@ export default [
 
       # Then add one of the following (adding a --save) flag:
       $ npm install pg
+      $ npm install pg-native
       $ npm install sqlite3
       $ npm install mysql
       $ npm install mysql2
@@ -193,7 +194,7 @@ export default [
           const { token, tokenExpiration } = await someCallToGetTheToken();
           return {
             host : 'your_host',
-            port : 3306,       
+            port : 3306,
             user : 'your_database_user',
             password : token,
             database : 'myapp_test',
