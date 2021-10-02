@@ -1,5 +1,9 @@
 const { expect } = require('chai');
-const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const {
+  Db,
+  getAllDbs,
+  getKnexForDb,
+} = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
   describe('customType', () => {
@@ -25,13 +29,14 @@ describe('Schema', () => {
         it('Allows to specify custom type params', async () => {
           let res;
           switch (db) {
-            case 'sqlite3':
+            case Db.SQLite:
               res = await knex.schema.raw(`PRAGMA table_info(${tblName})`);
               expect(res.find((c) => c.name === colName).type).to.equal(
                 'varchar(42)'
               );
               break;
-            case 'postgres':
+            case Db.PgNative:
+            case Db.PostgresSQL:
               res = await knex
                 .select(['data_type', 'character_maximum_length'])
                 .from('information_schema.columns')
@@ -39,9 +44,17 @@ describe('Schema', () => {
               expect(res[0].data_type).to.equal('character varying');
               expect(res[0].character_maximum_length).to.equal(42);
               break;
-            case 'mssql':
-            case 'mysql':
-            case 'mysql2':
+            case Db.CockroachDB:
+              res = await knex
+                .select(['data_type', 'character_maximum_length'])
+                .from('information_schema.columns')
+                .where({ table_name: tblName, column_name: colName });
+              expect(res[0].data_type).to.equal('character varying');
+              expect(res[0].character_maximum_length).to.equal('42');
+              break;
+            case Db.MSSQL:
+            case Db.MySQL:
+            case Db.MySQL2:
               res = await knex
                 .select(['DATA_TYPE', 'CHARACTER_MAXIMUM_LENGTH'])
                 .from('INFORMATION_SCHEMA.COLUMNS')

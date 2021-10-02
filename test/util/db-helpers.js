@@ -18,7 +18,21 @@ function isPgBased(knex) {
     drivers.PostgreSQL,
     drivers.PgNative,
     drivers.Redshift,
+    drivers.CockroachDB,
   ]);
+}
+
+function isPgBasedDriverName(driverName) {
+  return [
+    drivers.PostgreSQL,
+    drivers.PgNative,
+    drivers.Redshift,
+    drivers.CockroachDB,
+  ].includes(driverName);
+}
+
+function isPgDriverName(driverName) {
+  return [drivers.PostgreSQL, drivers.PgNative].includes(driverName);
 }
 
 function isMssql(knex) {
@@ -48,7 +62,7 @@ function isCockroachDB(knex) {
 /**
  *
  * @param knex
- * @param {('pg'|'pgnative'|'pg-redshift'|'oracledb'|'mysql'|'mysql2'|'mssql'|'sqlite3')[]} supportedDbs - supported DB values in DRIVER_NAMES from lib/constants.
+ * @param {('pg'|'pgnative'|'pg-redshift'|'oracledb'|'mysql'|'mysql2'|'mssql'|'sqlite3'|'cockroachdb')[]} supportedDbs - supported DB values in DRIVER_NAMES from lib/constants.
  * @returns {*}
  */
 function isOneOfDbs(knex, supportedDbs) {
@@ -63,7 +77,9 @@ module.exports = {
   isOracle,
   isPostgreSQL,
   isPgNative,
+  isPgDriverName,
   isPgBased,
+  isPgBasedDriverName,
   isRedshift,
   isSQLite,
 };
