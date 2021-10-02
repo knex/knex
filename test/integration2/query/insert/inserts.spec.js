@@ -297,7 +297,7 @@ describe('Inserts', function () {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['2', '3']
+              ['1', '2']
             );
             tester(
               'mssql',
@@ -318,7 +318,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['2', '3']
+              ['1', '2']
             );
           });
       });
@@ -515,7 +515,7 @@ describe('Inserts', function () {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['4', '5']
+              ['1', '2']
             );
             tester(
               'mssql',
@@ -536,7 +536,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['4', '5']
+              ['1', '2']
             );
           });
       });
@@ -741,7 +741,7 @@ describe('Inserts', function () {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['7']
+              ['1']
             );
             tester(
               'mssql',
@@ -755,7 +755,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['7']
+              ['1']
             );
           });
       });

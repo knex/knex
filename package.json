@@ -42,6 +42,8 @@
     "db:stop:pgnative": "docker-compose -f scripts/docker-compose.yml down",
     "db:start:mysql": "docker-compose -f scripts/docker-compose.yml up --build -d mysql && docker-compose -f scripts/docker-compose.yml up waitmysql",
     "db:stop:mysql": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:mssql": "docker-compose -f scripts/docker-compose.yml up --build -d mssql && docker-compose -f scripts/docker-compose.yml up waitmssql",
+    "db:stop:mssql": "docker-compose -f scripts/docker-compose.yml down",
     "db:start:cockroachdb": "docker-compose -f scripts/docker-compose.yml up --build -d cockroachdb && docker-compose -f scripts/docker-compose.yml up waitcockroachdb",
     "db:stop:cockroachdb": "docker-compose -f scripts/docker-compose.yml down",
     "db:start:oracle": "docker-compose -f scripts/docker-compose.yml up --build -d oracledbxe && docker-compose -f scripts/docker-compose.yml up waitoracledbxe",

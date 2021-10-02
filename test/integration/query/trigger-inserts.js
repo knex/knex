@@ -10,6 +10,7 @@ const {
   isSQLite,
   isOracle,
   isMysql,
+  isPgBased,
 } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
@@ -1140,7 +1141,6 @@ module.exports = function (knex) {
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
@@ -1162,7 +1162,6 @@ module.exports = function (knex) {
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
@@ -1181,19 +1180,17 @@ module.exports = function (knex) {
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
           })
           .then(function (rows) {
             expect(rows.length).to.equal(1);
-            if (isPostgreSQL(knex)) {
+            if (isPgBased(knex)) {
               expect(_.keys(rows[0]).length).to.equal(5);
               expect(rows[0].account_id).to.equal(insertData.account_id);
               expect(rows[0].details).to.equal(insertData.details);
               expect(rows[0].status).to.equal(insertData.status);
-              expect(rows[0].json_data).to.equal(null);
             }
           });
       });

@@ -521,7 +521,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('uses `orderBy`', function () {
+    it('uses "orderBy"', function () {
       return knex('accounts')
         .pluck('id')
         .orderBy('id', 'desc')
@@ -530,13 +530,13 @@ module.exports = function (knex) {
             'oracledb',
             'select "id" from "accounts" order by "id" desc',
             [],
-            [7, 5, 4, 3, 2, 1]
+            [6, 5, 4, 3, 2, 1]
           );
           tester(
             'mssql',
             'select [id] from [accounts] order by [id] desc',
             [],
-            ['7', '5', '4', '3', '2', '1']
+            ['6', '5', '4', '3', '2', '1']
           );
         });
     });
