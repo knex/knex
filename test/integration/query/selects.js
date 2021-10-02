@@ -14,14 +14,40 @@ const {
   isSQLite,
   isOracle,
 } = require('../../util/db-helpers');
+const {
+  createUsers,
+  createAccounts,
+  dropTables,
+  createCompositeKeyTable,
+  createTestTableTwo,
+} = require('../../util/tableCreatorHelper');
+const { insertAccount } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
-  describe('Selects', function () {
+  describe.only('Selects', function () {
+    before(async () => {
+      await createUsers(knex);
+      await createAccounts(knex);
+      await createCompositeKeyTable(knex);
+      await createTestTableTwo(knex);
+
+      await insertAccount(knex, { email: 'test1@test.com' });
+      await insertAccount(knex, { email: 'test2@test.com' });
+      await insertAccount(knex, { email: 'test3@test.com' });
+      await insertAccount(knex, { email: 'test4@test.com' });
+      await insertAccount(knex, { email: 'test5@test.com' });
+      await insertAccount(knex, { email: 'test6@test.com' });
+    });
+
+    after(async () => {
+      await dropTables(knex);
+    });
+
     it('runs with no conditions', function () {
       return knex('accounts').select();
     });
 
-    it('returns an array of a single column with `pluck`', function () {
+    it('returns an array of a single column with `pluck`', async () => {
       return knex
         .pluck('id')
         .orderBy('id')
@@ -743,7 +769,7 @@ module.exports = function (knex) {
                   id: 1,
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@test.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -762,7 +788,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@test.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -781,7 +807,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@test.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -800,7 +826,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@test.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -819,7 +845,7 @@ module.exports = function (knex) {
                   id: 1,
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@test.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -838,7 +864,7 @@ module.exports = function (knex) {
                   id: 1,
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@test.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -857,7 +883,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@test.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -1022,7 +1048,7 @@ module.exports = function (knex) {
           [],
           [
             {
-              email: 'test@example.com',
+              email: 'test1@test.com',
               logins: 1,
             },
             {
@@ -1053,7 +1079,7 @@ module.exports = function (knex) {
           [],
           [
             {
-              email: 'test@example.com',
+              email: 'test1@test.com',
               logins: 1,
             },
             {
@@ -1092,7 +1118,7 @@ module.exports = function (knex) {
       return knex('accounts')
         .select('first_name', 'last_name', 'about')
         .where('id', 1)
-        .andWhere('email', 'test@example.com');
+        .andWhere('email', 'test1@test.com');
     });
 
     it('takes a function to wrap nested where statements', function () {
@@ -1112,14 +1138,35 @@ module.exports = function (knex) {
 
     it('handles "or where in" cases', function () {
       return knex('accounts')
-        .where('email', 'test@example.com')
+        .where('email', 'test1@test.com')
         .orWhereIn('id', [2, 3, 4])
         .select();
     });
 
-    it('handles multi-column "where in" cases', function () {
+    it('handles multi-column "where in" cases', async function () {
+      await knex('composite_key_test').insert([
+        {
+          column_a: 1,
+          column_b: 1,
+          details: 'One, One, One',
+          status: 1,
+        },
+        {
+          column_a: 1,
+          column_b: 2,
+          details: 'One, Two, Zero',
+          status: 0,
+        },
+        {
+          column_a: 2,
+          column_b: 2,
+          details: 'Two, Two, Zero',
+          status: 0,
+        },
+      ]);
+
       if (!isMssql(knex)) {
-        return knex('composite_key_test')
+        await knex('composite_key_test')
           .whereIn(
             ['column_a', 'column_b'],
             [

@@ -92,7 +92,7 @@ module.exports = function (knex) {
         function (memo, val, key) {
           if (_.includes(['created_at', 'updated_at'], key)) {
             memo[key] = TEST_TIMESTAMP;
-          } else if (_.includes(['id'], key)) {
+          } else if (_.includes(['dummy_id'], key)) {
             memo[key] = TEST_ID;
           } else {
             memo[key] = val;

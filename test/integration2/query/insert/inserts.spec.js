@@ -24,6 +24,11 @@ const {
   getKnexForDb,
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
+const {
+  createUsers,
+  createAccounts,
+  dropTables,
+} = require('../../../util/tableCreatorHelper');
 
 describe('Inserts', function () {
   getAllDbs().forEach((db) => {
@@ -39,29 +44,12 @@ describe('Inserts', function () {
       });
 
       beforeEach(async () => {
-        await knex.schema.createTable('users', (table) => {
-          table.uuid('key');
-          table.increments('id');
-          table.string('email');
-        });
-        await knex.schema.createTable('accounts', (table) => {
-          table.bigIncrements('id');
-          table.integer('account_id').references('users.id');
-          table.string('first_name').index();
-          table.string('last_name');
-          table.string('email').unique().nullable();
-          table.integer('logins').defaultTo(1).index().comment();
-          table.float('balance').defaultTo(0);
-          table.text('about');
-          table.timestamps();
-        });
+        await createUsers(knex);
+        await createAccounts(knex, true);
       });
 
       afterEach(async () => {
-        await knex.schema.dropTableIfExists('accounts');
-        await knex.schema.dropTableIfExists('users');
-        await knex.schema.dropTableIfExists('test_default_table');
-        await knex.schema.dropTableIfExists('test_default_table2');
+        await dropTables(knex);
       });
 
       it('should handle simple inserts', function () {
