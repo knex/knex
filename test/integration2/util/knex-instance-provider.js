@@ -5,6 +5,7 @@ const testConfig =
 
 const Db = {
   PostgresSQL: 'postgres',
+  PgNative: 'pgnative',
   MySQL: 'mysql',
   MySQL2: 'mysql2',
   MSSQL: 'mssql',
@@ -15,11 +16,11 @@ const Db = {
 
 const defaultDbs = [
   Db.PostgresSQL,
+  Db.PgNative,
   Db.MySQL,
   Db.MySQL2,
   Db.SQLite,
   Db.MSSQL,
-  Db.CockroachDB,
 ];
 
 function getAllDbs() {
@@ -114,6 +115,21 @@ const testConfigs = {
       database: 'test',
       user: 'root',
       password: '',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  pgnative: {
+    client: Db.PgNative,
+    connection: testConfig.pgnative || {
+      adapter: 'postgresql',
+      port: 25433,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
     },
     pool,
     migrations,

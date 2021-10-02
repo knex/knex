@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [16.x, 14.x, 12.x, 10.x]
-        database-type: [postgres, mysql, mssql, sqlite3, cockroachdb]
+        database-type: [postgres, pgnative, mysql, mssql, sqlite3, cockroachdb]
 
     steps:
       - name: Checkout Repository
@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v2.4.0
+        uses: actions/setup-node@v2.4.1
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
