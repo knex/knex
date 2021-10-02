@@ -554,6 +554,7 @@ module.exports = function (knex) {
     tape(
       'allows postgres ? operator in knex.raw() if no bindings given #519 and #888',
       async function (t) {
+        await dropTables(knex);
         await createTestTableTwo(knex, true);
 
         t.plan(1);
