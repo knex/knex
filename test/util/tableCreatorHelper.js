@@ -48,7 +48,11 @@ function createDataType(knex) {
   });
 }
 
-async function createAccounts(knex, withAccountId = false) {
+async function createAccounts(
+  knex,
+  withAccountId = false,
+  indexFirstName = true
+) {
   await knex.schema.createTable('accounts', (table) => {
     table.bigIncrements('id');
 
@@ -56,7 +60,11 @@ async function createAccounts(knex, withAccountId = false) {
       table.integer('account_id').references('users.id');
     }
 
-    table.string('first_name').index();
+    const firstNameTable = table.string('first_name');
+    if (indexFirstName) {
+      firstNameTable.index();
+    }
+
     table.string('last_name');
     table.string('phone').nullable();
     table.string('email').unique().nullable();

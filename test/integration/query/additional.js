@@ -17,9 +17,22 @@ const {
   isPgNative,
 } = require('../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../util/constants');
+const {
+  dropTables,
+  createAccounts,
+  createUsers,
+  createTestTableTwo,
+} = require('../../util/tableCreatorHelper');
 
 module.exports = function (knex) {
   describe('Additional', function () {
+    before(async () => {
+      await dropTables(knex);
+      await createUsers(knex);
+      await createAccounts(knex, false, false);
+      await createTestTableTwo(knex);
+    });
+
     describe('Custom response processing', () => {
       before('setup custom response handler', () => {
         knex.client.config.postProcessResponse = (response, queryContext) => {

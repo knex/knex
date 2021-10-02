@@ -1333,7 +1333,7 @@ module.exports = function (knex) {
                 status: null,
               },
               {
-                id: ['7', null],
+                id: ['6', null],
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -1682,10 +1682,6 @@ module.exports = function (knex) {
             'select top (?) [accounts].[email] as [e1], [a2].[email] as [e2] from [accounts] inner join [accounts] as [a2] on [accounts].[email] <> [a2].[email] or [accounts].[id] = 2 where [a2].[email] = ? order by [e1] asc',
             [5, 'test2@example.com'],
             [
-              {
-                e1: 'test1@example.com',
-                e2: 'test2@example.com',
-              },
               {
                 e1: 'test1@example.com',
                 e2: 'test2@example.com',

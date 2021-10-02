@@ -3,6 +3,15 @@
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 const { isMssql } = require('../../util/db-helpers');
+const {
+  dropTables,
+  createAccounts,
+  createTestTableTwo,
+} = require('../../util/tableCreatorHelper');
+const {
+  insertAccounts,
+  insertTestTableTwoData,
+} = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Deletes with Triggers', function () {
@@ -13,6 +22,14 @@ module.exports = function (knex) {
       if (!isMssql(knex)) {
         this.skip('This test is MSSQL only');
       }
+    });
+
+    before(async () => {
+      await dropTables(knex);
+      await createAccounts(knex);
+      await createTestTableTwo(knex);
+      await insertAccounts(knex);
+      await insertTestTableTwoData(knex);
     });
 
     describe('Trigger Specific Tests', function () {

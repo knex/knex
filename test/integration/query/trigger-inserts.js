@@ -12,11 +12,27 @@ const {
   isMysql,
   isPgBased,
 } = require('../../util/db-helpers');
+const {
+  dropTables,
+  createTestTableTwo,
+  createAccounts,
+} = require('../../util/tableCreatorHelper');
 
 module.exports = function (knex) {
   describe('Insert with Triggers', function () {
     // Trigger options
     const insertTriggerOptions = { includeTriggerModifications: true };
+
+    beforeEach(async () => {
+      await dropTables(knex);
+      await createTestTableTwo(knex, false);
+      await createAccounts(knex);
+    });
+
+    afterEach(async () => {
+      // ToDo can remove after other tests are migrated
+      // await dropTables(knex)
+    });
 
     before(function () {
       if (!isMssql(knex)) {
@@ -43,11 +59,9 @@ module.exports = function (knex) {
           this.skip('This test is MSSQL only');
         }
 
-        await knex.schema.hasTable('users').then(async function (exists) {
-          if (exists) {
-            await knex.schema.dropTable(primaryTable);
-            await knex.schema.dropTable(secondaryTable);
-          }
+        await knex.schema.hasTable('users').then(async function () {
+          await knex.schema.dropTableIfExists(primaryTable);
+          await knex.schema.dropTableIfExists(secondaryTable);
 
           // Create tables
           await knex.schema.createTable(primaryTable, function (table) {
@@ -187,10 +201,6 @@ module.exports = function (knex) {
         if (!isMssql(knex)) {
           this.skip('This test is MSSQL only');
         }
-
-        // Reset all table data to original stats of original tests
-        await knex('accounts').truncate();
-        await knex('test_table_two').truncate();
       });
 
       it('should handle simple inserts', function () {
@@ -366,7 +376,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['2', '3']
+              ['1', '2']
             );
             tester(
               'pg-redshift',
@@ -435,7 +445,7 @@ module.exports = function (knex) {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['2', '3']
+              ['1', '2']
             );
             tester(
               'mssql',
@@ -456,7 +466,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['2', '3']
+              ['1', '2']
             );
           });
       });
@@ -586,7 +596,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['4', '5']
+              ['1', '2']
             );
             tester(
               'pg-redshift',
@@ -655,7 +665,7 @@ module.exports = function (knex) {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['4', '5']
+              ['1', '2']
             );
             tester(
               'mssql',
@@ -676,16 +686,31 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['4', '5']
+              ['1', '2']
             );
           });
       });
 
-      it('will fail when multiple inserts are made into a unique column', function () {
+      it('will fail when multiple inserts are made into a unique column', async function () {
         if (isRedshift(knex)) {
           return this.skip();
         }
-        return knex('accounts')
+
+        await knex('accounts').insert(
+          {
+            first_name: 'Test',
+            last_name: 'User',
+            email: 'test5@example.com',
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            logins: 2,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          'id',
+          insertTriggerOptions
+        );
+
+        await knex('accounts')
           .where('id', '>', 1)
           .orWhere('x', 2)
           .insert(
@@ -811,7 +836,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [7]
+              [1]
             );
             tester(
               'pg',
@@ -825,7 +850,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['7']
+              ['1']
             );
             tester(
               'pg-redshift',
@@ -870,7 +895,7 @@ module.exports = function (knex) {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['7']
+              ['1']
             );
             tester(
               'mssql',
@@ -884,7 +909,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['7']
+              ['1']
             );
           });
       });
@@ -1136,7 +1161,7 @@ module.exports = function (knex) {
               ],
               [
                 {
-                  id: 5,
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1157,7 +1182,7 @@ module.exports = function (knex) {
               ],
               [
                 {
-                  id: 5,
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1175,7 +1200,7 @@ module.exports = function (knex) {
               ],
               [
                 {
-                  id: 5,
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
