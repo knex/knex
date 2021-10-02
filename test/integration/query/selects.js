@@ -24,7 +24,7 @@ const {
 const { insertAccount } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
-  describe.only('Selects', function () {
+  describe('Selects', function () {
     before(async () => {
       await createUsers(knex);
       await createAccounts(knex);
@@ -40,7 +40,8 @@ module.exports = function (knex) {
     });
 
     after(async () => {
-      await dropTables(knex);
+      // ToDo we can do this after other tests are fixed
+      // await dropTables(knex);
     });
 
     it('runs with no conditions', function () {
