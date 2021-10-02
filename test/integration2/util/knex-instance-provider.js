@@ -11,6 +11,7 @@ const Db = {
   MSSQL: 'mssql',
   SQLite: 'sqlite3',
   Oracle: 'oracledb',
+  CockroachDB: 'cockroachdb',
 };
 
 const defaultDbs = [
@@ -20,6 +21,7 @@ const defaultDbs = [
   Db.MySQL2,
   Db.SQLite,
   Db.MSSQL,
+  Db.CockroachDB,
 ];
 
 function getAllDbs() {
@@ -99,6 +101,21 @@ const testConfigs = {
       database: 'knex_test',
       user: 'testuser',
       password: 'knextest',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  cockroachdb: {
+    client: 'cockroachdb',
+    connection: testConfig.cockroachdb || {
+      adapter: 'cockroachdb',
+      port: 26257,
+      host: 'localhost',
+      database: 'test',
+      user: 'root',
+      password: '',
     },
     pool,
     migrations,

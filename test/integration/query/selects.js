@@ -14,14 +14,40 @@ const {
   isSQLite,
   isOracle,
 } = require('../../util/db-helpers');
+const {
+  createUsers,
+  createAccounts,
+  createCompositeKeyTable,
+  createTestTableTwo,
+  dropTables,
+  createDefaultTable,
+} = require('../../util/tableCreatorHelper');
+const { insertAccounts } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Selects', function () {
+    before(async () => {
+      await dropTables(knex);
+      await createUsers(knex);
+      await createAccounts(knex);
+      await createCompositeKeyTable(knex);
+      await createTestTableTwo(knex);
+      await createDefaultTable(knex);
+      await createDefaultTable(knex, true);
+
+      await insertAccounts(knex);
+    });
+
+    after(async () => {
+      // ToDo we can do this after other tests are fixed
+      // await dropTables(knex);
+    });
+
     it('runs with no conditions', function () {
       return knex('accounts').select();
     });
 
-    it('returns an array of a single column with `pluck`', function () {
+    it('returns an array of a single column with `pluck`', async () => {
       return knex
         .pluck('id')
         .orderBy('id')
@@ -31,19 +57,19 @@ module.exports = function (knex) {
             'mysql',
             'select `id` from `accounts` order by `id` asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'pg',
             'select "id" from "accounts" order by "id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pgnative',
             'select "id" from "accounts" order by "id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pg-redshift',
@@ -61,13 +87,13 @@ module.exports = function (knex) {
             'oracledb',
             'select "id" from "accounts" order by "id" asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'mssql',
             'select [id] from [accounts] order by [id] asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
         });
     });
@@ -82,19 +108,19 @@ module.exports = function (knex) {
             'mysql',
             'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'pg',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pgnative',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pg-redshift',
@@ -112,13 +138,13 @@ module.exports = function (knex) {
             'oracledb',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'mssql',
             'select [accounts].[id] from [accounts] order by [accounts].[id] asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
         });
     });
@@ -134,19 +160,19 @@ module.exports = function (knex) {
             'mysql',
             'select `id` from `accounts` order by `id` asc limit 18446744073709551615 offset ?',
             [2],
-            [3, 4, 5, 7]
+            [3, 4, 5, 6]
           );
           tester(
             'pg',
             'select "id" from "accounts" order by "id" asc offset ?',
             [2],
-            ['3', '4', '5', '7']
+            ['3', '4', '5', '6']
           );
           tester(
             'pgnative',
             'select "id" from "accounts" order by "id" asc offset ?',
             [2],
-            ['3', '4', '5', '7']
+            ['3', '4', '5', '6']
           );
           tester(
             'pg-redshift',
@@ -164,13 +190,13 @@ module.exports = function (knex) {
             'oracledb',
             'select * from (select row_.*, ROWNUM rownum_ from (select "id" from "accounts" order by "id" asc) row_ where rownum <= ?) where rownum_ > ?',
             [10000000000002, 2],
-            [3, 4, 5, 7]
+            [3, 4, 5, 6]
           );
           tester(
             'mssql',
             'select [id] from [accounts] order by [id] asc offset ? rows',
             [2],
-            ['3', '4', '5', '7']
+            ['3', '4', '5', '6']
           );
         });
     });
@@ -231,7 +257,7 @@ module.exports = function (knex) {
             'mysql',
             'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
             [],
-            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 7 }]
+            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
           );
           tester(
             'pg',
@@ -243,7 +269,7 @@ module.exports = function (knex) {
               { id: '3' },
               { id: '4' },
               { id: '5' },
-              { id: '7' },
+              { id: '6' },
             ]
           );
           tester(
@@ -256,7 +282,7 @@ module.exports = function (knex) {
               { id: '3' },
               { id: '4' },
               { id: '5' },
-              { id: '7' },
+              { id: '6' },
             ]
           );
           tester(
@@ -282,7 +308,7 @@ module.exports = function (knex) {
             'oracledb',
             'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
             [],
-            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 7 }]
+            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
           );
           tester(
             'mssql',
@@ -294,7 +320,7 @@ module.exports = function (knex) {
               { id: '3' },
               { id: '4' },
               { id: '5' },
-              { id: '7' },
+              { id: '6' },
             ]
           );
         });
@@ -495,7 +521,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('uses `orderBy`', function () {
+    it('uses "orderBy"', function () {
       return knex('accounts')
         .pluck('id')
         .orderBy('id', 'desc')
@@ -504,13 +530,13 @@ module.exports = function (knex) {
             'oracledb',
             'select "id" from "accounts" order by "id" desc',
             [],
-            [7, 5, 4, 3, 2, 1]
+            [6, 5, 4, 3, 2, 1]
           );
           tester(
             'mssql',
             'select [id] from [accounts] order by [id] desc',
             [],
-            ['7', '5', '4', '3', '2', '1']
+            ['6', '5', '4', '3', '2', '1']
           );
         });
     });
@@ -743,7 +769,7 @@ module.exports = function (knex) {
                   id: 1,
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -762,7 +788,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -781,7 +807,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -800,7 +826,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -819,7 +845,7 @@ module.exports = function (knex) {
                   id: 1,
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -838,7 +864,7 @@ module.exports = function (knex) {
                   id: 1,
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -857,7 +883,7 @@ module.exports = function (knex) {
                   id: '1',
                   first_name: 'Test',
                   last_name: 'User',
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                   logins: 1,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -1022,7 +1048,7 @@ module.exports = function (knex) {
           [],
           [
             {
-              email: 'test@example.com',
+              email: 'test1@example.com',
               logins: 1,
             },
             {
@@ -1053,7 +1079,7 @@ module.exports = function (knex) {
           [],
           [
             {
-              email: 'test@example.com',
+              email: 'test1@example.com',
               logins: 1,
             },
             {
@@ -1092,7 +1118,7 @@ module.exports = function (knex) {
       return knex('accounts')
         .select('first_name', 'last_name', 'about')
         .where('id', 1)
-        .andWhere('email', 'test@example.com');
+        .andWhere('email', 'test1@example.com');
     });
 
     it('takes a function to wrap nested where statements', function () {
@@ -1112,14 +1138,35 @@ module.exports = function (knex) {
 
     it('handles "or where in" cases', function () {
       return knex('accounts')
-        .where('email', 'test@example.com')
+        .where('email', 'test1@example.com')
         .orWhereIn('id', [2, 3, 4])
         .select();
     });
 
-    it('handles multi-column "where in" cases', function () {
+    it('handles multi-column "where in" cases', async function () {
+      await knex('composite_key_test').insert([
+        {
+          column_a: 1,
+          column_b: 1,
+          details: 'One, One, One',
+          status: 1,
+        },
+        {
+          column_a: 1,
+          column_b: 2,
+          details: 'One, Two, Zero',
+          status: 0,
+        },
+        {
+          column_a: 2,
+          column_b: 2,
+          details: 'Two, Two, Zero',
+          status: 0,
+        },
+      ]);
+
       if (!isMssql(knex)) {
-        return knex('composite_key_test')
+        await knex('composite_key_test')
           .whereIn(
             ['column_a', 'column_b'],
             [
