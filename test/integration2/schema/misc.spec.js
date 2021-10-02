@@ -41,7 +41,7 @@ const postProcessResponse = (response) => {
   }
 };
 
-describe.only('Schema (misc)', () => {
+describe('Schema (misc)', () => {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;

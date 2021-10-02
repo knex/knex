@@ -21,10 +21,7 @@ const {
   createTestTableTwo,
   dropTables,
 } = require('../../util/tableCreatorHelper');
-const {
-  insertAccount,
-  insertAccounts,
-} = require('../../util/dataInsertHelper');
+const { insertAccounts } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Selects', function () {
