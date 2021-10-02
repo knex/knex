@@ -21,6 +21,7 @@ const defaultDbs = [
   Db.MySQL2,
   Db.SQLite,
   Db.MSSQL,
+  Db.CockroachDB,
 ];
 
 function getAllDbs() {
