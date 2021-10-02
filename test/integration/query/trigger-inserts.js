@@ -1020,7 +1020,7 @@ module.exports = function (knex) {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [4]
+              [1]
             );
             tester(
               'pg',
@@ -1056,7 +1056,7 @@ module.exports = function (knex) {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [4]
+              [1]
             );
             tester(
               'oracledb',

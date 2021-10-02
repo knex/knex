@@ -1723,7 +1723,7 @@ module.exports = function (knex) {
             'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1731,7 +1731,7 @@ module.exports = function (knex) {
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1740,7 +1740,7 @@ module.exports = function (knex) {
             [],
             function (res) {
               // redshift, not supporting insert...returning, had to fake 6 of these in previous tests
-              return res.length === 24;
+              return res.length === 12;
             }
           );
           tester(
@@ -1748,7 +1748,7 @@ module.exports = function (knex) {
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1756,7 +1756,7 @@ module.exports = function (knex) {
             'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1764,7 +1764,7 @@ module.exports = function (knex) {
             'select [account_id] from [accounts] cross join [test_table_two] order by [account_id] asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
         });

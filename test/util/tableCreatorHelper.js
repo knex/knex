@@ -26,6 +26,13 @@ async function createUsers(knex) {
   });
 }
 
+function createDataType(knex) {
+  return knex.schema.createTable('datatype_test', (table) => {
+    table.enum('enum_value', ['a', 'b', 'c']);
+    table.uuid('uuid').notNull();
+  });
+}
+
 async function createAccounts(knex, withAccountId = false) {
   await knex.schema.createTable('accounts', (table) => {
     table.bigIncrements('id');
@@ -62,11 +69,13 @@ async function dropTables(knex) {
   await knex.schema.dropTableIfExists('test_default_table2');
   await knex.schema.dropTableIfExists('composite_key_test');
   await knex.schema.dropTableIfExists('test_table_two');
+  await knex.schema.dropTableIfExists('datatype_test');
 }
 
 module.exports = {
   createAccounts,
   createCompositeKeyTable,
+  createDataType,
   createUsers,
   createTestTableTwo,
   dropTables,

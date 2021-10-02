@@ -1873,6 +1873,7 @@ export declare namespace Knex {
     dropColumns(...columnNames: string[]): TableBuilder;
     renameColumn(from: string, to: string): ColumnBuilder;
     integer(columnName: string, length?: number): ColumnBuilder;
+    tinyint(columnName: string, length?: number): ColumnBuilder;
     bigInteger(columnName: string): ColumnBuilder;
     text(columnName: string, textType?: string): ColumnBuilder;
     string(columnName: string, length?: number): ColumnBuilder;

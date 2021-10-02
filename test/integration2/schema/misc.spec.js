@@ -41,7 +41,7 @@ const postProcessResponse = (response) => {
   }
 };
 
-describe('Schema (misc)', () => {
+describe.only('Schema (misc)', () => {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
@@ -2180,13 +2180,13 @@ describe('Schema (misc)', () => {
         );
       });
 
-      it('supports named foreign keys', () => {
+      it('supports named foreign keys', async () => {
         const userTableName = 'nfk_user';
         const groupTableName = 'nfk_group';
         const joinTableName = 'nfk_user_group';
         const userConstraint = ['fk', joinTableName, userTableName].join('-');
         const groupConstraint = ['fk', joinTableName, groupTableName].join('-');
-        return knex.transaction((tr) =>
+        await knex.transaction((tr) =>
           tr.schema
             .dropTableIfExists(joinTableName)
             .then(() => tr.schema.dropTableIfExists(userTableName))
@@ -2232,7 +2232,7 @@ describe('Schema (misc)', () => {
                     sql:
                       'CREATE TABLE `' +
                       joinTableName +
-                      '` (`user` char(36), `group` char(36), constraint `' +
+                      '` (`user` char(36) not null, `group` char(36) not null, constraint `' +
                       userConstraint +
                       '` foreign key(`user`) references `' +
                       userTableName +
@@ -2243,7 +2243,8 @@ describe('Schema (misc)', () => {
                       '`(`id`), primary key (`user`, `group`))',
                   },
                 ];
-                tr.select('type', 'name', 'tbl_name', 'sql')
+                return tr
+                  .select('type', 'name', 'tbl_name', 'sql')
                   .from('sqlite_master')
                   .where({
                     type: 'table',

@@ -28,6 +28,8 @@ const {
   createUsers,
   createAccounts,
   dropTables,
+  createTestTableTwo,
+  createDataType,
 } = require('../../../util/tableCreatorHelper');
 
 describe('Inserts', function () {
@@ -46,6 +48,8 @@ describe('Inserts', function () {
       beforeEach(async () => {
         await createUsers(knex);
         await createAccounts(knex, true);
+        await createTestTableTwo(knex);
+        await createDataType(knex);
       });
 
       afterEach(async () => {
@@ -986,7 +990,7 @@ describe('Inserts', function () {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [4]
+              [1]
             );
             tester(
               'pg',
@@ -1022,7 +1026,7 @@ describe('Inserts', function () {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [4]
+              [1]
             );
             tester(
               'oracledb',
@@ -1103,12 +1107,11 @@ describe('Inserts', function () {
               ],
               [
                 {
-                  id: 'TEST_ID',
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
@@ -1125,12 +1128,11 @@ describe('Inserts', function () {
               ],
               [
                 {
-                  id: 'TEST_ID',
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
@@ -1144,12 +1146,11 @@ describe('Inserts', function () {
               ],
               [
                 {
-                  id: 'TEST_ID',
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
@@ -1157,11 +1158,10 @@ describe('Inserts', function () {
           .then(function (rows) {
             expect(rows.length).to.equal(1);
             if (isPgBased(knex)) {
-              expect(_.keys(rows[0]).length).to.equal(5);
+              expect(_.keys(rows[0]).length).to.equal(4);
               expect(rows[0].account_id).to.equal(insertData.account_id);
               expect(rows[0].details).to.equal(insertData.details);
               expect(rows[0].status).to.equal(insertData.status);
-              expect(rows[0].json_data).to.equal(null);
             }
           });
       });
