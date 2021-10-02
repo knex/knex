@@ -20,6 +20,7 @@ const {
   createCompositeKeyTable,
   createTestTableTwo,
   dropTables,
+  createDefaultTable,
 } = require('../../util/tableCreatorHelper');
 const { insertAccounts } = require('../../util/dataInsertHelper');
 
@@ -31,6 +32,8 @@ module.exports = function (knex) {
       await createAccounts(knex);
       await createCompositeKeyTable(knex);
       await createTestTableTwo(knex);
+      await createDefaultTable(knex);
+      await createDefaultTable(knex, true);
 
       await insertAccounts(knex);
     });
@@ -54,19 +57,19 @@ module.exports = function (knex) {
             'mysql',
             'select `id` from `accounts` order by `id` asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'pg',
             'select "id" from "accounts" order by "id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pgnative',
             'select "id" from "accounts" order by "id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pg-redshift',
@@ -84,13 +87,13 @@ module.exports = function (knex) {
             'oracledb',
             'select "id" from "accounts" order by "id" asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'mssql',
             'select [id] from [accounts] order by [id] asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
         });
     });
@@ -105,19 +108,19 @@ module.exports = function (knex) {
             'mysql',
             'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'pg',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pgnative',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
           tester(
             'pg-redshift',
@@ -135,13 +138,13 @@ module.exports = function (knex) {
             'oracledb',
             'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
             [],
-            [1, 2, 3, 4, 5, 7]
+            [1, 2, 3, 4, 5, 6]
           );
           tester(
             'mssql',
             'select [accounts].[id] from [accounts] order by [accounts].[id] asc',
             [],
-            ['1', '2', '3', '4', '5', '7']
+            ['1', '2', '3', '4', '5', '6']
           );
         });
     });
@@ -157,19 +160,19 @@ module.exports = function (knex) {
             'mysql',
             'select `id` from `accounts` order by `id` asc limit 18446744073709551615 offset ?',
             [2],
-            [3, 4, 5, 7]
+            [3, 4, 5, 6]
           );
           tester(
             'pg',
             'select "id" from "accounts" order by "id" asc offset ?',
             [2],
-            ['3', '4', '5', '7']
+            ['3', '4', '5', '6']
           );
           tester(
             'pgnative',
             'select "id" from "accounts" order by "id" asc offset ?',
             [2],
-            ['3', '4', '5', '7']
+            ['3', '4', '5', '6']
           );
           tester(
             'pg-redshift',
@@ -187,13 +190,13 @@ module.exports = function (knex) {
             'oracledb',
             'select * from (select row_.*, ROWNUM rownum_ from (select "id" from "accounts" order by "id" asc) row_ where rownum <= ?) where rownum_ > ?',
             [10000000000002, 2],
-            [3, 4, 5, 7]
+            [3, 4, 5, 6]
           );
           tester(
             'mssql',
             'select [id] from [accounts] order by [id] asc offset ? rows',
             [2],
-            ['3', '4', '5', '7']
+            ['3', '4', '5', '6']
           );
         });
     });
@@ -254,7 +257,7 @@ module.exports = function (knex) {
             'mysql',
             'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
             [],
-            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 7 }]
+            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
           );
           tester(
             'pg',
@@ -266,7 +269,7 @@ module.exports = function (knex) {
               { id: '3' },
               { id: '4' },
               { id: '5' },
-              { id: '7' },
+              { id: '6' },
             ]
           );
           tester(
@@ -279,7 +282,7 @@ module.exports = function (knex) {
               { id: '3' },
               { id: '4' },
               { id: '5' },
-              { id: '7' },
+              { id: '6' },
             ]
           );
           tester(
@@ -305,7 +308,7 @@ module.exports = function (knex) {
             'oracledb',
             'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
             [],
-            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 7 }]
+            [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
           );
           tester(
             'mssql',
@@ -317,7 +320,7 @@ module.exports = function (knex) {
               { id: '3' },
               { id: '4' },
               { id: '5' },
-              { id: '7' },
+              { id: '6' },
             ]
           );
         });

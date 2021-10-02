@@ -1,6 +1,18 @@
 const { isMysql, isOracle } = require('../util/db-helpers');
 
-async function createTestTableTwo(knex) {
+function createDefaultTable(knex, isSecond = false) {
+  return knex.schema.createTable(
+    isSecond ? 'test_default_table2' : 'test_default_table',
+    (qb) => {
+      qb.increments().primary();
+      qb.string('string').defaultTo('hello');
+      qb.tinyint('tinyint').defaultTo(0);
+      qb.text('text').nullable();
+    }
+  );
+}
+
+async function createTestTableTwo(knex, withJsonData = false) {
   await knex.schema.createTable('test_table_two', (table) => {
     if (isMysql(knex)) {
       table.engine('InnoDB');
@@ -13,6 +25,9 @@ async function createTestTableTwo(knex) {
       table.string('details', 4000);
     } else {
       table.text('details');
+    }
+    if (withJsonData) {
+      table.json('json_data', true);
     }
     table.tinyint('status');
   });
@@ -70,12 +85,15 @@ async function dropTables(knex) {
   await knex.schema.dropTableIfExists('composite_key_test');
   await knex.schema.dropTableIfExists('test_table_two');
   await knex.schema.dropTableIfExists('datatype_test');
+  await knex.schema.dropTableIfExists('test_default_table');
+  await knex.schema.dropTableIfExists('test_default_table2');
 }
 
 module.exports = {
   createAccounts,
   createCompositeKeyTable,
   createDataType,
+  createDefaultTable,
   createUsers,
   createTestTableTwo,
   dropTables,

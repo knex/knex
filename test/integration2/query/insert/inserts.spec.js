@@ -46,6 +46,7 @@ describe('Inserts', function () {
       });
 
       beforeEach(async () => {
+        await dropTables(knex);
         await createUsers(knex);
         await createAccounts(knex, true);
         await createTestTableTwo(knex);

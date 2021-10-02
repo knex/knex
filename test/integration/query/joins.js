@@ -393,7 +393,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: 7,
+                id: 6,
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -480,7 +480,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: '7',
+                id: '6',
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -741,7 +741,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: 7,
+                id: 6,
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -828,7 +828,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: '7',
+                id: '6',
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
