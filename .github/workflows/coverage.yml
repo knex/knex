@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [14.x]
+        node-version: [16.x]
 
     steps:
       - name: Checkout Repository
@@ -34,6 +34,9 @@ jobs:
 
       - name: Run npm install
         run: npm install
+
+      - name: Install pg-native
+        run: npm i pg-native
 
       - name: Run Tests
         run: npm run test:coverage
