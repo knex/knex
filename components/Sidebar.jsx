@@ -188,6 +188,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-text">text</a></li>
           <li>– <a href="#Schema-string">string</a></li>
           <li>– <a href="#Schema-float">float</a></li>
+          <li>– <a href="#Schema-double">double</a></li>
           <li>– <a href="#Schema-decimal">decimal</a></li>
           <li>– <a href="#Schema-boolean">boolean</a></li>
           <li>– <a href="#Schema-date">date</a></li>
