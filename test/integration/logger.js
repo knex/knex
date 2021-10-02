@@ -65,7 +65,15 @@ module.exports = function (knex) {
             if (typeof returnval === 'function') {
               expect(!!returnval(resp)).to.equal(true);
             } else {
-              expect(stripDates(resp)).to.eql(returnval);
+              try {
+                expect(stripDates(resp)).to.eql(returnval);
+              } catch (err) {
+                console.log('Actual:');
+                console.log(JSON.stringify(resp));
+                console.log('Expected:');
+                console.log(JSON.stringify(returnval));
+                throw err;
+              }
             }
             return resp;
           });

@@ -58,7 +58,7 @@ describe('Inserts', function () {
             {
               first_name: 'Test',
               last_name: 'User',
-              email: 'test@example.com',
+              email: 'test1@example.com',
               logins: 1,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               created_at: TEST_TIMESTAMP,
@@ -73,7 +73,7 @@ describe('Inserts', function () {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -87,7 +87,7 @@ describe('Inserts', function () {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -101,7 +101,7 @@ describe('Inserts', function () {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -115,7 +115,7 @@ describe('Inserts', function () {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -129,7 +129,7 @@ describe('Inserts', function () {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -146,7 +146,7 @@ describe('Inserts', function () {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -265,7 +265,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [3]
+              [2]
             );
             tester(
               'oracledb',
@@ -483,7 +483,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [5]
+              [2]
             );
             tester(
               'oracledb',
@@ -719,7 +719,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [6]
+              [1]
             );
             tester(
               'oracledb',
@@ -1357,31 +1357,34 @@ describe('Inserts', function () {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'ignoretest@example.com',
+          email: 'ignoretest1@example.com',
           name: 'BEFORE',
         });
 
         // Test: Insert..ignore with same email as existing row
         try {
           await knex('upsert_tests')
-            .insert({ email: 'ignoretest@example.com', name: 'AFTER' }, 'email')
+            .insert(
+              { email: 'ignoretest1@example.com', name: 'AFTER' },
+              'email'
+            )
             .onConflict('email')
             .ignore()
             .testSql(function (tester) {
               tester(
                 'mysql',
                 'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do nothing returning "email"',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
             });
         } catch (err) {
@@ -1395,7 +1398,7 @@ describe('Inserts', function () {
 
         // Assert: there is still only 1 row, and that it HAS NOT been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'ignoretest@example.com' })
+          .where({ email: 'ignoretest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('BEFORE');
@@ -1416,31 +1419,34 @@ describe('Inserts', function () {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'ignoretest@example.com',
+          email: 'ignoretest1@example.com',
           name: 'BEFORE',
         });
 
         // Test: Insert..ignore with same email as existing row
         try {
           await knex('upsert_tests')
-            .insert({ email: 'ignoretest@example.com', name: 'AFTER' }, 'email')
+            .insert(
+              { email: 'ignoretest1@example.com', name: 'AFTER' },
+              'email'
+            )
             .onConflict()
             .ignore()
             .testSql(function (tester) {
               tester(
                 'mysql',
                 'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict do nothing returning "email"',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict do nothing',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
             });
         } catch (err) {
@@ -1454,7 +1460,7 @@ describe('Inserts', function () {
 
         // Assert: there is still only 1 row, and that it HAS NOT been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'ignoretest@example.com' })
+          .where({ email: 'ignoretest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('BEFORE');
@@ -1477,7 +1483,7 @@ describe('Inserts', function () {
         // Setup: Create row to conflict against
         await knex('upsert_composite_key_tests').insert({
           org: 'acme-inc',
-          email: 'ignoretest@example.com',
+          email: 'ignoretest1@example.com',
           name: 'BEFORE',
         });
 
@@ -1487,7 +1493,7 @@ describe('Inserts', function () {
             .insert(
               {
                 org: 'acme-inc',
-                email: 'ignoretest@example.com',
+                email: 'ignoretest1@example.com',
                 name: 'AFTER',
               },
               'email'
@@ -1498,17 +1504,17 @@ describe('Inserts', function () {
               tester(
                 'mysql',
                 'insert ignore into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?)',
-                ['ignoretest@example.com', 'AFTER', 'acme-inc']
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
               tester(
                 'pg',
                 'insert into "upsert_composite_key_tests" ("email", "name", "org") values (?, ?, ?) on conflict ("org", "email") do nothing returning "email"',
-                ['ignoretest@example.com', 'AFTER', 'acme-inc']
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
-                ['ignoretest@example.com', 'AFTER', 'acme-inc']
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
             });
         } catch (err) {
@@ -1522,7 +1528,7 @@ describe('Inserts', function () {
 
         // Assert: there is still only 1 row, and that it HAS NOT been updated
         const rows = await knex('upsert_composite_key_tests')
-          .where({ email: 'ignoretest@example.com' })
+          .where({ email: 'ignoretest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('BEFORE');
@@ -1543,31 +1549,31 @@ describe('Inserts', function () {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'mergetest@example.com',
+          email: 'mergetest1@example.com',
           name: 'BEFORE',
         });
 
         // Perform insert..merge (upsert)
         try {
           await knex('upsert_tests')
-            .insert({ email: 'mergetest@example.com', name: 'AFTER' }, 'email')
+            .insert({ email: 'mergetest1@example.com', name: 'AFTER' }, 'email')
             .onConflict('email')
             .merge()
             .testSql(function (tester) {
               tester(
                 'mysql',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
-                ['mergetest@example.com', 'AFTER']
+                ['mergetest1@example.com', 'AFTER']
               );
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
-                ['mergetest@example.com', 'AFTER']
+                ['mergetest1@example.com', 'AFTER']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
-                ['mergetest@example.com', 'AFTER']
+                ['mergetest1@example.com', 'AFTER']
               );
             });
         } catch (err) {
@@ -1581,7 +1587,7 @@ describe('Inserts', function () {
 
         // Check that row HAS been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'mergetest@example.com' })
+          .where({ email: 'mergetest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('AFTER');
@@ -1603,7 +1609,7 @@ describe('Inserts', function () {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'mergetest@example.com',
+          email: 'mergetest1@example.com',
           role: 'tester',
           name: 'BEFORE',
         });
@@ -1611,7 +1617,7 @@ describe('Inserts', function () {
         // Perform insert..merge (upsert)
         try {
           await knex('upsert_tests')
-            .insert({ email: 'mergetest@example.com', name: 'AFTER' }, 'email')
+            .insert({ email: 'mergetest1@example.com', name: 'AFTER' }, 'email')
             .onConflict('email')
             .merge()
             .where('upsert_tests.role', 'tester')
@@ -1619,12 +1625,12 @@ describe('Inserts', function () {
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "upsert_tests"."role" = ? returning "email"',
-                ['mergetest@example.com', 'AFTER', 'tester']
+                ['mergetest1@example.com', 'AFTER', 'tester']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
-                ['mergetest@example.com', 'AFTER', 'tester']
+                ['mergetest1@example.com', 'AFTER', 'tester']
               );
             });
         } catch (err) {
@@ -1647,7 +1653,7 @@ describe('Inserts', function () {
 
         // Check that row HAS been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'mergetest@example.com' })
+          .where({ email: 'mergetest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('AFTER');
@@ -1669,7 +1675,7 @@ describe('Inserts', function () {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'mergetest@example.com',
+          email: 'mergetest1@example.com',
           role: 'tester',
           name: 'BEFORE',
         });
@@ -1677,7 +1683,7 @@ describe('Inserts', function () {
         // Perform insert..merge (upsert)
         try {
           await knex('upsert_tests')
-            .insert({ email: 'mergetest@example.com', name: 'AFTER' }, 'email')
+            .insert({ email: 'mergetest1@example.com', name: 'AFTER' }, 'email')
             .onConflict('email')
             .merge()
             .where('upsert_tests.role', 'fake-role')
@@ -1685,12 +1691,12 @@ describe('Inserts', function () {
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "upsert_tests"."role" = ? returning "email"',
-                ['mergetest@example.com', 'AFTER', 'fake-role']
+                ['mergetest1@example.com', 'AFTER', 'fake-role']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
-                ['mergetest@example.com', 'AFTER', 'fake-role']
+                ['mergetest1@example.com', 'AFTER', 'fake-role']
               );
             });
         } catch (err) {
@@ -1713,7 +1719,7 @@ describe('Inserts', function () {
 
         // Check that row HAS NOT been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'mergetest@example.com' })
+          .where({ email: 'mergetest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('BEFORE');
