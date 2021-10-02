@@ -1,206 +1,60 @@
 'use strict';
 
+const chai = require('chai');
+chai.use(require('chai-as-promised'));
+chai.use(require('sinon-chai'));
+
+const expect = chai.expect;
+
 const _ = require('lodash');
-const { expect } = require('chai');
-const { TEST_TIMESTAMP } = require('../../util/constants');
+const sinon = require('sinon');
+
+const { TEST_TIMESTAMP } = require('../../../util/constants');
 const {
-  isMssql,
   isRedshift,
   isPostgreSQL,
   isSQLite,
-  isOracle,
+  isMssql,
   isMysql,
+  isOracle,
   isPgBased,
-} = require('../../util/db-helpers');
+} = require('../../../util/db-helpers');
 const {
+  getAllDbs,
+  getKnexForDb,
+} = require('../../util/knex-instance-provider');
+const logger = require('../../../integration/logger');
+const {
+  createUsers,
+  createAccounts,
   dropTables,
   createTestTableTwo,
-  createAccounts,
-} = require('../../util/tableCreatorHelper');
+  createDataType,
+} = require('../../../util/tableCreatorHelper');
 
-module.exports = function (knex) {
-  describe('Insert with Triggers', function () {
-    // Trigger options
-    const insertTriggerOptions = { includeTriggerModifications: true };
+describe('Inserts', function () {
+  getAllDbs().forEach((db) => {
+    describe(db, () => {
+      let knex;
 
-    beforeEach(async () => {
-      await dropTables(knex);
-      await createTestTableTwo(knex, false);
-      await createAccounts(knex);
-    });
-
-    afterEach(async () => {
-      // ToDo can remove after other tests are migrated
-      // await dropTables(knex)
-    });
-
-    before(function () {
-      if (!isMssql(knex)) {
-        this.skip('This test is MSSQL only');
-      }
-    });
-
-    describe('Trigger Specific Tests', function () {
-      // Reused variables
-      // Table Names
-      const primaryTable = 'test_return_with_trigger_primary';
-      const secondaryTable = 'test_return_with_trigger_secondary';
-
-      // Foreign Key Column Names
-      const primaryLink = 'foreign_id';
-      const secondaryLink = 'looping_id';
-
-      // Trigger Name
-      const triggerName = 'tr_test_insert_with_trigger';
-
-      // Create proper environment for tests
-      before(async function () {
-        if (!isMssql(knex)) {
-          this.skip('This test is MSSQL only');
-        }
-
-        await knex.schema.hasTable('users').then(async function () {
-          await knex.schema.dropTableIfExists(primaryTable);
-          await knex.schema.dropTableIfExists(secondaryTable);
-
-          // Create tables
-          await knex.schema.createTable(primaryTable, function (table) {
-            table.increments().primary();
-            table.string('data').defaultsTo('');
-            table.integer(primaryLink).nullable();
-          });
-
-          await knex.schema.createTable(secondaryTable, function (table) {
-            table.increments().primary();
-            table.string('data').defaultsTo('');
-            table.integer(secondaryLink).nullable();
-          });
-
-          await knex.raw(`
-                    CREATE TRIGGER [${triggerName}] ON [${secondaryTable}]
-                    AFTER INSERT
-                    AS
-                    BEGIN
-                        SET NOCOUNT ON;
-
-                        BEGIN
-                            update pt
-                            set pt.${primaryLink} = i.id
-                            from Inserted as i
-                            inner join ${primaryTable} as pt
-                                on pt.id = i.${secondaryLink}
-                        END
-                    END
-                `);
-        });
+      before(async () => {
+        knex = logger(getKnexForDb(db));
       });
 
-      // Clean-up test specific tables
-      after(async function () {
-        if (!isMssql(knex)) {
-          return;
-        }
-
-        // Drop table (Trigger is removed with table)
-        await knex.schema.dropTable(primaryTable);
-        await knex.schema.dropTable(secondaryTable);
+      after(async () => {
+        return knex.destroy();
       });
 
-      // Reset tables for each test
-      beforeEach(async function () {
-        // "Truncate" tables instead of recreate for each test for speed gains
-        await knex.raw(`
-                delete from ${primaryTable} dbcc checkident('${primaryTable}', reseed, 0);
-                delete from ${secondaryTable} dbcc checkident('${secondaryTable}', reseed, 0);
-            `);
+      beforeEach(async () => {
+        await dropTables(knex);
+        await createUsers(knex);
+        await createAccounts(knex, true);
+        await createTestTableTwo(knex);
+        await createDataType(knex);
       });
 
-      it('#4152 Should allow returns with inserts on tables with triggers', async function () {
-        let reachedEnd = false;
-
-        await knex.transaction(async function () {
-          let insertResults;
-
-          async function insertWithReturn() {
-            const insertPrimary = {
-              data: 'Testing Data',
-            };
-
-            const insertSecondary = {
-              data: 'Test Linking',
-            };
-
-            const primaryId = await knex(primaryTable).insert(
-              [insertPrimary],
-              ['id'],
-              insertTriggerOptions
-            );
-            insertSecondary[secondaryLink] = primaryId[0];
-
-            // Test retrieve with trigger
-            insertResults = (
-              await knex(secondaryTable).insert(
-                [insertSecondary],
-                ['id'],
-                insertTriggerOptions
-              )
-            )[0];
-          }
-
-          await insertWithReturn();
-
-          expect(Number.parseInt(insertResults)).to.be.finite;
-
-          reachedEnd = true;
-        });
-
-        expect(reachedEnd).to.be.true;
-      });
-
-      it('#4152 Should allow returns with inserts on tables with triggers using returning function', async function () {
-        let reachedEnd = false;
-
-        await knex.transaction(async function () {
-          let insertResults;
-
-          async function insertWithReturn() {
-            const insertPrimary = {
-              data: 'Testing Data',
-            };
-
-            const insertSecondary = {
-              data: 'Test Linking',
-            };
-
-            const primaryId = await knex(primaryTable)
-              .returning(['id'], insertTriggerOptions)
-              .insert([insertPrimary]);
-            insertSecondary[secondaryLink] = primaryId[0];
-
-            // Test retrieve with trigger
-            insertResults = (
-              await knex(secondaryTable)
-                .returning(['id'], insertTriggerOptions)
-                .insert([insertSecondary])
-            )[0];
-          }
-
-          await insertWithReturn();
-
-          expect(Number.parseInt(insertResults)).to.be.finite;
-
-          reachedEnd = true;
-        });
-
-        expect(reachedEnd).to.be.true;
-      });
-    });
-
-    describe('Re-test all Insert Functions with trigger option and returns', function () {
-      before(async function () {
-        if (!isMssql(knex)) {
-          this.skip('This test is MSSQL only');
-        }
+      afterEach(async () => {
+        await dropTables(knex);
       });
 
       it('should handle simple inserts', function () {
@@ -215,8 +69,7 @@ module.exports = function (knex) {
               created_at: TEST_TIMESTAMP,
               updated_at: TEST_TIMESTAMP,
             },
-            'id',
-            insertTriggerOptions
+            'id'
           )
           .testSql(function (tester) {
             tester(
@@ -294,7 +147,7 @@ module.exports = function (knex) {
             );
             tester(
               'mssql',
-              'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+              'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -332,8 +185,7 @@ module.exports = function (knex) {
                 updated_at: TEST_TIMESTAMP,
               },
             ],
-            'id',
-            insertTriggerOptions
+            'id'
           )
           .testSql(function (tester) {
             tester(
@@ -355,7 +207,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [2]
+              [1]
             );
             tester(
               'pg',
@@ -418,7 +270,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [3]
+              [2]
             );
             tester(
               'oracledb',
@@ -449,7 +301,7 @@ module.exports = function (knex) {
             );
             tester(
               'mssql',
-              'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+              'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -493,8 +345,7 @@ module.exports = function (knex) {
                 status: 1,
               },
             ],
-            'id',
-            insertTriggerOptions
+            'id'
           )
           .testSql(function (tester) {
             tester(
@@ -552,8 +403,7 @@ module.exports = function (knex) {
                 email: 'test5@example.com',
               },
             ],
-            'id',
-            insertTriggerOptions
+            'id'
           )
           .testSql(function (tester) {
             tester(
@@ -575,7 +425,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [4]
+              [1]
             );
             tester(
               'pg',
@@ -638,7 +488,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [5]
+              [2]
             );
             tester(
               'oracledb',
@@ -669,7 +519,7 @@ module.exports = function (knex) {
             );
             tester(
               'mssql',
-              'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+              'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -695,8 +545,7 @@ module.exports = function (knex) {
         if (isRedshift(knex)) {
           return this.skip();
         }
-
-        await knex('accounts').insert(
+        await knex('accounts').where('id', '>', 1).orWhere('x', 2).insert(
           {
             first_name: 'Test',
             last_name: 'User',
@@ -706,8 +555,7 @@ module.exports = function (knex) {
             created_at: TEST_TIMESTAMP,
             updated_at: TEST_TIMESTAMP,
           },
-          'id',
-          insertTriggerOptions
+          'id'
         );
 
         await knex('accounts')
@@ -723,8 +571,7 @@ module.exports = function (knex) {
               created_at: TEST_TIMESTAMP,
               updated_at: TEST_TIMESTAMP,
             },
-            'id',
-            insertTriggerOptions
+            'id'
           )
           .testSql(function (tester) {
             tester(
@@ -784,7 +631,7 @@ module.exports = function (knex) {
             );
             tester(
               'mssql',
-              'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+              'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -820,8 +667,7 @@ module.exports = function (knex) {
               created_at: TEST_TIMESTAMP,
               updated_at: TEST_TIMESTAMP,
             },
-            'id',
-            insertTriggerOptions
+            'id'
           )
           .testSql(function (tester) {
             tester(
@@ -878,7 +724,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [6]
+              [1]
             );
             tester(
               'oracledb',
@@ -899,7 +745,7 @@ module.exports = function (knex) {
             );
             tester(
               'mssql',
-              'select top(0) [t].[id] into #out from [accounts] as t left join [accounts] on 0=1;insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] into #out values (?, ?, ?, ?, ?, ?, ?); select [id] from #out; drop table #out;',
+              'insert into [accounts] ([about], [created_at], [email], [first_name], [last_name], [logins], [updated_at]) output inserted.[id] values (?, ?, ?, ?, ?, ?, ?)',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -914,46 +760,146 @@ module.exports = function (knex) {
           });
       });
 
-      it('should handle empty inserts', async function () {
-        await knex.schema.dropTableIfExists('trigger_retest_insert');
-        return await knex.schema
-          .createTable('trigger_retest_insert', function (qb) {
+      it('should not allow inserting invalid values into enum fields', function () {
+        return knex('datatype_test')
+          .insert({ enum_value: 'd' })
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'insert into `datatype_test` (`enum_value`) values (?)',
+              ['d']
+            );
+            tester(
+              'pg',
+              'insert into "datatype_test" ("enum_value") values (?)',
+              ['d']
+            );
+            tester(
+              'pg-redshift',
+              'insert into "datatype_test" ("enum_value") values (?)',
+              ['d']
+            );
+            tester(
+              'sqlite3',
+              'insert into `datatype_test` (`enum_value`) values (?)',
+              ['d'],
+              [1]
+            );
+            tester(
+              'oracledb',
+              'insert into "datatype_test" ("enum_value") values (?)',
+              ['d']
+            );
+            tester(
+              'mssql',
+              'insert into [datatype_test] ([enum_value]) values (?)',
+              ['d']
+            );
+          })
+          .then(
+            function () {
+              // No errors happen in sqlite3, which doesn't have native support
+              // for the enum type.
+              if (!isSQLite(knex)) {
+                throw new Error(
+                  'There should be an error for invalid enum inserts'
+                );
+              }
+            },
+            function () {}
+          );
+      });
+
+      it('should not allow invalid uuids in postgresql', function () {
+        return knex('datatype_test')
+          .insert({
+            enum_value: 'c',
+            uuid: 'c39d8fcf-68a0-4902-b192-1ebb6310d9ad',
+          })
+          .then(function () {
+            return knex('datatype_test').insert({
+              enum_value: 'c',
+              uuid: 'test',
+            });
+          })
+          .then(
+            function () {
+              // No errors happen in sqlite3 or mysql, which don't have native support
+              // for the uuid type.
+              if (isPostgreSQL(knex) || isMssql(knex)) {
+                throw new Error(
+                  'There should be an error in postgresql for uuids'
+                );
+              }
+            },
+            function () {}
+          );
+      });
+
+      it('should not mutate the array passed in', function () {
+        const a = {
+          enum_value: 'a',
+          uuid: '00419fc1-7eed-442c-9c01-cf757e74b8f0',
+        };
+        const b = {
+          enum_value: 'c',
+          uuid: '13ac5acd-c5d7-41a0-8db0-dacf64d0e4e2',
+        };
+        const x = [a, b];
+
+        return knex('datatype_test')
+          .insert(x)
+          .then(function () {
+            expect(x).to.eql([a, b]);
+          });
+      });
+
+      it('should throw an error if the array passed in is empty', async function () {
+        await expect(knex('account').insert([])).to.be.rejectedWith(
+          Error,
+          'The query is empty'
+        );
+      });
+
+      it('should handle empty inserts', function () {
+        return knex.schema
+          .createTable('test_default_table', function (qb) {
             qb.increments().primary();
             qb.string('string').defaultTo('hello');
             qb.tinyint('tinyint').defaultTo(0);
             qb.text('text').nullable();
           })
           .then(function () {
-            knex('trigger_retest_insert')
-              .insert({}, 'id', insertTriggerOptions)
+            return knex('test_default_table')
+              .insert({}, 'id')
               .testSql(function (tester) {
                 tester(
                   'mysql',
-                  'insert into `trigger_retest_insert` () values ()',
+                  'insert into `test_default_table` () values ()',
                   [],
                   [1]
                 );
                 tester(
                   'pg',
-                  'insert into "trigger_retest_insert" default values returning "id"',
+                  'insert into "test_default_table" default values returning "id"',
                   [],
                   [1]
                 );
                 tester(
                   'pg-redshift',
-                  'insert into "trigger_retest_insert" default values',
+                  'insert into "test_default_table" default values',
                   [],
                   1
                 );
                 tester(
                   'sqlite3',
-                  'insert into `trigger_retest_insert` default values',
+                  'insert into `test_default_table` default values',
                   [],
                   [1]
                 );
                 tester(
                   'oracledb',
-                  'insert into "trigger_retest_insert" ("id") values (default) returning "id" into ?',
+                  'insert into "test_default_table" ("id") values (default) returning "id" into ?',
                   [
                     function (v) {
                       return v.toString() === '[object ReturningHelper:id]';
@@ -963,7 +909,7 @@ module.exports = function (knex) {
                 );
                 tester(
                   'mssql',
-                  'select top(0) [t].[id] into #out from [trigger_retest_insert] as t left join [trigger_retest_insert] on 0=1;insert into [trigger_retest_insert] output inserted.[id] into #out default values; select [id] from #out; drop table #out;',
+                  'insert into [test_default_table] output inserted.[id] default values',
                   [],
                   [1]
                 );
@@ -971,46 +917,45 @@ module.exports = function (knex) {
           });
       });
 
-      it('should handle empty arrays inserts', async function () {
-        await knex.schema.dropTableIfExists('trigger_retest_insert2');
-        return await knex.schema
-          .createTable('trigger_retest_insert2', function (qb) {
+      it('should handle empty arrays inserts', function () {
+        return knex.schema
+          .createTable('test_default_table2', function (qb) {
             qb.increments().primary();
             qb.string('string').defaultTo('hello');
             qb.tinyint('tinyint').defaultTo(0);
             qb.text('text').nullable();
           })
           .then(function () {
-            knex('trigger_retest_insert2')
-              .insert([{}], 'id', insertTriggerOptions)
+            return knex('test_default_table2')
+              .insert([{}], 'id')
               .testSql(function (tester) {
                 tester(
                   'mysql',
-                  'insert into `trigger_retest_insert2` () values ()',
+                  'insert into `test_default_table2` () values ()',
                   [],
                   [1]
                 );
                 tester(
                   'pg',
-                  'insert into "trigger_retest_insert2" default values returning "id"',
+                  'insert into "test_default_table2" default values returning "id"',
                   [],
                   [1]
                 );
                 tester(
                   'pg-redshift',
-                  'insert into "trigger_retest_insert2" default values',
+                  'insert into "test_default_table2" default values',
                   [],
                   1
                 );
                 tester(
                   'sqlite3',
-                  'insert into `trigger_retest_insert2` default values',
+                  'insert into `test_default_table2` default values',
                   [],
                   [1]
                 );
                 tester(
                   'oracledb',
-                  'insert into "trigger_retest_insert2" ("id") values (default) returning "id" into ?',
+                  'insert into "test_default_table2" ("id") values (default) returning "id" into ?',
                   [
                     function (v) {
                       return v.toString() === '[object ReturningHelper:id]';
@@ -1020,7 +965,7 @@ module.exports = function (knex) {
                 );
                 tester(
                   'mssql',
-                  'select top(0) [t].[id] into #out from [trigger_retest_insert2] as t left join [trigger_retest_insert2] on 0=1;insert into [trigger_retest_insert2] output inserted.[id] into #out default values; select [id] from #out; drop table #out;',
+                  'insert into [test_default_table2] output inserted.[id] default values',
                   [],
                   [1]
                 );
@@ -1036,7 +981,7 @@ module.exports = function (knex) {
           status: 0,
         };
         return knex('test_table_two')
-          .insert(insertData, ['account_id', 'details'], insertTriggerOptions)
+          .insert(insertData, ['account_id', 'details'])
           .testSql(function (tester) {
             tester(
               'mysql',
@@ -1086,7 +1031,9 @@ module.exports = function (knex) {
             );
             tester(
               'oracledb',
-              `insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning "account_id","details" into ?,?`,
+              `insert into "test_table_two" ("account_id", "details", "status")
+                 values (?, ?, ?) returning "account_id","details"
+                 into ?,?`,
               [
                 10,
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1108,7 +1055,7 @@ module.exports = function (knex) {
             );
             tester(
               'mssql',
-              'select top(0) [t].[account_id],[t].[details] into #out from [test_table_two] as t left join [test_table_two] on 0=1;insert into [test_table_two] ([account_id], [details], [status]) output inserted.[account_id], inserted.[details] into #out values (?, ?, ?); select [account_id],[details] from #out; drop table #out;',
+              'insert into [test_table_two] ([account_id], [details], [status]) output inserted.[account_id], inserted.[details] values (?, ?, ?)',
               [
                 10,
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1149,7 +1096,7 @@ module.exports = function (knex) {
 
         const returningColumn = '*';
         return knex('test_table_two')
-          .insert(insertData, returningColumn, insertTriggerOptions)
+          .insert(insertData, returningColumn)
           .testSql(function (tester) {
             tester(
               'pg',
@@ -1192,7 +1139,7 @@ module.exports = function (knex) {
             );
             tester(
               'mssql',
-              'select top(0) [t].* into #out from [test_table_two] as t left join [test_table_two] on 0=1;insert into [test_table_two] ([account_id], [details], [status]) output inserted.* into #out values (?, ?, ?); select * from #out; drop table #out;',
+              'insert into [test_table_two] ([account_id], [details], [status]) output inserted.* values (?, ?, ?)',
               [
                 10,
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1212,11 +1159,140 @@ module.exports = function (knex) {
           .then(function (rows) {
             expect(rows.length).to.equal(1);
             if (isPgBased(knex)) {
-              expect(_.keys(rows[0]).length).to.equal(5);
+              expect(_.keys(rows[0]).length).to.equal(4);
               expect(rows[0].account_id).to.equal(insertData.account_id);
               expect(rows[0].details).to.equal(insertData.details);
               expect(rows[0].status).to.equal(insertData.status);
             }
+          });
+      });
+
+      describe('batchInsert', function () {
+        const fiftyLengthString =
+          'rO8F8YrFS6uoivuRiVnwrO8F8YrFS6uoivuRiVnwuoivuRiVnw';
+        const items = [];
+        const amountOfItems = 100;
+        const amountOfColumns = 30;
+        for (let i = 0; i < amountOfItems; i++) {
+          const item = {};
+          for (let x = 0; x < amountOfColumns; x++) {
+            item['Col' + x] = fiftyLengthString;
+          }
+          items.push(item);
+        }
+
+        beforeEach(async () => {
+          await knex.schema.dropTableIfExists('BatchInsert');
+          await knex.schema.createTable('BatchInsert', (table) => {
+            for (let i = 0; i < amountOfColumns; i++) {
+              table.string('Col' + i, 50);
+            }
+          });
+        });
+
+        it('#757 - knex.batchInsert(tableName, bulk, chunkSize)', async function () {
+          this.timeout(30000);
+          const result = await knex
+            .batchInsert('BatchInsert', items, 30)
+            .returning(['Col1', 'Col2']);
+
+          //Returning only supported by some dialects.
+          if (isPostgreSQL(knex) || isOracle(knex)) {
+            result.forEach(function (item) {
+              expect(item.Col1).to.equal(fiftyLengthString);
+              expect(item.Col2).to.equal(fiftyLengthString);
+            });
+          }
+
+          const selectResult = await knex('BatchInsert').select();
+          const count = selectResult.length;
+          expect(count).to.equal(amountOfItems);
+        });
+
+        it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', async function () {
+          if (isRedshift(knex)) {
+            return this.skip();
+          }
+          this.timeout(10000);
+
+          const fn = sinon.stub();
+          process.on('unhandledRejection', fn);
+          await knex.schema
+            .dropTableIfExists('batchInsertDuplicateKey')
+            .then(function () {
+              return knex.schema.createTable(
+                'batchInsertDuplicateKey',
+                function (table) {
+                  table.string('col');
+                  table.primary('col');
+                }
+              );
+            })
+            .then(function () {
+              const rows = [{ col: 'a' }, { col: 'a' }];
+              return knex.batchInsert(
+                'batchInsertDuplicateKey',
+                rows,
+                rows.length
+              );
+            })
+            .then(function () {
+              expect.fail('Should not reach this point');
+            })
+            .catch(function (error) {
+              //Should reach this point before timeout of 10s
+              expect(error.message.toLowerCase()).to.include(
+                'batchinsertduplicatekey'
+              );
+            });
+          expect(fn).have.not.been.called;
+          process.removeListener('unhandledRejection', fn);
+        });
+
+        it('knex.batchInsert with specified transaction', function () {
+          return knex.transaction(function (tr) {
+            knex
+              .batchInsert('BatchInsert', items, 30)
+              .returning(['Col1', 'Col2'])
+              .transacting(tr)
+              .then(tr.commit)
+              .catch(tr.rollback);
+          });
+        });
+
+        it('transaction.batchInsert using specified transaction', function () {
+          return knex.transaction(function (tr) {
+            return tr
+              .batchInsert('BatchInsert', items, 30)
+              .returning(['Col1', 'Col2']);
+          });
+        });
+      });
+
+      it('should validate batchInsert batchSize parameter', function () {
+        //Should not throw, batchSize default
+        return knex
+          .batchInsert('test', [])
+          .then(function () {
+            //Should throw, null not valid
+            return knex.batchInsert('test', [], null);
+          })
+          .catch(function (error) {
+            expect(error.message).to.equal('Invalid chunkSize: null');
+
+            //Should throw, 0 is not a valid chunkSize
+            return knex.batchInsert('test', [], 0);
+          })
+          .catch(function (error) {
+            expect(error.message).to.equal('Invalid chunkSize: 0');
+
+            //Also faulty
+            return knex.batchInsert('test', [], 'still no good');
+          })
+          .catch(function (error) {
+            expect(error.message).to.equal('Invalid chunkSize: still no good');
+
+            return true;
           });
       });
 
@@ -1242,8 +1318,7 @@ module.exports = function (knex) {
                 updated_at: new Date(),
               },
             ],
-            '*',
-            insertTriggerOptions
+            '*'
           )
           .then(function () {
             return knex('accounts')
@@ -1292,8 +1367,7 @@ module.exports = function (knex) {
           await knex('upsert_tests')
             .insert(
               { email: 'ignoretest1@example.com', name: 'AFTER' },
-              'email',
-              insertTriggerOptions
+              'email'
             )
             .onConflict('email')
             .ignore()
@@ -1311,6 +1385,68 @@ module.exports = function (knex) {
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
+                ['ignoretest1@example.com', 'AFTER']
+              );
+            });
+        } catch (err) {
+          if (isOracle(knex) || isMssql(knex)) {
+            expect(err).to.be.an('error');
+            if (err.message.includes('.onConflict() is not supported for'))
+              return;
+          }
+          throw err;
+        }
+
+        // Assert: there is still only 1 row, and that it HAS NOT been updated
+        const rows = await knex('upsert_tests')
+          .where({ email: 'ignoretest1@example.com' })
+          .select();
+        expect(rows.length).to.equal(1);
+        expect(rows[0].name).to.equal('BEFORE');
+      });
+
+      it('will still silently do nothing when multiple inserts are made into a unique column and ignore is specified with no columns', async function () {
+        if (isRedshift(knex)) {
+          return this.skip();
+        }
+
+        // Setup: Create table with unique email column
+        await knex.schema.dropTableIfExists('upsert_tests');
+        await knex.schema.createTable('upsert_tests', (table) => {
+          table.string('name');
+          table.string('email');
+          table.unique('email');
+        });
+
+        // Setup: Create row to conflict against
+        await knex('upsert_tests').insert({
+          email: 'ignoretest1@example.com',
+          name: 'BEFORE',
+        });
+
+        // Test: Insert..ignore with same email as existing row
+        try {
+          await knex('upsert_tests')
+            .insert(
+              { email: 'ignoretest1@example.com', name: 'AFTER' },
+              'email'
+            )
+            .onConflict()
+            .ignore()
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
+                ['ignoretest1@example.com', 'AFTER']
+              );
+              tester(
+                'pg',
+                'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict do nothing returning "email"',
+                ['ignoretest1@example.com', 'AFTER']
+              );
+              tester(
+                'sqlite3',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict do nothing',
                 ['ignoretest1@example.com', 'AFTER']
               );
             });
@@ -1361,8 +1497,7 @@ module.exports = function (knex) {
                 email: 'ignoretest1@example.com',
                 name: 'AFTER',
               },
-              'email',
-              insertTriggerOptions
+              'email'
             )
             .onConflict(['org', 'email'])
             .ignore()
@@ -1422,11 +1557,7 @@ module.exports = function (knex) {
         // Perform insert..merge (upsert)
         try {
           await knex('upsert_tests')
-            .insert(
-              { email: 'mergetest1@example.com', name: 'AFTER' },
-              'email',
-              insertTriggerOptions
-            )
+            .insert({ email: 'mergetest1@example.com', name: 'AFTER' }, 'email')
             .onConflict('email')
             .merge()
             .testSql(function (tester) {
@@ -1487,11 +1618,7 @@ module.exports = function (knex) {
         // Perform insert..merge (upsert)
         try {
           await knex('upsert_tests')
-            .insert(
-              { email: 'mergetest1@example.com', name: 'AFTER' },
-              'email',
-              insertTriggerOptions
-            )
+            .insert({ email: 'mergetest1@example.com', name: 'AFTER' }, 'email')
             .onConflict('email')
             .merge()
             .where('upsert_tests.role', 'tester')
@@ -1557,11 +1684,7 @@ module.exports = function (knex) {
         // Perform insert..merge (upsert)
         try {
           await knex('upsert_tests')
-            .insert(
-              { email: 'mergetest1@example.com', name: 'AFTER' },
-              'email',
-              insertTriggerOptions
-            )
+            .insert({ email: 'mergetest1@example.com', name: 'AFTER' }, 'email')
             .onConflict('email')
             .merge()
             .where('upsert_tests.role', 'fake-role')
@@ -1603,7 +1726,7 @@ module.exports = function (knex) {
         expect(rows[0].name).to.equal('BEFORE');
       });
 
-      it('updates columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
+      it('updates all columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
         if (isRedshift(knex)) {
           return this.skip();
         }
@@ -1632,8 +1755,7 @@ module.exports = function (knex) {
                   "(SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')"
                 ),
               },
-              'email',
-              insertTriggerOptions
+              'email'
             )
             .onConflict('email')
             .merge()
@@ -1671,7 +1793,7 @@ module.exports = function (knex) {
         expect(rows[0].name).to.equal('SOURCE');
       });
 
-      it('updates columns with raw value when inserting a duplicate key to unique column and merge with updates is specified', async function () {
+      it('updates columns with raw value when inserting a duplicate key to unique column and merge with update data is specified', async function () {
         if (isRedshift(knex)) {
           return this.skip();
         }
@@ -1701,8 +1823,7 @@ module.exports = function (knex) {
           await knex('upsert_tests')
             .insert(
               { email: 'mergedest@example.com', name: 'SHOULD NOT BE USED' },
-              'email',
-              insertTriggerOptions
+              'email'
             )
             .onConflict('email')
             .merge({ name: knex.raw('(SELECT name FROM upsert_value_source)') })
@@ -1740,6 +1861,74 @@ module.exports = function (knex) {
         expect(rows[0].name).to.equal('SOURCE');
       });
 
+      it('updates specified columns with insert value when inserting a duplicate key to unique column and merge with update columns is specified', async function () {
+        if (isRedshift(knex)) {
+          return this.skip();
+        }
+
+        // Setup table for testing knex.raw with
+        await knex.schema.dropTableIfExists('upsert_value_source');
+        await knex.schema.createTable('upsert_value_source', (table) => {
+          table.string('name');
+        });
+        await knex('upsert_value_source').insert([{ name: 'SOURCE' }]);
+
+        // Setup: Create table with unique email column
+        await knex.schema.dropTableIfExists('upsert_tests');
+        await knex.schema.createTable('upsert_tests', (table) => {
+          table.string('name');
+          table.string('email');
+          table.unique('email');
+        });
+
+        // Setup: Create row to conflict against
+        await knex('upsert_tests').insert([
+          { email: 'mergedest@example.com', name: 'DEST' },
+        ]);
+
+        // Perform insert..merge (upsert)
+        try {
+          await knex('upsert_tests')
+            .insert(
+              { email: 'mergedest@example.com', name: 'SHOULD BE USED' },
+              'email'
+            )
+            .onConflict('email')
+            .merge(['name'])
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `name` = values(`name`)',
+                ['mergedest@example.com', 'SHOULD BE USED']
+              );
+              tester(
+                'pg',
+                'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "name" = excluded."name" returning "email"',
+                ['mergedest@example.com', 'SHOULD BE USED']
+              );
+              tester(
+                'sqlite3',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = excluded.`name`',
+                ['mergedest@example.com', 'SHOULD BE USED']
+              );
+            });
+        } catch (err) {
+          if (isOracle(knex) || isMssql(knex)) {
+            expect(err).to.be.an('error');
+            if (err.message.includes('.onConflict() is not supported for'))
+              return;
+          }
+          throw err;
+        }
+
+        // Check that row HAS been updated
+        const rows = await knex('upsert_tests')
+          .where({ email: 'mergedest@example.com' })
+          .select();
+        expect(rows.length).to.equal(1);
+        expect(rows[0].name).to.equal('SHOULD BE USED');
+      });
+
       it('updates and inserts columns when inserting multiple rows merge is specified', async function () {
         if (isRedshift(knex)) {
           return this.skip();
@@ -1767,8 +1956,7 @@ module.exports = function (knex) {
                 { email: 'two@example.com', name: 'AFTER' },
                 { email: 'three@example.com', name: 'AFTER' },
               ],
-              'email',
-              insertTriggerOptions
+              'email'
             )
             .onConflict('email')
             .merge()
@@ -1809,6 +1997,31 @@ module.exports = function (knex) {
         const row3 = rows.find((row) => row.email === 'three@example.com');
         expect(row3 && row3.name).to.equal('AFTER');
       });
+
+      it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function () {
+        if (isSQLite(knex)) {
+          return true;
+        }
+        return knex.transaction(function (trx) {
+          return trx('accounts')
+            .insert({
+              last_name: 'First Item',
+              email: 'findme@example.com',
+              logins: undefined,
+              about: 'Lorem ipsum Dolore labore incididunt enim.',
+              created_at: new Date(),
+              updated_at: new Date(),
+            })
+            .then(function (results) {
+              return trx('accounts').where('email', 'findme@example.com');
+            })
+            .then(function (results) {
+              expect(results[0].logins).to.equal(1);
+              // cleanup to prevent needs for too much changes to other tests
+              return trx('accounts').delete().where('id', results[0].id);
+            });
+        });
+      });
     });
   });
-};
+});

@@ -4,9 +4,14 @@ const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../util/constants');
 const { isOracle, isMssql } = require('../../util/db-helpers');
+const { insertTestTableTwoData } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Joins', function () {
+    before(async () => {
+      await insertTestTableTwoData(knex);
+    });
+
     it('uses inner join by default', function () {
       return knex('accounts')
         .join('test_table_two', 'accounts.id', '=', 'test_table_two.account_id')
@@ -22,7 +27,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -70,7 +75,7 @@ module.exports = function (knex) {
                 id: '1',
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -118,7 +123,7 @@ module.exports = function (knex) {
                 id: '1',
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -166,7 +171,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -214,7 +219,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -262,7 +267,7 @@ module.exports = function (knex) {
                 id: '1',
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -324,7 +329,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -388,7 +393,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: 7,
+                id: 6,
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -411,7 +416,7 @@ module.exports = function (knex) {
                 id: '1',
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -475,7 +480,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: '7',
+                id: '6',
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -498,7 +503,7 @@ module.exports = function (knex) {
                 id: '1',
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -585,7 +590,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -672,7 +677,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -736,7 +741,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: 7,
+                id: 6,
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -759,7 +764,7 @@ module.exports = function (knex) {
                 id: '1',
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -823,7 +828,7 @@ module.exports = function (knex) {
                 details: null,
               },
               {
-                id: '7',
+                id: '6',
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -858,7 +863,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -869,7 +874,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 0,
-                json_data: null,
               },
               {
                 id: 2,
@@ -886,7 +890,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 1,
-                json_data: null,
               },
               {
                 id: 3,
@@ -902,7 +905,6 @@ module.exports = function (knex) {
                 account_id: 3,
                 details: '',
                 status: 1,
-                json_data: null,
               },
               {
                 id: null,
@@ -918,7 +920,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -934,7 +935,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -950,7 +950,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
             ]
           );
@@ -963,7 +962,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -974,7 +973,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 0,
-                json_data: null,
               },
               {
                 id: 2,
@@ -991,7 +989,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 1,
-                json_data: null,
               },
               {
                 id: 3,
@@ -1007,7 +1004,6 @@ module.exports = function (knex) {
                 account_id: 3,
                 details: '',
                 status: 1,
-                json_data: null,
               },
               {
                 id: null,
@@ -1023,7 +1019,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -1039,7 +1034,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -1055,7 +1049,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
             ]
           );
@@ -1068,7 +1061,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -1079,7 +1072,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 0,
-                json_data: null,
               },
               {
                 id: 2,
@@ -1096,7 +1088,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 1,
-                json_data: null,
               },
               {
                 id: 3,
@@ -1112,7 +1103,6 @@ module.exports = function (knex) {
                 account_id: 3,
                 details: '',
                 status: 1,
-                json_data: null,
               },
               {
                 id: null,
@@ -1128,7 +1118,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -1144,7 +1133,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -1160,7 +1148,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
             ]
           );
@@ -1173,7 +1160,7 @@ module.exports = function (knex) {
                 id: 1,
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -1184,7 +1171,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 0,
-                json_data: null,
               },
               {
                 id: 2,
@@ -1201,7 +1187,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 1,
-                json_data: null,
               },
               {
                 id: 3,
@@ -1217,7 +1202,6 @@ module.exports = function (knex) {
                 account_id: 3,
                 details: '',
                 status: 1,
-                json_data: null,
               },
               {
                 id: null,
@@ -1233,7 +1217,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -1249,7 +1232,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: null,
@@ -1265,7 +1247,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
             ]
           );
@@ -1278,7 +1259,7 @@ module.exports = function (knex) {
                 id: ['1', 1],
                 first_name: 'Test',
                 last_name: 'User',
-                email: 'test@example.com',
+                email: 'test1@example.com',
                 logins: 1,
                 balance: 0,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
@@ -1289,7 +1270,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 0,
-                json_data: null,
               },
               {
                 id: ['2', 2],
@@ -1306,7 +1286,6 @@ module.exports = function (knex) {
                 details:
                   'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 status: 1,
-                json_data: null,
               },
               {
                 id: ['3', 3],
@@ -1322,7 +1301,6 @@ module.exports = function (knex) {
                 account_id: 3,
                 details: '',
                 status: 1,
-                json_data: null,
               },
               {
                 id: ['4', null],
@@ -1338,7 +1316,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
                 id: ['5', null],
@@ -1354,10 +1331,9 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
               {
-                id: ['7', null],
+                id: ['6', null],
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test6@example.com',
@@ -1370,7 +1346,6 @@ module.exports = function (knex) {
                 account_id: null,
                 details: null,
                 status: null,
-                json_data: null,
               },
             ]
           );
@@ -1392,6 +1367,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test3@example.com',
                 e2: 'test2@example.com',
               },
@@ -1405,10 +1384,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test6@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1419,6 +1394,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test3@example.com',
                 e2: 'test2@example.com',
               },
@@ -1432,10 +1411,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test6@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1446,6 +1421,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test3@example.com',
                 e2: 'test2@example.com',
               },
@@ -1459,10 +1438,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test6@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1473,6 +1448,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test3@example.com',
                 e2: 'test2@example.com',
               },
@@ -1486,10 +1465,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test6@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1500,6 +1475,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test3@example.com',
                 e2: 'test2@example.com',
               },
@@ -1515,10 +1494,6 @@ module.exports = function (knex) {
                 e1: 'test6@example.com',
                 e2: 'test2@example.com',
               },
-              {
-                e1: 'test@example.com',
-                e2: 'test2@example.com',
-              },
             ]
           );
           tester(
@@ -1527,7 +1502,7 @@ module.exports = function (knex) {
             [5, 'test2@example.com'],
             [
               {
-                e1: 'test@example.com',
+                e1: 'test1@example.com',
                 e2: 'test2@example.com',
               },
               {
@@ -1573,6 +1548,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test2@example.com',
                 e2: 'test2@example.com',
               },
@@ -1586,10 +1565,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test5@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test6@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1600,6 +1575,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test2@example.com',
                 e2: 'test2@example.com',
               },
@@ -1613,10 +1592,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test5@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test6@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1627,6 +1602,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test2@example.com',
                 e2: 'test2@example.com',
               },
@@ -1640,10 +1619,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test5@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test6@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1654,6 +1629,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test2@example.com',
                 e2: 'test2@example.com',
               },
@@ -1667,10 +1646,6 @@ module.exports = function (knex) {
               },
               {
                 e1: 'test5@example.com',
-                e2: 'test2@example.com',
-              },
-              {
-                e1: 'test6@example.com',
                 e2: 'test2@example.com',
               },
             ]
@@ -1681,6 +1656,10 @@ module.exports = function (knex) {
             ['test2@example.com', 5],
             [
               {
+                e1: 'test1@example.com',
+                e2: 'test2@example.com',
+              },
+              {
                 e1: 'test2@example.com',
                 e2: 'test2@example.com',
               },
@@ -1696,10 +1675,6 @@ module.exports = function (knex) {
                 e1: 'test5@example.com',
                 e2: 'test2@example.com',
               },
-              {
-                e1: 'test6@example.com',
-                e2: 'test2@example.com',
-              },
             ]
           );
           tester(
@@ -1708,7 +1683,7 @@ module.exports = function (knex) {
             [5, 'test2@example.com'],
             [
               {
-                e1: 'test@example.com',
+                e1: 'test1@example.com',
                 e2: 'test2@example.com',
               },
               {
@@ -1744,7 +1719,7 @@ module.exports = function (knex) {
             'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1752,7 +1727,7 @@ module.exports = function (knex) {
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1761,7 +1736,7 @@ module.exports = function (knex) {
             [],
             function (res) {
               // redshift, not supporting insert...returning, had to fake 6 of these in previous tests
-              return res.length === 24;
+              return res.length === 12;
             }
           );
           tester(
@@ -1769,7 +1744,7 @@ module.exports = function (knex) {
             'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1777,7 +1752,7 @@ module.exports = function (knex) {
             'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
           tester(
@@ -1785,7 +1760,7 @@ module.exports = function (knex) {
             'select [account_id] from [accounts] cross join [test_table_two] order by [account_id] asc',
             [],
             function (res) {
-              return res.length === 30;
+              return res.length === 18;
             }
           );
         });
@@ -1816,7 +1791,7 @@ module.exports = function (knex) {
             [
               {
                 a1: {
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                 },
                 a2: {
                   email: 'test2@example.com',
@@ -1824,7 +1799,7 @@ module.exports = function (knex) {
               },
               {
                 a1: {
-                  email: 'test@example.com',
+                  email: 'test1@example.com',
                 },
                 a2: {
                   email: 'test3@example.com',
@@ -1838,11 +1813,11 @@ module.exports = function (knex) {
             [2],
             [
               {
-                0: 'test@example.com',
+                0: 'test1@example.com',
                 1: 'test2@example.com',
               },
               {
-                0: 'test@example.com',
+                0: 'test1@example.com',
                 1: 'test3@example.com',
               },
             ]
@@ -1853,11 +1828,11 @@ module.exports = function (knex) {
             [2],
             [
               {
-                0: 'test@example.com',
+                0: 'test1@example.com',
                 1: 'test2@example.com',
               },
               {
-                0: 'test@example.com',
+                0: 'test1@example.com',
                 1: 'test3@example.com',
               },
             ]
@@ -1881,10 +1856,10 @@ module.exports = function (knex) {
             [2],
             [
               {
-                email: ['test@example.com', 'test2@example.com'],
+                email: ['test1@example.com', 'test2@example.com'],
               },
               {
-                email: ['test@example.com', 'test3@example.com'],
+                email: ['test1@example.com', 'test3@example.com'],
               },
             ]
           );

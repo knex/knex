@@ -1,5 +1,10 @@
 const { expect } = require('chai');
-const { isMssql, isSQLite, isPostgreSQL } = require('../../util/db-helpers');
+const {
+  isMssql,
+  isSQLite,
+  isPgBased,
+  isCockroachDB,
+} = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 describe('Schema', () => {
@@ -34,7 +39,7 @@ describe('Schema', () => {
         describe('createPrimaryKey', () => {
           it('creates a new primary key', async () => {
             await knex.schema.alterTable('primary_table', (table) => {
-              table.integer('id_four').primary();
+              table.integer('id_four').notNull().primary();
             });
 
             await knex('primary_table').insert({ id_four: 1 });
@@ -48,7 +53,7 @@ describe('Schema', () => {
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
               }
-              if (isPostgreSQL(knex)) {
+              if (isPgBased(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_four") values ($1) - duplicate key value violates unique constraint "primary_table_pkey"'
                 );
@@ -56,9 +61,17 @@ describe('Schema', () => {
             }
           });
 
-          it('creates a primary key with a custom constraint name', async () => {
+          it('creates a primary key with a custom constraint name', async function () {
+            // CockroachDB 21.1 throws "(72): unimplemented: primary key dropped without subsequent addition of new primary key in same transaction"
+            if (isCockroachDB(knex)) {
+              return this.skip();
+            }
+
             await knex.schema.alterTable('primary_table', (table) => {
-              table.integer('id_four').primary('my_custom_constraint_name');
+              table
+                .integer('id_four')
+                .notNull()
+                .primary('my_custom_constraint_name');
             });
 
             await knex('primary_table').insert({ id_four: 1 });
@@ -71,7 +84,7 @@ describe('Schema', () => {
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
               }
-              if (isPostgreSQL(knex)) {
+              if (isPgBased(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_four") values ($1) - duplicate key value violates unique constraint "my_custom_constraint_name"'
                 );
@@ -87,6 +100,11 @@ describe('Schema', () => {
 
           it('creates a compound primary key', async () => {
             await knex.schema.alterTable('primary_table', (table) => {
+              // CockroachDB does not support nullable primary keys
+              if (isCockroachDB(knex)) {
+                table.dropNullable('id_two');
+                table.dropNullable('id_three');
+              }
               table.primary(['id_two', 'id_three']);
             });
 
@@ -102,7 +120,7 @@ describe('Schema', () => {
                   'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
               }
-              if (isPostgreSQL(knex)) {
+              if (isPgBased(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_three", "id_two") values ($1, $2) - duplicate key value violates unique constraint "primary_table_pkey"'
                 );
@@ -110,8 +128,18 @@ describe('Schema', () => {
             }
           });
 
-          it('creates a compound primary key with a custom constraint name', async () => {
+          it('creates a compound primary key with a custom constraint name', async function () {
+            // CockroachDB currently does not support dropping primary key without creating new one in the same transaction
+            if (isCockroachDB(knex)) {
+              return this.skip();
+            }
+
             await knex.schema.alterTable('primary_table', (table) => {
+              // CockroachDB does not support nullable primary keys
+              if (isCockroachDB()) {
+                table.dropNullable('id_two');
+                table.dropNullable('id_three');
+              }
               table.primary(
                 ['id_two', 'id_three'],
                 'my_custom_constraint_name'
@@ -130,7 +158,7 @@ describe('Schema', () => {
                   'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
               }
-              if (isPostgreSQL(knex)) {
+              if (isPgBased(knex)) {
                 expect(err.message).to.equal(
                   'insert into "primary_table" ("id_three", "id_two") values ($1, $2) - duplicate key value violates unique constraint "my_custom_constraint_name"'
                 );

@@ -5,7 +5,7 @@ const _ = require('lodash');
 const { DRIVER_NAMES } = require('../../lib/constants');
 const { isObject } = require('../../lib/util/is');
 
-const { TEST_TIMESTAMP } = require('../util/constants');
+const { TEST_TIMESTAMP, TEST_ID } = require('../util/constants');
 
 module.exports = function (knex) {
   const client = knex.client;
@@ -65,7 +65,15 @@ module.exports = function (knex) {
             if (typeof returnval === 'function') {
               expect(!!returnval(resp)).to.equal(true);
             } else {
-              expect(stripDates(resp)).to.eql(returnval);
+              try {
+                expect(stripDates(resp)).to.eql(returnval);
+              } catch (err) {
+                console.log('Actual:');
+                console.log(JSON.stringify(resp));
+                console.log('Expected:');
+                console.log(JSON.stringify(returnval));
+                throw err;
+              }
             }
             return resp;
           });
@@ -92,6 +100,8 @@ module.exports = function (knex) {
         function (memo, val, key) {
           if (_.includes(['created_at', 'updated_at'], key)) {
             memo[key] = TEST_TIMESTAMP;
+          } else if (_.includes(['dummy_id'], key)) {
+            memo[key] = TEST_ID;
           } else {
             memo[key] = val;
           }

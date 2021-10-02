@@ -2,7 +2,11 @@
 const harness = require('./harness');
 const tape = require('tape');
 const JSONStream = require('JSONStream');
-const { isOracle, isMssql, isPostgreSQL } = require('../util/db-helpers');
+const { isOracle, isMssql, isPgBased } = require('../util/db-helpers');
+const {
+  createTestTableTwo,
+  dropTables,
+} = require('../util/tableCreatorHelper');
 
 module.exports = function (knex) {
   tape(knex.client.driverName + ' - transactions: before', function (t) {
@@ -546,11 +550,13 @@ module.exports = function (knex) {
     }
   });
 
-  if (isPostgreSQL(knex)) {
-    // TODO: fix to work without old tables from mocha tests
+  if (isPgBased(knex)) {
     tape(
       'allows postgres ? operator in knex.raw() if no bindings given #519 and #888',
       async function (t) {
+        await dropTables(knex);
+        await createTestTableTwo(knex, true);
+
         t.plan(1);
         try {
           const result = await knex
@@ -560,6 +566,7 @@ module.exports = function (knex) {
           t.equal(result.length, 0, 'Table should have been empty');
         } finally {
           t.end();
+          await dropTables(knex);
         }
       }
     );

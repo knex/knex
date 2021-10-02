@@ -1,7 +1,13 @@
-const { expect } = require('chai');
+const chai = require('chai');
+chai.use(require('chai-as-promised'));
+const expect = chai.expect;
 const sinon = require('sinon');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isPostgreSQL, isSQLite } = require('../../util/db-helpers');
+const {
+  isPostgreSQL,
+  isSQLite,
+  isCockroachDB,
+} = require('../../util/db-helpers');
 
 describe('Schema', () => {
   describe('Foreign keys', () => {
@@ -138,14 +144,24 @@ describe('Schema', () => {
           it('creates new foreign key', async () => {
             await knex('foreign_keys_table_two').insert({});
             await knex('foreign_keys_table_three').insert({});
+
+            const rowsTwo = await knex('foreign_keys_table_two').select();
+            const rowsThree = await knex('foreign_keys_table_three').select();
+            const idTwo = rowsTwo[0].id;
+            const idThree = rowsThree[0].id;
+
             await knex('foreign_keys_table_one').insert({
-              fkey_two: 1,
-              fkey_three: 1,
+              fkey_two: idTwo,
+              fkey_three: idThree,
             });
             await knex('foreign_keys_table_one').insert({
-              fkey_two: 1,
-              fkey_three: 1,
+              fkey_two: idTwo,
+              fkey_three: idThree,
             });
+
+            const rowsOne = await knex('foreign_keys_table_one').select();
+            const idOne1 = rowsOne[0].id;
+            const idOne2 = rowsOne[1].id;
 
             await knex.schema.alterTable('foreign_keys_table_one', (table) => {
               table
@@ -157,22 +173,22 @@ describe('Schema', () => {
             const existingRows = await knex('foreign_keys_table_one').select();
             expect(existingRows).to.eql([
               {
-                fkey_three: 1,
-                fkey_two: 1,
-                id: 1,
+                fkey_three: idThree,
+                fkey_two: idTwo,
+                id: idOne1,
               },
               {
-                fkey_three: 1,
-                fkey_two: 1,
-                id: 2,
+                fkey_three: idThree,
+                fkey_two: idTwo,
+                id: idOne2,
               },
             ]);
 
             await knex('foreign_keys_table_two').insert({});
             await knex('foreign_keys_table_three').insert({});
             await knex('foreign_keys_table_one').insert({
-              fkey_two: 1,
-              fkey_three: 1,
+              fkey_two: idTwo,
+              fkey_three: idThree,
             });
             try {
               await knex('foreign_keys_table_one').insert({
@@ -189,6 +205,11 @@ describe('Schema', () => {
               if (isPostgreSQL(knex)) {
                 expect(err.message).to.equal(
                   `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "fk_fkey_threeee"`
+                );
+              }
+              if (isCockroachDB(knex)) {
+                expect(err.message).to.equal(
+                  `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert on table "foreign_keys_table_one" violates foreign key constraint "fk_fkey_threeee"`
                 );
               }
               expect(err.message).to.include('constraint');

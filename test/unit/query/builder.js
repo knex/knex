@@ -9994,31 +9994,31 @@ describe('QueryBuilder', () => {
         .del()
         .from('users')
         .join('photos', 'photos.id', 'users.id')
-        .where({ 'user.email': 'mock@test.com' }),
+        .where({ 'user.email': 'mock@example.com' }),
       {
         mysql: {
           sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         mssql: {
           sql: 'delete [users] from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?;select @@rowcount',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         oracledb: {
           sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         pg: {
           sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         'pg-redshift': {
           sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         sqlite3: {
           sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
       }
     );
@@ -10030,11 +10030,11 @@ describe('QueryBuilder', () => {
         .del('*', triggerOptions)
         .from('users')
         .join('photos', 'photos.id', 'users.id')
-        .where({ 'user.email': 'mock@test.com' }),
+        .where({ 'user.email': 'mock@example.com' }),
       {
         mssql: {
           sql: 'select top(0) [t].* into #out from [users] as t left join [users] on 0=1;delete [users] output deleted.* into #out from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?; select * from #out; drop table #out;',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
       }
     );
