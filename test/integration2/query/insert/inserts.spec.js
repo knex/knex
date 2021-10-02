@@ -207,7 +207,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [2]
+              [1]
             );
             tester(
               'pg',
@@ -425,7 +425,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [4]
+              [1]
             );
             tester(
               'pg',
@@ -682,7 +682,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [7]
+              [1]
             );
             tester(
               'pg',
