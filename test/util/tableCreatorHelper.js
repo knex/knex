@@ -52,7 +52,7 @@ async function createAccounts(knex, withAccountId = false) {
   await knex.schema.createTable('accounts', (table) => {
     table.bigIncrements('id');
 
-    if (withAccountId) {
+    if (withAccountId && !isMysql(knex)) {
       table.integer('account_id').references('users.id');
     }
 
