@@ -1,7 +1,13 @@
 'use strict';
 
 const expect = require('chai').expect;
-const { isMssql, isOracle, isPgBased, isSQLite } = require('../../util/db-helpers');
+const {
+  isMssql,
+  isOracle,
+  isPgBased,
+  isSQLite,
+} = require('../../util/db-helpers');
+const { assertNumberArray } = require('../../util/assertHelper');
 
 module.exports = function (knex) {
   describe('unions', function () {
@@ -151,7 +157,11 @@ module.exports = function (knex) {
           })
           .then(function (result) {
             expect(result.length).to.equal(3);
-            expect(result.map((r) => r.id)).to.have.members([1, 4, 5]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [1, 4, 5]
+            );
           });
       });
 
@@ -169,7 +179,11 @@ module.exports = function (knex) {
           ])
           .then(function (result) {
             expect(result.length).to.equal(2);
-            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [1, 5]
+            );
           });
       });
 
@@ -187,7 +201,11 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [1, 5]
+            );
           });
       });
 
@@ -201,7 +219,11 @@ module.exports = function (knex) {
           ])
           .then(function (result) {
             expect(result.length).to.equal(2);
-            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [1, 5]
+            );
           });
       });
 
@@ -215,7 +237,11 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [1, 5]
+            );
           });
       });
 
@@ -232,7 +258,11 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            expect(result.map((r) => r.id)).to.have.members([2, 3]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [2, 3]
+            );
           });
       });
 
@@ -254,7 +284,11 @@ module.exports = function (knex) {
           ])
           .then(function (result) {
             expect(result.length).to.equal(2);
-            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [1, 5]
+            );
           });
       });
 
@@ -276,7 +310,11 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            expect(result.map((r) => r.id)).to.have.members([1, 5]);
+            assertNumberArray(
+              knex,
+              result.map((r) => r.id),
+              [1, 5]
+            );
           });
       });
     });
