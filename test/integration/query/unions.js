@@ -7,7 +7,7 @@ const {
   isPgBased,
   isSQLite,
 } = require('../../util/db-helpers');
-const { assertIdArray } = require('../../util/assertHelper');
+const { assertNumberArray } = require('../../util/assertHelper');
 
 module.exports = function (knex) {
   describe('unions', function () {
@@ -157,7 +157,7 @@ module.exports = function (knex) {
           })
           .then(function (result) {
             expect(result.length).to.equal(3);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [1, 4, 5]
@@ -179,7 +179,7 @@ module.exports = function (knex) {
           ])
           .then(function (result) {
             expect(result.length).to.equal(2);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [1, 5]
@@ -201,7 +201,7 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [1, 5]
@@ -219,7 +219,7 @@ module.exports = function (knex) {
           ])
           .then(function (result) {
             expect(result.length).to.equal(2);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [1, 5]
@@ -237,7 +237,7 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [1, 5]
@@ -258,7 +258,7 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [2, 3]
@@ -284,7 +284,7 @@ module.exports = function (knex) {
           ])
           .then(function (result) {
             expect(result.length).to.equal(2);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [1, 5]
@@ -310,7 +310,7 @@ module.exports = function (knex) {
           )
           .then(function (result) {
             expect(result.length).to.equal(2);
-            assertIdArray(
+            assertNumberArray(
               knex,
               result.map((r) => r.id),
               [1, 5]

@@ -31,7 +31,7 @@ const {
   createTestTableTwo,
   createDataType,
 } = require('../../../util/tableCreatorHelper');
-const { assertId } = require('../../../util/assertHelper');
+const { assertNumber } = require('../../../util/assertHelper');
 
 describe('Inserts', function () {
   getAllDbs().forEach((db) => {
@@ -1330,7 +1330,7 @@ describe('Inserts', function () {
               .orderBy('email', 'desc');
           })
           .then(function (results) {
-            assertId(knex, results[0].logins, 1);
+            assertNumber(knex, results[0].logins, 1);
             expect(results[1].about).to.equal(null);
             // cleanup to prevent needs for too much changes to other tests
             return knex('accounts')
@@ -2017,7 +2017,7 @@ describe('Inserts', function () {
               return trx('accounts').where('email', 'findme@example.com');
             })
             .then(function (results) {
-              assertId(knex, results[0].logins, 1);
+              assertNumber(knex, results[0].logins, 1);
               // cleanup to prevent needs for too much changes to other tests
               return trx('accounts').delete().where('id', results[0].id);
             });

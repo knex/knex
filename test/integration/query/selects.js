@@ -23,7 +23,10 @@ const {
   createDefaultTable,
 } = require('../../util/tableCreatorHelper');
 const { insertAccounts } = require('../../util/dataInsertHelper');
-const { assertIdArray } = require('../../util/assertHelper');
+const {
+  assertNumberArray,
+  assertNumberArrayStrict,
+} = require('../../util/assertHelper');
 
 module.exports = function (knex) {
   describe('Selects', function () {
@@ -1784,7 +1787,7 @@ module.exports = function (knex) {
         .from(subquery)
         .then(
           (rows) => {
-            assertIdArray(knex, rows, [3, 4, 5]);
+            assertNumberArrayStrict(knex, rows, [3, 4, 5]);
             expect(knex.client.driverName).to.oneOf(['sqlite3', 'oracledb']);
           },
           (e) => {

@@ -15,7 +15,7 @@ const {
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
-const { assertId } = require('../../util/assertHelper');
+const { assertNumber } = require('../../util/assertHelper');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -605,7 +605,7 @@ describe('Schema (misc)', () => {
             )
             .then(() => knex('test_table_three').where({ main: 1 }).first())
             .then((result) => {
-              assertId(knex, result.main, 1);
+              assertNumber(knex, result.main, 1);
               if (!isMysql(knex)) {
                 // MySQL doesn't support default values in text columns
                 expect(result.paragraph).to.eql('Lorem ipsum Qui quis qui in.');

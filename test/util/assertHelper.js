@@ -9,18 +9,29 @@ function normalizePathArray(pathArray) {
     return pathEntry.replace(/\\/g, '/');
   });
 }
-function assertIdArray(knex, idArray, expectedArray) {
+function assertNumberArray(knex, numberArray, expectedArray) {
   if (isCockroachDB(knex)) {
-    const transformedArray = idArray.map((entry) => {
+    const transformedArray = numberArray.map((entry) => {
+      return parseInt(entry);
+    });
+    expect(transformedArray).to.have.members(expectedArray);
+  } else {
+    expect(numberArray).to.have.members(expectedArray);
+  }
+}
+
+function assertNumberArrayStrict(knex, numberArray, expectedArray) {
+  if (isCockroachDB(knex)) {
+    const transformedArray = numberArray.map((entry) => {
       return parseInt(entry);
     });
     expect(transformedArray).to.deep.equal(expectedArray);
   } else {
-    expect(idArray).to.deep.equal(expectedArray);
+    expect(numberArray).to.deep.equal(expectedArray);
   }
 }
 
-function assertId(knex, id, expectedId) {
+function assertNumber(knex, id, expectedId) {
   if (isCockroachDB(knex)) {
     const transformedId = parseInt(id);
     expect(transformedId).to.equal(expectedId);
@@ -30,8 +41,9 @@ function assertId(knex, id, expectedId) {
 }
 
 module.exports = {
-  assertId,
-  assertIdArray,
+  assertNumber,
+  assertNumberArray,
+  assertNumberArrayStrict,
   normalizePath,
   normalizePathArray,
 };
