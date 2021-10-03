@@ -15,6 +15,7 @@ const {
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
+const { assertId } = require('../../util/assertHelper');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -551,10 +552,12 @@ describe('Schema (misc)', () => {
               ]);
             }));
 
-        it('sets default values with defaultTo', () => {
+        it('sets default values with defaultTo', async () => {
+          await knex.schema.dropTableIfExists('test_table_three');
+
           const defaultMetadata = { a: 10 };
           const defaultDetails = { b: { d: 20 } };
-          return knex.schema
+          await knex.schema
             .createTable('test_table_three', (table) => {
               if (isMysql(knex)) {
                 table.engine('InnoDB');
@@ -602,7 +605,7 @@ describe('Schema (misc)', () => {
             )
             .then(() => knex('test_table_three').where({ main: 1 }).first())
             .then((result) => {
-              expect(result.main).to.equal(1);
+              assertId(knex, result.main, 1);
               if (!isMysql(knex)) {
                 // MySQL doesn't support default values in text columns
                 expect(result.paragraph).to.eql('Lorem ipsum Qui quis qui in.');
