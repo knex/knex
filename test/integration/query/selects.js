@@ -23,10 +23,7 @@ const {
   createDefaultTable,
 } = require('../../util/tableCreatorHelper');
 const { insertAccounts } = require('../../util/dataInsertHelper');
-const {
-  assertNumberArray,
-  assertNumberArrayStrict,
-} = require('../../util/assertHelper');
+const { assertNumberArrayStrict } = require('../../util/assertHelper');
 
 module.exports = function (knex) {
   describe('Selects', function () {
