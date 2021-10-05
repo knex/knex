@@ -1977,10 +1977,7 @@ export declare namespace Knex {
   // patched ColumnBuilder methods to return ReferencingColumnBuilder with new methods
   // relies on ColumnBuilder returning only ColumnBuilder
   type ReferencingColumnBuilder = {
-    [K in keyof ColumnBuilder]:
-      ColumnBuilder[K] extends (...args: infer TArgs) => any
-        ? (...args: TArgs) => ReferencingColumnBuilder
-        : ColumnBuilder[K];
+    [K in keyof ColumnBuilder]: (...args: Parameters<ColumnBuilder[K]> ) => ReferencingColumnBuilder;
   } & {
     inTable(tableName: string): ReferencingColumnBuilder;
     deferrable(type: deferrableType): ReferencingColumnBuilder;
