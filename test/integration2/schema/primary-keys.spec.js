@@ -4,7 +4,6 @@ const {
   isSQLite,
   isPgBased,
   isCockroachDB,
-  isMysql,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
@@ -139,8 +138,8 @@ describe('Schema', () => {
                 return this.skip();
               }
 
-              // As of 2021-10-07, mysql && sqlite3 drivers do not yet support this syntax.
-              if (typeof customConstraintName !== 'string' && isMysql(knex) || isSQLite(knex)) {
+              // As of 2021-10-07, sqlite3 driver does not yet support this syntax.
+              if (typeof customConstraintName !== 'string' && isSQLite(knex)) {
                 return this.skip();
               }
 
@@ -150,10 +149,7 @@ describe('Schema', () => {
                   table.dropNullable('id_two');
                   table.dropNullable('id_three');
                 }
-                table.primary(
-                  ['id_two', 'id_three'],
-                  customConstraintName
-                );
+                table.primary(['id_two', 'id_three'], customConstraintName);
               });
 
               await knex('primary_table').insert({ id_two: 1, id_three: 1 });
