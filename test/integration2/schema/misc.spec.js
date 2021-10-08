@@ -122,54 +122,92 @@ describe('Schema (misc)', () => {
       });
 
       describe('dropSchema', () => {
-        before(async () => {
-          await knex.schema
-            .createSchema('test')
-            .createSchema('test2')
-            .createSchema('test3')
-            .createSchema('test4')
-            .createSchema('schema_drop_1')
-            .createSchema('schema_drop_2')
-            .createSchema('schema_drop_cascade_1')
-            .createSchema('schema_drop_cascade_2')
-            .withSchema('schema_drop_cascade_1')
-            .createTable('table_cascade_1', () => {})
-            .withSchema('schema_drop_cascade_2')
-            .createTable('table_cascade_2', () => {});
-        });
-
-        it('has a dropSchema/dropSchemaIfExists method', function () {
+        it('has a dropSchema/dropSchemaIfExists method', async function () {
           if (!isPgBased(knex)) {
             return this.skip();
           }
 
           this.timeout(process.env.KNEX_TEST_TIMEOUT || 30000);
           const dbDropSchema = ['pg', 'cockroachdb'];
-          return Promise.all([
-            knex.schema.dropSchema('test').testSql((tester) => {
-              tester(dbDropSchema, ['drop schema "test"']);
-            }),
-            knex.schema.dropSchemaIfExists('test2').testSql((tester) => {
-              tester(dbDropSchema, ['drop schema if exists "test2"']);
-            }),
-            knex.schema.dropSchema('test3', true).testSql((tester) => {
-              tester(dbDropSchema, ['drop schema "test3" cascade']);
-            }),
-            knex.schema.dropSchemaIfExists('test4', true).testSql((tester) => {
-              tester(dbDropSchema, ['drop schema if exists "test4" cascade']);
-            }),
+
+          function checkSchemaNotExists(schemaName) {
+            knex
+              .raw(
+                'SELECT schema_name FROM information_schema.schemata WHERE schema_name = ?',
+                [schemaName]
+              )
+              .then((res) => {
+                expect(res[0]).to.not.equal(schemaName);
+              });
+          }
+
+          // Drop schema cascade = false tests.
+          await knex.schema.createSchema('schema').then(() => {
             knex.schema
-              .dropSchema('schema_drop_1')
-              .dropSchemaIfExists('schema_drop_2')
-              .dropSchema('schema_drop_cascade_1', true)
-              .dropSchemaIfExists('schema_drop_cascade_2', true),
-            knex.schema.hasTable('table_cascade_1').then((resp) => {
-              expect(resp).to.equal(false);
-            }),
-            knex.schema.hasTable('table_cascade_2').then((resp) => {
-              expect(resp).to.equal(false);
-            }),
-          ]);
+              .dropSchema('schema')
+              .testSql((tester) => {
+                tester(dbDropSchema, ['drop schema "schema"']);
+              })
+              .then(() => {
+                checkSchemaNotExists('schema');
+              });
+          });
+
+          await knex.schema.createSchema('schema_2').then(() => {
+            knex.schema
+              .dropSchemaIfExists('schema_2')
+              .testSql((tester) => {
+                tester(dbDropSchema, ['drop schema if exists "schema_2"']);
+              })
+              .then(() => {
+                checkSchemaNotExists('schema_2');
+              });
+          });
+
+          // Drop schema cascade = true tests
+          await knex.schema.createSchema('schema_cascade_1').then(() => {
+            knex.schema
+              .withSchema('schema_cascade_1')
+              .createTable('table_cascade_1', () => {}) // created to check if cascade works.
+              .then(() => {
+                knex.schema
+                  .dropSchema('schema_cascade_1', true)
+                  .testSql((tester) => {
+                    tester(dbDropSchema, [
+                      'drop schema "schema_cascade_1" cascade',
+                    ]);
+                  })
+                  .then(() => {
+                    checkSchemaNotExists('schema_cascade_1');
+                    knex.schema
+                      .withSchema('schema_cascade_1')
+                      .hasTable('table_cascade_1')
+                      .then((exists) => expect(exists).to.equal(false));
+                  });
+              });
+          });
+
+          await knex.schema.createSchema('schema_cascade_2').then(() => {
+            knex.schema
+              .withSchema('schema_cascade_2')
+              .createTable('table_cascade_2', () => {}) // created to check if cascade works.
+              .then(() => {
+                knex.schema
+                  .dropSchemaIfExists('schema_cascade_2', true)
+                  .testSql((tester) => {
+                    tester(dbDropSchema, [
+                      'drop schema if exists "schema_cascade_2" cascade',
+                    ]);
+                  })
+                  .then(() => {
+                    checkSchemaNotExists('schema_cascade_2');
+                    knex.schema
+                      .withSchema('schema_cascade_2')
+                      .hasTable('table_cascade_2')
+                      .then((exists) => expect(exists).to.equal(false));
+                  });
+              });
+          });
         });
       });
 
