@@ -138,11 +138,6 @@ describe('Schema', () => {
                 return this.skip();
               }
 
-              // As of 2021-10-07, sqlite3 driver does not yet support this syntax.
-              if (typeof customConstraintName !== 'string' && isSQLite(knex)) {
-                return this.skip();
-              }
-
               await knex.schema.alterTable('primary_table', (table) => {
                 // CockroachDB and mssql do not support nullable primary keys
                 if (isCockroachDB(knex) || isMssql(knex)) {
