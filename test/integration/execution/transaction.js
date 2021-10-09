@@ -7,7 +7,12 @@ const _ = require('lodash');
 const sinon = require('sinon');
 const { KnexTimeoutError } = require('../../../lib/util/timeout');
 const delay = require('../../../lib/execution/internal/delay');
-const { isRedshift, isOracle, isMssql, isPostgreSQL } = require('../../util/db-helpers');
+const {
+  isRedshift,
+  isOracle,
+  isMssql,
+  isPostgreSQL,
+} = require('../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../util/constants');
 
 module.exports = function (knex) {

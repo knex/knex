@@ -1,6 +1,6 @@
 'use strict';
 
-const { isMysql, isPostgreSQL } = require("../../util/db-helpers");
+const { isMysql, isPostgreSQL } = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Aggregate', function () {
