@@ -1566,7 +1566,7 @@ describe('Selects', function () {
           .select(['accounts.id'])
           .where(knex.ref('accounts.id'), result[0].id)
           .first();
-        expect(String(row.userid)).to.equal(result[0].id);
+        expect(String(row.userid)).to.equal(String(result[0].id));
       });
 
       it.skip('select forUpdate().first() bug in oracle (--------- TODO: FIX)', function () {
