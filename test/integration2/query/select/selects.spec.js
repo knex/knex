@@ -31,7 +31,7 @@ const {
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
 
-describe.only('Selects', function () {
+describe('Selects', function () {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
