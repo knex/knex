@@ -505,13 +505,11 @@ describe('Selects', function () {
       });
 
       it('properly escapes postgres queries on streaming', async function () {
-        await knex('accounts').insert({
-          id: 998,
-        });
+        const result = await knex('accounts').select();
 
         let count = 0;
         await knex('accounts')
-          .where('id', 998)
+          .where('id', result[0].id)
           .stream(function (rowStream) {
             rowStream.on('data', function () {
               count++;
@@ -1561,16 +1559,14 @@ describe('Selects', function () {
       });
 
       it('knex.ref() as column in .select()', async function () {
-        await knex('accounts').insert({
-          id: 999,
-        });
+        const result = await knex('accounts').select();
 
         const row = await knex('accounts')
           .select([knex.ref('accounts.id').as('userid')])
           .select(['accounts.id'])
-          .where(knex.ref('accounts.id'), 999)
+          .where(knex.ref('accounts.id'), result[0].id)
           .first();
-        expect(String(row.userid)).to.equal('999');
+        expect(String(row.userid)).to.equal(result[0].id);
       });
 
       it.skip('select forUpdate().first() bug in oracle (--------- TODO: FIX)', function () {
@@ -1814,15 +1810,28 @@ describe('Selects', function () {
       });
 
       it('select from subquery', async function () {
-        const subquery = knex.from('accounts').whereBetween('id', [3, 5]);
+        const result = await knex('accounts').select().orderBy('id');
+
+        const subquery = knex
+          .from('accounts')
+          .whereBetween('id', [result[0].id, result[2].id]);
         return knex
           .pluck('id')
           .orderBy('id')
           .from(subquery)
           .then(
             (rows) => {
-              assertNumberArrayStrict(knex, rows, [3, 4, 5]);
-              expect(knex.client.driverName).to.oneOf(['sqlite3', 'oracledb']);
+              expect(knex.client.driverName).to.oneOf([
+                'sqlite3',
+                'oracledb',
+                'cockroachdb',
+              ]);
+
+              if (knex.client.driverName !== 'cockroachdb') {
+                assertNumberArrayStrict(knex, rows, [3, 4, 5]);
+              } else {
+                expect(rows.length).to.equal(3);
+              }
             },
             (e) => {
               if (isMysql(knex)) {
