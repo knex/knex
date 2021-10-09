@@ -506,12 +506,12 @@ describe('Selects', function () {
 
       it('properly escapes postgres queries on streaming', async function () {
         await knex('accounts').insert({
-          id: '-2',
+          id: 998,
         });
 
         let count = 0;
         await knex('accounts')
-          .where('id', -2)
+          .where('id', 998)
           .stream(function (rowStream) {
             rowStream.on('data', function () {
               count++;
@@ -1562,15 +1562,15 @@ describe('Selects', function () {
 
       it('knex.ref() as column in .select()', async function () {
         await knex('accounts').insert({
-          id: '-1',
+          id: 999,
         });
 
         const row = await knex('accounts')
           .select([knex.ref('accounts.id').as('userid')])
           .select(['accounts.id'])
-          .where(knex.ref('accounts.id'), '-1')
+          .where(knex.ref('accounts.id'), 999)
           .first();
-        expect(String(row.userid)).to.equal('-1');
+        expect(String(row.userid)).to.equal('999');
       });
 
       it.skip('select forUpdate().first() bug in oracle (--------- TODO: FIX)', function () {
