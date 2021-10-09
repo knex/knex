@@ -31,7 +31,7 @@ const {
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
 
-describe('Selects', function () {
+describe.only('Selects', function () {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
@@ -1828,7 +1828,11 @@ describe('Selects', function () {
               ]);
 
               if (knex.client.driverName !== 'cockroachdb') {
-                assertNumberArrayStrict(knex, rows, [3, 4, 5]);
+                assertNumberArrayStrict(knex, rows, [
+                  result[0].id,
+                  result[1].id,
+                  result[2].id,
+                ]);
               } else {
                 expect(rows.length).to.equal(3);
               }
