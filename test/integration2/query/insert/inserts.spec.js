@@ -40,13 +40,6 @@ describe('Inserts', function () {
 
       before(async () => {
         knex = logger(getKnexForDb(db));
-      });
-
-      after(async () => {
-        return knex.destroy();
-      });
-
-      beforeEach(async () => {
         await dropTables(knex);
         await createUsers(knex);
         await createAccounts(knex, true);
@@ -54,8 +47,14 @@ describe('Inserts', function () {
         await createDataType(knex);
       });
 
-      afterEach(async () => {
+      after(async () => {
         await dropTables(knex);
+        return knex.destroy();
+      });
+
+      beforeEach(async () => {
+        await knex('accounts').truncate();
+        await knex('test_table_two').truncate();
       });
 
       it('should handle simple inserts', function () {
@@ -1100,7 +1099,7 @@ describe('Inserts', function () {
           .insert(insertData, returningColumn)
           .testSql(function (tester) {
             tester(
-              'pg',
+              ['pg'],
               'insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning *',
               [
                 10,
