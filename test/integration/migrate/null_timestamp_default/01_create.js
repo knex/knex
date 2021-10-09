@@ -1,4 +1,4 @@
-exports.up = function (knex, Promise) {
+exports.up = function (knex) {
   return knex.schema.createTable('null_date', function (t) {
     t.increments('id').primary();
     t.string('dummy');

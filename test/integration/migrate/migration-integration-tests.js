@@ -21,6 +21,7 @@ const {
   isSQLite,
   isRedshift,
 } = require('../../util/db-helpers');
+const { assertNumber } = require('../../util/assertHelper');
 
 module.exports = function (knex) {
   rimraf.sync(path.join(__dirname, './migration'));
@@ -253,7 +254,7 @@ module.exports = function (knex) {
           .select('*')
           .then(function (data) {
             expect(data[0]).to.have.property('is_locked');
-            expect(data[0].is_locked).to.not.be.ok;
+            expect(Number.parseInt(data[0].is_locked)).to.not.be.ok;
           });
       });
 
@@ -275,7 +276,7 @@ module.exports = function (knex) {
             return knex('knex_migrations_lock').select('*');
           })
           .then(function (data) {
-            expect(data[0].is_locked).to.equal(1);
+            assertNumber(knex, data[0].is_locked, 1);
 
             // Clean up lock for other tests
             return knex('knex_migrations_lock').update({ is_locked: 0 });
@@ -368,7 +369,7 @@ module.exports = function (knex) {
         return knex('knex_migrations_lock')
           .select('*')
           .then(function (data) {
-            expect(data[0].is_locked).to.not.be.ok;
+            expect(Number.parseInt(data[0].is_locked)).to.not.be.ok;
           });
       });
 
@@ -478,7 +479,7 @@ module.exports = function (knex) {
         return knex.migrate
           .rollback({ directory: 'test/integration/migrate/test' })
           .then(([batchNo, log]) => {
-            expect(batchNo).to.equal(1);
+            assertNumber(knex, batchNo, 1);
             expect(log).to.have.length(2);
             expect(log[0]).to.contain(batchNo);
             return knex('knex_migrations')
@@ -528,7 +529,7 @@ module.exports = function (knex) {
             true
           )
           .then(([batchNo, log]) => {
-            expect(batchNo).to.equal(2);
+            assertNumber(knex, batchNo, 2);
             expect(log).to.have.length(4);
             return knex('knex_migrations')
               .select('*')
@@ -568,7 +569,7 @@ module.exports = function (knex) {
             true
           )
           .then(([batchNo, log]) => {
-            expect(batchNo).to.equal(1);
+            assertNumber(knex, batchNo, 1);
             expect(log).to.have.length(2);
 
             fs.readdirSync('test/integration/migrate/test')
@@ -705,7 +706,7 @@ module.exports = function (knex) {
             .table('test_transactions')
             .select('value')
             .first();
-          expect(value).to.equal(1); // updated by migration before error
+          assertNumber(knex, value, 1); // updated by migration before error
         });
       });
     });
@@ -796,7 +797,7 @@ module.exports = function (knex) {
             .table('test_transactions')
             .select('value')
             .first();
-          expect(value).to.equal(-1); // updated by migration before error
+          assertNumber(knex, value, -1); // updated by migration before error
         });
       });
     });
