@@ -8,9 +8,33 @@ const {
   isSQLite,
 } = require('../../util/db-helpers');
 const { assertNumberArray } = require('../../util/assertHelper');
+const {
+  dropTables,
+  createUsers,
+  createAccounts,
+  createCompositeKeyTable,
+  createTestTableTwo,
+  createDefaultTable,
+} = require('../../util/tableCreatorHelper');
+const { insertAccounts } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('unions', function () {
+    before(async () => {
+      await dropTables(knex);
+      await createUsers(knex);
+      await createAccounts(knex);
+      await createCompositeKeyTable(knex);
+      await createTestTableTwo(knex);
+      await createDefaultTable(knex);
+      await createDefaultTable(knex, true);
+    });
+
+    beforeEach(async () => {
+      await knex('accounts').truncate();
+      await insertAccounts(knex);
+    });
+
     it('handles unions with a callback', function () {
       return knex('accounts')
         .select('*')
