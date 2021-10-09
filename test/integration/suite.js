@@ -25,7 +25,6 @@ module.exports = function (knex) {
     require('./migrate/migration-integration-tests')(knex);
 
     require('./seed')(knex);
-    require('./query/selects')(knex);
     require('./query/unions')(knex);
     require('./query/joins')(knex);
     require('./query/aggregate')(knex);
