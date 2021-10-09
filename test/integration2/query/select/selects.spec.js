@@ -14,7 +14,6 @@ const {
   isSQLite,
   isOracle,
   isPgBased,
-  isCockroachDB,
 } = require('../../../util/db-helpers');
 const {
   createUsers,
