@@ -32,7 +32,7 @@ const {
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 
-describe.only('Additional', function () {
+describe('Additional', function () {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
