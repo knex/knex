@@ -1903,51 +1903,53 @@ describe('Joins', function () {
           });
       });
 
-      if (!isMssql(knex)) {
-        it('Can use .using()', async () => {
-          const joinName = 'accounts_join_test';
+      it('Can use .using()', async function () {
+        if (isMssql(knex)) {
+          return this.skip();
+        }
 
-          await knex.schema.dropTableIfExists(joinName);
-          await knex.schema.createTable(joinName, (table) => {
-            table.bigint('id');
-            table.string('email');
-            table.integer('testcolumn');
-          });
+        const joinName = 'accounts_join_test';
 
-          const test3 = await knex('accounts')
-            .select()
-            .where({
-              email: 'test3@example.com',
-            })
-            .first();
-
-          await knex(joinName).insert([
-            {
-              id: test3.id,
-              email: 'test3@example.com',
-              testcolumn: 50,
-            },
-            {
-              id: test3.id,
-              email: 'random@email.com',
-              testcolumn: 70,
-            },
-          ]);
-          const rows = await knex('accounts').join(joinName, (builder) =>
-            builder.using(['id', 'email'])
-          );
-
-          expect(rows.length).to.equal(1);
-          assertNumber(knex, rows[0].testcolumn, 50);
-
-          const rows2 = await knex('accounts')
-            .join(joinName, (builder) => builder.using(['id']))
-            .orderBy('testcolumn');
-          expect(rows2.length).to.equal(2);
-          assertNumber(knex, rows2[0].testcolumn, 50);
-          assertNumber(knex, rows2[1].testcolumn, 70);
+        await knex.schema.dropTableIfExists(joinName);
+        await knex.schema.createTable(joinName, (table) => {
+          table.bigint('id');
+          table.string('email');
+          table.integer('testcolumn');
         });
-      }
+
+        const test3 = await knex('accounts')
+          .select()
+          .where({
+            email: 'test3@example.com',
+          })
+          .first();
+
+        await knex(joinName).insert([
+          {
+            id: test3.id,
+            email: 'test3@example.com',
+            testcolumn: 50,
+          },
+          {
+            id: test3.id,
+            email: 'random@email.com',
+            testcolumn: 70,
+          },
+        ]);
+        const rows = await knex('accounts').join(joinName, (builder) =>
+          builder.using(['id', 'email'])
+        );
+
+        expect(rows.length).to.equal(1);
+        assertNumber(knex, rows[0].testcolumn, 50);
+
+        const rows2 = await knex('accounts')
+          .join(joinName, (builder) => builder.using(['id']))
+          .orderBy('testcolumn');
+        expect(rows2.length).to.equal(2);
+        assertNumber(knex, rows2[0].testcolumn, 50);
+        assertNumber(knex, rows2[1].testcolumn, 70);
+      });
     });
   });
 });
