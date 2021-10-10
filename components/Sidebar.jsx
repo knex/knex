@@ -178,6 +178,8 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-generateDdlCommands">generateDdlCommands</a></li>
           <li>– <a href="#Schema-raw">raw</a></li>
           <li>– <a href="#Schema-queryContext">queryContext</a></li>
+          <li>– <a href="#Schema-dropSchema">dropSchema</a></li>
+          <li>– <a href="#Schema-dropSchemaIfExists">dropSchemaIfExists</a></li>
           <li><b><a href="#Schema-Building">Schema Building:</a></b></li>
           <li>– <a href="#Schema-dropColumn">dropColumn</a></li>
           <li>– <a href="#Schema-dropColumns">dropColumns</a></li>

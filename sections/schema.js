@@ -211,6 +211,42 @@ export default [
     ]
   },
   {
+    type: "method",
+    method: "dropSchema",
+    example: "knex.schema.dropSchema(schemaName, [cascade])",
+    description: "Drop a schema, specified by the schema's name, with optional cascade option (default to false). Only supported by PostgreSQL.",
+    children: [
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          //drop schema 'public'
+          knex.schema.dropSchema('public')
+          //drop schema 'public' cascade
+          knex.schema.dropSchema('public', true)
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "dropSchemaIfExists",
+    example: "knex.schema.dropSchemaIfExists(schemaName, [cascade])",
+    description: "Drop a schema conditionally if the schema exists, specified by the schema's name, with optional cascade option (default to false). Only supported by PostgreSQL.",
+    children: [
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          //drop schema if exists 'public'
+          knex.schema.dropSchemaIfExists('public')
+          //drop schema if exists 'public' cascade
+          knex.schema.dropSchemaIfExists('public', true)
+        `
+      }
+    ]
+  },
+  {
     type: "heading",
     size: "md",
     content: "Schema Building:",
