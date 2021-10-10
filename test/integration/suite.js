@@ -32,7 +32,6 @@ module.exports = function (knex) {
     require('./query/trigger-inserts')(knex);
     require('./query/trigger-updates')(knex);
     require('./query/trigger-deletes')(knex);
-    require('./query/additional')(knex);
     require('./datatype/bigint')(knex);
     require('./datatype/decimal')(knex);
     require('./datatype/double')(knex);
