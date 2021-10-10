@@ -568,19 +568,15 @@ describe('Selects', function () {
           .then(function () {
             return knex('OrderByNullTest').insert([
               {
-                id: 1,
                 null_col: 'test',
               },
               {
-                id: 2,
                 null_col: 'test2',
               },
               {
-                id: 3,
                 null_col: null,
               },
               {
-                id: 4,
                 null_col: null,
               },
             ]);
