@@ -5631,7 +5631,7 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` order by (`foo` is not null) desc',
       },
       mssql: {
-        sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
+        sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
       },
       pg: {
         sql: 'select * from "users" order by ("foo" is not null) desc',
@@ -5652,7 +5652,7 @@ describe('QueryBuilder', () => {
           sql: 'select * from `users` order by (`foo` is not null) desc',
         },
         mssql: {
-          sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
+          sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
         },
         pg: {
           sql: 'select * from "users" order by ("foo" is not null) desc',
@@ -5670,7 +5670,7 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` order by (`foo` is null) desc',
       },
       mssql: {
-        sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+        sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
       },
       pg: {
         sql: 'select * from "users" order by ("foo" is null) desc',
@@ -5691,7 +5691,7 @@ describe('QueryBuilder', () => {
           sql: 'select * from `users` order by (`foo` is null) desc',
         },
         mssql: {
-          sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+          sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
         },
         pg: {
           sql: 'select * from "users" order by ("foo" is null) desc',
