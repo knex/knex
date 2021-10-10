@@ -134,7 +134,7 @@ describe('unions', function () {
           );
       });
 
-      describe.only('intersects', function () {
+      describe('intersects', function () {
         before(async function () {
           await knex.schema.createTable('intersect_test', function (t) {
             t.integer('id');
