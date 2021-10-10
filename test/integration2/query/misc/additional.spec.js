@@ -1032,7 +1032,7 @@ describe('Additional', function () {
           knexPrototype._wrappedCancelQueryCall;
 
         knexPrototype._wrappedCancelQueryCall = (conn, connectionToKill) => {
-          if (isPgNative(knex) || isCockroachDB(knex)) {
+          if (isPgNative(knex) || isCockroachDB(knex) || isMysql(knex)) {
             throw new Error('END THIS');
           } else {
             return knexPrototype.query(conn, {
@@ -1050,7 +1050,7 @@ describe('Additional', function () {
             getTestQuery().timeout(queryTimeout, { cancel: true })
           ).to.be.eventually.rejected.and.deep.include({
             timeout: queryTimeout,
-            name: isCockroachDB(knex) ? 'Error' : 'error',
+            name: isCockroachDB(knex) || isMysql(knex) ? 'Error' : 'error',
             message: `After query timeout of ${queryTimeout}ms exceeded, cancelling of query failed.`,
           });
 
