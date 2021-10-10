@@ -592,7 +592,7 @@ describe('Selects', function () {
               .testSql(function (tester) {
                 tester(
                   'mysql',
-                  'select `id` from `OrderByNullTest` order by (`null_col` is not null ) asc',
+                  'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc',
                   [],
                   [3, 4, 1, 2]
                 );
@@ -641,7 +641,7 @@ describe('Selects', function () {
               .testSql(function (tester) {
                 tester(
                   'mysql',
-                  'select `id` from `OrderByNullTest` order by (`null_col` is null ) asc',
+                  'select `id` from `OrderByNullTest` order by (`null_col` is null) asc',
                   [],
                   [1, 2, 3, 4]
                 );
