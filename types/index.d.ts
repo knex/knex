@@ -1485,7 +1485,7 @@ export declare namespace Knex {
       TResult2 = AggregationQueryResult<TResult, {[x in TAlias]: number}>
       >(alias: TAlias,
         orderBy: TKey | TKey[] | { columnName: TKey, order?: 'asc' | 'desc', nulls?: 'first' | 'last' },
-        partitionBy?: TKey | TKey[] | { columnName: TKey, order?: 'asc' | 'desc', nulls?: 'first' | 'last' }):
+        partitionBy?: TKey | TKey[] | { columnName: TKey, order?: 'asc' | 'desc' }):
       QueryBuilder<
         TRecord,
         TResult2
