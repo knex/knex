@@ -5625,6 +5625,84 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('order by, null first', () => {
+    testsql(qb().from('users').orderBy('foo', 'desc', 'first'), {
+      mysql: {
+        sql: 'select * from `users` order by (`foo` is not null) desc',
+      },
+      mssql: {
+        sql: 'select * from [users] order by ([foo] is not null) desc',
+      },
+      pg: {
+        sql: 'select * from "users" order by ("foo" is not null) desc',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by ("foo" is not null) desc',
+      },
+    });
+  });
+
+  it('order by, null first, array notation', () => {
+    testsql(
+      qb()
+        .from('users')
+        .orderBy([{ column: 'foo', order: 'desc', nulls: 'first' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by (`foo` is not null) desc',
+        },
+        mssql: {
+          sql: 'select * from [users] order by ([foo] is not null) desc',
+        },
+        pg: {
+          sql: 'select * from "users" order by ("foo" is not null) desc',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by ("foo" is not null) desc',
+        },
+      }
+    );
+  });
+
+  it('order by, null last', () => {
+    testsql(qb().from('users').orderBy('foo', 'desc', 'last'), {
+      mysql: {
+        sql: 'select * from `users` order by (`foo` is null) desc',
+      },
+      mssql: {
+        sql: 'select * from [users] order by ([foo] is null) desc',
+      },
+      pg: {
+        sql: 'select * from "users" order by ("foo" is null) desc',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by ("foo" is null) desc',
+      },
+    });
+  });
+
+  it('order by, null last, array notation', () => {
+    testsql(
+      qb()
+        .from('users')
+        .orderBy([{ column: 'foo', order: 'desc', nulls: 'last' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by (`foo` is null) desc',
+        },
+        mssql: {
+          sql: 'select * from [users] order by ([foo] is null) desc',
+        },
+        pg: {
+          sql: 'select * from "users" order by ("foo" is null) desc',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by ("foo" is null) desc',
+        },
+      }
+    );
+  });
+
   it('update method with joins mysql', () => {
     testsql(
       qb()

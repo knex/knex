@@ -558,6 +558,136 @@ describe('Selects', function () {
           });
       });
 
+      it('order by with null', async () => {
+        return knex.schema
+          .dropTableIfExists('OrderByNullTest')
+          .createTable('OrderByNullTest', function (table) {
+            table.increments('id').primary();
+            table.string('null_col').nullable().defaultTo(null);
+          })
+          .then(function () {
+            return knex('OrderByNullTest').insert([
+              {
+                id: 1,
+                null_col: 'test',
+              },
+              {
+                id: 2,
+                null_col: 'test2',
+              },
+              {
+                id: 3,
+                null_col: null,
+              },
+              {
+                id: 4,
+                null_col: null,
+              },
+            ]);
+          })
+          .then(function () {
+            return knex('OrderByNullTest')
+              .pluck('id')
+              .orderBy('null_col', 'asc', 'first')
+              .testSql(function (tester) {
+                tester(
+                  'mysql',
+                  'select `id` from `OrderByNullTest` order by (`null_col` is not null ) asc',
+                  [],
+                  [3, 4, 1, 2]
+                );
+                tester(
+                  'pg',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+                  [],
+                  [3, 4, 1, 2]
+                );
+                tester(
+                  'pgnative',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+                  [],
+                  [3, 4, 1, 2]
+                );
+                tester(
+                  'pg-redshift',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+                  [],
+                  ['3', '4', '1', '2']
+                );
+                tester(
+                  'sqlite3',
+                  'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc',
+                  [],
+                  [3, 4, 1, 2]
+                );
+                tester(
+                  'oracledb',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+                  [],
+                  [3, 4, 1, 2]
+                );
+                tester(
+                  'mssql',
+                  'select [id] from [OrderByNullTest] order by ([null_col] is not null) asc',
+                  [],
+                  [3, 4, 1, 2]
+                );
+              });
+          })
+          .then(function () {
+            return knex('OrderByNullTest')
+              .pluck('id')
+              .orderBy('null_col', 'asc', 'last')
+              .testSql(function (tester) {
+                tester(
+                  'mysql',
+                  'select `id` from `OrderByNullTest` order by (`null_col` is null ) asc',
+                  [],
+                  [1, 2, 3, 4]
+                );
+                tester(
+                  'pg',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+                  [],
+                  [1, 2, 3, 4]
+                );
+                tester(
+                  'pgnative',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+                  [],
+                  [1, 2, 3, 4]
+                );
+                tester(
+                  'pg-redshift',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+                  [],
+                  ['1', '2', '3', '4']
+                );
+                tester(
+                  'sqlite3',
+                  'select `id` from `OrderByNullTest` order by (`null_col` is null) asc',
+                  [],
+                  [1, 2, 3, 4]
+                );
+                tester(
+                  'oracledb',
+                  'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+                  [],
+                  [1, 2, 3, 4]
+                );
+                tester(
+                  'mssql',
+                  'select [id] from [OrderByNullTest] order by ([null_col] is null) asc',
+                  [],
+                  [1, 2, 3, 4]
+                );
+              });
+          })
+          .then(function () {
+            knex.schema.dropTable('OrderByNullTest');
+          });
+      });
+
       describe('simple "where" cases', function () {
         it('allows key, value', function () {
           return knex('accounts')
