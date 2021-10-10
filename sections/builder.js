@@ -1304,8 +1304,8 @@ export default [
   {
     type: "method",
     method: "orderBy",
-    example: ".orderBy(column|columns, [direction])",
-    description: "Adds an order by clause to the query. column can be string, or list mixed with string and object.",
+    example: ".orderBy(column|columns, [direction], [nulls])",
+    description: "Adds an order by clause to the query. column can be string, or list mixed with string and object. nulls specify where the nulls values are put (can be 'first' or 'last').",
     children: [
       {
         type: "text",
@@ -1324,6 +1324,12 @@ export default [
         `
       },
       {
+        type: "runnable",
+        content: `
+          knex('users').orderBy('name', 'desc', 'first')
+        `
+      },
+      {
         type: "text",
         content: "Multiple Columns:"
       },
@@ -1337,6 +1343,12 @@ export default [
         type: "runnable",
         content: `
           knex('users').orderBy([{ column: 'email' }, { column: 'age', order: 'desc' }])
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').orderBy([{ column: 'email' }, { column: 'age', order: 'desc', nulls: 'last' }])
         `
       }
     ]
