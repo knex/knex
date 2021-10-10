@@ -1050,7 +1050,10 @@ describe('Additional', function () {
             getTestQuery().timeout(queryTimeout, { cancel: true })
           ).to.be.eventually.rejected.and.deep.include({
             timeout: queryTimeout,
-            name: isCockroachDB(knex) || isMysql(knex) ? 'Error' : 'error',
+            name:
+              isCockroachDB(knex) || isMysql(knex) || isPgNative(knex)
+                ? 'Error'
+                : 'error',
             message: `After query timeout of ${queryTimeout}ms exceeded, cancelling of query failed.`,
           });
 
