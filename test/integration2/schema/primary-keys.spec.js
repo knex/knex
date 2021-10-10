@@ -15,9 +15,6 @@ describe('Schema', () => {
 
         before(function () {
           knex = getKnexForDb(db);
-          if (isMssql(knex)) {
-            return this.skip();
-          }
         });
 
         after(() => {
@@ -100,8 +97,8 @@ describe('Schema', () => {
 
           it('creates a compound primary key', async () => {
             await knex.schema.alterTable('primary_table', (table) => {
-              // CockroachDB does not support nullable primary keys
-              if (isCockroachDB(knex)) {
+              // CockroachDB and mssql do not support nullable primary keys
+              if (isCockroachDB(knex) || isMssql(knex)) {
                 table.dropNullable('id_two');
                 table.dropNullable('id_three');
               }
@@ -128,49 +125,54 @@ describe('Schema', () => {
             }
           });
 
-          it('creates a compound primary key with a custom constraint name', async function () {
-            // CockroachDB currently does not support dropping primary key without creating new one in the same transaction
-            if (isCockroachDB(knex)) {
-              return this.skip();
-            }
-
-            await knex.schema.alterTable('primary_table', (table) => {
-              // CockroachDB does not support nullable primary keys
-              if (isCockroachDB()) {
-                table.dropNullable('id_two');
-                table.dropNullable('id_three');
+          for (const [flavor, customConstraintName] of [
+            ['provided directly as a string', 'my_custom_constraint_name'],
+            [
+              'provided in the options object',
+              { constraintName: 'my_custom_constraint_name' },
+            ],
+          ]) {
+            it(`creates a compound primary key with a custom constraint name ${flavor}`, async function () {
+              // As of 2021-10-02, CockroachDB does not support dropping a primary key without creating a new one in the same transaction.
+              if (isCockroachDB(knex)) {
+                return this.skip();
               }
-              table.primary(
-                ['id_two', 'id_three'],
-                'my_custom_constraint_name'
-              );
-            });
 
-            await knex('primary_table').insert({ id_two: 1, id_three: 1 });
-            await knex('primary_table').insert({ id_two: 2, id_three: 1 });
-            await knex('primary_table').insert({ id_two: 1, id_three: 2 });
+              await knex.schema.alterTable('primary_table', (table) => {
+                // CockroachDB and mssql do not support nullable primary keys
+                if (isCockroachDB(knex) || isMssql(knex)) {
+                  table.dropNullable('id_two');
+                  table.dropNullable('id_three');
+                }
+                table.primary(['id_two', 'id_three'], customConstraintName);
+              });
 
-            try {
               await knex('primary_table').insert({ id_two: 1, id_three: 1 });
-            } catch (err) {
-              if (isSQLite(knex)) {
-                expect(err.message).to.equal(
-                  'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
-                );
-              }
-              if (isPgBased(knex)) {
-                expect(err.message).to.equal(
-                  'insert into "primary_table" ("id_three", "id_two") values ($1, $2) - duplicate key value violates unique constraint "my_custom_constraint_name"'
-                );
-              }
-            }
+              await knex('primary_table').insert({ id_two: 2, id_three: 1 });
+              await knex('primary_table').insert({ id_two: 1, id_three: 2 });
 
-            await knex.schema.alterTable('primary_table', (table) => {
-              table.dropPrimary('my_custom_constraint_name');
+              try {
+                await knex('primary_table').insert({ id_two: 1, id_three: 1 });
+              } catch (err) {
+                if (isSQLite(knex)) {
+                  expect(err.message).to.equal(
+                    'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                  );
+                }
+                if (isPgBased(knex)) {
+                  expect(err.message).to.equal(
+                    'insert into "primary_table" ("id_three", "id_two") values ($1, $2) - duplicate key value violates unique constraint "my_custom_constraint_name"'
+                  );
+                }
+              }
+
+              await knex.schema.alterTable('primary_table', (table) => {
+                table.dropPrimary('my_custom_constraint_name');
+              });
+
+              await knex('primary_table').insert({ id_two: 1, id_three: 1 });
             });
-
-            await knex('primary_table').insert({ id_two: 1, id_three: 1 });
-          });
+          }
         });
       });
     });
