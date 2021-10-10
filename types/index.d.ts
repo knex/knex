@@ -1965,8 +1965,6 @@ export declare namespace Knex {
     /** @deprecated */
     unique(indexName?: string): ColumnBuilder;
     references(columnName: string): ReferencingColumnBuilder;
-    onDelete(command: string): ColumnBuilder;
-    onUpdate(command: string): ColumnBuilder;
     defaultTo(value: Value | null, options?: DefaultToOptions): ColumnBuilder;
     unsigned(): ColumnBuilder;
     notNullable(): ColumnBuilder;
@@ -1989,13 +1987,17 @@ export declare namespace Knex {
     index(indexName?: string, indexType?: string): ColumnBuilder;
   }
 
-  interface ReferencingColumnBuilder extends ColumnBuilder {
+  // patched ColumnBuilder methods to return ReferencingColumnBuilder with new methods
+  // relies on ColumnBuilder returning only ColumnBuilder
+  type ReferencingColumnBuilder = {
+    [K in keyof ColumnBuilder]: (...args: Parameters<ColumnBuilder[K]>) => ReferencingColumnBuilder;
+  } & {
     inTable(tableName: string): ReferencingColumnBuilder;
     deferrable(type: deferrableType): ReferencingColumnBuilder;
     withKeyName(keyName: string): ReferencingColumnBuilder;
     onDelete(command: string): ReferencingColumnBuilder;
     onUpdate(command: string): ReferencingColumnBuilder;
-  }
+  };
 
   interface AlterColumnBuilder extends ColumnBuilder {}
 
