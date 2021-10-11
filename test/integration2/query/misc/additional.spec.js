@@ -646,7 +646,7 @@ describe('Additional', function () {
       });
 
       it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', async function () {
-        if (isSQLite(knex)) {
+        if (isSQLite(knex) || isCockroachDB(knex)) {
           return this.skip();
         } //TODO -- No built-in support for sleeps
         if (isRedshift(knex)) {
@@ -763,7 +763,7 @@ describe('Additional', function () {
 
       it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query in transaction', async function () {
         const driverName = knex.client.driverName;
-        if (driverName === 'sqlite3') {
+        if (isSQLite(knex) || isCockroachDB(knex)) {
           return this.skip();
         } //TODO -- No built-in support for sleeps
         if (/redshift/.test(driverName)) {
@@ -845,19 +845,10 @@ describe('Additional', function () {
 
         let trx;
         try {
-          // ToDo I have no idea why this works differently for Cockroach...
-          if (!isCockroachDB(knex)) {
-            await knex.transaction((trx) => addTimeout().transacting(trx));
-          } else {
-            trx = await knex.transaction();
-            await trx.raw(query).timeout(200, { cancel: true });
-          }
+          trx = await knex.transaction();
+          await trx.raw(query).timeout(200, { cancel: true });
           expect(true).to.equal(false);
         } catch (error) {
-          if (isCockroachDB(knex)) {
-            await trx.rollback();
-          }
-
           expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
             timeout: 200,
             name: 'KnexTimeoutError',
@@ -889,7 +880,7 @@ describe('Additional', function () {
 
       it('.timeout(ms, {cancel: true}) should cancel slow query even if connection pool is exhausted', async function () {
         // Only mysql/postgres query cancelling supported for now
-        if (!isMysql(knex) && !isPostgreSQL(knex)) {
+        if (isCockroachDB(knex) || (!isMysql(knex) && !isPgBased(knex))) {
           return this.skip();
         }
 
@@ -993,7 +984,7 @@ describe('Additional', function () {
 
       it('.timeout(ms, {cancel: true}) should release connections after failing if connection cancellation throws an error', async function () {
         // Only mysql/postgres query cancelling supported for now
-        if (!isPgBased(knex) && !isMysql(knex)) {
+        if (isCockroachDB(knex) || (!isPgBased(knex) && !isMysql(knex))) {
           return this.skip();
         }
 
@@ -1066,17 +1057,13 @@ describe('Additional', function () {
             console.log(err);
           }
 
-          // ToDo figure out why CockroachDB throws `connect EISCONN` here
-
-          if (!isCockroachDB(knex)) {
-            await expect(
-              getTestQuery().timeout(secondQueryTimeout, { cancel: true })
-            ).to.be.eventually.rejected.and.deep.include({
-              timeout: secondQueryTimeout,
-              name: 'KnexTimeoutError',
-              message: `Defined query timeout of ${secondQueryTimeout}ms exceeded when running query.`,
-            });
-          }
+          await expect(
+            getTestQuery().timeout(secondQueryTimeout, { cancel: true })
+          ).to.be.eventually.rejected.and.deep.include({
+            timeout: secondQueryTimeout,
+            name: 'KnexTimeoutError',
+            message: `Defined query timeout of ${secondQueryTimeout}ms exceeded when running query.`,
+          });
         } finally {
           await knexDb.destroy();
         }
