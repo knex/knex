@@ -282,8 +282,8 @@ describe('Schema (misc)', () => {
           });
 
           after(async () => {
-            await knex.schema.dropTable('table_copied');
-            await knex.schema.dropTable('table_to_copy');
+            await knex.schema.dropTableIfExists('table_copied');
+            await knex.schema.dropTableIfExists('table_to_copy');
           });
 
           it('copy table', async () => {
@@ -291,7 +291,7 @@ describe('Schema (misc)', () => {
               .createTableLike('table_copied', 'table_to_copy')
               .testSql((tester) => {
                 tester('mysql', [
-                  'create table `table_copied` like `table_to_copy` default character set utf8',
+                  'create table `table_copied` like `table_to_copy`',
                 ]);
                 tester(
                   ['pg', 'cockroachdb'],

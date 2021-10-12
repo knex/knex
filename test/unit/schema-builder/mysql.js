@@ -37,11 +37,7 @@ module.exports = function (dialect) {
     it('create table like another', function () {
       tableSql = client
         .schemaBuilder()
-        .createTableLike('users_like', 'users', function (table) {
-          table.uuid('key');
-          table.increments('id');
-          table.string('email');
-        })
+        .createTableLike('users_like', 'users')
         .toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
