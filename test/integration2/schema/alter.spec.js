@@ -16,7 +16,7 @@ describe('Schema', () => {
       .forEach((db) => {
         describe(db, () => {
           let knex;
-          before(() => {
+          before(async () => {
             sinon.stub(Math, 'random').returns(0.1);
             knex = getKnexForDb(db);
           });

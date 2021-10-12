@@ -22,7 +22,7 @@ module.exports = function (knex) {
             'binding cheker function failed got: ' + gotBindings
           ).to.equal(true);
         } else {
-          expect(wantedBinding).to.eql(gotBindings[index]);
+          expect(gotBindings[index]).to.eql(wantedBinding);
         }
       });
       expect(
