@@ -23,6 +23,7 @@ const {
   insertTestTableTwoData,
   insertAccounts,
 } = require('../../util/dataInsertHelper');
+const { assertNumber } = require('../../util/assertHelper');
 
 module.exports = function (knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
@@ -72,7 +73,7 @@ module.exports = function (knex) {
           return knex.transacting(trx).select(knex.raw(query));
         })
         .then((rows) => {
-          expect(rows[0].result).to.equal(1);
+          assertNumber(knex, rows[0].result, 1);
           return transaction.commit();
         });
     });
