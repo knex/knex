@@ -3,6 +3,8 @@
 
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
+chai.use(require('sinon-chai'));
+
 const expect = chai.expect;
 
 const Knex = require('../../../../knex');
@@ -31,6 +33,7 @@ const {
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
+const sinon = require('sinon');
 
 describe('Additional', function () {
   getAllDbs().forEach((db) => {
@@ -1265,7 +1268,7 @@ describe('Additional', function () {
         });
       });
 
-      describe('logger', () => {
+      describe('misc', () => {
         it('Overwrite knex.logger functions using config', async () => {
           const knexConfig = {
             ...knex.client.config,
@@ -1299,6 +1302,32 @@ describe('Additional', function () {
 
           expect(callCount).to.equal(4);
           await knexDb.destroy();
+        });
+
+        it('should allow destroying the pool with knex.destroy', async function () {
+          const knexDb = getKnexForDb(knex.client.driverName);
+          const spy = sinon.spy(knexDb.client.pool, 'destroy');
+          await knexDb.destroy();
+          expect(spy).to.have.callCount(1);
+          expect(knexDb.client.pool).to.equal(undefined);
+          await knexDb.destroy();
+          expect(spy).to.have.callCount(1);
+          spy.restore();
+        });
+
+        it('should allow initialize the pool with knex.initialize', async function () {
+          const knexDb = getKnexForDb(knex.client.driverName);
+          await knexDb.destroy();
+          expect(knexDb.client.pool).to.equal(undefined);
+          knexDb.initialize();
+          expect(knexDb.client.pool.destroyed).to.equal(false);
+          const waitForDestroy = knexDb.destroy();
+          expect(knexDb.client.pool.destroyed).to.equal(true);
+          return waitForDestroy.then(() => {
+            expect(knexDb.client.pool).to.equal(undefined);
+            knexDb.initialize();
+            expect(knexDb.client.pool.destroyed).to.equal(false);
+          });
         });
       });
     });
