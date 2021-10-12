@@ -302,8 +302,12 @@ describe('Updates', function () {
           });
       });
 
-      it('should allow returning for updates in postgresql', function () {
-        return knex('accounts')
+      it('should allow returning for updates', async function () {
+        await knex('accounts').where('id', accountId1).update({
+          balance: 12.240000000000002,
+        });
+
+        await knex('accounts')
           .where('id', accountId1)
           .update(
             {
@@ -323,7 +327,7 @@ describe('Updates', function () {
             tester(
               'pg',
               'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
-              ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
+              ['test100@example.com', 'UpdatedUser', 'UpdatedTest', '1'],
               [
                 {
                   id: '1',
@@ -331,7 +335,26 @@ describe('Updates', function () {
                   last_name: 'UpdatedTest',
                   email: 'test100@example.com',
                   logins: 1,
-                  balance: 12.240001,
+                  balance: 12.24,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                },
+              ]
+            );
+            tester(
+              'cockroachdb',
+              'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
+              ['test100@example.com', 'UpdatedUser', 'UpdatedTest', accountId1],
+              [
+                {
+                  id: accountId1,
+                  first_name: 'UpdatedUser',
+                  last_name: 'UpdatedTest',
+                  email: 'test100@example.com',
+                  logins: '1',
+                  balance: 12.24,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
                   updated_at: TEST_TIMESTAMP,
@@ -366,7 +389,7 @@ describe('Updates', function () {
             tester(
               'mssql',
               'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? output inserted.* where [id] = ?',
-              ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
+              ['test100@example.com', 'UpdatedUser', 'UpdatedTest', '1'],
               [
                 {
                   id: '1',
