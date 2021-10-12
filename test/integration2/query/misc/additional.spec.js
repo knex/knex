@@ -1305,7 +1305,11 @@ describe('Additional', function () {
         });
 
         it('should allow destroying the pool with knex.destroy', async function () {
-          const knexDb = getKnexForDb(knex.client.driverName);
+          const knexConfig = {
+            ...knex.client.config,
+          };
+          const knexDb = new Knex(knexConfig);
+
           const spy = sinon.spy(knexDb.client.pool, 'destroy');
           await knexDb.destroy();
           expect(spy).to.have.callCount(1);
@@ -1316,7 +1320,11 @@ describe('Additional', function () {
         });
 
         it('should allow initialize the pool with knex.initialize', async function () {
-          const knexDb = getKnexForDb(knex.client.driverName);
+          const knexConfig = {
+            ...knex.client.config,
+          };
+          const knexDb = new Knex(knexConfig);
+
           await knexDb.destroy();
           expect(knexDb.client.pool).to.equal(undefined);
           knexDb.initialize();
