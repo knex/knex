@@ -1841,6 +1841,11 @@ export declare namespace Knex {
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
+    createTableLike(
+      tableName: string,
+      tableNameLike: string,
+      callback: (tableBuilder: CreateTableBuilder) => any
+    ): SchemaBuilder;
     createSchema(schemaName: string): SchemaBuilder;
     createSchemaIfNotExists(schemaName: string): SchemaBuilder;
     alterTable(

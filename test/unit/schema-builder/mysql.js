@@ -34,6 +34,21 @@ module.exports = function (dialect) {
       );
     });
 
+    it('create table like another', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTableLike('users', 'users_like', function (table) {
+          table.uuid('key');
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table "users_like" like "users"'
+      );
+    });
+
     it('test basic create table with incrementing without primary key', function () {
       tableSql = client
         .schemaBuilder()

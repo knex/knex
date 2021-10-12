@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 const sinon = require('sinon');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
+const { equal } = require('assert');
 const client = new Oracle_Client({ client: 'oracledb' });
 
 describe('OracleDb SchemaBuilder', function () {
@@ -22,6 +23,15 @@ describe('OracleDb SchemaBuilder', function () {
     );
     expect(tableSql.toSQL()[1].sql).to.equal(
       'DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE "users_seq"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'users\';  execute immediate (\'create or replace trigger "users_autoinc_trg"  BEFORE INSERT on "users"  for each row  declare  checking number := 1;  begin    if (:new."\' || PK_NAME || \'" is null) then      while checking >= 1 loop        select "users_seq".nextval into :new."\' || PK_NAME || \'" from dual;        select count("\' || PK_NAME || \'") into checking from "users"        where "\' || PK_NAME || \'" = :new."\' || PK_NAME || \'";      end loop;    end if;  end;\'); END;'
+    );
+  });
+
+  it('test basic create table like', function () {
+    tableSql = client.schemaBuilder().createTableLike('users_like', 'users');
+
+    equal(1, tableSql.toSQL().length);
+    expect(tableSql.toSQL()[0].sql).to.equal(
+      'create table "users_like" as (select * from "users" where 0=1)'
     );
   });
 

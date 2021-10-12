@@ -271,6 +271,57 @@ describe('Schema (misc)', () => {
       });
 
       describe('createTable', () => {
+        describe('like another table', () => {
+          before(async () => {
+            await knex.schema.createTable('table_to_copy', (table) => {
+              table.increments('id');
+              table.string('data');
+              table.index('data', 'data_index');
+            });
+          });
+
+          it('copy table', async () => {
+            await knex.schema
+              .createTableLike('table_copied', 'table_to_copy')
+              .testSql((tester) => {
+                tester('mysql', [
+                  'create table "table_copied" like "table_to_copy"',
+                ]);
+                tester(
+                  ['pg', 'cockroachdb'],
+                  [
+                    'create table "table_copied" (like "table_to_copy" including all)',
+                  ]
+                );
+                tester('pg-redshift', [
+                  'create table "table_copied" (like "table_to_copy")',
+                ]);
+                tester('sqlite3', [
+                  'create table `table_copied` as select * from `table_to_copy` where 0=1',
+                ]);
+                tester('oracledb', [
+                  'create table "table_copied" as (select * from "table_to_copy" where 0=1)',
+                ]);
+                tester('mssql', [
+                  'SELECT * INTO [table_copied] FROM [table_to_copy] WHERE 0=1',
+                ]);
+              });
+            expect(await knex.schema.hasTable('table_copied')).to.equal(true);
+            await knex('table_to_copy')
+              .columnInfo()
+              .then(function (columnsCopy) {
+                knex('table_copied')
+                  .columnInfo()
+                  .then(function (columnsCopied) {
+                    expect(columnsCopy).to.equal(columnsCopied);
+                  });
+              });
+
+            await knex.schema.dropTableIfExists('table_copied');
+            await knex.schema.dropTableIfExists('table_to_copy');
+          });
+        });
+
         describe('increments types - postgres', () => {
           if (!isPgBased(knex)) {
             return Promise.resolve();
