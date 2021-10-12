@@ -16,6 +16,7 @@ const {
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
 const { assertNumber } = require('../../util/assertHelper');
+const isEmpty = require('lodash/isEmpty');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);
@@ -280,12 +281,17 @@ describe('Schema (misc)', () => {
             });
           });
 
+          after(async () => {
+            await knex.schema.dropTable('table_copied');
+            await knex.schema.dropTable('table_to_copy');
+          });
+
           it('copy table', async () => {
             await knex.schema
               .createTableLike('table_copied', 'table_to_copy')
               .testSql((tester) => {
                 tester('mysql', [
-                  'create table "table_copied" like "table_to_copy"',
+                  'create table `table_copied` like `table_to_copy` default character set utf8',
                 ]);
                 tester(
                   ['pg', 'cockroachdb'],
@@ -306,19 +312,14 @@ describe('Schema (misc)', () => {
                   'SELECT * INTO [table_copied] FROM [table_to_copy] WHERE 0=1',
                 ]);
               });
-            expect(await knex.schema.hasTable('table_copied')).to.equal(true);
-            await knex('table_to_copy')
-              .columnInfo()
-              .then(function (columnsCopy) {
-                knex('table_copied')
-                  .columnInfo()
-                  .then(function (columnsCopied) {
-                    expect(columnsCopy).to.equal(columnsCopied);
-                  });
-              });
 
-            await knex.schema.dropTableIfExists('table_copied');
-            await knex.schema.dropTableIfExists('table_to_copy');
+            expect(await knex.schema.hasTable('table_copied')).to.equal(true);
+
+            await knex('table_copied')
+              .columnInfo()
+              .then((res) => {
+                expect(Object.keys(res)).to.have.all.members(['id', 'data']);
+              });
           });
         });
 

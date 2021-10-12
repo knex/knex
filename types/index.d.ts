@@ -2484,7 +2484,7 @@ export declare namespace Knex {
     queryCompiler(builder: any): any;
     schemaBuilder(): SchemaBuilder;
     schemaCompiler(builder: SchemaBuilder): any;
-    tableBuilder(type: any, tableName: any, fn: any): TableBuilder;
+    tableBuilder(type: any, tableName: any, tableNameLike: any, fn: any): TableBuilder;
     tableCompiler(tableBuilder: any): any;
     columnBuilder(tableBuilder: any, type: any, args: any): ColumnBuilder;
     columnCompiler(tableBuilder: any, columnBuilder: any): any;
