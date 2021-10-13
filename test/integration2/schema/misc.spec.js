@@ -16,7 +16,6 @@ const {
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
 const { assertNumber } = require('../../util/assertHelper');
-const isEmpty = require('lodash/isEmpty');
 
 const wrapIdentifier = (value, wrap) => {
   return wrap(value ? value.toUpperCase() : value);

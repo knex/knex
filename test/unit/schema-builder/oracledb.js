@@ -4,7 +4,6 @@ const { expect } = require('chai');
 
 const sinon = require('sinon');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
-const { equal } = require('assert');
 const client = new Oracle_Client({ client: 'oracledb' });
 
 describe('OracleDb SchemaBuilder', function () {
