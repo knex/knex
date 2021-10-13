@@ -162,6 +162,26 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('shoud not alter nullable when alterNullable is false', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').default('foo').alter({ alterNullable: false });
+      })
+      .toSQL();
+
+    equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" alter column "foo" drop default'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'alter table "users" alter column "foo" set default \'foo\''
+    );
+  });
+
   it('alter table with schema', function () {
     tableSql = client
       .schemaBuilder()
