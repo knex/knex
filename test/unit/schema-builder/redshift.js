@@ -26,6 +26,17 @@ describe('Redshift SchemaBuilder', function () {
     );
   });
 
+  it('create table like another', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users')
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" (like "users")'
+    );
+  });
+
   it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()

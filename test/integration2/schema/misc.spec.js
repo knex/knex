@@ -12,6 +12,7 @@ const {
   isRedshift,
   isMssql,
   isCockroachDB,
+  isPostgreSQL,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
@@ -271,6 +272,57 @@ describe('Schema (misc)', () => {
       });
 
       describe('createTable', () => {
+        describe('like another table', () => {
+          before(async () => {
+            await knex.schema.createTable('table_to_copy', (table) => {
+              table.increments('id');
+              table.string('data');
+              table.index('data', 'data_index');
+            });
+          });
+
+          after(async () => {
+            await knex.schema.dropTableIfExists('table_copied');
+            await knex.schema.dropTableIfExists('table_to_copy');
+          });
+
+          it('copy table', async () => {
+            await knex.schema
+              .createTableLike('table_copied', 'table_to_copy')
+              .testSql((tester) => {
+                tester('mysql', [
+                  'create table `table_copied` like `table_to_copy`',
+                ]);
+                tester(
+                  ['pg', 'cockroachdb'],
+                  [
+                    'create table "table_copied" (like "table_to_copy" including all)',
+                  ]
+                );
+                tester('pg-redshift', [
+                  'create table "table_copied" (like "table_to_copy")',
+                ]);
+                tester('sqlite3', [
+                  'create table `table_copied` as select * from `table_to_copy` where 0=1',
+                ]);
+                tester('oracledb', [
+                  'create table "table_copied" as (select * from "table_to_copy" where 0=1)',
+                ]);
+                tester('mssql', [
+                  'SELECT * INTO [table_copied] FROM [table_to_copy] WHERE 0=1',
+                ]);
+              });
+
+            expect(await knex.schema.hasTable('table_copied')).to.equal(true);
+
+            await knex('table_copied')
+              .columnInfo()
+              .then((res) => {
+                expect(Object.keys(res)).to.have.all.members(['id', 'data']);
+              });
+          });
+        });
+
         describe('increments types - postgres', () => {
           if (!isPgBased(knex)) {
             return Promise.resolve();
@@ -1304,7 +1356,8 @@ describe('Schema (misc)', () => {
             isSQLite(knex) ||
             isRedshift(knex) ||
             isMssql(knex) ||
-            isOracle(knex)
+            isOracle(knex) ||
+            isCockroachDB(knex)
           ) {
             return;
           }
@@ -1610,56 +1663,45 @@ describe('Schema (misc)', () => {
             });
           });
 
-          it('#2767 - .renameColumn should not drop the auto incremental', () => {
+          it('#2767 - .renameColumn should not drop the auto incremental', async () => {
             const tableName = 'rename_column_test';
 
             if (isMssql(knex)) {
-              return knex
-                .raw(
-                  `select COLUMNPROPERTY(object_id(TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME,
+              const res = await knex.raw(
+                `select COLUMNPROPERTY(object_id(TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME,
                                              'IsIdentity') as Ident
                        from INFORMATION_SCHEMA.COLUMNS
                        where TABLE_NAME = ?
                          AND COLUMN_NAME = ?;`,
-                  [tableName, 'id_new']
-                )
-                .then((res) => {
-                  const autoinc = res[0].Ident;
-                  expect(autoinc).to.equal(1);
-                });
+                [tableName, 'id_new']
+              );
+              const autoinc = res[0].Ident;
+              expect(autoinc).to.equal(1);
             } else if (isMysql(knex)) {
-              return knex.raw(`show fields from ${tableName}`).then((res) => {
-                const autoinc = res[0][0].Extra;
-                expect(autoinc).to.equal('auto_increment');
-              });
-            } else if (isPgBased(knex)) {
-              return knex
-                .raw(
-                  `select pg_get_serial_sequence(table_name, column_name) as ident
+              const res = await knex.raw(`show fields from ${tableName}`);
+              const autoinc = res[0][0].Extra;
+              expect(autoinc).to.equal('auto_increment');
+            } else if (isPostgreSQL(knex)) {
+              const res = await knex.raw(
+                `select pg_get_serial_sequence(table_name, column_name) as ident
                        from INFORMATION_SCHEMA.COLUMNS
                        where table_name = ?
                          AND column_name = ?;`,
-                  [tableName, 'id_new']
-                )
-                .then((res) => {
-                  const autoinc = !!res.rows[0].ident;
-                  expect(autoinc).to.equal(true);
-                });
+                [tableName, 'id_new']
+              );
+
+              const autoinc = !!res.rows[0].ident;
+              expect(autoinc).to.equal(true);
             } else if (isSQLite(knex)) {
-              return knex
-                .raw(
-                  `SELECT "is-autoincrement" as ident
+              const res = await knex.raw(
+                `SELECT "is-autoincrement" as ident
                        FROM sqlite_master
                        WHERE tbl_name = ? AND sql LIKE "%AUTOINCREMENT%"`,
-                  [tableName]
-                )
-                .then((res) => {
-                  const autoinc = !!res[0].ident;
-                  expect(autoinc).to.equal(true);
-                });
+                [tableName]
+              );
+              const autoinc = !!res[0].ident;
+              expect(autoinc).to.equal(true);
             }
-
-            return Promise.resolve();
           });
         });
       });

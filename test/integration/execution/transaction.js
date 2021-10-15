@@ -12,6 +12,7 @@ const {
   isOracle,
   isMssql,
   isPostgreSQL,
+  isCockroachDB,
 } = require('../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../util/constants');
 const {
@@ -266,7 +267,12 @@ module.exports = function (knex) {
         });
     });
 
-    it('should be able to run schema methods', async () => {
+    it('should be able to run schema methods', async function () {
+      // CockroachDB requires schema changes to happen before any writes, so trying to execute migrations in transaction directly fails due to attempt to get lock first
+      if (isCockroachDB(knex)) {
+        return this.skip();
+      }
+
       let __knexUid,
         count = 0;
       const err = new Error('error message');
