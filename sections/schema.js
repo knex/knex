@@ -45,6 +45,20 @@ export default [
   },
   {
     type: "method",
+    method: "createTableLike",
+    example: "knex.schema.createTableLike(tableName, tableNameToCopy)",
+    description: "Creates a new table on the database based on another table. Copy only the structure : columns, keys and indexes (expected on SQL Server which only copy columns) and not the data.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.createTableLike('new_users', 'users')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "renameTable",
     example: "knex.schema.renameTable(from, to)",
     description: "Renames a table from a current tableName to another.",
