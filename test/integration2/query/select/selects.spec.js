@@ -14,6 +14,7 @@ const {
   isSQLite,
   isOracle,
   isPgBased,
+  isCockroachDB,
 } = require('../../../util/db-helpers');
 const {
   createUsers,
@@ -1773,7 +1774,8 @@ describe('Selects', function () {
       });
 
       it('select for share prevents updating in other transaction', function () {
-        if (isSQLite(knex) || isOracle(knex)) {
+        // Query cancellation is not yet implemented for CockroachDB
+        if (isSQLite(knex) || isOracle(knex) || isCockroachDB(knex)) {
           return this.skip();
         }
 
