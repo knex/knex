@@ -330,6 +330,33 @@ describe('MSSQL dialect', () => {
             return result ? result.comment : undefined;
           }
         });
+
+        describe('Error handling', () => {
+          it('catches the ESOCKET error from Tedious', async () => {
+            const badConfig = {
+              client: 'mssql',
+              connection: {
+                user: 'sa',
+                password: 'whoops',
+                server: 'localhost',
+                port: 23400,
+                database: 'knex_test',
+              },
+            };
+
+            const knex = getKnexForDb('mssql', badConfig);
+            await knex
+              .raw(`SELECT 1`)
+              .then(function (res) {
+                throw new Error('was not supposed to succeed');
+              })
+              .catch(function (err) {
+                expect(err.message).to.equal(
+                  'Failed to connect to localhost:23400 - Could not connect (sequence)'
+                );
+              });
+          });
+        });
       });
     });
 });
