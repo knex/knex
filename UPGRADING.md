@@ -47,8 +47,17 @@ const qb: Knex.QueryBuilder = knex('table').select('*')
 * IDE autocomplete may stop working if you are using JavaScript (not TypeScript). There are reports for autocomplete still working correctly if knex is used this way:
 ```js
   const knex = require('knex').knex({
-  //connection parameters
+    //connection parameters
   });
+```
+
+It also works when using ESM imports:
+```js
+  import { knex } from 'knex'
+
+  const kn = knex({
+    //connection parameters
+  })
 ```
 
 * Syntax for QueryBuilder augmentation changed. Previously it looked like this:
