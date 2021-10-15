@@ -38,6 +38,17 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('create table like another', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users')
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'SELECT * INTO [users_like] FROM [users] WHERE 0=1'
+    );
+  });
+
   it('test basic create table with incrementing without primary key', function () {
     tableSql = client.schemaBuilder().createTable('users', function (table) {
       table.increments('id', { primaryKey: false });

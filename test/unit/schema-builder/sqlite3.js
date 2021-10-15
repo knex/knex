@@ -36,6 +36,19 @@ describe('SQLite SchemaBuilder', function () {
     );
   });
 
+  it('basic create table like', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users', 'users_like')
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` as select * from `users_like` where 0=1'
+    );
+  });
+
   it('create json table', function () {
     tableSql = client
       .schemaBuilder()

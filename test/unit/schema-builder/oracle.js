@@ -41,6 +41,17 @@ describe('Oracle SchemaBuilder', function () {
     );
   });
 
+  it('create table like another', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users')
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" as (select * from "users" where 0=1)'
+    );
+  });
+
   it('test basic create table if not exists', function () {
     tableSql = client
       .schemaBuilder()
