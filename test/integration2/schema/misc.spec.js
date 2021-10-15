@@ -1687,7 +1687,7 @@ describe('Schema (misc)', () => {
                        from INFORMATION_SCHEMA.COLUMNS
                        where table_name = ?
                          AND column_name = ?;`,
-                [tableName, 'id_test']
+                [tableName, 'id_new']
               );
 
               const autoinc = !!res.rows[0].ident;
