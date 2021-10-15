@@ -17,7 +17,7 @@ export default [
   },
   {
     type: "text",
-    content: "The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL and Amazon Redshift, [`pg-native`](https://github.com/brianc/node-pg-native) for PostgreSQL with native C++ `libpq` bindings (requires PostgresSQL installed to link against), [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`tedious`](https://github.com/tediousjs/tedious) for MSSQL."
+    content: "The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL, CockroachDB and Amazon Redshift, [`pg-native`](https://github.com/brianc/node-pg-native) for PostgreSQL with native C++ `libpq` bindings (requires PostgresSQL installed to link against), [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`tedious`](https://github.com/tediousjs/tedious) for MSSQL."
   },
   {
     type: "code",
@@ -33,6 +33,10 @@ export default [
       $ npm install oracledb
       $ npm install tedious
     `
+  },
+  {
+    type: "text",
+    content: "*If you want to use CockroachDB or Redshift instance, you can use the `pg` driver.*"
   },
   {
     type: "text",

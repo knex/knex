@@ -4,7 +4,7 @@ export default class LanguageSelect extends Component {
 
   static propTypes = {
     language: PropTypes.oneOf([
-      'mysql', 'pg', 'redshift', 'sqlite3', 'oracle', 'mssql'
+      'mysql', 'pg', 'redshift', 'sqlite3', 'oracle', 'mssql', 'cockroachdb'
     ]).isRequired,
     changeLanguage: PropTypes.func.isRequired
   };
@@ -20,6 +20,7 @@ export default class LanguageSelect extends Component {
         <select value={this.props.language} onChange={this.changeLanguage}>
           <option value="mysql">MySQL / MariaDB</option>
           <option value="pg">PostgreSQL</option>
+          <option value="cockroachdb">CockroachDB</option>
           <option value="redshift">Amazon Redshift</option>
           <option value="sqlite3">SQLite3</option>
           <option value="oracle">Oracle</option>
