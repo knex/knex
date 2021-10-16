@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 const sinon = require('sinon');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
+const knex = require('../../../knex');
 const client = new Oracle_Client({ client: 'oracledb' });
 
 describe('OracleDb SchemaBuilder', function () {
@@ -32,6 +33,136 @@ describe('OracleDb SchemaBuilder', function () {
     expect(tableSql.toSQL()[0].sql).to.equal(
       'create table "users_like" as (select * from "users" where 0=1)'
     );
+  });
+
+  describe('views', function () {
+    let knexOracleDb;
+
+    before(function () {
+      knexOracleDb = knex({
+        client: 'oracledb',
+        connection: {},
+      });
+    });
+
+    it('basic create view', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexOracleDb('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view "adults" (name) as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view or replace', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexOracleDb('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view or replace "adults" (name) as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view with check options', async function () {
+      tableSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexOracleDb('users').select('name').where('age', '>', '18'));
+          view.withCheckOption();
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create view "adults" (name) as select "name" from "users" where "age" > \'18\' with check option'
+      );
+
+      expect(() => {
+        client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(
+              knexOracleDb('users').select('name').where('age', '>', '18')
+            );
+            view.withCascadedCheckOption();
+          })
+          .toSQL();
+      }).to.throw('check option definition is not supported by this dialect.');
+    });
+
+    it('drop view', function () {
+      tableSql = client.schemaBuilder().dropView('users').toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "users"');
+    });
+
+    it('drop view with schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .dropView('users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "myschema"."users"');
+    });
+
+    it('rename and change default of column of view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .view('users', function (view) {
+            view.column('oldName').rename('newName').defaultTo('10');
+          })
+          .toSQL();
+      }).to.throw('rename column of views is not supported by this dialect.');
+    });
+
+    it('rename view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .renameView('old_view', 'new_view')
+          .toSQL();
+      }).to.throw(
+        'rename view is not supported by this dialect (instead drop then create another view).'
+      );
+    });
+
+    it('create materialized view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createMaterializedView('mat_view', function (view) {
+          view.columns(['name']);
+          view.as(knexOracleDb('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create materialized view "mat_view" (name) as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('refresh view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .refreshMaterializedView('view_to_refresh')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        "BEGIN DBMS_MVIEW.REFRESH('view_to_refresh'); END;"
+      );
+    });
   });
 
   it('test basic create table if not exists', function () {

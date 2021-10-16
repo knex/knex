@@ -18,6 +18,7 @@ const {
 
 const _ = require('lodash');
 const { equal, deepEqual } = require('assert');
+const knex = require('../../../knex');
 
 describe('SQLite SchemaBuilder', function () {
   it('basic create table', function () {
@@ -47,6 +48,120 @@ describe('SQLite SchemaBuilder', function () {
       tableSql[0].sql,
       'create table `users` as select * from `users_like` where 0=1'
     );
+  });
+
+  describe('views', function () {
+    let knexSqlite3;
+
+    before(function () {
+      knexSqlite3 = knex({
+        client: 'sqlite3',
+        connection: {
+          filename: '',
+        },
+      });
+    });
+
+    it('basic create view', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "create view `adults` (name) as select `name` from `users` where `age` > '18'"
+      );
+    });
+
+    it('create view or replace', async function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .view('users', function (view) {
+            view.column('oldName').rename('newName').defaultTo('10');
+          })
+          .toSQL();
+      }).to.throw('rename column of views is not supported by this dialect.');
+    });
+
+    it('create view with check options', async function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(
+              knexSqlite3('users').select('name').where('age', '>', '18')
+            );
+            view.withLocalCheckOption();
+          })
+          .toSQL();
+      }).to.throw('check option definition is not supported by this dialect.');
+    });
+
+    it('drop view', function () {
+      tableSql = client.schemaBuilder().dropView('users').toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view `users`');
+    });
+
+    it('drop view with schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .dropView('users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view `myschema`.`users`');
+    });
+
+    it('rename and change default of column of view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .view('users', function (view) {
+            view.column('oldName').rename('newName').defaultTo('10');
+          })
+          .toSQL();
+      }).to.throw('rename column of views is not supported by this dialect.');
+    });
+
+    it('rename view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .renameView('old_view', 'new_view')
+          .toSQL();
+      }).to.throw(
+        'rename view is not supported by this dialect (instead drop then create another view).'
+      );
+    });
+
+    it('create materialized view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .createMaterializedView('mat_view', function (view) {
+            view.columns(['name']);
+            view.as(
+              knexSqlite3('users').select('name').where('age', '>', '18')
+            );
+          })
+          .toSQL();
+      }).to.throw('materialized views are not supported by this dialect.');
+    });
+
+    it('refresh view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .refreshMaterializedView('view_to_refresh')
+          .toSQL();
+      }).to.throw('materialized views are not supported by this dialect.');
+    });
   });
 
   it('create json table', function () {

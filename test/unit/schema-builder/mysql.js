@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const MySQL2_Client = require('../../../lib/dialects/mysql2');
+const knex = require('../../../knex');
 
 module.exports = function (dialect) {
   describe(dialect + ' SchemaBuilder', function () {
@@ -90,6 +91,134 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add `id` int unsigned not null auto_increment primary key, add `email` varchar(255)'
       );
+    });
+
+    describe('views', function () {
+      let knexMysql;
+
+      before(function () {
+        knexMysql = knex({
+          client: 'mysql2',
+          connection: {},
+        });
+      });
+
+      it('basic create view', async function () {
+        const viewSql = client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+        equal(1, viewSql.length);
+        expect(viewSql[0].sql).to.equal(
+          "create view `adults` (name) as select `name` from `users` where `age` > '18'"
+        );
+      });
+
+      it('create view or replace', async function () {
+        const viewSql = client
+          .schemaBuilder()
+          .createViewOrReplace('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+        equal(1, viewSql.length);
+        expect(viewSql[0].sql).to.equal(
+          "create view or replace `adults` (name) as select `name` from `users` where `age` > '18'"
+        );
+      });
+
+      it('create view with check options', async function () {
+        const viewSqlLocalCheck = client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+            view.withLocalCheckOption();
+          })
+          .toSQL();
+        equal(1, viewSqlLocalCheck.length);
+        expect(viewSqlLocalCheck[0].sql).to.equal(
+          "create view `adults` (name) as select `name` from `users` where `age` > '18' with local check option"
+        );
+
+        const viewSqlCascadedCheck = client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+            view.withCascadedCheckOption();
+          })
+          .toSQL();
+        equal(1, viewSqlCascadedCheck.length);
+        expect(viewSqlCascadedCheck[0].sql).to.equal(
+          "create view `adults` (name) as select `name` from `users` where `age` > '18' with cascaded check option"
+        );
+      });
+
+      it('drop view', function () {
+        tableSql = client.schemaBuilder().dropView('users').toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('drop view `users`');
+      });
+
+      it('drop view with schema', function () {
+        tableSql = client
+          .schemaBuilder()
+          .withSchema('myschema')
+          .dropView('users')
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('drop view `myschema`.`users`');
+      });
+
+      it('rename and change default of column of view', function () {
+        expect(() => {
+          tableSql = client
+            .schemaBuilder()
+            .view('users', function (view) {
+              view.column('oldName').rename('newName').defaultTo('10');
+            })
+            .toSQL();
+        }).to.throw('rename column of views is not supported by this dialect.');
+      });
+
+      it('rename view', function () {
+        tableSql = client
+          .schemaBuilder()
+          .renameView('old_view', 'new_view')
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal(
+          'rename table `old_view` to `new_view`'
+        );
+      });
+
+      it('create materialized view', function () {
+        expect(() => {
+          tableSql = client
+            .schemaBuilder()
+            .createMaterializedView('mat_view', function (view) {
+              view.columns(['name']);
+              view.as(
+                knexMysql('users').select('name').where('age', '>', '18')
+              );
+            })
+            .toSQL();
+        }).to.throw('materialized views are not supported by this dialect.');
+      });
+
+      it('refresh view', function () {
+        expect(() => {
+          tableSql = client
+            .schemaBuilder()
+            .refreshMaterializedView('view_to_refresh')
+            .toSQL();
+        }).to.throw('materialized views are not supported by this dialect.');
+      });
     });
 
     it('adding json', function () {
