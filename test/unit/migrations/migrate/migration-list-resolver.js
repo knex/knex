@@ -93,6 +93,23 @@ describe('migration-list-resolver', () => {
           ]);
         });
     });
+
+    it('should pass loadExtensions param to listAll', () => {
+      after(() => {
+        sinon.restore();
+      });
+
+      const migrationSource = new FsMigrations([], true);
+
+      const stub = sinon
+        .stub(migrationSource, 'getMigrations')
+        .callsFake(async () => true);
+      return migrationListResolver
+        .listAll(migrationSource, ['.ts'])
+        .then(() => {
+          sinon.assert.calledWith(stub, ['.ts']);
+        });
+    });
   });
 
   describe('listAll - multiple directories', () => {
@@ -189,25 +206,6 @@ describe('migration-list-resolver', () => {
               file: '004_migration.js',
             },
           ]);
-        });
-    });
-  });
-
-  describe('listAllAndCompleted', () => {
-    it('should pass loadExtensions param to listAll', () => {
-      after(() => {
-        sinon.restore();
-      });
-
-      const migrationSource = new FsMigrations([], true);
-
-      const stub = sinon
-        .stub(migrationSource, 'getMigrations')
-        .callsFake(async () => true);
-      return migrationListResolver
-        .listAll(migrationSource, ['.ts'])
-        .then(() => {
-          sinon.assert.calledWith(stub, ['.ts']);
         });
     });
   });
