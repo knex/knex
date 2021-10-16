@@ -711,6 +711,68 @@ module.exports = function (knex) {
       });
     });
 
+    describe('knex.migrate.list', () => {
+      const availableMigrations = [
+        '20131019235242_migration_1.js',
+        '20131019235306_migration_2.js',
+      ];
+
+      const knexConfig = {
+        directory: ['test/integration/migrate/test'],
+      };
+
+      beforeEach(async () => {
+        await knex.migrate.rollback(knexConfig, true);
+      });
+
+      describe('should list pending and completed migrations', () => {
+        it('as an array of arrays of pending and completed migrations', async () => {
+          let listedMigrations = await knex.migrate.list(knexConfig);
+          expect(listedMigrations).to.have.lengthOf(2);
+          expect(listedMigrations[0]).to.be.an.instanceof(Array);
+          expect(listedMigrations[1]).to.be.an.instanceof(Array);
+        });
+
+        it('in the right quantity', async () => {
+          let [completed, pending] = await knex.migrate.list(knexConfig);
+
+          expect(completed).to.have.lengthOf(0);
+          expect(pending).to.have.lengthOf(2);
+
+          await knex.migrate.latest(knexConfig);
+
+          [completed, pending] = await knex.migrate.list(knexConfig);
+
+          expect(completed).to.have.lengthOf(2);
+          expect(pending).to.have.lengthOf(0);
+        });
+
+        it('with the right object structure for pending migrations', async () => {
+          const [completed, pending] = await knex.migrate.list(knexConfig);
+
+          expect(completed).to.deep.equal([]);
+          expect(pending).to.deep.equal(
+            availableMigrations.map((migration) => ({
+              file: migration,
+              directory: knexConfig.directory[0],
+            }))
+          );
+        });
+
+        it('with the right object structure for completed migrations', async () => {
+          await knex.migrate.latest(knexConfig);
+          const [completed, pending] = await knex.migrate.list(knexConfig);
+
+          expect(completed).to.deep.equal(
+            availableMigrations.map((migration) => ({
+              name: migration,
+            }))
+          );
+          expect(pending).to.deep.equal([]);
+        });
+      });
+    });
+
     describe('knex.migrate.down', () => {
       describe('with transactions enabled', () => {
         beforeEach(async () => {
