@@ -1875,8 +1875,6 @@ export declare namespace Knex {
       tableNameLike: string,
       callback: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
-    createSchema(schemaName: string): SchemaBuilder;
-    createSchemaIfNotExists(schemaName: string): SchemaBuilder;
     alterTable(
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
@@ -2010,7 +2008,7 @@ export declare namespace Knex {
   interface AlterTableBuilder extends TableBuilder {}
 
   interface AlterColumnView extends ViewBuilder {
-    rename(newName : string): AlterColumnView;
+    rename(newName: string): AlterColumnView;
     defaultTo(defaultValue: string): AlterColumnView;
   }
 
