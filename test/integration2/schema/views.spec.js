@@ -39,7 +39,7 @@ describe('Views', () => {
         afterEach(async () => {
           await knex.schema.dropViewIfExists('view');
           await knex.schema.dropViewIfExists('new_view');
-          if (isMssql(knex) || isSQLite(knex) || isMysql(knex)) {
+          if (!isMssql(knex) && !isSQLite(knex) && !isMysql(knex)) {
             await knex.schema.dropMaterializedViewIfExists('mat_view');
           }
           await knex.schema.dropTableIfExists('table_view');
@@ -104,14 +104,23 @@ describe('Views', () => {
                 ]
               );
             });
+
+          let results_expected = [
+            { a: 'test2', b: 12 },
+            { a: 'test3', b: 45 },
+          ];
+          if (isCockroachDB(knex)) {
+            results_expected = [
+              { a: 'test2', b: '12' },
+              { a: 'test3', b: '45' },
+            ];
+          }
+
           await knex
             .select(['a', 'b'])
             .from('mat_view')
             .then(function (results) {
-              expect(results).to.eql([
-                { a: 'test2', b: 12 },
-                { a: 'test3', b: 45 },
-              ]);
+              expect(results).to.eql(results_expected);
             });
 
           await knex('table_view').insert([{ a: 'test', b: 32 }]);
@@ -121,10 +130,7 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('mat_view')
             .then(function (results) {
-              expect(results).to.eql([
-                { a: 'test2', b: 12 },
-                { a: 'test3', b: 45 },
-              ]);
+              expect(results).to.eql(results_expected);
             });
 
           await knex.schema.refreshMaterializedView('mat_view');
@@ -134,11 +140,19 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('mat_view')
             .then(function (results) {
-              expect(results).to.eql([
+              let new_results_expected = [
                 { a: 'test2', b: 12 },
                 { a: 'test3', b: 45 },
                 { a: 'test', b: 32 },
-              ]);
+              ];
+              if (isCockroachDB(knex)) {
+                new_results_expected = [
+                  { a: 'test2', b: '12' },
+                  { a: 'test3', b: '45' },
+                  { a: 'test', b: '32' },
+                ];
+              }
+              expect(results).to.eql(new_results_expected);
             });
 
           await knex.schema.dropMaterializedView('mat_view');
@@ -161,10 +175,17 @@ describe('Views', () => {
             .select(['new_a', 'b'])
             .from('view')
             .then(function (results) {
-              expect(results).to.eql([
-                { new_a: 'test2', b: 12 },
-                { new_a: 'test3', b: 45 },
-              ]);
+              let results_expected = [
+                { a: 'test2', b: 12 },
+                { a: 'test3', b: 45 },
+              ];
+              if (isCockroachDB(knex)) {
+                results_expected = [
+                  { a: 'test2', b: '12' },
+                  { a: 'test3', b: '45' },
+                ];
+              }
+              expect(results).to.eql(results_expected);
             });
         });
 
@@ -183,10 +204,17 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('new_view')
             .then(function (results) {
-              expect(results).to.eql([
-                { a: 'test2', b: '12' },
-                { a: 'test3', b: '45' },
-              ]);
+              let results_expected = [
+                { a: 'test2', b: 12 },
+                { a: 'test3', b: 45 },
+              ];
+              if (isCockroachDB(knex)) {
+                results_expected = [
+                  { a: 'test2', b: '12' },
+                  { a: 'test3', b: '45' },
+                ];
+              }
+              expect(results).to.eql(results_expected);
             });
           await knex.schema.dropView('new_view');
         });
