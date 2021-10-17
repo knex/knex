@@ -8,6 +8,7 @@ const { isOracle, isSQLite, isMssql } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
 const { isMysql, isCockroachDB } = require('../../util/db-helpers.js');
+const { assertNumber } = require('../../util/assertHelper');
 
 describe('Views', () => {
   getAllDbs().forEach((db) => {
@@ -67,9 +68,7 @@ describe('Views', () => {
                 ]
               );
               tester('mssql', [
-                [
-                  "CREATE VIEW [view] (a, b) AS select [a], [b] from [table_view] where [b] > '10'",
-                ],
+                "CREATE VIEW [view] (a, b) AS select [a], [b] from [table_view] where [b] > '10'",
               ]);
             });
 
@@ -78,16 +77,16 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('view')
             .then(function (results) {
-              expect(results).to.eql([
-                { a: 'test2', b: 12 },
-                { a: 'test3', b: 45 },
-              ]);
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
             });
         });
 
         it('create materialized view', async () => {
           if (isMssql(knex) || isSQLite(knex) || isMysql(knex)) {
-            return this.skip();
+            return Promise.resolve(true);
           }
           await knex.schema
             .createMaterializedView('mat_view', function (view) {
@@ -105,22 +104,14 @@ describe('Views', () => {
               );
             });
 
-          let results_expected = [
-            { a: 'test2', b: 12 },
-            { a: 'test3', b: 45 },
-          ];
-          if (isCockroachDB(knex)) {
-            results_expected = [
-              { a: 'test2', b: '12' },
-              { a: 'test3', b: '45' },
-            ];
-          }
-
           await knex
             .select(['a', 'b'])
             .from('mat_view')
             .then(function (results) {
-              expect(results).to.eql(results_expected);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
             });
 
           await knex('table_view').insert([{ a: 'test', b: 32 }]);
@@ -130,7 +121,10 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('mat_view')
             .then(function (results) {
-              expect(results).to.eql(results_expected);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
             });
 
           await knex.schema.refreshMaterializedView('mat_view');
@@ -140,27 +134,25 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('mat_view')
             .then(function (results) {
-              let new_results_expected = [
-                { a: 'test2', b: 12 },
-                { a: 'test3', b: 45 },
-                { a: 'test', b: 32 },
-              ];
-              if (isCockroachDB(knex)) {
-                new_results_expected = [
-                  { a: 'test2', b: '12' },
-                  { a: 'test3', b: '45' },
-                  { a: 'test', b: '32' },
-                ];
-              }
-              expect(results).to.eql(new_results_expected);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
+              expect(results[2].a).to.be.equal('test');
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
+              assertNumber(knex, results[2].b, 32);
             });
 
           await knex.schema.dropMaterializedView('mat_view');
         });
 
         it('alter column view', async () => {
-          if (isOracle(knex) || isSQLite(knex) || isMysql(knex)) {
-            return this.skip();
+          if (
+            isOracle(knex) ||
+            isSQLite(knex) ||
+            isMysql(knex) ||
+            isCockroachDB(knex)
+          ) {
+            return Promise.resolve(true);
           }
           await knex.schema.createView('view', function (view) {
             view.columns(['a', 'b']);
@@ -175,23 +167,16 @@ describe('Views', () => {
             .select(['new_a', 'b'])
             .from('view')
             .then(function (results) {
-              let results_expected = [
-                { a: 'test2', b: 12 },
-                { a: 'test3', b: 45 },
-              ];
-              if (isCockroachDB(knex)) {
-                results_expected = [
-                  { a: 'test2', b: '12' },
-                  { a: 'test3', b: '45' },
-                ];
-              }
-              expect(results).to.eql(results_expected);
+              expect(results[0].new_a).to.be.equal('test2');
+              expect(results[1].new_a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
             });
         });
 
         it('alter view rename', async () => {
           if (isOracle(knex) || isSQLite(knex)) {
-            return this.skip();
+            return Promise.resolve(true);
           }
           await knex.schema.createView('view', function (view) {
             view.columns(['a', 'b']);
@@ -204,24 +189,17 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('new_view')
             .then(function (results) {
-              let results_expected = [
-                { a: 'test2', b: 12 },
-                { a: 'test3', b: 45 },
-              ];
-              if (isCockroachDB(knex)) {
-                results_expected = [
-                  { a: 'test2', b: '12' },
-                  { a: 'test3', b: '45' },
-                ];
-              }
-              expect(results).to.eql(results_expected);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
             });
           await knex.schema.dropView('new_view');
         });
 
         it('create view with check options', async () => {
           if (isMssql(knex) || isCockroachDB(knex) || isSQLite(knex)) {
-            return this.skip();
+            return Promise.resolve(true);
           }
 
           await knex.schema
@@ -242,7 +220,7 @@ describe('Views', () => {
             });
 
           if (isOracle(knex)) {
-            return this.skip();
+            return Promise.resolve(true);
           }
           await knex.schema.dropView('view');
           await knex.schema
@@ -263,7 +241,7 @@ describe('Views', () => {
               tester(
                 ['mysql'],
                 [
-                  "create view `view` (a, b) as select `name` from `users` where `age` > '18' with local check option",
+                  "create view `view` (a, b) as select `a`, `b` from `table_view` where `b` > '10' with local check option",
                 ]
               );
             });
@@ -286,7 +264,7 @@ describe('Views', () => {
               tester(
                 ['mysql'],
                 [
-                  "create view `view` (a, b) as select `name` from `users` where `age` > '18' with cascaded check option",
+                  "create view `view` (a, b) as select `a`, `b` from `table_view` where `b` > '10' with cascaded check option",
                 ]
               );
             });
