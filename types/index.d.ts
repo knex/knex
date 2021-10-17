@@ -1994,9 +1994,9 @@ export declare namespace Knex {
   interface ViewBuilder<TRecord extends {} = any, TResult = any> {
     columns(columns: any): ViewBuilder;
     as(selectQuery: QueryBuilder): ViewBuilder;
-    withCheckOption(): Promise<Void>;
-    withLocalCheckOption(): Promise<Void>;
-    withCascadedCheckOption(): Promise<Void>;
+    withCheckOption(): Promise<void>;
+    withLocalCheckOption(): Promise<void>;
+    withCascadedCheckOption(): Promise<void>;
     queryContext(context: any): ViewBuilder;
   }
 
@@ -2010,12 +2010,12 @@ export declare namespace Knex {
   interface AlterTableBuilder extends TableBuilder {}
 
   interface AlterColumnView extends ViewBuilder {
-    rename(newName): AlterColumnView;
-    defaultTo(defaultValue): AlterColumnView;
+    rename(newName : string): AlterColumnView;
+    defaultTo(defaultValue: string): AlterColumnView;
   }
 
   interface AlterViewBuilder extends ViewBuilder {
-    column(column): AlterColumnView;
+    column(column: string): AlterColumnView;
   }
 
   type deferrableType = 'not deferrable' | 'immediate' | 'deferred';

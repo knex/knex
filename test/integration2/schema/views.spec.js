@@ -7,7 +7,7 @@ require('lodash');
 const { isOracle, isSQLite, isMssql } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
-const { isMysql } = require('../../util/db-helpers.js');
+const { isMysql, isCockroachDB } = require('../../util/db-helpers.js');
 
 describe('Views', () => {
   getAllDbs().forEach((db) => {
@@ -39,7 +39,9 @@ describe('Views', () => {
         afterEach(async () => {
           await knex.schema.dropViewIfExists('view');
           await knex.schema.dropViewIfExists('new_view');
-          await knex.schema.dropMaterializedViewIfExists('mat_view');
+          if (isMssql(knex) || isSQLite(knex) || isMysql(knex)) {
+            await knex.schema.dropMaterializedViewIfExists('mat_view');
+          }
           await knex.schema.dropTableIfExists('table_view');
         });
 
@@ -61,12 +63,12 @@ describe('Views', () => {
               tester(
                 ['sqlite3', 'mysql'],
                 [
-                  "create view `view` (a, b) as select `a`, `b` from `table_view` where `b` > '18'",
+                  "create view `view` (a, b) as select `a`, `b` from `table_view` where `b` > '10'",
                 ]
               );
               tester('mssql', [
                 [
-                  'CREATE VIEW [view] (a, b) AS select [a], [b] from "table_view" where [b] > \'10\'',
+                  "CREATE VIEW [view] (a, b) AS select [a], [b] from [table_view] where [b] > '10'",
                 ],
               ]);
             });
@@ -182,14 +184,18 @@ describe('Views', () => {
             .from('new_view')
             .then(function (results) {
               expect(results).to.eql([
-                { a: 'test2', b: 12 },
-                { a: 'test3', b: 45 },
+                { a: 'test2', b: '12' },
+                { a: 'test3', b: '45' },
               ]);
             });
           await knex.schema.dropView('new_view');
         });
 
         it('create view with check options', async () => {
+          if (isMssql(knex) || isCockroachDB(knex) || isSQLite(knex)) {
+            return this.skip();
+          }
+
           await knex.schema
             .createView('view', function (view) {
               view.columns(['a', 'b']);
@@ -207,7 +213,7 @@ describe('Views', () => {
               );
             });
 
-          if (isMssql(knex) || isOracle(knex) || isSQLite(knex)) {
+          if (isOracle(knex)) {
             return this.skip();
           }
           await knex.schema.dropView('view');
