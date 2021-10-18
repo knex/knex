@@ -142,7 +142,6 @@ describe('Views', () => {
               assertNumber(knex, results[1].b, 45);
               assertNumber(knex, results[2].b, 32);
             });
-
           await knex.schema.dropMaterializedView('mat_view');
         });
 
