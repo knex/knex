@@ -727,7 +727,7 @@ module.exports = function (knex) {
 
       describe('should list pending and completed migrations', () => {
         it('as an array of arrays of pending and completed migrations', async () => {
-          let listedMigrations = await knex.migrate.list(knexConfig);
+          const listedMigrations = await knex.migrate.list(knexConfig);
           expect(listedMigrations).to.have.lengthOf(2);
           expect(listedMigrations[0]).to.be.an.instanceof(Array);
           expect(listedMigrations[1]).to.be.an.instanceof(Array);
