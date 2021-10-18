@@ -55,7 +55,7 @@ describe('OracleDb SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create view "adults" (name) as select "name" from "users" where "age" > \'18\''
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
       );
     });
 
@@ -69,7 +69,7 @@ describe('OracleDb SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create view or replace "adults" (name) as select "name" from "users" where "age" > \'18\''
+        'create view or replace "adults" ("name") as select "name" from "users" where "age" > \'18\''
       );
     });
 
@@ -84,7 +84,7 @@ describe('OracleDb SchemaBuilder', function () {
         .toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'create view "adults" (name) as select "name" from "users" where "age" > \'18\' with check option'
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with check option'
       );
 
       expect(() => {
@@ -149,7 +149,7 @@ describe('OracleDb SchemaBuilder', function () {
         .toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'create materialized view "mat_view" (name) as select "name" from "users" where "age" > \'18\''
+        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > \'18\''
       );
     });
 

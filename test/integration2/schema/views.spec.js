@@ -25,6 +25,7 @@ describe('Views', () => {
 
       describe('view', () => {
         beforeEach(async () => {
+          await knex.schema.dropViewIfExists('view_test');
           await knex.schema.dropTableIfExists('table_view');
           await knex.schema.createTable('table_view', (t) => {
             t.string('a');
@@ -38,7 +39,7 @@ describe('Views', () => {
         });
 
         afterEach(async () => {
-          await knex.schema.dropViewIfExists('view');
+          await knex.schema.dropViewIfExists('view_test');
           await knex.schema.dropViewIfExists('new_view');
           if (!isMssql(knex) && !isSQLite(knex) && !isMysql(knex)) {
             await knex.schema.dropMaterializedViewIfExists('mat_view');
@@ -48,7 +49,7 @@ describe('Views', () => {
 
         it('create view', async () => {
           await knex.schema
-            .createView('view', function (view) {
+            .createView('view_test', function (view) {
               view.columns(['a', 'b']);
               view.as(
                 knex('table_view').select('a', 'b').where('b', '>', '10')
@@ -58,24 +59,24 @@ describe('Views', () => {
               tester(
                 ['pg', 'pg-redshift', 'cockroachdb', 'oracledb'],
                 [
-                  'create view "view" (a, b) as select "a", "b" from "table_view" where "b" > \'10\'',
+                  'create view "view_test" ("a", "b") as select "a", "b" from "table_view" where "b" > \'10\'',
                 ]
               );
               tester(
                 ['sqlite3', 'mysql'],
                 [
-                  "create view `view` (a, b) as select `a`, `b` from `table_view` where `b` > '10'",
+                  "create view `view_test` (`a`, `b`) as select `a`, `b` from `table_view` where `b` > '10'",
                 ]
               );
               tester('mssql', [
-                "CREATE VIEW [view] (a, b) AS select [a], [b] from [table_view] where [b] > '10'",
+                "CREATE VIEW [view_test] (a, b) AS select [a], [b] from [table_view] where [b] > '10'",
               ]);
             });
 
           // We test if the select on the view work and if results are good
           await knex
             .select(['a', 'b'])
-            .from('view')
+            .from('view_test')
             .then(function (results) {
               assertNumber(knex, results[0].b, 12);
               assertNumber(knex, results[1].b, 45);
@@ -84,9 +85,9 @@ describe('Views', () => {
             });
         });
 
-        it('create materialized view', async () => {
+        it('create materialized view', async function () {
           if (isMssql(knex) || isSQLite(knex) || isMysql(knex)) {
-            return Promise.resolve(true);
+            return this.skip();
           }
           await knex.schema
             .createMaterializedView('mat_view', function (view) {
@@ -99,7 +100,7 @@ describe('Views', () => {
               tester(
                 ['pg', 'cockroachdb', 'pg-redshift', 'oracledb'],
                 [
-                  'create materialized view "mat_view" (a, b) as select "a", "b" from "table_view" where "b" > \'10\'',
+                  'create materialized view "mat_view" ("a", "b") as select "a", "b" from "table_view" where "b" > \'10\'',
                 ]
               );
             });
@@ -145,27 +146,27 @@ describe('Views', () => {
           await knex.schema.dropMaterializedView('mat_view');
         });
 
-        it('alter column view', async () => {
+        it('alter column view', async function () {
           if (
             isOracle(knex) ||
             isSQLite(knex) ||
             isMysql(knex) ||
             isCockroachDB(knex)
           ) {
-            return Promise.resolve(true);
+            return this.skip();
           }
-          await knex.schema.createView('view', function (view) {
+          await knex.schema.createView('view_test', function (view) {
             view.columns(['a', 'b']);
             view.as(knex('table_view').select('a', 'b').where('b', '>', '10'));
           });
 
-          await knex.schema.alterView('view', function (view) {
+          await knex.schema.alterView('view_test', function (view) {
             view.column('a').rename('new_a');
           });
 
           await knex
             .select(['new_a', 'b'])
-            .from('view')
+            .from('view_test')
             .then(function (results) {
               expect(results[0].new_a).to.be.equal('test2');
               expect(results[1].new_a).to.be.equal('test3');
@@ -174,16 +175,16 @@ describe('Views', () => {
             });
         });
 
-        it('alter view rename', async () => {
+        it('alter view rename', async function () {
           if (isOracle(knex) || isSQLite(knex)) {
-            return Promise.resolve(true);
+            return this.skip();
           }
-          await knex.schema.createView('view', function (view) {
+          await knex.schema.createView('view_test', function (view) {
             view.columns(['a', 'b']);
             view.as(knex('table_view').select('a', 'b').where('b', '>', '10'));
           });
 
-          await knex.schema.renameView('view', 'new_view');
+          await knex.schema.renameView('view_test', 'new_view');
 
           await knex
             .select(['a', 'b'])
@@ -197,13 +198,13 @@ describe('Views', () => {
           await knex.schema.dropView('new_view');
         });
 
-        it('create view with check options', async () => {
+        it('create view with check options', async function () {
           if (isMssql(knex) || isCockroachDB(knex) || isSQLite(knex)) {
-            return Promise.resolve(true);
+            return this.skip();
           }
 
           await knex.schema
-            .createView('view', function (view) {
+            .createView('view_test', function (view) {
               view.columns(['a', 'b']);
               view.as(
                 knex('table_view').select('a', 'b').where('b', '>', '10')
@@ -214,17 +215,17 @@ describe('Views', () => {
               tester(
                 ['oracledb'],
                 [
-                  'create view "view" (a, b) as select "a", "b" from "table_view" where "b" > \'10\' with check option',
+                  'create view "view_test" ("a", "b") as select "a", "b" from "table_view" where "b" > \'10\' with check option',
                 ]
               );
             });
 
           if (isOracle(knex)) {
-            return Promise.resolve(true);
+            return this.skip();
           }
-          await knex.schema.dropView('view');
+          await knex.schema.dropView('view_test');
           await knex.schema
-            .createView('view', function (view) {
+            .createView('view_test', function (view) {
               view.columns(['a', 'b']);
               view.as(
                 knex('table_view').select('a', 'b').where('b', '>', '10')
@@ -235,19 +236,19 @@ describe('Views', () => {
               tester(
                 ['pg', 'cockroachdb', 'pg-redshift'],
                 [
-                  'create view "view" (a, b) as select "a", "b" from "table_view" where "b" > \'10\' with local check option',
+                  'create view "view_test" ("a", "b") as select "a", "b" from "table_view" where "b" > \'10\' with local check option',
                 ]
               );
               tester(
                 ['mysql'],
                 [
-                  "create view `view` (a, b) as select `a`, `b` from `table_view` where `b` > '10' with local check option",
+                  "create view `view_test` (`a`, `b`) as select `a`, `b` from `table_view` where `b` > '10' with local check option",
                 ]
               );
             });
-          await knex.schema.dropView('view');
+          await knex.schema.dropView('view_test');
           await knex.schema
-            .createView('view', function (view) {
+            .createView('view_test', function (view) {
               view.columns(['a', 'b']);
               view.as(
                 knex('table_view').select('a', 'b').where('b', '>', '10')
@@ -258,13 +259,13 @@ describe('Views', () => {
               tester(
                 ['pg', 'cockroachdb', 'pg-redshift'],
                 [
-                  'create view "view" (a, b) as select "a", "b" from "table_view" where "b" > \'10\' with cascaded check option',
+                  'create view "view_test" ("a", "b") as select "a", "b" from "table_view" where "b" > \'10\' with cascaded check option',
                 ]
               );
               tester(
                 ['mysql'],
                 [
-                  "create view `view` (a, b) as select `a`, `b` from `table_view` where `b` > '10' with cascaded check option",
+                  "create view `view_test` (`a`, `b`) as select `a`, `b` from `table_view` where `b` > '10' with cascaded check option",
                 ]
               );
             });

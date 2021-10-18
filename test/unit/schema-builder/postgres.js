@@ -216,7 +216,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create view "adults" (name) as select "name" from "users" where "age" > \'18\''
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
       );
     });
 
@@ -230,7 +230,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create view or replace "adults" (name) as select "name" from "users" where "age" > \'18\''
+        'create view or replace "adults" ("name") as select "name" from "users" where "age" > \'18\''
       );
     });
 
@@ -245,7 +245,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSqlLocalCheck.length);
       expect(viewSqlLocalCheck[0].sql).to.equal(
-        'create view "adults" (name) as select "name" from "users" where "age" > \'18\' with local check option'
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with local check option'
       );
 
       const viewSqlCascadedCheck = client
@@ -258,7 +258,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSqlCascadedCheck.length);
       expect(viewSqlCascadedCheck[0].sql).to.equal(
-        'create view "adults" (name) as select "name" from "users" where "age" > \'18\' with cascaded check option'
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with cascaded check option'
       );
     });
 
@@ -315,7 +315,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'create materialized view "mat_view" (name) as select "name" from "users" where "age" > \'18\''
+        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > \'18\''
       );
     });
 
