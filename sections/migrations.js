@@ -604,11 +604,11 @@ export default [
           switch(migration) {
             case 'migration1':
               return {
-                up(knex)   { /* ... * / }
-                down(knex) { /* ... * / }
+                up(knex)   { /* ... */ }
+                down(knex) { /* ... */ }
               }
           }
-        },
+        }
       }
 
       // pass an instance of your migration source as knex config
