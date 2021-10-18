@@ -208,7 +208,7 @@ describe('Views', () => {
               view.as(
                 knex('table_view').select('a', 'b').where('b', '>', '10')
               );
-              view.withCheckOption();
+              view.checkOption();
             })
             .testSql((tester) => {
               tester(
@@ -229,7 +229,7 @@ describe('Views', () => {
               view.as(
                 knex('table_view').select('a', 'b').where('b', '>', '10')
               );
-              view.withLocalCheckOption();
+              view.localCheckOption();
             })
             .testSql((tester) => {
               tester(
@@ -252,7 +252,7 @@ describe('Views', () => {
               view.as(
                 knex('table_view').select('a', 'b').where('b', '>', '10')
               );
-              view.withCascadedCheckOption();
+              view.cascadedCheckOption();
             })
             .testSql((tester) => {
               tester(

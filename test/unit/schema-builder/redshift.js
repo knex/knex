@@ -99,7 +99,7 @@ describe('Redshift SchemaBuilder', function () {
         .createView('adults', function (view) {
           view.columns(['name']);
           view.as(knexRedShift('users').select('name').where('age', '>', '18'));
-          view.withLocalCheckOption();
+          view.localCheckOption();
         })
         .toSQL();
       equal(1, viewSqlLocalCheck.length);
@@ -112,7 +112,7 @@ describe('Redshift SchemaBuilder', function () {
         .createView('adults', function (view) {
           view.columns(['name']);
           view.as(knexRedShift('users').select('name').where('age', '>', '18'));
-          view.withCascadedCheckOption();
+          view.cascadedCheckOption();
         })
         .toSQL();
       equal(1, viewSqlCascadedCheck.length);

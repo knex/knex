@@ -79,7 +79,7 @@ describe('OracleDb SchemaBuilder', function () {
         .createView('adults', function (view) {
           view.columns(['name']);
           view.as(knexOracleDb('users').select('name').where('age', '>', '18'));
-          view.withCheckOption();
+          view.checkOption();
         })
         .toSQL();
       equal(1, tableSql.length);
@@ -95,7 +95,7 @@ describe('OracleDb SchemaBuilder', function () {
             view.as(
               knexOracleDb('users').select('name').where('age', '>', '18')
             );
-            view.withCascadedCheckOption();
+            view.cascadedCheckOption();
           })
           .toSQL();
       }).to.throw('check option definition is not supported by this dialect.');

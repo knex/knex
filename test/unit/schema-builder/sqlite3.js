@@ -96,7 +96,7 @@ describe('SQLite SchemaBuilder', function () {
             view.as(
               knexSqlite3('users').select('name').where('age', '>', '18')
             );
-            view.withLocalCheckOption();
+            view.localCheckOption();
           })
           .toSQL();
       }).to.throw('check option definition is not supported by this dialect.');

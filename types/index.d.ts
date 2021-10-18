@@ -1992,9 +1992,9 @@ export declare namespace Knex {
   interface ViewBuilder<TRecord extends {} = any, TResult = any> {
     columns(columns: any): ViewBuilder;
     as(selectQuery: QueryBuilder): ViewBuilder;
-    withCheckOption(): Promise<void>;
-    withLocalCheckOption(): Promise<void>;
-    withCascadedCheckOption(): Promise<void>;
+    checkOption(): Promise<void>;
+    localCheckOption(): Promise<void>;
+    cascadedCheckOption(): Promise<void>;
     queryContext(context: any): ViewBuilder;
   }
 

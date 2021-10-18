@@ -95,7 +95,7 @@ describe('MSSQL SchemaBuilder', function () {
           .createView('adults', function (view) {
             view.columns(['name']);
             view.as(knexMssql('users').select('name').where('age', '>', '18'));
-            view.withLocalCheckOption();
+            view.localCheckOption();
           })
           .toSQL();
       }).to.throw('check option definition is not supported by this dialect.');
