@@ -94,7 +94,7 @@ describe('migration-list-resolver', () => {
         });
     });
 
-    it('should pass loadExtensions param to listAll', () => {
+    it('should pass loadExtensions param to listAll', async () => {
       after(() => {
         sinon.restore();
       });
@@ -104,11 +104,10 @@ describe('migration-list-resolver', () => {
       const stub = sinon
         .stub(migrationSource, 'getMigrations')
         .callsFake(async () => true);
-      return migrationListResolver
-        .listAll(migrationSource, ['.ts'])
-        .then(() => {
-          sinon.assert.calledWith(stub, ['.ts']);
-        });
+
+      await migrationListResolver.listAll(migrationSource, ['.ts']);
+
+      sinon.assert.calledWith(stub, ['.ts']);
     });
   });
 
