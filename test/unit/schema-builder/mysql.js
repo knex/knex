@@ -113,7 +113,7 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSql.length);
         expect(viewSql[0].sql).to.equal(
-          "create view `adults` (name) as select `name` from `users` where `age` > '18'"
+          "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
         );
       });
 
@@ -127,7 +127,7 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSql.length);
         expect(viewSql[0].sql).to.equal(
-          "create view or replace `adults` (name) as select `name` from `users` where `age` > '18'"
+          "create view or replace `adults` (`name`) as select `name` from `users` where `age` > '18'"
         );
       });
 
@@ -142,7 +142,7 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSqlLocalCheck.length);
         expect(viewSqlLocalCheck[0].sql).to.equal(
-          "create view `adults` (name) as select `name` from `users` where `age` > '18' with local check option"
+          "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with local check option"
         );
 
         const viewSqlCascadedCheck = client
@@ -155,7 +155,7 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSqlCascadedCheck.length);
         expect(viewSqlCascadedCheck[0].sql).to.equal(
-          "create view `adults` (name) as select `name` from `users` where `age` > '18' with cascaded check option"
+          "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with cascaded check option"
         );
       });
 
