@@ -1259,7 +1259,7 @@ export declare namespace Knex {
   }
 
   interface JoinRaw<TRecord = any, TResult = unknown[]> {
-    (tableName: string, binding?: Value | ValueDict): QueryBuilder<
+    (tableName: string, binding?: Value | Value[] | ValueDict): QueryBuilder<
       TRecord,
       TResult
     >;
