@@ -294,7 +294,7 @@ export default [
         content: `
           knex.schema.alterView('view_test', function (view) {
             view.column('first_name').rename('name_user');
-            view.column('bio').defaultTo('empty);
+            view.column('bio').defaultTo('empty');
           }
         `
       }
@@ -744,9 +744,9 @@ export default [
   {
     type: "method",
     method: "index",
-    example: "table.index(columns, [indexName], [indexType])",
-    description: "Adds an index to a table over the given columns. A default index name using the columns is used unless indexName is specified. The indexType can be optionally specified for PostgreSQL and MySQL. Amazon Redshift does not allow creating an index.",
-    children: [    ]
+    example: "table.index(columns, [indexName] | {[indexName: string], [storageEngineIndexType: 'btree'|'hash']}, [indexType])",
+    description: "Adds an index to a table over the given columns. A default index name using the columns is used unless indexName is specified. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. The indexType can be optionally specified for PostgreSQL and MySQL. Amazon Redshift does not allow creating an index.",
+    children: []
   },
   {
     type: "method",
@@ -798,8 +798,8 @@ export default [
     type: "method",
     method: "unique",
     href:"Schema-table-unique",
-    example: "table.unique(columns, options={[indexName:string],[deferrable:'not deferrable'|'immediate'|'deferred']})",
-    description: "Adds an unique index to a table over the given `columns`. A default index name using the columns is used unless indexName is specified. If you need to create a composite index, pass an array of column to `columns`. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.",
+    example: "table.unique(columns, options={[indexName: string], [deferrable:'not deferrable'|'immediate'|'deferred'], [storageEngineIndexType:'btree'|'hash']})",
+    description: "Adds an unique index to a table over the given `columns`. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. A default index name using the columns is used unless indexName is specified. If you need to create a composite index, pass an array of column to `columns`. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.",
     children: [
       {
         type: 'code',
@@ -809,7 +809,7 @@ export default [
             t.unique('email')
           })
           knex.schema.alterTable('job', function(t) {
-            t.unique(['account_id', 'program_id'],{indexName:'users_composite_index',deferrable:'deferred'})
+            t.unique(['account_id', 'program_id'], {indexName: 'users_composite_index', deferrable:'deferred', storageEngineIndexType: 'hash'})
           })
         `
       },
@@ -957,8 +957,8 @@ export default [
   {
     type: "method",
     method: "index",
-    example: "column.index([indexName], [indexType])",
-    description: "Specifies a field as an index. If an indexName is specified, it is used in place of the standard index naming convention of tableName_columnName. The indexType can be optionally specified for PostgreSQL and MySQL. No-op if this is chained off of a field that cannot be indexed.",
+    example: "column.index([indexName] | {[indexName: string], [storageEngineIndexType: 'btree'|'hash']}, [indexType])",
+    description: "Specifies a field as an index. If an indexName is specified, it is used in place of the standard index naming convention of tableName_columnName. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. The indexType can be optionally specified for PostgreSQL and MySQL. No-op if this is chained off of a field that cannot be indexed.",
     children: [    ]
   },
   {
