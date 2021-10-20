@@ -55,6 +55,29 @@ describe('Schema', () => {
             await knex.schema.dropTable('alter_table');
           });
 
+          describe('indexes and unique keys', () => {
+            it('alter table add indexes', async function () {
+              await knex.schema
+                .alterTable('alter_table', (table) => {
+                  table.index(
+                    ['column_string', 'column_datetime'],
+                    { indexName: 'idx_1', storageEngineIndexType: 'BTREE' },
+                    'FULLTEXT'
+                  );
+                  table.unique('column_notNullable', {
+                    indexName: 'idx_2',
+                    storageEngineIndexType: 'HASH',
+                  });
+                })
+                .testSql((tester) => {
+                  tester('mysql', [
+                    'alter table `alter_table` add FULLTEXT index `idx_1`(`column_string`, `column_datetime`) using BTREE',
+                    'alter table `alter_table` add unique `idx_2`(`column_notNullable`) using HASH',
+                  ]);
+                });
+            });
+          });
+
           describe('alterColumns', () => {
             it('alters the type of columns', async () => {
               await knex.schema.alterTable('alter_table', (table) => {

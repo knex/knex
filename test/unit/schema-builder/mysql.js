@@ -3,7 +3,6 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const MySQL2_Client = require('../../../lib/dialects/mysql2');
-const { equal } = require('assert');
 
 module.exports = function (dialect) {
   describe(dialect + ' SchemaBuilder', function () {
@@ -351,7 +350,7 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
+      expect(tableSql.length).to.equal(1);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add FULLTEXT index `baz`(`foo`, `bar`)'
       );
@@ -369,7 +368,7 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
+      expect(tableSql.length).to.equal(1);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add UNIQUE index `baz`(`foo`, `bar`) using BTREE'
       );
