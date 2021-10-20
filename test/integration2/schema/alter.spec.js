@@ -5,6 +5,7 @@ const {
   getAllDbs,
   getKnexForDb,
 } = require('../util/knex-instance-provider');
+const { isMysql } = require('../../util/db-helpers');
 
 const QUERY_TABLE =
   'SELECT sql FROM sqlite_master WHERE type="table" AND tbl_name="alter_table"';
@@ -57,6 +58,9 @@ describe('Schema', () => {
 
           describe('indexes and unique keys', () => {
             it('alter table add indexes', async function () {
+              if (!isMysql(knex)) {
+                this.skip();
+              }
               await knex.schema
                 .alterTable('alter_table', (table) => {
                   table.index(
