@@ -440,6 +440,23 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test adding unique key with storage engine index type', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.unique('foo', {
+            indexName: 'bar',
+            storageEngineIndexType: 'HASH',
+          });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add unique `bar`(`foo`) using HASH'
+      );
+    });
+
     it('test adding index', function () {
       tableSql = client
         .schemaBuilder()
@@ -462,9 +479,27 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
+      expect(tableSql.length).to.equal(1);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add FULLTEXT index `baz`(`foo`, `bar`)'
+      );
+    });
+
+    it('test adding index with an index type and storage engine index type', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.index(
+            ['foo', 'bar'],
+            { indexName: 'baz', storageEngineIndexType: 'BTREE' },
+            'UNIQUE'
+          );
+        })
+        .toSQL();
+
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add UNIQUE index `baz`(`foo`, `bar`) using BTREE'
       );
     });
 
