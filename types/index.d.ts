@@ -1833,6 +1833,35 @@ export declare namespace Knex {
   //
 
   interface SchemaBuilder extends ChainableInterface<void> {
+    // Views
+    createView(
+      viewName: string,
+      callback: (viewBuilder: ViewBuilder) => any
+    ): SchemaBuilder;
+    createViewOrReplace(
+      viewName: string,
+      callback: (viewBuilder: ViewBuilder) => any
+    ): SchemaBuilder;
+    createMaterializedView(
+      viewName: string,
+      callback: (viewBuilder: ViewBuilder) => any
+    ): SchemaBuilder;
+    refreshMaterializedView(viewName: string): SchemaBuilder;
+    dropView(viewName: string): SchemaBuilder;
+    dropViewIfExists(viewName: string): SchemaBuilder;
+    dropMaterializedView(viewName: string): SchemaBuilder;
+    dropMaterializedViewIfExists(viewName: string): SchemaBuilder;
+    renameView(oldViewName: string, newViewName: string): Promise<void>;
+    view(
+      viewName: string,
+      callback: (viewBuilder: AlterViewBuilder) => any
+    ): Promise<void>;
+    alterView(
+      viewName: string,
+      callback: (tableBuilder: AlterViewBuilder) => any
+    ): SchemaBuilder;
+
+    // Tables
     createTable(
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
@@ -1846,8 +1875,6 @@ export declare namespace Knex {
       tableNameLike: string,
       callback: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
-    createSchema(schemaName: string): SchemaBuilder;
-    createSchemaIfNotExists(schemaName: string): SchemaBuilder;
     alterTable(
       tableName: string,
       callback: (tableBuilder: CreateTableBuilder) => any
@@ -1855,16 +1882,22 @@ export declare namespace Knex {
     renameTable(oldTableName: string, newTableName: string): Promise<void>;
     dropTable(tableName: string): SchemaBuilder;
     hasTable(tableName: string): Promise<boolean>;
-    hasColumn(tableName: string, columnName: string): Promise<boolean>;
     table(
       tableName: string,
       callback: (tableBuilder: AlterTableBuilder) => any
     ): Promise<void>;
     dropTableIfExists(tableName: string): SchemaBuilder;
+
+    // Schema
+    createSchema(schemaName: string): SchemaBuilder;
+    createSchemaIfNotExists(schemaName: string): SchemaBuilder;
     dropSchema(schemaName: string, cascade?: boolean): SchemaBuilder;
     dropSchemaIfExists(schemaName: string, cascade?: boolean): SchemaBuilder;
-    raw(statement: string): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
+
+    // Others
+    hasColumn(tableName: string, columnName: string): Promise<boolean>;
+    raw(statement: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
     toString(): string;
     toSQL(): Sql;
@@ -1956,6 +1989,15 @@ export declare namespace Knex {
     queryContext(context: any): TableBuilder;
   }
 
+  interface ViewBuilder<TRecord extends {} = any, TResult = any> {
+    columns(columns: any): ViewBuilder;
+    as(selectQuery: QueryBuilder): ViewBuilder;
+    checkOption(): Promise<void>;
+    localCheckOption(): Promise<void>;
+    cascadedCheckOption(): Promise<void>;
+    queryContext(context: any): ViewBuilder;
+  }
+
   interface CreateTableBuilder extends TableBuilder {
     engine(val: string): CreateTableBuilder;
     charset(val: string): CreateTableBuilder;
@@ -1964,6 +2006,16 @@ export declare namespace Knex {
   }
 
   interface AlterTableBuilder extends TableBuilder {}
+
+  interface AlterColumnView extends ViewBuilder {
+    rename(newName: string): AlterColumnView;
+    defaultTo(defaultValue: string): AlterColumnView;
+  }
+
+  interface AlterViewBuilder extends ViewBuilder {
+    column(column: string): AlterColumnView;
+  }
+
   type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
