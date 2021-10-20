@@ -3,6 +3,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
+const knex = require('../../../knex');
 const client = new MSSQL_Client({ client: 'mssql' });
 
 describe('MSSQL SchemaBuilder', function () {
@@ -47,6 +48,119 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'SELECT * INTO [users_like] FROM [users] WHERE 0=1'
     );
+  });
+
+  describe('views', function () {
+    let knexMssql;
+
+    before(function () {
+      knexMssql = knex({
+        client: 'mssql',
+        connection: {},
+      });
+    });
+
+    it('basic create view', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexMssql('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "CREATE VIEW [adults] (name) AS select [name] from [users] where [age] > '18'"
+      );
+    });
+
+    it('create view or replace', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexMssql('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "CREATE OR ALTER VIEW [adults] (name) AS select [name] from [users] where [age] > '18'"
+      );
+    });
+
+    it('create view with check options', async function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMssql('users').select('name').where('age', '>', '18'));
+            view.localCheckOption();
+          })
+          .toSQL();
+      }).to.throw('check option definition is not supported by this dialect.');
+    });
+
+    it('drop view', function () {
+      tableSql = client.schemaBuilder().dropView('users').toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view [users]');
+    });
+
+    it('drop view with schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .dropView('users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view [myschema].[users]');
+    });
+
+    it('rename column of view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .view('users', function (view) {
+          view.column('oldName').rename('newName');
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal("exec sp_rename ?, ?, 'COLUMN'");
+      expect(tableSql[0].bindings[0]).to.equal('[users].oldName');
+      expect(tableSql[0].bindings[1]).to.equal('newName');
+    });
+
+    it('rename view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .renameView('old_view', 'new_view')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('exec sp_rename ?, ?');
+      expect(tableSql[0].bindings[0]).to.equal('old_view');
+      expect(tableSql[0].bindings[1]).to.equal('new_view');
+    });
+
+    it('create materialized view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .createMaterializedView('mat_view', function (view) {
+            view.columns(['name']);
+            view.as(knexMssql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+      }).to.throw('materialized views are not supported by this dialect.');
+    });
+
+    it('refresh view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .refreshMaterializedView('view_to_refresh')
+          .toSQL();
+      }).to.throw('materialized views are not supported by this dialect.');
+    });
   });
 
   it('test basic create table with incrementing without primary key', function () {
