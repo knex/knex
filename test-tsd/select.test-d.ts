@@ -67,7 +67,7 @@ const main = async () => {
     await knex<User>('users').select('id', 'age')
   );
 
-  expectType<User>(
+  expectType<User[]>(
     await knex<User>('users').joinRaw(
       `JOIN (
         SELECT id 
