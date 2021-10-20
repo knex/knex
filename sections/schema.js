@@ -59,20 +59,6 @@ export default [
   },
   {
     type: "method",
-    method: "renameTable",
-    example: "knex.schema.renameTable(from, to)",
-    description: "Renames a table from a current tableName to another.",
-    children: [
-      {
-        type: "runnable",
-        content: `
-          knex.schema.renameTable('users', 'old_users')
-        `
-      }
-    ]
-  },
-  {
-    type: "method",
     method: "dropTable",
     example: "knex.schema.dropTable(tableName)",
     description: "Drops a table, specified by tableName.",
@@ -81,6 +67,34 @@ export default [
         type: "runnable",
         content: `
           knex.schema.dropTable('users')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "dropTableIfExists",
+    example: "knex.schema.dropTableIfExists(tableName)",
+    description: "Drops a table conditionally if the table exists, specified by tableName.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.dropTableIfExists('users')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "renameTable",
+    example: "knex.schema.renameTable(from, to)",
+    description: "Renames a table from a current tableName to another.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.renameTable('users', 'old_users')
         `
       }
     ]
@@ -118,20 +132,6 @@ export default [
   },
   {
     type: "method",
-    method: "dropTableIfExists",
-    example: "knex.schema.dropTableIfExists(tableName)",
-    description: "Drops a table conditionally if the table exists, specified by tableName.",
-    children: [
-      {
-        type: "runnable",
-        content: `
-          knex.schema.dropTableIfExists('users')
-        `
-      }
-    ]
-  },
-  {
-    type: "method",
     method: "table",
     example: "knex.schema.table(tableName, callback)",
     description: "Chooses a database table, and then modifies the table, using the Schema Building functions inside of the callback.",
@@ -144,6 +144,158 @@ export default [
             table.string('first_name');
             table.string('last_name');
           })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "createView",
+    example: "knex.schema.createView(tableName, callback)",
+    description: "Creates a new view on the database, with a callback function to modify the view's structure, using the schema-building commands.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.createView('users_view', function (view) {
+            view.columns(['first_name']);
+            view.as(knex('users').select('first_name').where('age','>', '18'));
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "createViewOrReplace",
+    example: "knex.schema.createViewOrReplace(tableName, callback)",
+    description: "Creates a new view or replace it on the database, with a callback function to modify the view's structure, using the schema-building commands.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.createViewOrReplace('users_view', function (view) {
+            view.columns(['first_name']);
+            view.as(knex('users').select('first_name').where('age','>', '18'));
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "createMaterializedView",
+    example: "knex.schema.createMaterializedView(viewName, callback)",
+    description: "Creates a new materialized view on the database, with a callback function to modify the view's structure, using the schema-building commands. Only on PostgreSQL, CockroachDb, Redshift and Oracle.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.createMaterializedView('users_view', function (view) {
+            view.columns(['first_name']);
+            view.as(knex('users').select('first_name').where('age','>', '18'));
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "refreshMaterializedView",
+    example: "knex.schema.refreshMaterializedView(viewName)",
+    description: "Refresh materialized view on the database. Only on PostgreSQL, CockroachDb, Redshift and Oracle.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.refreshMaterializedView('users_view');
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "drowView",
+    example: "knex.schema.dropView(viewName)",
+    description: "Drop view on the database.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.dropView('users_view');
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "dropViewIfExists",
+    example: "knex.schema.dropViewIfExists(viewName)",
+    description: "Drop view on the database if exists.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.dropViewIfExists('users_view');
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "dropMaterializedView",
+    example: "knex.schema.dropMaterializedView(viewName)",
+    description: "Drop materialized view on the database. Only on PostgreSQL, CockroachDb, Redshift and Oracle.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.dropMaterializedView('users_view');
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "dropMaterializedViewIfExists",
+    example: "knex.schema.dropMaterializedViewIfExists(viewName)",
+    description: "Drop materialized view on the database if exists. Only on PostgreSQL, CockroachDb, Redshift and Oracle.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.dropMaterializedViewIfExists('users_view');
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "renameView",
+    example: "knex.schema.renameView(viewName)",
+    description: "Rename a existing view in the database. Not supported by Oracle and SQLite.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.renameView('users_view');
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "alterView",
+    example: "knex.schema.alterView(viewName)",
+    description: "Alter view to rename columns or change default values. Only available on PostgreSQL, MSSQL and Redshift.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.alterView('view_test', function (view) {
+            view.column('first_name').rename('name_user');
+            view.column('bio').defaultTo('empty);
+          }
         `
       }
     ]
@@ -963,5 +1115,57 @@ export default [
         t.string('email').unique().collate('utf8_unicode_ci');
       });
     `
+  },
+  {
+    type: "heading",
+    size: "md",
+    content: "View:",
+    href: "View"
+  },
+  {
+    type: "method",
+    method: "columns",
+    example: "view.columns([columnNames])",
+    description: "Specify the columns of the view.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createView('users_view', function (view) {
+            view.columns(['first_name', 'last_name']);
+            view.as(knex('users').select('first_name').where('age','>', '18'));
+          });
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "as",
+    example: "view.as(selectQuery)",
+    description: "Specify the select query of the view.",
+    children: [ ]
+  },
+  {
+    type: "method",
+    method: "checkOption",
+    example: "view.checkOption()",
+    description: "Add check option on the view definition. On OracleDb, MySQL, PostgreSQL and Redshift.",
+    children: [ ]
+  },
+  {
+    type: "method",
+    method: "localCheckOption",
+    example: "view.localCheckOption()",
+    description: "Add local check option on the view definition. On MySQL, PostgreSQL and Redshift.",
+    children: [ ]
+  },
+  {
+    type: "method",
+    method: "cascadedCheckOption",
+    example: "view.cascadedCheckOption()",
+    description: "Add cascaded check option on the view definition. On MySQL, PostgreSQL and Redshift.",
+    children: [ ]
   }
 ]

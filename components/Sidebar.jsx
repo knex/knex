@@ -176,6 +176,16 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-hasTable">hasTable</a></li>
           <li>– <a href="#Schema-dropTableIfExists">dropTableIfExists</a></li>
           <li>– <a href="#Schema-table">table</a></li>
+          <li>– <a href="#Schema-createView">createView</a></li>
+          <li>– <a href="#Schema-createViewOrReplace">createViewOrReplace</a></li>
+          <li>– <a href="#Schema-createMaterializedView">createMaterializedView</a></li>
+          <li>– <a href="#Schema-refreshMaterializedView">refreshMaterializedView</a></li>
+          <li>– <a href="#Schema-drowView">drowView</a></li>
+          <li>– <a href="#Schema-dropViewIfExists">dropViewIfExists</a></li>
+          <li>– <a href="#Schema-dropMaterializedView">dropMaterializedView</a></li>
+          <li>– <a href="#Schema-dropMaterializedViewIfExists">dropMaterializedViewIfExists</a></li>
+          <li>– <a href="#Schema-renameView">renameView</a></li>
+          <li>– <a href="#Schema-alterView">alterView</a></li>
           <li>– <a href="#Schema-generateDdlCommands">generateDdlCommands</a></li>
           <li>– <a href="#Schema-raw">raw</a></li>
           <li>– <a href="#Schema-queryContext">queryContext</a></li>
@@ -239,6 +249,12 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-after">after</a></li>
           <li>– <a href="#Column-comment">comment</a></li>
           <li>– <a href="#Column-collate">collate</a></li>
+          <li><a href="#View"><b>View:</b></a></li>
+          <li>– <a href="#Schema-columns">columns</a></li>
+          <li>– <a href="#Column-as">as</a></li>
+          <li>– <a href="#Column-checkOption">checkOption</a></li>
+          <li>– <a href="#Column-localCheckOption">localCheckOption</a></li>
+          <li>– <a href="#Column-cascadedCheckOption">cascadedCheckOption</a></li>
         </ul>
 
         <a className="toc_title" href="#Raw">
