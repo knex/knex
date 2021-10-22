@@ -1,6 +1,6 @@
 'use strict';
 
-const { isOracle, isCockroachDB } = require('../util/db-helpers');
+const { isOracle } = require('../util/db-helpers');
 
 module.exports = function (knex) {
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function () {
