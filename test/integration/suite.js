@@ -18,13 +18,6 @@ module.exports = function (knex) {
       });
     }
 
-    if (isCockroachDB(knex)) {
-      describe('CockroachDB driver tests', function () {
-        this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-        require('./dialects/cockroachdb');
-      });
-    }
-
     require('./migrate/migration-integration-tests')(knex);
 
     require('./seed')(knex);
