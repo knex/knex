@@ -1,6 +1,6 @@
 'use strict';
 
-const { isOracle } = require('../util/db-helpers');
+const { isOracle, isCockroachDB } = require('../util/db-helpers');
 
 module.exports = function (knex) {
   describe(knex.client.dialect + ' | ' + knex.client.driverName, function () {
@@ -15,6 +15,13 @@ module.exports = function (knex) {
       describe('Oracledb driver tests', function () {
         this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
         require('./dialects/oracledb');
+      });
+    }
+
+    if (isCockroachDB(knex)) {
+      describe('CockroachDB driver tests', function () {
+        this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
+        require('./dialects/cockroachdb');
       });
     }
 
