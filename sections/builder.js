@@ -2052,6 +2052,40 @@ export default [
   },
   {
     type: "method",
+    method: "forNoKeyUpdate",
+    example: ".transacting(t).forNoKeyUpdate()",
+    description: "Dynamically added after a transaction is specified, the forNoKeyUpdate adds a FOR NO KEY UPDATE in PostgreSQL.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('tableName')
+            .transacting(trx)
+            .forNoKeyUpdate()
+            .select('*')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "forKeyShare",
+    example: ".transacting(t).forKeyShare()",
+    description: "Dynamically added after a transaction is specified, the forKeyShare adds a FOR KEY SHARE in PostgreSQL.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('tableName')
+            .transacting(trx)
+            .forKeyShare()
+            .select('*')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "skipLocked",
     example: ".skipLocked()",
     description: "MySQL 8.0+ and PostgreSQL 9.5+ only. This method can be used after a lock mode has been specified with either forUpdate or forShare, and will cause the query to skip any locked rows, returning an empty set if none are available.",

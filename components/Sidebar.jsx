@@ -130,6 +130,8 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-transacting">transacting</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-forUpdate">forUpdate</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-forShare">forShare</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-forNoKeyUpdate">forNoKeyUpdate</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-forKeyShare">forKeyShare</a></li>
           <li>– <a href="#Builder-skipLocked">skipLocked</a></li>
           <li>– <a href="#Builder-noWait">noWait</a></li>
           <li>– <a href="#Builder-count">count</a></li>
