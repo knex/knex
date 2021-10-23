@@ -1740,6 +1740,12 @@ export declare namespace Knex {
     forShare(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forShare(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
 
+    forNoKeyUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
+    forNoKeyUpdate(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
+
+    forKeyShare(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
+    forKeyShare(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
+
     skipLocked(): QueryBuilder<TRecord, TResult>;
     noWait(): QueryBuilder<TRecord, TResult>;
 

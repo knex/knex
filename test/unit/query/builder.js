@@ -6507,6 +6507,27 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('lock for no key update', () => {
+    testsql(
+      qb().select('*').from('foo').where('bar', '=', 'baz').forNoKeyUpdate(),
+      {
+        pg: {
+          sql: 'select * from "foo" where "bar" = ? for no key update',
+          bindings: ['baz'],
+        },
+      }
+    );
+  });
+
+  it('lock for key share', () => {
+    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forShare(), {
+      pg: {
+        sql: 'select * from "foo" where "bar" = ? for share',
+        bindings: ['baz'],
+      },
+    });
+  });
+
   it('should allow lock (such as forUpdate) outside of a transaction', () => {
     testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forUpdate(), {
       mysql: {
