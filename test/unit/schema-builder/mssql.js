@@ -558,11 +558,9 @@ describe('MSSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.index(
-          ['foo', 'bar'],
-          'baz',
-          client.queryBuilder().whereRaw('email = "foo@bar"')
-        );
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -575,11 +573,9 @@ describe('MSSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.index(
-          ['foo', 'bar'],
-          'baz',
-          client.queryBuilder().whereNotNull('email')
-        );
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereNotNull('email'),
+        });
       })
       .toSQL();
     equal(1, tableSql.length);

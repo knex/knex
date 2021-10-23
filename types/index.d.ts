@@ -1974,8 +1974,8 @@ export declare namespace Knex {
     primary(columnNames: readonly string[], constraintName?: string): TableBuilder;
     index(
       columnNames: string | readonly (string | Raw)[],
-      indexName?: string,
-      indexType?: string
+      indexName?: any,
+      options?: any
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;

@@ -762,7 +762,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.index(['foo', 'bar'], 'baz', 'gist');
+        table.index(['foo', 'bar'], 'baz', { indexType: 'gist' });
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -775,7 +775,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.string('name').index('baz', 'gist');
+        table.string('name').index('baz', { indexType: 'gist' });
       })
       .toSQL();
     equal(2, tableSql.length);
@@ -791,7 +791,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.string('name').index(null, 'gist');
+        table.string('name').index(null, { indexType: 'gist' });
       })
       .toSQL();
     equal(2, tableSql.length);
@@ -807,11 +807,9 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.index(
-          ['foo', 'bar'],
-          'baz',
-          client.queryBuilder().whereRaw('email = "foo@bar"')
-        );
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -824,12 +822,10 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.index(
-          ['foo', 'bar'],
-          'baz',
-          'gist',
-          client.queryBuilder().whereRaw('email = "foo@bar"')
-        );
+        table.index(['foo', 'bar'], 'baz', {
+          indexType: 'gist',
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -842,11 +838,9 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.index(
-          ['foo', 'bar'],
-          'baz',
-          client.queryBuilder().whereNotNull('email')
-        );
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereNotNull('email'),
+        });
       })
       .toSQL();
     equal(1, tableSql.length);

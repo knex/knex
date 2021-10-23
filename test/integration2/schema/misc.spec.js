@@ -1434,54 +1434,40 @@ describe('Schema (misc)', () => {
           }));
 
         describe('supports partial indexes - postgres, sqlite, and mssql', function () {
-          if (
-            !knex ||
-            !knex.client ||
-            !(
-              /postgres/i.test(knex.client.dialect) ||
-              /sqlite/i.test(knex.client.dialect) ||
-              /mssql/i.test(knex.client.dialect)
-            )
-          ) {
-            return Promise.resolve();
-          }
+          it('allows creating indexes with predicate', async function () {
+            if (!(isPostgreSQL(knex) || isMssql(knex) || isSQLite(knex))) {
+              return this.skip();
+            }
 
-          it('allows creating indexes with predicate', function () {
-            return knex.schema.table('test_table_one', function (t) {
-              t.index(
-                'first_name',
-                'first_name_idx',
-                knex.whereRaw("first_name = 'brandon'")
-              );
-              t.index('phone', 'phone_idx', knex.whereNotNull('phone'));
+            await knex.schema.table('test_table_one', function (t) {
+              t.index('first_name', 'first_name_idx', {
+                predicate: knex.whereRaw("first_name = 'brandon'"),
+              });
+              t.index('phone', 'phone_idx', {
+                predicate: knex.whereNotNull('phone'),
+              });
             });
           });
 
-          if (knex && knex.client && /postgres/i.test(knex.client.dialect)) {
-            it('actually stores the predicate in the Postgres server', function () {
-              return knex.schema
-                .table('test_table_one', function (t) {
-                  t.index('phone', 'phone_idx_2', knex.whereNotNull('phone'));
-                })
-                .then(function () {
-                  return knex
-                    .from('pg_class')
-                    .innerJoin(
-                      'pg_index',
-                      'pg_index.indexrelid',
-                      'pg_class.oid'
-                    )
-                    .where({
-                      relname: 'phone_idx_2',
-                      indisvalid: true,
-                    })
-                    .whereNotNull('indpred');
-                })
-                .then(function (results) {
-                  expect(results).to.not.be.empty;
-                });
+          it('actually stores the predicate in the Postgres server', async function () {
+            if (!isPostgreSQL(knex)) {
+              return this.skip();
+            }
+            await knex.schema.table('test_table_one', function (t) {
+              t.index('phone', 'phone_idx_2', {
+                predicate: knex.whereNotNull('phone'),
+              });
             });
-          }
+            const results = await knex
+              .from('pg_class')
+              .innerJoin('pg_index', 'pg_index.indexrelid', 'pg_class.oid')
+              .where({
+                relname: 'phone_idx_2',
+                indisvalid: true,
+              })
+              .whereNotNull('indpred');
+            expect(results).to.not.be.empty;
+          });
         });
       });
 

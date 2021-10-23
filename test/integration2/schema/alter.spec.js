@@ -66,7 +66,7 @@ describe('Schema', () => {
                   table.index(
                     ['column_string', 'column_datetime'],
                     { indexName: 'idx_1', storageEngineIndexType: 'BTREE' },
-                    'FULLTEXT'
+                    { indexType: 'FULLTEXT' }
                   );
                   table.unique('column_notNullable', {
                     indexName: 'idx_2',
