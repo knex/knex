@@ -1975,11 +1975,11 @@ export declare namespace Knex {
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: any,
-      options?: any
+      options?: Readonly<{indexType?: string, storageEngineIndexType?: string, predicate?: QueryBuilder}>
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
-    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): TableBuilder;
+    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, storageEngineIndexType?: string, deferrable?: deferrableType}>): TableBuilder;
     /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;

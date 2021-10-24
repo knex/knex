@@ -475,7 +475,7 @@ module.exports = function (dialect) {
       tableSql = client
         .schemaBuilder()
         .table('users', function () {
-          this.index(['foo', 'bar'], 'baz', { indexType: 'FULLTEXT' });
+          this.index(['foo', 'bar'], 'baz', 'FULLTEXT');
         })
         .toSQL();
 
@@ -489,11 +489,10 @@ module.exports = function (dialect) {
       tableSql = client
         .schemaBuilder()
         .table('users', function () {
-          this.index(
-            ['foo', 'bar'],
-            { indexName: 'baz', storageEngineIndexType: 'BTREE' },
-            { indexType: 'UNIQUE' }
-          );
+          this.index(['foo', 'bar'], 'baz', {
+            indexType: 'UNIQUE',
+            storageEngineIndexType: 'BTREE',
+          });
         })
         .toSQL();
 

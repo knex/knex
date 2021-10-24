@@ -762,7 +762,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.index(['foo', 'bar'], 'baz', { indexType: 'gist' });
+        table.index(['foo', 'bar'], 'baz', 'gist');
       })
       .toSQL();
     equal(1, tableSql.length);
@@ -775,7 +775,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.string('name').index('baz', { indexType: 'gist' });
+        table.string('name').index('baz', 'gist');
       })
       .toSQL();
     equal(2, tableSql.length);
