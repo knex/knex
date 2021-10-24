@@ -456,9 +456,10 @@ export declare namespace Knex {
 
   type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
 
-  export type CompositeTableType<TBase, TInsert = TBase, TUpdate = Partial<TInsert>> = {
+  export type CompositeTableType<TBase, TInsert = TBase, TUpsert = Partial<TInsert>, TUpdate = Partial<TInsert>> = {
     base: TBase,
     insert: TInsert,
+    upsert: TUpsert,
     update: TUpdate,
   };
 
