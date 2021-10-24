@@ -714,6 +714,75 @@ export declare namespace Knex {
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>
     ): QueryBuilder<TRecord, TResult2>;
 
+    upsert(
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
+      returning: '*',
+      options?: DMLOptions
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
+    upsert<
+      TKey extends StrKey<ResolveTableType<TRecord>>,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        ResolveTableType<TRecord>,
+        TKey
+        >[]
+      >(
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
+      returning: TKey,
+      options?: DMLOptions
+    ): QueryBuilder<TRecord, TResult2>;
+    upsert<
+      TKey extends StrKey<ResolveTableType<TRecord>>,
+      TResult2 = DeferredKeySelection.Augment<
+        UnwrapArrayMember<TResult>,
+        ResolveTableType<TRecord>,
+        TKey
+        >[]
+      >(
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
+      returning: readonly TKey[],
+      options?: DMLOptions
+    ): QueryBuilder<TRecord, TResult2>;
+    upsert<
+      TKey extends string,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+        >[]
+      >(
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
+      returning: TKey,
+      options?: DMLOptions
+    ): QueryBuilder<TRecord, TResult2>;
+    upsert<
+      TKey extends string,
+      TResult2 = DeferredIndex.Augment<
+        UnwrapArrayMember<TResult>,
+        TRecord,
+        TKey
+        >[]
+      >(
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
+      returning: readonly TKey[],
+      options?: DMLOptions
+    ): QueryBuilder<TRecord, TResult2>;
+    upsert<TResult2 = number[]>(
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>
+    ): QueryBuilder<TRecord, TResult2>;
+
     modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
       callback: QueryCallbackWithArgs<TRecord, any>,
       ...args: any[]
