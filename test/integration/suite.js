@@ -18,8 +18,6 @@ module.exports = function (knex) {
       });
     }
 
-    require('./migrate/migration-integration-tests')(knex);
-
     require('./seed')(knex);
     require('./query/aggregate')(knex);
     require('./execution/transaction')(knex);
