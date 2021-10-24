@@ -85,6 +85,16 @@ async function createCompositeKeyTable(knex) {
   });
 }
 
+async function createParentAndChildTables(knex) {
+  await knex.schema.createTable('parent', (table) => {
+    table.integer('id').primary();
+  });
+  await knex.schema.createTable('child', (table) => {
+    table.integer('id').primary();
+    table.integer('parent_id').references('parent.id');
+  });
+}
+
 async function dropTables(knex) {
   await knex.schema.dropTableIfExists('accounts');
   await knex.schema.dropTableIfExists('users');
@@ -95,6 +105,8 @@ async function dropTables(knex) {
   await knex.schema.dropTableIfExists('datatype_test');
   await knex.schema.dropTableIfExists('test_default_table');
   await knex.schema.dropTableIfExists('test_default_table2');
+  await knex.schema.dropTableIfExists('child');
+  await knex.schema.dropTableIfExists('parent');
 }
 
 module.exports = {
@@ -104,5 +116,6 @@ module.exports = {
   createDefaultTable,
   createUsers,
   createTestTableTwo,
+  createParentAndChildTables,
   dropTables,
 };

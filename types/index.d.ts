@@ -1810,6 +1810,12 @@ export declare namespace Knex {
     forShare(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forShare(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
 
+    forNoKeyUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
+    forNoKeyUpdate(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
+
+    forKeyShare(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
+    forKeyShare(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
+
     skipLocked(): QueryBuilder<TRecord, TResult>;
     noWait(): QueryBuilder<TRecord, TResult>;
 
@@ -1984,7 +1990,7 @@ export declare namespace Knex {
     ): ColumnBuilder;
     dropColumn(columnName: string): TableBuilder;
     dropColumns(...columnNames: string[]): TableBuilder;
-    renameColumn(from: string, to: string): ColumnBuilder;
+    renameColumn(from: string, to: string): TableBuilder;
     integer(columnName: string, length?: number): ColumnBuilder;
     tinyint(columnName: string, length?: number): ColumnBuilder;
     bigInteger(columnName: string): ColumnBuilder;
@@ -2016,7 +2022,7 @@ export declare namespace Knex {
     timestamps(
       useTimestampType?: boolean,
       makeDefaultNow?: boolean
-    ): ColumnBuilder;
+    ): void;
     binary(columnName: string, length?: number): ColumnBuilder;
     enum(
       columnName: string,
@@ -2031,7 +2037,7 @@ export declare namespace Knex {
     json(columnName: string): ColumnBuilder;
     jsonb(columnName: string): ColumnBuilder;
     uuid(columnName: string): ColumnBuilder;
-    comment(val: string): TableBuilder;
+    comment(val: string): void;
     specificType(columnName: string, type: string): ColumnBuilder;
     primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
     /** @deprecated */
@@ -2055,7 +2061,7 @@ export declare namespace Knex {
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
-    dropTimestamps(): ColumnBuilder;
+    dropTimestamps(): TableBuilder;
     queryContext(context: any): TableBuilder;
   }
 
