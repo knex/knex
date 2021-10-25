@@ -1974,8 +1974,8 @@ export declare namespace Knex {
     primary(columnNames: readonly string[], constraintName?: string): TableBuilder;
     index(
       columnNames: string | readonly (string | Raw)[],
-      indexName?: any,
-      options?: Readonly<{indexType?: string, storageEngineIndexType?: string, predicate?: QueryBuilder}>
+      indexName?: string,
+      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType, predicate?: QueryBuilder}>
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
@@ -2023,8 +2023,13 @@ export declare namespace Knex {
   }
 
   type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
+  type storageEngineIndexType = 'hash' | 'btree';
+
   interface ColumnBuilder {
-    index(indexName?: string): ColumnBuilder;
+    index(
+      indexName?: string,
+      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType, predicate?: QueryBuilder}>
+    ): ColumnBuilder;
     primary(options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): ColumnBuilder;
     /** @deprecated */
     primary(constraintName?: string): ColumnBuilder;
