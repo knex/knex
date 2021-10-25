@@ -2045,11 +2045,11 @@ export declare namespace Knex {
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
-      indexType?: string
+      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType, predicate?: QueryBuilder}>
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
-    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): TableBuilder;
+    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, storageEngineIndexType?: string, deferrable?: deferrableType}>): TableBuilder;
     /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
@@ -2093,6 +2093,8 @@ export declare namespace Knex {
   }
 
   type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
+  type storageEngineIndexType = 'hash' | 'btree';
+
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
     primary(options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): ColumnBuilder;
@@ -2122,7 +2124,31 @@ export declare namespace Knex {
   }
 
   interface PostgreSqlColumnBuilder extends ColumnBuilder {
-    index(indexName?: string, indexType?: string): ColumnBuilder;
+    index(
+      indexName?: string,
+      options?: Readonly<{indexType?: string, predicate?: QueryBuilder}>
+    ): ColumnBuilder;
+  }
+
+  interface SqlLiteColumnBuilder extends ColumnBuilder {
+    index(
+      indexName?: string,
+      options?: Readonly<{predicate?: QueryBuilder}>
+    ): ColumnBuilder;
+  }
+
+  interface MsSqlColumnBuilder extends ColumnBuilder {
+    index(
+      indexName?: string,
+      options?: Readonly<{predicate?: QueryBuilder}>
+    ): ColumnBuilder;
+  }
+
+  interface MySqlColumnBuilder extends ColumnBuilder {
+    index(
+      indexName?: string,
+      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType}>
+    ): ColumnBuilder;
   }
 
   // patched ColumnBuilder methods to return ReferencingColumnBuilder with new methods

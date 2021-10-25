@@ -63,11 +63,10 @@ describe('Schema', () => {
               }
               await knex.schema
                 .alterTable('alter_table', (table) => {
-                  table.index(
-                    ['column_string', 'column_datetime'],
-                    { indexName: 'idx_1', storageEngineIndexType: 'BTREE' },
-                    'FULLTEXT'
-                  );
+                  table.index(['column_string', 'column_datetime'], 'idx_1', {
+                    indexType: 'FULLTEXT',
+                    storageEngineIndexType: 'BTREE',
+                  });
                   table.unique('column_notNullable', {
                     indexName: 'idx_2',
                     storageEngineIndexType: 'HASH',
