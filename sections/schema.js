@@ -744,9 +744,23 @@ export default [
   {
     type: "method",
     method: "index",
-    example: "table.index(columns, [indexName] | {[indexName: string], [storageEngineIndexType: 'btree'|'hash']}, [indexType])",
-    description: "Adds an index to a table over the given columns. A default index name using the columns is used unless indexName is specified. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. The indexType can be optionally specified for PostgreSQL and MySQL. Amazon Redshift does not allow creating an index.",
-    children: []
+    example: "table.index(columns, [indexName], options=({[indexType: string], [storageEngineIndexType: 'btree'|'hash'], [predicate: QueryBuilder]}))",
+    description: "Adds an index to a table over the given columns. A default index name using the columns is used unless indexName is specified. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. The indexType can be optionally specified for PostgreSQL and MySQL. Amazon Redshift does not allow creating an index. In PostgreSQL, SQLite and MSSQL a partial index can be specified by setting a 'where' predicate.",
+    children: [
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          knex.table('users', function (table) {
+            table.index(['name', 'last_name'], 'idx_name_last_name', {
+              indexType: 'FULLTEXT',
+              storageEngineIndexType: 'hash',
+              predicate: knex.whereNotNull('email'),
+            });
+          });
+        `
+      }
+    ]
   },
   {
     type: "method",
@@ -957,8 +971,8 @@ export default [
   {
     type: "method",
     method: "index",
-    example: "column.index([indexName] | {[indexName: string], [storageEngineIndexType: 'btree'|'hash']}, [indexType])",
-    description: "Specifies a field as an index. If an indexName is specified, it is used in place of the standard index naming convention of tableName_columnName. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. The indexType can be optionally specified for PostgreSQL and MySQL. No-op if this is chained off of a field that cannot be indexed.",
+    example: "column.index([indexName], options=({[indexType: string], [storageEngineIndexType: 'btree'|'hash'], [predicate: QueryBuilder]}))",
+    description: "Specifies a field as an index. If an indexName is specified, it is used in place of the standard index naming convention of tableName_columnName. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. The indexType can be optionally specified for PostgreSQL and MySQL. No-op if this is chained off of a field that cannot be indexed. In PostgreSQL, SQLite and MSSQL a partial index can be specified by setting a 'where' predicate.",
     children: [    ]
   },
   {
