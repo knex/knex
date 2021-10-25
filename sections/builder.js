@@ -1858,6 +1858,35 @@ export default [
   },
   {
     type: "method",
+    method: "upsert",
+    example: ".upsert(data, [returning], [options])",
+    description: "Implemented for the CockroachDB. Creates an upsert query, taking either a hash of properties to be inserted into the row, or an array of upserts, to be executed as a single upsert command. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#Builder-returning)",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          // insert new row with unique index on title column
+          knex('books').upsert({title: 'Great Gatsby'})
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          // update row by unique title 'Great Gatsby' and insert row with title 'Fahrenheit 451'
+          knex('books').upsert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], ['id'])
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          // Normalizes for empty keys on multi-row upsert, result sql: ("x", "y") values (20, default), (default, 30), (10, 20):
+          knex('coords').upsert([{x: 20}, {y: 30}, {x: 10, y: 20}])
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "update",
     example: ".update(data, [returning], [options]) / .update(key, value, [returning], [options])",
     description: "Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. ['id', 'title'], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](#Builder-returning)",
