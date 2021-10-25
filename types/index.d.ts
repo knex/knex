@@ -2026,10 +2026,7 @@ export declare namespace Knex {
   type storageEngineIndexType = 'hash' | 'btree';
 
   interface ColumnBuilder {
-    index(
-      indexName?: string,
-      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType, predicate?: QueryBuilder}>
-    ): ColumnBuilder;
+    index(indexName?: string): ColumnBuilder;
     primary(options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): ColumnBuilder;
     /** @deprecated */
     primary(constraintName?: string): ColumnBuilder;
@@ -2057,7 +2054,31 @@ export declare namespace Knex {
   }
 
   interface PostgreSqlColumnBuilder extends ColumnBuilder {
-    index(indexName?: string, indexType?: string): ColumnBuilder;
+    index(
+      indexName?: string,
+      options?: Readonly<{indexType?: string, predicate?: QueryBuilder}>
+    ): ColumnBuilder;
+  }
+
+  interface SqlLiteColumnBuilder extends ColumnBuilder {
+    index(
+      indexName?: string,
+      options?: Readonly<{predicate?: QueryBuilder}>
+    ): ColumnBuilder;
+  }
+
+  interface MsSqlColumnBuilder extends ColumnBuilder {
+    index(
+      indexName?: string,
+      options?: Readonly<{predicate?: QueryBuilder}>
+    ): ColumnBuilder;
+  }
+
+  interface MySqlColumnBuilder extends ColumnBuilder {
+    index(
+      indexName?: string,
+      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType}>
+    ): ColumnBuilder;
   }
 
   // patched ColumnBuilder methods to return ReferencingColumnBuilder with new methods
