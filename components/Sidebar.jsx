@@ -10,7 +10,7 @@ export default class Sidebar extends Component {
         </a>
 
         <ul className="toc_section">
-          <li>&raquo; <a href="https://github.com/tgriesser/knex">GitHub Repository</a></li>
+          <li>&raquo; <a href="https://github.com/knex/knex">GitHub Repository</a></li>
           <li>&raquo; <a href="#support">Support</a></li>
           <li>&raquo; <a href="#faq">FAQ</a></li>
           <li>&raquo; <a href="#changelog">Change Log</a></li>

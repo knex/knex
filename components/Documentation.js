@@ -22,7 +22,7 @@ import typescriptSupport from '../sections/typescript-support'
 import parseChangeLog from '../util/parseChangeLog'
 
 const constants = {
-  projectUrl: 'https://github.com/tgriesser/knex',
+  projectUrl: 'https://github.com/knex/knex',
 }
 
 // The "container" for the documentation,
