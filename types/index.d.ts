@@ -2023,6 +2023,9 @@ export declare namespace Knex {
       useTimestampType?: boolean,
       makeDefaultNow?: boolean
     ): void;
+    geometry(columnName: string): ColumnBuilder;
+    geography(columnName: string): ColumnBuilder;
+    point(columnName: string): ColumnBuilder;
     binary(columnName: string, length?: number): ColumnBuilder;
     enum(
       columnName: string,
