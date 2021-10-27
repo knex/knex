@@ -23,6 +23,7 @@ const {
   createTestTableTwo,
   dropTables,
   createDefaultTable,
+  createParentAndChildTables,
 } = require('../../../util/tableCreatorHelper');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const { assertNumberArrayStrict } = require('../../../util/assertHelper');
@@ -1769,6 +1770,77 @@ describe('Selects', function () {
                       'Defined query timeout of 100ms exceeded when running query'
                     );
                   });
+              });
+          });
+      });
+
+      it('select for no key update doesnt stop other transactions from inserting into tables that have a foreign key relationship', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        await createParentAndChildTables(knex);
+
+        return knex('parent')
+          .insert({
+            id: 1,
+          })
+          .then(() => {
+            return knex('child')
+              .insert({
+                id: 1,
+                parent_id: 1,
+              })
+              .then(() => {
+                return knex.transaction((trx) => {
+                  // select all from the parent table in the for no key update mode
+                  return trx('parent')
+                    .forNoKeyUpdate()
+                    .then((res) => {
+                      // Insert should into the child table not hang
+                      return knex('child')
+                        .insert({
+                          id: 2,
+                          parent_id: 1,
+                        })
+                        .timeout(150);
+                    });
+                });
+              });
+          });
+      });
+
+      it('select for key share blocks select for update but not select for no key update', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        return knex('test_default_table')
+          .insert({ string: 'making sure there is a row to lock' })
+          .then(() => {
+            return knex
+              .transaction((trx) => {
+                // select all from test table and lock
+                return trx('test_default_table')
+                  .forKeyShare()
+                  .then((res) => {
+                    // trying to select stuff from table in other connection should succeed with for no key update
+                    return knex('test_default_table')
+                      .forNoKeyUpdate()
+                      .timeout(200);
+                  })
+                  .then((res) => {
+                    // trying to select stuff from table in other connection should hang with for update
+                    return knex('test_default_table').forUpdate().timeout(100);
+                  });
+              })
+              .then((res) => {
+                expect('Second query should have timed out').to.be.false;
+              })
+              .catch((err) => {
+                expect(err.message).to.be.contain(
+                  'Defined query timeout of 100ms exceeded when running query'
+                );
               });
           });
       });

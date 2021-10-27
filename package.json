@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "0.95.11",
+  "version": "0.95.12-rc5",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex",
   "types": "types/index.d.ts",
@@ -33,8 +33,8 @@
     "test:pgnative": "cross-env DB=pgnative npm run test:db",
     "test:tape": "node test/tape/index.js | tap-spec",
     "test:cli": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
-    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledbxe",
-    "db:start:no-oracle": "docker-compose -f scripts/docker-compose.yml up --build -d mysql postgres mssql && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres",
+    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledbxe",
+    "db:start:no-oracle": "docker-compose -f scripts/docker-compose.yml up --build -d mysql postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres",
     "db:stop": "docker-compose -f scripts/docker-compose.yml down",
     "db:start:postgres": "docker-compose -f scripts/docker-compose.yml up --build -d postgres && docker-compose -f scripts/docker-compose.yml up waitpostgres",
     "db:stop:postgres": "docker-compose -f scripts/docker-compose.yml down",
@@ -101,10 +101,10 @@
     "cli-testlab": "^2.2.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
-    "dtslint": "4.1.6",
-    "eslint": "^7.32.0",
+    "dtslint": "4.2.0",
+    "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-import": "^2.25.2",
     "husky": "^4.3.8",
     "jake": "^8.1.1",
     "JSONStream": "^1.3.5",
@@ -128,8 +128,8 @@
     "tedious": "^12.2.0",
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.2.1",
-    "tsd": "^0.17.0",
-    "typescript": "4.4.3"
+    "tsd": "^0.18.0",
+    "typescript": "4.4.4"
   },
   "buildDependencies": [
     "rimraf"

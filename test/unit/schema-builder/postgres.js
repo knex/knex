@@ -193,6 +193,144 @@ describe('PostgreSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal('drop table "users"');
   });
 
+  describe('views', function () {
+    let knexPg;
+
+    before(function () {
+      knexPg = knex({
+        client: 'postgresql',
+        version: '10.5',
+        connection: {
+          pool: {},
+        },
+      });
+    });
+
+    it('basic create view', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view or replace', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view or replace "adults" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view with check options', async function () {
+      const viewSqlLocalCheck = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+          view.localCheckOption();
+        })
+        .toSQL();
+      equal(1, viewSqlLocalCheck.length);
+      expect(viewSqlLocalCheck[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with local check option'
+      );
+
+      const viewSqlCascadedCheck = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+          view.cascadedCheckOption();
+        })
+        .toSQL();
+      equal(1, viewSqlCascadedCheck.length);
+      expect(viewSqlCascadedCheck[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with cascaded check option'
+      );
+    });
+
+    it('drop view', function () {
+      tableSql = client.schemaBuilder().dropView('users').toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "users"');
+    });
+
+    it('drop view with schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .dropView('users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "myschema"."users"');
+    });
+
+    it('rename and change default of column of view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .view('users', function (view) {
+          view.column('oldName').rename('newName').defaultTo('10');
+        })
+        .toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter view "users" rename "oldName" to "newName"'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter view "users" alter "oldName" set default 10'
+      );
+    });
+
+    it('rename view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .renameView('old_view', 'new_view')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter view "old_view" rename to "new_view"'
+      );
+    });
+
+    it('create materialized view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createMaterializedView('mat_view', function (view) {
+          view.columns(['name']);
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('refresh view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .refreshMaterializedView('view_to_refresh')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'refresh materialized view "view_to_refresh"'
+      );
+    });
+  });
+
   it('drop table with schema', function () {
     tableSql = client
       .schemaBuilder()
@@ -653,7 +791,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.string('name').index(null, 'gist');
+        table.string('name').index(null, { indexType: 'gist' });
       })
       .toSQL();
     equal(2, tableSql.length);
@@ -662,6 +800,52 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
     expect(tableSql[1].sql).to.equal(
       'create index "users_name_index" on "users" using gist ("name")'
+    );
+  });
+
+  it('adding index with a predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create index "baz" on "users" ("foo", "bar") where email = "foo@bar"'
+    );
+  });
+
+  it('adding index with an index type and a predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          indexType: 'gist',
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create index "baz" on "users" using gist ("foo", "bar") where email = "foo@bar"'
+    );
+  });
+
+  it('adding index with a where not null predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereNotNull('email'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create index "baz" on "users" ("foo", "bar") where "email" is not null'
     );
   });
 
