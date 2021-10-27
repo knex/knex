@@ -5,6 +5,7 @@ const {
   isCockroachDB,
   isPgBased,
   isSQLite,
+  isMssql,
 } = require('../../util/db-helpers');
 
 describe('Schema', () => {
@@ -24,7 +25,7 @@ describe('Schema', () => {
         });
 
         it('Creates POINT column for supported databases', async function () {
-          if (isCockroachDB(knex)) {
+          if (isCockroachDB(knex) || isMssql(knex)) {
             return this.skip();
           }
 
@@ -86,10 +87,20 @@ describe('Schema', () => {
               },
             ]);
           }
+
+          if (isMssql(knex)) {
+            await knex(tblName).insert({
+              geometryColumn: knex.raw('geometry::Point(1, 10, 0)'),
+            });
+
+            const result = await knex(tblName).select('*');
+            const geoData = result[0].geometryColumn;
+            expect(geoData.length).to.equal(22);
+          }
         });
 
         it('Creates GEOGRAPHY column for supported databases', async function () {
-          if (!isSQLite(knex)) {
+          if (!isSQLite(knex) && !isMssql(knex)) {
             return this.skip();
           }
 
@@ -97,16 +108,30 @@ describe('Schema', () => {
             table.geography('geoColumn');
           });
 
-          await knex(tblName).insert({
-            geoColumn: '2, 3',
-          });
-
-          const result = await knex(tblName).select('*');
-          expect(result).to.eql([
-            {
+          if (isSQLite(knex)) {
+            await knex(tblName).insert({
               geoColumn: '2, 3',
-            },
-          ]);
+            });
+
+            const result = await knex(tblName).select('*');
+            expect(result).to.eql([
+              {
+                geoColumn: '2, 3',
+              },
+            ]);
+          }
+
+          if (isMssql(knex)) {
+            await knex(tblName).insert({
+              geoColumn: knex.raw(
+                "geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )', 4326)"
+              ),
+            });
+
+            const result = await knex(tblName).select('*');
+            const geoData = result[0].geoColumn;
+            expect(geoData.length).to.equal(38);
+          }
         });
       });
     });
