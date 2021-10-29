@@ -8421,6 +8421,15 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('uses fromRaw api, #1767', () => {
+    testsql(qb().select('*').fromRaw('(select * from users where age > 18)'), {
+      mysql: 'select * from (select * from users where age > 18)',
+      mssql: 'select * from (select * from users where age > 18)',
+      pg: 'select * from (select * from users where age > 18)',
+      'pg-redshift': 'select * from (select * from users where age > 18)',
+    });
+  });
+
   it('has a modify method which accepts a function that can modify the query', () => {
     // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
