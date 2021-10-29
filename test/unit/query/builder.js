@@ -866,7 +866,7 @@ describe('QueryBuilder', () => {
   it('uses whereILike, #2265', () => {
     testsql(qb().select('*').from('users').whereILike('name', 'luk%'), {
       mysql: {
-        sql: 'select * from `users` where `name` ilike ?',
+        sql: 'select * from `users` where `name` like ?',
         bindings: ['luk%'],
       },
       pg: {
@@ -874,7 +874,7 @@ describe('QueryBuilder', () => {
         bindings: ['luk%'],
       },
       mssql: {
-        sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS ilike ?',
+        sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS like ?',
         bindings: ['luk%'],
       },
     });
