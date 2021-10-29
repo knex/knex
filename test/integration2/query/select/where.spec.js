@@ -27,6 +27,7 @@ const {
   getKnexForDb,
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
+const { TEST_TIMESTAMP } = require('../../../util/constants.js');
 
 describe('Where', function () {
   getAllDbs().forEach((db) => {
@@ -52,6 +53,457 @@ describe('Where', function () {
 
       after(async () => {
         return knex.destroy();
+      });
+
+      describe('simple "where" cases', function () {
+        it('allows key, value', function () {
+          return knex('accounts')
+            .where('id', 1)
+            .select('first_name', 'last_name')
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select `first_name`, `last_name` from `accounts` where `id` = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'pg',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'pgnative',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'pg-redshift',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select `first_name`, `last_name` from `accounts` where `id` = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'oracledb',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'mssql',
+                'select [first_name], [last_name] from [accounts] where [id] = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+            });
+        });
+
+        it('allows key, operator, value', function () {
+          return knex('accounts')
+            .where('id', 1)
+            .select('first_name', 'last_name')
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select `first_name`, `last_name` from `accounts` where `id` = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'pg',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'pgnative',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'pg-redshift',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select `first_name`, `last_name` from `accounts` where `id` = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'oracledb',
+                'select "first_name", "last_name" from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'mssql',
+                'select [first_name], [last_name] from [accounts] where [id] = ?',
+                [1],
+                [
+                  {
+                    first_name: 'Test',
+                    last_name: 'User',
+                  },
+                ]
+              );
+            });
+        });
+
+        it('allows selecting columns with an array', function () {
+          return knex('accounts')
+            .where('id', '>', 1)
+            .select(['email', 'logins'])
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select `email`, `logins` from `accounts` where `id` > ?',
+                [1]
+              );
+              tester(
+                'pg',
+                'select "email", "logins" from "accounts" where "id" > ?',
+                [1]
+              );
+              tester(
+                'pgnative',
+                'select "email", "logins" from "accounts" where "id" > ?',
+                [1]
+              );
+              tester(
+                'pg-redshift',
+                'select "email", "logins" from "accounts" where "id" > ?',
+                [1]
+              );
+              tester(
+                'sqlite3',
+                'select `email`, `logins` from `accounts` where `id` > ?',
+                [1]
+              );
+              tester(
+                'oracledb',
+                'select "email", "logins" from "accounts" where "id" > ?',
+                [1]
+              );
+              tester(
+                'mssql',
+                'select [email], [logins] from [accounts] where [id] > ?',
+                [1]
+              );
+            });
+        });
+
+        it('allows a hash of where attrs', function () {
+          return knex('accounts')
+            .where({ id: 1 })
+            .select('*')
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select * from `accounts` where `id` = ?',
+                [1],
+                [
+                  {
+                    id: 1,
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: 'test1@example.com',
+                    logins: 1,
+                    balance: 0,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'pg',
+                'select * from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    id: '1',
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: 'test1@example.com',
+                    logins: 1,
+                    balance: 0,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'pgnative',
+                'select * from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    id: '1',
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: 'test1@example.com',
+                    logins: 1,
+                    balance: 0,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'pg-redshift',
+                'select * from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    id: '1',
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: 'test1@example.com',
+                    logins: 1,
+                    balance: 0,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select * from `accounts` where `id` = ?',
+                [1],
+                [
+                  {
+                    id: 1,
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: 'test1@example.com',
+                    logins: 1,
+                    balance: 0,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'oracledb',
+                'select * from "accounts" where "id" = ?',
+                [1],
+                [
+                  {
+                    id: 1,
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: 'test1@example.com',
+                    logins: 1,
+                    balance: 0,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'mssql',
+                'select * from [accounts] where [id] = ?',
+                [1],
+                [
+                  {
+                    id: '1',
+                    first_name: 'Test',
+                    last_name: 'User',
+                    email: 'test1@example.com',
+                    logins: 1,
+                    balance: 0,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+            });
+        });
+
+        it('allows where id: undefined or id: null as a where null clause', function () {
+          return knex('accounts')
+            .where({ id: null })
+            .select('first_name', 'email')
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select `first_name`, `email` from `accounts` where `id` is null',
+                [],
+                []
+              );
+              tester(
+                'pg',
+                'select "first_name", "email" from "accounts" where "id" is null',
+                [],
+                []
+              );
+              tester(
+                'pgnative',
+                'select "first_name", "email" from "accounts" where "id" is null',
+                [],
+                []
+              );
+              tester(
+                'pg-redshift',
+                'select "first_name", "email" from "accounts" where "id" is null',
+                [],
+                []
+              );
+              tester(
+                'sqlite3',
+                'select `first_name`, `email` from `accounts` where `id` is null',
+                [],
+                []
+              );
+              tester(
+                'oracledb',
+                'select "first_name", "email" from "accounts" where "id" is null',
+                [],
+                []
+              );
+              tester(
+                'mssql',
+                'select [first_name], [email] from [accounts] where [id] is null',
+                [],
+                []
+              );
+            });
+        });
+
+        it('allows where id = 0', function () {
+          return knex('accounts')
+            .where({ id: 0 })
+            .select()
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select * from `accounts` where `id` = ?',
+                [0],
+                []
+              );
+              tester('pg', 'select * from "accounts" where "id" = ?', [0], []);
+              tester(
+                'pgnative',
+                'select * from "accounts" where "id" = ?',
+                [0],
+                []
+              );
+              tester(
+                'pg-redshift',
+                'select * from "accounts" where "id" = ?',
+                [0],
+                []
+              );
+              tester(
+                'sqlite3',
+                'select * from `accounts` where `id` = ?',
+                [0],
+                []
+              );
+              tester(
+                'oracledb',
+                'select * from "accounts" where "id" = ?',
+                [0],
+                []
+              );
+              tester(
+                'mssql',
+                'select * from [accounts] where [id] = ?',
+                [0],
+                []
+              );
+            });
+        });
       });
 
       it('does "orWhere" cases', function () {
