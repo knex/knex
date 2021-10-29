@@ -282,6 +282,20 @@ export default [
   },
   {
     type: "method",
+    method: "fromRaw",
+    example: ".fromRaw(sql, [bindings])",
+    description: "",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').fromRaw('(select * from "users" where "age" > ?)', '18')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "with",
     example: ".with(alias, [columns], callback|builder|raw)",
     description: "Add a \"with\" clause to the query. \"With\" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL. An optional column list can be provided after the alias; if provided, it must include at least one column name.",
