@@ -1528,6 +1528,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding timestamp with options object but precision 0 - #4784', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamp('foo', { useTz: false, precision: 0 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamp(0)'
+    );
+  });
+
   it('adding datetime with options object', () => {
     tableSql = client
       .schemaBuilder()
@@ -1564,6 +1577,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "foo" timestamptz'
+    );
+  });
+
+  it('adding datetime with options object but precision 0 - #4784', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.datetime('foo', { useTz: false, precision: 0 });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" timestamp(0)'
     );
   });
 
