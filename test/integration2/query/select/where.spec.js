@@ -415,7 +415,7 @@ describe('Where', function () {
                 [
                   {
                     column_a: '1',
-                    column_b: ' 1',
+                    column_b: '1',
                     details: 'One, One, One',
                     status: 1,
                   },
