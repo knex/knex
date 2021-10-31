@@ -62,7 +62,7 @@ describe('Where', function () {
             .select('first_name', 'last_name')
             .testSql(function (tester) {
               tester(
-                'mysql',
+                ['mysql', 'sqlite3'],
                 'select `first_name`, `last_name` from `accounts` where `id` = ?',
                 [1],
                 [
@@ -73,51 +73,7 @@ describe('Where', function () {
                 ]
               );
               tester(
-                'pg',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select `first_name`, `last_name` from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select "first_name", "last_name" from "accounts" where "id" = ?',
                 [1],
                 [
@@ -147,7 +103,7 @@ describe('Where', function () {
             .select('first_name', 'last_name')
             .testSql(function (tester) {
               tester(
-                'mysql',
+                ['mysql', 'sqlite3'],
                 'select `first_name`, `last_name` from `accounts` where `id` = ?',
                 [1],
                 [
@@ -158,51 +114,7 @@ describe('Where', function () {
                 ]
               );
               tester(
-                'pg',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select `first_name`, `last_name` from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select "first_name", "last_name" from "accounts" where "id" = ?',
                 [1],
                 [
@@ -232,32 +144,12 @@ describe('Where', function () {
             .select(['email', 'logins'])
             .testSql(function (tester) {
               tester(
-                'mysql',
+                ['mysql', 'sqlite3'],
                 'select `email`, `logins` from `accounts` where `id` > ?',
                 [1]
               );
               tester(
-                'pg',
-                'select "email", "logins" from "accounts" where "id" > ?',
-                [1]
-              );
-              tester(
-                'pgnative',
-                'select "email", "logins" from "accounts" where "id" > ?',
-                [1]
-              );
-              tester(
-                'pg-redshift',
-                'select "email", "logins" from "accounts" where "id" > ?',
-                [1]
-              );
-              tester(
-                'sqlite3',
-                'select `email`, `logins` from `accounts` where `id` > ?',
-                [1]
-              );
-              tester(
-                'oracledb',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select "email", "logins" from "accounts" where "id" > ?',
                 [1]
               );
@@ -275,7 +167,7 @@ describe('Where', function () {
             .select('*')
             .testSql(function (tester) {
               tester(
-                'mysql',
+                ['mysql', 'sqlite3'],
                 'select * from `accounts` where `id` = ?',
                 [1],
                 [
@@ -294,88 +186,12 @@ describe('Where', function () {
                 ]
               );
               tester(
-                'pg',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select * from "accounts" where "id" = ?',
                 [1],
                 [
                   {
                     id: '1',
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select * from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    id: '1',
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select * from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    id: '1',
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select * from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    id: 1,
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
-                'select * from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    id: 1,
                     first_name: 'Test',
                     last_name: 'User',
                     email: 'test1@example.com',
@@ -416,37 +232,13 @@ describe('Where', function () {
             .select('first_name', 'email')
             .testSql(function (tester) {
               tester(
-                'mysql',
+                ['mysql', 'sqlite3'],
                 'select `first_name`, `email` from `accounts` where `id` is null',
                 [],
                 []
               );
               tester(
-                'pg',
-                'select "first_name", "email" from "accounts" where "id" is null',
-                [],
-                []
-              );
-              tester(
-                'pgnative',
-                'select "first_name", "email" from "accounts" where "id" is null',
-                [],
-                []
-              );
-              tester(
-                'pg-redshift',
-                'select "first_name", "email" from "accounts" where "id" is null',
-                [],
-                []
-              );
-              tester(
-                'sqlite3',
-                'select `first_name`, `email` from `accounts` where `id` is null',
-                [],
-                []
-              );
-              tester(
-                'oracledb',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select "first_name", "email" from "accounts" where "id" is null',
                 [],
                 []
@@ -466,32 +258,13 @@ describe('Where', function () {
             .select()
             .testSql(function (tester) {
               tester(
-                'mysql',
-                'select * from `accounts` where `id` = ?',
-                [0],
-                []
-              );
-              tester('pg', 'select * from "accounts" where "id" = ?', [0], []);
-              tester(
-                'pgnative',
-                'select * from "accounts" where "id" = ?',
-                [0],
-                []
-              );
-              tester(
-                'pg-redshift',
-                'select * from "accounts" where "id" = ?',
-                [0],
-                []
-              );
-              tester(
-                'sqlite3',
+                ['mysql', 'sqlite3'],
                 'select * from `accounts` where `id` = ?',
                 [0],
                 []
               );
               tester(
-                'oracledb',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select * from "accounts" where "id" = ?',
                 [0],
                 []
@@ -579,7 +352,7 @@ describe('Where', function () {
             .select()
             .testSql(function (tester) {
               tester(
-                'mysql',
+                ['mysql', 'sqlite3'],
                 'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?), (?, ?)) order by `status` desc',
                 [1, 1, 1, 2],
                 [
@@ -598,84 +371,8 @@ describe('Where', function () {
                 ]
               );
               tester(
-                'pg',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
-                'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select * from `composite_key_test` where (`column_a`, `column_b`) in ( values (?, ?), (?, ?)) order by `status` desc',
                 [1, 1, 1, 2],
                 [
                   {
@@ -710,7 +407,7 @@ describe('Where', function () {
             .select()
             .testSql(function (tester) {
               tester(
-                'mysql',
+                ['mysql', 'sqlite3'],
                 'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?), (?, ?))',
                 [1, 1, 1, 1, 2],
                 [
@@ -723,46 +420,7 @@ describe('Where', function () {
                 ]
               );
               tester(
-                'pg',
-                'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
+                ['pg', 'pgnative', 'pg-redshift', 'oracledb', 'cockroachdb'],
                 'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
                 [1, 1, 1, 1, 2],
                 [
