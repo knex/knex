@@ -352,8 +352,27 @@ describe('Where', function () {
             .select()
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                'mysql',
                 'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?), (?, ?)) order by `status` desc',
+                [1, 1, 1, 2],
+                [
+                  {
+                    column_a: 1,
+                    column_b: 1,
+                    details: 'One, One, One',
+                    status: 1,
+                  },
+                  {
+                    column_a: 1,
+                    column_b: 2,
+                    details: 'One, Two, Zero',
+                    status: 0,
+                  },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select * from `composite_key_test` where (`column_a`, `column_b`) in ( values (?, ?), (?, ?)) order by `status` desc',
                 [1, 1, 1, 2],
                 [
                   {
@@ -407,7 +426,7 @@ describe('Where', function () {
             .select()
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                'mysql',
                 'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?), (?, ?))',
                 [1, 1, 1, 1, 2],
                 [
