@@ -1084,6 +1084,36 @@ describe('QueryBuilder', () => {
     }
   });
 
+  it('where not should not throw warning when used with "in" or "between" as equality', function () {
+    testquery(
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'in'),
+      {
+        mysql: "select * from `users` where not `id` = 'in'",
+        pg: 'select * from "users" where not "id" = \'in\'',
+        'pg-redshift': 'select * from "users" where not "id" = \'in\'',
+        mssql: "select * from [users] where not [id] = 'in'",
+      }
+    );
+
+    testquery(
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'between'),
+      {
+        mysql: "select * from `users` where not `id` = 'between'",
+        pg: 'select * from "users" where not "id" = \'between\'',
+        'pg-redshift': 'select * from "users" where not "id" = \'between\'',
+        mssql: "select * from [users] where not [id] = 'between'",
+      }
+    );
+  });
+
   it('where bool', () => {
     testquery(qb().select('*').from('users').where(true), {
       mysql: 'select * from `users` where 1 = 1',
