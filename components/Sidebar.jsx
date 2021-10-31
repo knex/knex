@@ -69,6 +69,8 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-whereBetween">whereBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-whereNotBetween">whereNotBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-whereRaw">whereRaw</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereLike">whereLike</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereILike">whereILike</a></li>
 
           <li><b><a href="#Builder-join">Join Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-join">join</a></li>

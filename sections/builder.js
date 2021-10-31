@@ -736,6 +736,34 @@ export default [
     ]
   },
   {
+    type: "method",
+    method: "whereLike",
+    example: ".whereLike(column, string|builder|raw)",
+    description: "Adds a where clause with case-sensitive substring comparison on a given column with a given value.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('users').whereLike('email', '%mail%')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "whereILike",
+    example: ".whereILike(column, string|builder|raw)",
+    description: "Adds a where clause with case-insensitive substring comparison on a given column with a given value.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('users').whereILike('email', '%mail%')
+        `
+      }
+    ]
+  },
+  {
     type: "heading",
     size: "md",
     content: "Join Methods"
