@@ -2051,6 +2051,11 @@ export declare namespace Knex {
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
+      indexType?: string
+    ): TableBuilder;
+    index(
+      columnNames: string | readonly (string | Raw)[],
+      indexName?: string,
       options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType, predicate?: QueryBuilder}>
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
@@ -2134,6 +2139,7 @@ export declare namespace Knex {
       indexName?: string,
       options?: Readonly<{indexType?: string, predicate?: QueryBuilder}>
     ): ColumnBuilder;
+    index(indexName?: string, indexType?: string): ColumnBuilder;
   }
 
   interface SqlLiteColumnBuilder extends ColumnBuilder {
