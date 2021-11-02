@@ -1074,7 +1074,11 @@ describe('Inserts', function () {
             if (isRedshift(knex)) {
               return expect(rows).to.equal(1);
             }
-            expect(rows.length).to.equal(1);
+            if (isMysql(knex)) {
+              expect(rows.length).to.equal(2);
+            } else {
+              expect(rows.length).to.equal(1);
+            }
             if (isPostgreSQL(knex)) {
               expect(_.keys(rows[0]).length).to.equal(2);
               expect(rows[0].account_id).to.equal(insertData.account_id);
