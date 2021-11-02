@@ -84,7 +84,7 @@ describe('Inserts', function () {
                 1,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 1]
             );
             tester(
               'pg',
@@ -207,7 +207,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 2]
             );
             tester(
               'pg',
@@ -425,7 +425,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 2]
             );
             tester(
               'pg',
@@ -682,7 +682,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 1]
             );
             tester(
               'pg',
@@ -877,7 +877,7 @@ describe('Inserts', function () {
                   'mysql',
                   'insert into `test_default_table` () values ()',
                   [],
-                  [1]
+                  [1, 1]
                 );
                 tester(
                   'pg',
@@ -933,7 +933,7 @@ describe('Inserts', function () {
                   'mysql',
                   'insert into `test_default_table2` () values ()',
                   [],
-                  [1]
+                  [1, 1]
                 );
                 tester(
                   'pg',
@@ -991,7 +991,7 @@ describe('Inserts', function () {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [1]
+              [1, 1]
             );
             tester(
               'pg',
