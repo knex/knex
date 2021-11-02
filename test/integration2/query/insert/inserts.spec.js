@@ -1161,6 +1161,11 @@ describe('Inserts', function () {
             );
           })
           .then(function (rows) {
+            if (isMysql(knex)) {
+              expect(rows.length).to.equal(2);
+            } else {
+              expect(rows.length).to.equal(1);
+            }
             expect(rows.length).to.equal(1);
             if (isPgBased(knex)) {
               expect(_.keys(rows[0]).length).to.equal(4);
