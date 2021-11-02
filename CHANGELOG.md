@@ -1,5 +1,15 @@
 # Master (Unreleased)
 
+# 0.95.13 - 02 November, 2021
+
+### Bug fixes:
+
+ - PostgreSQL: Support zero precision in timestamp/datetime #4784
+   
+### Typings:
+
+ - Allow string indexType in index creation #4791
+
 # 0.95.12 - 28 October, 2021
 
 ### New features:
