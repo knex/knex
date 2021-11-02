@@ -2,7 +2,12 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const { isSQLite, isPostgreSQL, isOracle } = require('../../util/db-helpers');
+const {
+  isSQLite,
+  isPostgreSQL,
+  isOracle,
+  isCockroachDB,
+} = require('../../util/db-helpers');
 
 module.exports = function (knex) {
   describe('Deletes', function () {
@@ -91,7 +96,12 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test3@example.com' })
           .del();
-        if (isSQLite(knex) || isPostgreSQL(knex) || isOracle(knex)) {
+        if (
+          isSQLite(knex) ||
+          isPostgreSQL(knex) ||
+          isCockroachDB(knex) ||
+          isOracle(knex)
+        ) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -120,7 +130,12 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test4@example.com' })
           .del('*');
-        if (isSQLite(knex) || isPostgreSQL(knex) || isOracle(knex)) {
+        if (
+          isSQLite(knex) ||
+          isPostgreSQL(knex) ||
+          isCockroachDB(knex) ||
+          isOracle(knex)
+        ) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -135,7 +150,7 @@ module.exports = function (knex) {
             'mssql',
             'delete [test_table_two] output deleted.* from [test_table_two] inner join [accounts] on [accounts].[id] = [test_table_two].[account_id] where [accounts].[email] = ?',
             ['test4@example.com'],
-            [{ id: 11, account_id: 4, details: '', status: 1, json_data: null }]
+            [{ id: 9, account_id: 4, details: '', status: 1 }]
           );
         });
       });

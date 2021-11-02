@@ -336,9 +336,8 @@ describe('knex', () => {
     const knexWithParams = knex.withUserParams();
     knexWithParams.client.config.postProcessResponse = null;
     const builderForTable = knex('tableName').where('1 = 1');
-    const builderWithParamsForTable = knexWithParams('tableName').where(
-      '1 = 1'
-    );
+    const builderWithParamsForTable =
+      knexWithParams('tableName').where('1 = 1');
 
     expect(knex.client.config.postProcessResponse).to.equal(noop);
     expect(knexWithParams.client.config.postProcessResponse).to.equal(null);

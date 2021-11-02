@@ -6,6 +6,7 @@ const { expect } = require('chai');
 let tableSql;
 
 const Redshift_Client = require('../../../lib/dialects/redshift');
+const knex = require('../../../knex');
 const client = new Redshift_Client({ client: 'redshift' });
 
 const equal = require('assert').equal;
@@ -26,6 +27,17 @@ describe('Redshift SchemaBuilder', function () {
     );
   });
 
+  it('create table like another', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users')
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" (like "users")'
+    );
+  });
+
   it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()
@@ -41,6 +53,141 @@ describe('Redshift SchemaBuilder', function () {
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add column "email" varchar(255)'
     );
+  });
+
+  describe('views', function () {
+    let knexRedShift;
+
+    before(function () {
+      knexRedShift = knex({
+        client: 'redshift',
+        connection: {},
+      });
+    });
+
+    it('basic create view', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view or replace', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view or replace "adults" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view with check options', async function () {
+      const viewSqlLocalCheck = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+          view.localCheckOption();
+        })
+        .toSQL();
+      equal(1, viewSqlLocalCheck.length);
+      expect(viewSqlLocalCheck[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with local check option'
+      );
+
+      const viewSqlCascadedCheck = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+          view.cascadedCheckOption();
+        })
+        .toSQL();
+      equal(1, viewSqlCascadedCheck.length);
+      expect(viewSqlCascadedCheck[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with cascaded check option'
+      );
+    });
+
+    it('drop view', function () {
+      tableSql = client.schemaBuilder().dropView('users').toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "users"');
+    });
+
+    it('drop view with schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .dropView('users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "myschema"."users"');
+    });
+
+    it('rename and change default of column of view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .view('users', function (view) {
+          view.column('oldName').rename('newName').defaultTo('10');
+        })
+        .toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter view "users" rename "oldName" to "newName"'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter view "users" alter "oldName" set default 10'
+      );
+    });
+
+    it('rename view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .renameView('old_view', 'new_view')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter view "old_view" rename to "new_view"'
+      );
+    });
+
+    it('create materialized view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createMaterializedView('mat_view', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('refresh view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .refreshMaterializedView('view_to_refresh')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'refresh materialized view "view_to_refresh"'
+      );
+    });
   });
 
   it('alter table with schema', function () {

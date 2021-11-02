@@ -1,5 +1,34 @@
 # Master (Unreleased)
 
+# 0.95.12 - 28 October, 2021
+
+### New features:
+
+- New dialect: CockroachDB #4742
+- New dialect: pg-native #4327
+- CockroachDB: add support for upsert #4767
+- PostgreSQL: Support SELECT .. FOR NO KEY UPDATE / KEY SHARE row level locking clauses #4755
+- PostgreSQL: Add support for 'CASCADE' in PostgreSQL 'DROP SCHEMA' queries #4713
+- MySQL: Add storage engine index Type support to index() and unique() schema #4756
+- MSSQL: Support table.primary, table.unique variant with options object #4710
+- SQLite: Add setNullable support to SQLite #4684
+- Add geometry column building #4776
+- Add support for creating table copies #1373
+- Implement support for views and materialized views #1626
+- Implement partial index support #4768
+- Support for 'is null' in 'order by' #3667
+
+### Bug fixes:
+
+- Fix support for Oracle connections passed via knex.connection() #4757
+- Avoid inserting multiple locks if a migration lock already exists #4694
+
+### Typings:
+
+- Some TableBuilder methods return wrong types #4764
+- Update JoinRaw bindings type to accept arrays #4752
+- fix onDelete/onUpdate for ColumnBuilder #4656
+
 # 0.95.11 - 03 September, 2021
 
 ### New features:

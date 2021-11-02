@@ -846,6 +846,40 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('uses whereLike, #2265', () => {
+    testsql(qb().select('*').from('users').whereLike('name', 'luk%'), {
+      mysql: {
+        sql: 'select * from `users` where `name` like ? COLLATE utf8_bin',
+        bindings: ['luk%'],
+      },
+      pg: {
+        sql: 'select * from "users" where "name" like ?',
+        bindings: ['luk%'],
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CS_AS like ?',
+        bindings: ['luk%'],
+      },
+    });
+  });
+
+  it('uses whereILike, #2265', () => {
+    testsql(qb().select('*').from('users').whereILike('name', 'luk%'), {
+      mysql: {
+        sql: 'select * from `users` where `name` like ?',
+        bindings: ['luk%'],
+      },
+      pg: {
+        sql: 'select * from "users" where "name" ilike ?',
+        bindings: ['luk%'],
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS like ?',
+        bindings: ['luk%'],
+      },
+    });
+  });
+
   it('whereColumn', () => {
     testsql(
       qb()
@@ -1048,6 +1082,36 @@ describe('QueryBuilder', () => {
         'whereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.'
       );
     }
+  });
+
+  it('where not should not throw warning when used with "in" or "between" as equality', function () {
+    testquery(
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'in'),
+      {
+        mysql: "select * from `users` where not `id` = 'in'",
+        pg: 'select * from "users" where not "id" = \'in\'',
+        'pg-redshift': 'select * from "users" where not "id" = \'in\'',
+        mssql: "select * from [users] where not [id] = 'in'",
+      }
+    );
+
+    testquery(
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'between'),
+      {
+        mysql: "select * from `users` where not `id` = 'between'",
+        pg: 'select * from "users" where not "id" = \'between\'',
+        'pg-redshift': 'select * from "users" where not "id" = \'between\'',
+        mssql: "select * from [users] where not [id] = 'between'",
+      }
+    );
   });
 
   it('where bool', () => {
@@ -5625,6 +5689,84 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('order by, null first', () => {
+    testsql(qb().from('users').orderBy('foo', 'desc', 'first'), {
+      mysql: {
+        sql: 'select * from `users` order by (`foo` is not null) desc',
+      },
+      mssql: {
+        sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+      },
+      pg: {
+        sql: 'select * from "users" order by ("foo" is not null) desc',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by ("foo" is not null) desc',
+      },
+    });
+  });
+
+  it('order by, null first, array notation', () => {
+    testsql(
+      qb()
+        .from('users')
+        .orderBy([{ column: 'foo', order: 'desc', nulls: 'first' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by (`foo` is not null) desc',
+        },
+        mssql: {
+          sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+        },
+        pg: {
+          sql: 'select * from "users" order by ("foo" is not null) desc',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by ("foo" is not null) desc',
+        },
+      }
+    );
+  });
+
+  it('order by, null last', () => {
+    testsql(qb().from('users').orderBy('foo', 'desc', 'last'), {
+      mysql: {
+        sql: 'select * from `users` order by (`foo` is null) desc',
+      },
+      mssql: {
+        sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
+      },
+      pg: {
+        sql: 'select * from "users" order by ("foo" is null) desc',
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by ("foo" is null) desc',
+      },
+    });
+  });
+
+  it('order by, null last, array notation', () => {
+    testsql(
+      qb()
+        .from('users')
+        .orderBy([{ column: 'foo', order: 'desc', nulls: 'last' }]),
+      {
+        mysql: {
+          sql: 'select * from `users` order by (`foo` is null) desc',
+        },
+        mssql: {
+          sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
+        },
+        pg: {
+          sql: 'select * from "users" order by ("foo" is null) desc',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by ("foo" is null) desc',
+        },
+      }
+    );
+  });
+
   it('update method with joins mysql', () => {
     testsql(
       qb()
@@ -6424,6 +6566,27 @@ describe('QueryBuilder', () => {
       },
       mssql: {
         sql: 'select * from [foo] with (HOLDLOCK) where [bar] = ?',
+        bindings: ['baz'],
+      },
+    });
+  });
+
+  it('lock for no key update', () => {
+    testsql(
+      qb().select('*').from('foo').where('bar', '=', 'baz').forNoKeyUpdate(),
+      {
+        pg: {
+          sql: 'select * from "foo" where "bar" = ? for no key update',
+          bindings: ['baz'],
+        },
+      }
+    );
+  });
+
+  it('lock for key share', () => {
+    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forShare(), {
+      pg: {
+        sql: 'select * from "foo" where "bar" = ? for share',
         bindings: ['baz'],
       },
     });
@@ -8322,6 +8485,15 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('uses fromRaw api, #1767', () => {
+    testsql(qb().select('*').fromRaw('(select * from users where age > 18)'), {
+      mysql: 'select * from (select * from users where age > 18)',
+      mssql: 'select * from (select * from users where age > 18)',
+      pg: 'select * from (select * from users where age > 18)',
+      'pg-redshift': 'select * from (select * from users where age > 18)',
+    });
+  });
+
   it('has a modify method which accepts a function that can modify the query', () => {
     // arbitrary number of arguments can be passed to `.modify(queryBuilder, ...)`,
     // builder is bound to `this`
@@ -9994,31 +10166,31 @@ describe('QueryBuilder', () => {
         .del()
         .from('users')
         .join('photos', 'photos.id', 'users.id')
-        .where({ 'user.email': 'mock@test.com' }),
+        .where({ 'user.email': 'mock@example.com' }),
       {
         mysql: {
           sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         mssql: {
           sql: 'delete [users] from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?;select @@rowcount',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         oracledb: {
           sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         pg: {
           sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         'pg-redshift': {
           sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
         sqlite3: {
           sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
       }
     );
@@ -10030,11 +10202,11 @@ describe('QueryBuilder', () => {
         .del('*', triggerOptions)
         .from('users')
         .join('photos', 'photos.id', 'users.id')
-        .where({ 'user.email': 'mock@test.com' }),
+        .where({ 'user.email': 'mock@example.com' }),
       {
         mssql: {
           sql: 'select top(0) [t].* into #out from [users] as t left join [users] on 0=1;delete [users] output deleted.* into #out from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?; select * from #out; drop table #out;',
-          bindings: ['mock@test.com'],
+          bindings: ['mock@example.com'],
         },
       }
     );

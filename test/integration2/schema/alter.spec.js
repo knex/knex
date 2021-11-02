@@ -5,6 +5,7 @@ const {
   getAllDbs,
   getKnexForDb,
 } = require('../util/knex-instance-provider');
+const { isMysql } = require('../../util/db-helpers');
 
 const QUERY_TABLE =
   'SELECT sql FROM sqlite_master WHERE type="table" AND tbl_name="alter_table"';
@@ -16,7 +17,7 @@ describe('Schema', () => {
       .forEach((db) => {
         describe(db, () => {
           let knex;
-          before(() => {
+          before(async () => {
             sinon.stub(Math, 'random').returns(0.1);
             knex = getKnexForDb(db);
           });
@@ -53,6 +54,31 @@ describe('Schema', () => {
 
           afterEach(async () => {
             await knex.schema.dropTable('alter_table');
+          });
+
+          describe('indexes and unique keys', () => {
+            it('alter table add indexes', async function () {
+              if (!isMysql(knex)) {
+                this.skip();
+              }
+              await knex.schema
+                .alterTable('alter_table', (table) => {
+                  table.index(['column_string', 'column_datetime'], 'idx_1', {
+                    indexType: 'FULLTEXT',
+                    storageEngineIndexType: 'BTREE',
+                  });
+                  table.unique('column_notNullable', {
+                    indexName: 'idx_2',
+                    storageEngineIndexType: 'HASH',
+                  });
+                })
+                .testSql((tester) => {
+                  tester('mysql', [
+                    'alter table `alter_table` add FULLTEXT index `idx_1`(`column_string`, `column_datetime`) using BTREE',
+                    'alter table `alter_table` add unique `idx_2`(`column_notNullable`) using HASH',
+                  ]);
+                });
+            });
           });
 
           describe('alterColumns', () => {
