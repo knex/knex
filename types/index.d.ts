@@ -482,7 +482,7 @@ export declare namespace Knex {
   //
   // QueryInterface
   //
-  type ClearStatements = "with" | "select" | "columns" | "hintComments" | "where" | "union" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
+  type ClearStatements = "with" | "select" | "columns" | "hintComments" | "where" | "union" | "using" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
 
   interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
@@ -508,6 +508,9 @@ export declare namespace Knex {
     outerJoin: Join<TRecord, TResult>;
     fullOuterJoin: Join<TRecord, TResult>;
     crossJoin: Join<TRecord, TResult>;
+
+    // Using
+    using: Using<TRecord, TResult>;
 
     // Withs
     with: With<TRecord, TResult>;
@@ -1336,6 +1339,10 @@ export declare namespace Knex {
       TRecord,
       TResult
     >;
+  }
+
+  interface Using<TRecord = any, TResult = unknown[]> {
+    (tables: string[]): QueryBuilder<TRecord, TResult>;
   }
 
   interface With<TRecord = any, TResult = unknown[]>
