@@ -2205,6 +2205,36 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
     });
+
+    // Issue #4364
+    const firstUnionAll = qb()
+      .unionAll([
+        function () {
+          this.select().from('users').where({ id: 1 });
+        },
+        function () {
+          this.select().from('users').where({ id: 2 });
+        },
+      ])
+      .first();
+    testsql(firstUnionAll, {
+      mysql: {
+        sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? limit ?',
+        bindings: [1, 2, 1],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
+        bindings: [1, 2, 1],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
+        bindings: [1, 2, 1],
+      },
+    });
   });
 
   it('multiple unions', () => {
