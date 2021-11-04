@@ -7,6 +7,9 @@ const { FileTestHelper } = require('cli-testlab');
 
 const equal = require('assert').equal;
 const fs = require('fs');
+const {
+  FsMigrations,
+} = require('../../../lib/migrations/migrate/sources/fs-migrations');
 const path = require('path');
 const rimraf = require('rimraf');
 const knexLib = require('../../../knex');
@@ -364,10 +367,7 @@ describe('Migrations', function () {
                   .that.includes('unknown_table');
                 expect(migrator)
                   .to.have.property('_activeMigration')
-                  .to.have.property(
-                    'fileName',
-                    '20150109002832_invalid_migration.js'
-                  );
+                  .to.have.property('name', '20150109002832_invalid_migration');
               })
               .then(function (data) {
                 // Clean up lock for other tests
@@ -400,10 +400,10 @@ describe('Migrations', function () {
                 .select('*')
                 .then(function (data) {
                   expect(path.basename(data[0].name)).to.equal(
-                    '20131019235242_migration_1.js'
+                    '20131019235242_migration_1'
                   );
                   expect(path.basename(data[1].name)).to.equal(
-                    '20131019235306_migration_2.js'
+                    '20131019235306_migration_2'
                   );
                 });
             } else {
@@ -412,10 +412,10 @@ describe('Migrations', function () {
                 .select('*')
                 .then(function (data) {
                   expect(path.basename(data[0].name)).to.equal(
-                    '20131019235242_migration_1.js'
+                    '20131019235242_migration_1'
                   );
                   expect(path.basename(data[1].name)).to.equal(
-                    '20131019235306_migration_2.js'
+                    '20131019235306_migration_2'
                   );
                 });
             }
@@ -567,6 +567,10 @@ describe('Migrations', function () {
         });
 
         describe('knex.migrate.rollback - all', () => {
+          let migrationSource = new FsMigrations(
+            'test/integration2/migrate/test'
+          );
+
           before(() => {
             return knex.migrate.latest({
               directory: ['test/integration2/migrate/test'],
@@ -591,7 +595,12 @@ describe('Migrations', function () {
                 fs.readdirSync('test/integration2/migrate/test')
                   .reverse()
                   .forEach((fileName, index) => {
-                    expect(fileName).to.equal(log[index]);
+                    expect(
+                      migrationSource.getMigrationName({
+                        file: fileName,
+                        directory: 'test/integration2/migrate/test',
+                      })
+                    ).to.equal(log[index]);
                   });
 
                 return knex('knex_migrations')
@@ -632,7 +641,7 @@ describe('Migrations', function () {
                   .then(function (data) {
                     expect(data).to.have.length(1);
                     expect(path.basename(data[0].name)).to.equal(
-                      '20131019235242_migration_1.js'
+                      '20131019235242_migration_1'
                     );
                   });
               });
@@ -654,10 +663,10 @@ describe('Migrations', function () {
                       .then(function (data) {
                         expect(data).to.have.length(2);
                         expect(path.basename(data[0].name)).to.equal(
-                          '20131019235242_migration_1.js'
+                          '20131019235242_migration_1'
                         );
                         expect(path.basename(data[1].name)).to.equal(
-                          '20131019235306_migration_2.js'
+                          '20131019235306_migration_2'
                         );
                       });
                   });
@@ -751,7 +760,7 @@ describe('Migrations', function () {
               const data = await knex('knex_migrations').select('*');
               expect(data).to.have.length(1);
               expect(path.basename(data[0].name)).to.equal(
-                '20131019235242_migration_1.js'
+                '20131019235242_migration_1'
               );
             });
 
@@ -830,6 +839,8 @@ describe('Migrations', function () {
             directory: ['test/integration2/migrate/test'],
           };
 
+          let migrationSource = new FsMigrations('foo');
+
           beforeEach(async () => {
             await knex.migrate.rollback(knexConfig, true);
           });
@@ -874,7 +885,10 @@ describe('Migrations', function () {
 
               expect(completed).to.deep.equal(
                 availableMigrations.map((migration) => ({
-                  name: migration,
+                  name: migrationSource.getMigrationName({
+                    file: migration,
+                    directory: knexConfig.directory[0],
+                  }),
                 }))
               );
               expect(pending).to.deep.equal([]);

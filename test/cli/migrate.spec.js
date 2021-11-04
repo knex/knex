@@ -53,7 +53,7 @@ describe('migrate:latest', () => {
       });
     });
     const row = await getPromise;
-    expect(row.name).to.equal('000_create_rule_table.js');
+    expect(row.name).to.equal('000_create_rule_table');
     db.close();
   });
 });
