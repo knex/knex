@@ -684,22 +684,22 @@ describe('Schema (misc)', () => {
             })
             .testSql((tester) => {
               tester('mysql', [
-                'create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `createdAt` datetime, `updatedAt` datetime) default character set utf8 engine = InnoDB',
+                'create table `test_table_timestamp` (`id` bigint unsigned not null auto_increment primary key, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP) default character set utf8 engine = InnoDB',
               ]);
               tester(
                 ['pg', 'cockroachdb'],
                 [
-                  'create table "test_table_one" ("id" bigserial primary key, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
+                  'create table "test_table_timestamp" ("id" bigserial primary key, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
                 ]
               );
               tester('pg-redshift', [
-                'create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
+                'create table "test_table_timestamp" ("id" bigint identity(1,1) primary key not null, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
               ]);
               tester('sqlite3', [
                 'create table `test_table_timestamp` (`id` integer not null primary key autoincrement, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP)',
               ]);
               tester('oracledb', [
-                `create table "test_table_one"
+                `create table "test_table_timestamp"
                      (
                        "id"         number(20, 0) not null primary key,
                        "created_at" timestamp with local time zone not null default CURRENT_TIMESTAMP,
