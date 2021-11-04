@@ -672,9 +672,8 @@ describe('Schema (misc)', () => {
             }));
 
         it('create table with timestamps options', async () => {
-          await knex.schema.dropTableIfExists('test_table_one');
           await knex.schema
-            .createTable('test_table_one', (table) => {
+            .createTable('test_table_timestamp', (table) => {
               if (isMysql(knex)) table.engine('InnoDB');
               table.bigIncrements('id');
               table.timestamps({
@@ -711,6 +710,7 @@ describe('Schema (misc)', () => {
                 'CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [createdAt] datetime2 not null default CURRENT_TIMESTAMP, [updatedAt] datetime2) not null default CURRENT_TIMESTAMP',
               ]);
             });
+          await knex.schema.dropTableIfExists('test_table_timestamp');
         });
 
         it('is possible to set the db engine with the table.engine', () =>
