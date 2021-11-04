@@ -696,7 +696,7 @@ describe('Schema (misc)', () => {
                 'create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
               ]);
               tester('sqlite3', [
-                'create table `test_table_one` (`id` integer not null primary key autoincrement, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP)',
+                'create table `test_table_timestamp` (`id` integer not null primary key autoincrement, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP)',
               ]);
               tester('oracledb', [
                 `create table "test_table_one"
@@ -707,7 +707,7 @@ describe('Schema (misc)', () => {
                      )`,
               ]);
               tester('mssql', [
-                'CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [createdAt] datetime2 not null default CURRENT_TIMESTAMP, [updatedAt] datetime2) not null default CURRENT_TIMESTAMP',
+                'CREATE TABLE [test_table_timestamp] ([id] bigint identity(1,1) not null primary key, [createdAt] datetime2 not null CONSTRAINT [test_table_timestamp_createdat_default] DEFAULT CURRENT_TIMESTAMP, [updatedAt] datetime2 not null CONSTRAINT [test_table_timestamp_updatedat_default] DEFAULT CURRENT_TIMESTAMP)',
               ]);
             });
           await knex.schema.dropTableIfExists('test_table_timestamp');
