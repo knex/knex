@@ -1619,6 +1619,23 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding timestamps with options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamps({
+          useTimestamps: true,
+          defaultToNow: true,
+          useCamelCase: true,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "createdAt" timestamptz not null default CURRENT_TIMESTAMP, add column "updatedAt" timestamptz not null default CURRENT_TIMESTAMP'
+    );
+  });
+
   it('adding binary', function () {
     tableSql = client
       .schemaBuilder()

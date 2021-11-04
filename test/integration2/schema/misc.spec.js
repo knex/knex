@@ -671,6 +671,48 @@ describe('Schema (misc)', () => {
               ]);
             }));
 
+        it('create table with timestamps options', async () => {
+          await knex.schema.dropTableIfExists('test_table_one');
+          await knex.schema
+            .createTable('test_table_one', (table) => {
+              if (isMysql(knex)) table.engine('InnoDB');
+              table.bigIncrements('id');
+              table.timestamps({
+                useTimestamps: false,
+                defaultToNow: true,
+                useCamelCase: true,
+              });
+            })
+            .testSql((tester) => {
+              tester('mysql', [
+                'create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `createdAt` datetime, `updatedAt` datetime) default character set utf8 engine = InnoDB',
+              ]);
+              tester(
+                ['pg', 'cockroachdb'],
+                [
+                  'create table "test_table_one" ("id" bigserial primary key, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
+                ]
+              );
+              tester('pg-redshift', [
+                'create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
+              ]);
+              tester('sqlite3', [
+                'create table `test_table_one` (`id` integer not null primary key autoincrement, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP)',
+              ]);
+              tester('oracledb', [
+                `create table "test_table_one"
+                     (
+                       "id"         number(20, 0) not null primary key,
+                       "created_at" timestamp with local time zone not null default CURRENT_TIMESTAMP,
+                       "updated_at" timestamp with local time zone not null default CURRENT_TIMESTAMP
+                     )`,
+              ]);
+              tester('mssql', [
+                'CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [createdAt] datetime2 not null default CURRENT_TIMESTAMP, [updatedAt] datetime2) not null default CURRENT_TIMESTAMP',
+              ]);
+            });
+        });
+
         it('is possible to set the db engine with the table.engine', () =>
           knex.schema
             .createTable('test_table_two', (table) => {
