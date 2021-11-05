@@ -18,12 +18,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16.x, 14.x, 12.x, 10.x]
+        node-version: [17.x, 16.x, 14.x, 12.x]
         database-type: [postgres, pgnative, mysql, mssql, sqlite3, cockroachdb]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2.3.5
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 1
 

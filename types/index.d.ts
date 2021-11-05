@@ -491,6 +491,7 @@ export declare namespace Knex {
     column: Select<TRecord, TResult>;
     hintComment: HintComment<TRecord, TResult>;
     from: Table<TRecord, TResult>;
+    fromRaw: Table<TRecord, TResult>;
     into: Table<TRecord, TResult>;
     table: Table<TRecord, TResult>;
     distinct: Distinct<TRecord, TResult>;
@@ -535,6 +536,8 @@ export declare namespace Knex {
     orWhereIn: WhereIn<TRecord, TResult>;
     whereNotIn: WhereIn<TRecord, TResult>;
     orWhereNotIn: WhereIn<TRecord, TResult>;
+    whereLike: Where<TRecord, TResult>;
+    whereIlike: Where<TRecord, TResult>;
     whereNull: WhereNull<TRecord, TResult>;
     orWhereNull: WhereNull<TRecord, TResult>;
     whereNotNull: WhereNull<TRecord, TResult>;

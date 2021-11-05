@@ -846,6 +846,40 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('uses whereLike, #2265', () => {
+    testsql(qb().select('*').from('users').whereLike('name', 'luk%'), {
+      mysql: {
+        sql: 'select * from `users` where `name` like ? COLLATE utf8_bin',
+        bindings: ['luk%'],
+      },
+      pg: {
+        sql: 'select * from "users" where "name" like ?',
+        bindings: ['luk%'],
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CS_AS like ?',
+        bindings: ['luk%'],
+      },
+    });
+  });
+
+  it('uses whereILike, #2265', () => {
+    testsql(qb().select('*').from('users').whereILike('name', 'luk%'), {
+      mysql: {
+        sql: 'select * from `users` where `name` like ?',
+        bindings: ['luk%'],
+      },
+      pg: {
+        sql: 'select * from "users" where "name" ilike ?',
+        bindings: ['luk%'],
+      },
+      mssql: {
+        sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS like ?',
+        bindings: ['luk%'],
+      },
+    });
+  });
+
   it('whereColumn', () => {
     testsql(
       qb()
@@ -1048,6 +1082,36 @@ describe('QueryBuilder', () => {
         'whereNot is not suitable for "in" and "between" type subqueries. You should use "not in" and "not between" instead.'
       );
     }
+  });
+
+  it('where not should not throw warning when used with "in" or "between" as equality', function () {
+    testquery(
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'in'),
+      {
+        mysql: "select * from `users` where not `id` = 'in'",
+        pg: 'select * from "users" where not "id" = \'in\'',
+        'pg-redshift': 'select * from "users" where not "id" = \'in\'',
+        mssql: "select * from [users] where not [id] = 'in'",
+      }
+    );
+
+    testquery(
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .whereNot('id', 'between'),
+      {
+        mysql: "select * from `users` where not `id` = 'between'",
+        pg: 'select * from "users" where not "id" = \'between\'',
+        'pg-redshift': 'select * from "users" where not "id" = \'between\'',
+        mssql: "select * from [users] where not [id] = 'between'",
+      }
+    );
   });
 
   it('where bool', () => {
@@ -2139,6 +2203,36 @@ describe('QueryBuilder', () => {
       'pg-redshift': {
         sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
         bindings: [1, 2, 3],
+      },
+    });
+
+    // Issue #4364
+    const firstUnionAll = qb()
+      .unionAll([
+        function () {
+          this.select().from('users').where({ id: 1 });
+        },
+        function () {
+          this.select().from('users').where({ id: 2 });
+        },
+      ])
+      .first();
+    testsql(firstUnionAll, {
+      mysql: {
+        sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? limit ?',
+        bindings: [1, 2, 1],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
+        bindings: [1, 2, 1],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
+        bindings: [1, 2, 1],
       },
     });
   });
@@ -8419,6 +8513,15 @@ describe('QueryBuilder', () => {
         },
       }
     );
+  });
+
+  it('uses fromRaw api, #1767', () => {
+    testsql(qb().select('*').fromRaw('(select * from users where age > 18)'), {
+      mysql: 'select * from (select * from users where age > 18)',
+      mssql: 'select * from (select * from users where age > 18)',
+      pg: 'select * from (select * from users where age > 18)',
+      'pg-redshift': 'select * from (select * from users where age > 18)',
+    });
   });
 
   it('has a modify method which accepts a function that can modify the query', () => {

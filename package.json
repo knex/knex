@@ -6,6 +6,7 @@
   "types": "types/index.d.ts",
   "engines": {
     "node": ">=10"
+  
   },
   "scripts": {
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
@@ -54,15 +55,15 @@
   },
   "dependencies": {
     "colorette": "2.0.16",
-    "commander": "^7.1.0",
+    "commander": "^8.3.0",
     "debug": "4.3.2",
     "escalade": "^3.1.1",
     "esm": "^3.2.25",
-    "getopts": "2.2.5",
+    "getopts": "2.3.0",
     "interpret": "^2.2.0",
     "lodash": "^4.17.21",
     "pg-connection-string": "2.5.0",
-    "rechoir": "0.7.0",
+    "rechoir": "^0.8.0",
     "resolve-from": "^5.0.0",
     "tarn": "^3.0.1",
     "tildify": "2.0.0"
@@ -94,7 +95,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^16.10.3",
+    "@types/node": "^16.11.6",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^3.1.0",
@@ -109,7 +110,7 @@
     "jake": "^8.1.1",
     "JSONStream": "^1.3.5",
     "lint-staged": "^11.1.2",
-    "mocha": "^9.1.2",
+    "mocha": "^9.1.3",
     "mock-fs": "^4.13.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.0",
@@ -121,13 +122,13 @@
     "rimraf": "^3.0.2",
     "sinon": "^11.1.2",
     "sinon-chai": "^3.7.0",
-    "source-map-support": "^0.5.19",
+    "source-map-support": "^0.5.20",
     "sqlite3": "^5.0.2",
     "tap-spec": "^5.0.0",
     "tape": "^5.3.1",
     "tedious": "^12.2.0",
     "toxiproxy-node-client": "^2.0.6",
-    "ts-node": "^10.2.1",
+    "ts-node": "^10.4.0",
     "tsd": "^0.18.0",
     "typescript": "4.4.4"
   },
