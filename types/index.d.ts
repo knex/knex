@@ -605,8 +605,8 @@ export declare namespace Knex {
     clear(statement: ClearStatements): QueryBuilder<TRecord, TResult>;
 
     // Paging
-    offset(offset: number): QueryBuilder<TRecord, TResult>;
-    limit(limit: number): QueryBuilder<TRecord, TResult>;
+    offset(offset: number, options?: boolean | Readonly<{skipBinding?: boolean}>): QueryBuilder<TRecord, TResult>;
+    limit(limit: number, options?: string | Readonly<{skipBinding?: boolean}>): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
     count: AsymmetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
