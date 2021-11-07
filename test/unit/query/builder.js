@@ -10190,55 +10190,152 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it('should include join when deleting', () => {
-    testsql(
-      qb()
-        .del()
-        .from('users')
-        .join('photos', 'photos.id', 'users.id')
-        .where({ 'user.email': 'mock@example.com' }),
-      {
-        mysql: {
-          sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
-          bindings: ['mock@example.com'],
-        },
-        mssql: {
-          sql: 'delete [users] from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?;select @@rowcount',
-          bindings: ['mock@example.com'],
-        },
-        oracledb: {
-          sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@example.com'],
-        },
-        pg: {
-          sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@example.com'],
-        },
-        'pg-redshift': {
-          sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
-          bindings: ['mock@example.com'],
-        },
-        sqlite3: {
-          sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
-          bindings: ['mock@example.com'],
-        },
-      }
-    );
-  });
-  it('should include join when deleting with mssql triggers', () => {
-    const triggerOptions = { includeTriggerModifications: true };
-    testsql(
-      qb()
-        .del('*', triggerOptions)
-        .from('users')
-        .join('photos', 'photos.id', 'users.id')
-        .where({ 'user.email': 'mock@example.com' }),
-      {
-        mssql: {
-          sql: 'select top(0) [t].* into #out from [users] as t left join [users] on 0=1;delete [users] output deleted.* into #out from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?; select * from #out; drop table #out;',
-          bindings: ['mock@example.com'],
-        },
-      }
-    );
+  describe('deleting with joins', () => {
+    it('should transform joins into "using" syntax with PostgreSQL', () => {
+      // Knex transform joins into "using" syntax for PostgreSQL
+      testsql(
+        qb()
+          .del()
+          .from('users')
+          .join('photos', 'photos.id', 'users.id')
+          .where({ 'user.email': 'mock@example.com' }),
+        {
+          pg: {
+            sql: 'delete from "users" using "photos" where "user"."email" = ? and "photos"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
+
+    it('should transform multiple joins into multiple "using" syntax with PostgreSQL', () => {
+      // Knex transform joins into "using" syntax for PostgreSQL
+      testsql(
+        qb()
+          .del()
+          .from('users')
+          .join('photos', 'photos.id', 'users.id')
+          .join('docs', 'docs.id', 'users.id')
+          .where({ 'user.email': 'mock@example.com' }),
+        {
+          pg: {
+            sql: 'delete from "users" using "photos","docs" where "user"."email" = ? and "photos"."id" = "users"."id" and "docs"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
+
+    it('should join with "using" explicit syntax with PostgreSQL', () => {
+      // explicit using syntax
+      testsql(
+        qb()
+          .del()
+          .from('users')
+          .using('photos')
+          .where({ 'user.email': 'mock@example.com' })
+          .whereRaw('"photos"."id" = "users"."id"'),
+        {
+          pg: {
+            sql: 'delete from "users" using "photos" where "user"."email" = ? and "photos"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
+
+    it('should join with multiple tables and "using" explicit syntax with PostgreSQL', () => {
+      // Test with multiple tables 'using'
+      testsql(
+        qb()
+          .del()
+          .from('users')
+          .using(['photos', 'docs'])
+          .where({
+            'user.email': 'mock@example.com',
+          })
+          .whereRaw(
+            '"photos"."id" = "users"."id" and "docs"."id" = "users"."id"'
+          ),
+        {
+          pg: {
+            sql: 'delete from "users" using "photos","docs" where "user"."email" = ? and "photos"."id" = "users"."id" and "docs"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
+
+    it('should joins with mixed joins and "using" explicit syntax with PostgreSQL', () => {
+      // you can use explicit 'using' and joins, all are merged at the end.
+      testsql(
+        qb()
+          .del()
+          .from('users')
+          .using('photos')
+          .join('docs', 'docs.id', 'users.id')
+          .whereRaw('"photos"."id" = "users"."id"')
+          .where({ 'user.email': 'mock@example.com' }),
+        {
+          pg: {
+            sql: 'delete from "users" using "photos","docs" where "photos"."id" = "users"."id" and "user"."email" = ? and "docs"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
+
+    it('should include join when deleting', () => {
+      testsql(
+        qb()
+          .del()
+          .from('users')
+          .join('photos', 'photos.id', 'users.id')
+          .where({ 'user.email': 'mock@example.com' }),
+        {
+          mysql: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
+            bindings: ['mock@example.com'],
+          },
+          mssql: {
+            sql: 'delete [users] from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?;select @@rowcount',
+            bindings: ['mock@example.com'],
+          },
+          oracledb: {
+            sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
+            bindings: ['mock@example.com'],
+          },
+          pg: {
+            sql: 'delete from "users" using "photos" where "user"."email" = ? and "photos"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
+          },
+          'pg-redshift': {
+            sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
+            bindings: ['mock@example.com'],
+          },
+          sqlite3: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
+
+    it('should include join when deleting with mssql triggers', () => {
+      const triggerOptions = { includeTriggerModifications: true };
+      testsql(
+        qb()
+          .del('*', triggerOptions)
+          .from('users')
+          .join('photos', 'photos.id', 'users.id')
+          .where({ 'user.email': 'mock@example.com' }),
+        {
+          mssql: {
+            sql: 'select top(0) [t].* into #out from [users] as t left join [users] on 0=1;delete [users] output deleted.* into #out from [users] inner join [photos] on [photos].[id] = [users].[id] where [user].[email] = ?; select * from #out; drop table #out;',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
   });
 });
