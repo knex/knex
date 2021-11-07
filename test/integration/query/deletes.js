@@ -119,6 +119,9 @@ module.exports = function (knex) {
       });
 
       it('should handle basic delete with join and "using" syntax in PostgreSQL', async function () {
+        if (!isPostgreSQL(knex)) {
+          this.skip();
+        }
         await knex('test_table_two').insert({
           account_id: 4,
           details: '',
