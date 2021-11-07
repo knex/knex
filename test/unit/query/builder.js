@@ -10171,8 +10171,8 @@ describe('QueryBuilder', () => {
           .where({ 'user.email': 'mock@example.com' }),
         {
           pg: {
-            sql: 'delete "users" from "users" using "photos" where "user"."email" = ? and "photos"."id" = ?',
-            bindings: ['mock@example.com', 'users.id'],
+            sql: 'delete from "users" using "photos" where "user"."email" = ? and "photos"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
           },
         }
       );
@@ -10189,8 +10189,8 @@ describe('QueryBuilder', () => {
           .where({ 'user.email': 'mock@example.com' }),
         {
           pg: {
-            sql: 'delete "users" from "users" using "photos","docs" where "user"."email" = ? and "photos"."id" = ? and "docs"."id" = ?',
-            bindings: ['mock@example.com', 'users.id', 'users.id'],
+            sql: 'delete from "users" using "photos","docs" where "user"."email" = ? and "photos"."id" = "users"."id" and "docs"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
           },
         }
       );
@@ -10203,11 +10203,12 @@ describe('QueryBuilder', () => {
           .del()
           .from('users')
           .using('photos')
-          .where({ 'user.email': 'mock@example.com', 'photos.id': 'users.id' }),
+          .where({ 'user.email': 'mock@example.com' })
+          .whereRaw('"photos"."id" = "users"."id"'),
         {
           pg: {
-            sql: 'delete "users" from "users" using "photos" where "user"."email" = ? and "photos"."id" = ?',
-            bindings: ['mock@example.com', 'users.id'],
+            sql: 'delete from "users" using "photos" where "user"."email" = ? and "photos"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
           },
         }
       );
@@ -10216,15 +10217,39 @@ describe('QueryBuilder', () => {
     it('should join with multiple tables and "using" explicit syntax with PostgreSQL', () => {
       // Test with multiple tables 'using'
       testsql(
-        qb().del().from('users').using(['photos', 'docs']).where({
-          'user.email': 'mock@example.com',
-          'photos.id': 'users.id',
-          'docs.id': 'users.id',
-        }),
+        qb()
+          .del()
+          .from('users')
+          .using(['photos', 'docs'])
+          .where({
+            'user.email': 'mock@example.com',
+          })
+          .whereRaw(
+            '"photos"."id" = "users"."id" and "docs"."id" = "users"."id"'
+          ),
         {
           pg: {
-            sql: 'delete "users" from "users" using "photos","docs" where "user"."email" = ? and "photos"."id" = ? and "docs"."id" = ?',
-            bindings: ['mock@example.com', 'users.id', 'users.id'],
+            sql: 'delete from "users" using "photos","docs" where "user"."email" = ? and "photos"."id" = "users"."id" and "docs"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
+          },
+        }
+      );
+    });
+
+    it('should joins with mixed joins and "using" explicit syntax with PostgreSQL', () => {
+      // you can use explicit 'using' and joins, all are merged at the end.
+      testsql(
+        qb()
+          .del()
+          .from('users')
+          .using('photos')
+          .join('docs', 'docs.id', 'users.id')
+          .whereRaw('"photos"."id" = "users"."id"')
+          .where({ 'user.email': 'mock@example.com' }),
+        {
+          pg: {
+            sql: 'delete from "users" using "photos","docs" where "photos"."id" = "users"."id" and "user"."email" = ? and "docs"."id" = "users"."id"',
+            bindings: ['mock@example.com'],
           },
         }
       );
@@ -10248,6 +10273,10 @@ describe('QueryBuilder', () => {
           },
           oracledb: {
             sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id" where "user"."email" = ?',
+            bindings: ['mock@example.com'],
+          },
+          pg: {
+            sql: 'delete from "users" using "photos" where "user"."email" = ? and "photos"."id" = "users"."id"',
             bindings: ['mock@example.com'],
           },
           'pg-redshift': {
