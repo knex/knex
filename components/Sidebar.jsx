@@ -127,6 +127,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-upsert">upsert</a></li>
           <li>– <a href="#Builder-update">update</a></li>
           <li>– <a href="#Builder-del / delete">del / delete</a></li>
+          <li>– <a href="#Builder-using">using</a></li>
           <li>– <a href="#Builder-returning">returning</a></li>
           <li>– <a href="#Builder-transacting">transacting</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-forUpdate">forUpdate</a></li>
