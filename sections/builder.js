@@ -2004,6 +2004,37 @@ export default [
             .where('title', 'Alice in Wonderland')
             .del(['id', 'title'], { includeTriggerModifications: true })
         `
+      },
+      {
+        type: "text",
+        content: "For PostgreSQL, Delete statement with joins is both supported with classic 'join' syntax and 'using' syntax."
+      },
+      {
+        type: "runnable",
+        content: `
+           knex('accounts')
+            .where('activated', false)
+            .join('accounts', 'accounts.id', 'users.account_id')
+            .del()
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "using",
+    example: ".using(tableName|tableNames)",
+    description: "Can be used to define in PostgreSQL a delete statement with joins with explicit 'using' syntax. Classic join syntax can be used too.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+           knex('accounts')
+            .where('activated', false)
+            .using('accounts')
+            .whereRaw('accounts.id = users.account_id')
+            .del()
+        `
       }
     ]
   },
