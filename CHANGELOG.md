@@ -1,14 +1,20 @@
 # Master (Unreleased)
 
+# 0.95.14 - 09 November, 2021
+
+### Bug fixes:
+
+- MySQL: mysql2 dialect validate connection fix #4794
+
 # 0.95.13 - 02 November, 2021
 
 ### Bug fixes:
 
- - PostgreSQL: Support zero precision in timestamp/datetime #4784
+- PostgreSQL: Support zero precision in timestamp/datetime #4784
    
 ### Typings:
 
- - Allow string indexType in index creation #4791
+- Allow string indexType in index creation #4791
 
 # 0.95.12 - 28 October, 2021
 
