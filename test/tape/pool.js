@@ -23,7 +23,7 @@ test(`pool evicts dead resources when factory.validate rejects`, async (t) => {
     },
 
     validate: (res) => {
-      return res.error ? false : true;
+      return !res.error;
     },
 
     destroy: (res) => {
