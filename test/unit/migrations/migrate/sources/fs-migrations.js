@@ -26,7 +26,7 @@ describe('fs-migrations', () => {
     });
 
     it('should return the file name without extension', () => {
-      let migrationName = [];
+      const migrationName = [];
       fileNames.forEach((filename) =>
         migrationName.push(
           migrationSource.getMigrationName({

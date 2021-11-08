@@ -567,7 +567,7 @@ describe('Migrations', function () {
         });
 
         describe('knex.migrate.rollback - all', () => {
-          let migrationSource = new FsMigrations(
+          const migrationSource = new FsMigrations(
             'test/integration2/migrate/test'
           );
 
@@ -839,7 +839,7 @@ describe('Migrations', function () {
             directory: ['test/integration2/migrate/test'],
           };
 
-          let migrationSource = new FsMigrations('foo');
+          const migrationSource = new FsMigrations('foo');
 
           beforeEach(async () => {
             await knex.migrate.rollback(knexConfig, true);
