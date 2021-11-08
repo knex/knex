@@ -8,6 +8,7 @@ const Redshift_Client = require('../../../lib/dialects/redshift');
 const Oracledb_Client = require('../../../lib/dialects/oracledb');
 const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
+const CockroachDB_Client = require('../../../lib/dialects/cockroachdb');
 
 // use driverName as key
 const clients = {
@@ -17,6 +18,7 @@ const clients = {
   oracledb: new Oracledb_Client({ client: 'oracledb' }),
   sqlite3: new SQLite3_Client({ client: 'sqlite3' }),
   mssql: new MSSQL_Client({ client: 'mssql' }),
+  cockroachdb: new CockroachDB_Client({ client: 'cockroachdb' }),
 };
 
 const useNullAsDefaultConfig = { useNullAsDefault: true };
@@ -2108,15 +2110,6 @@ describe('QueryBuilder', () => {
     });
   });
 
-  // it("handles grouped mysql unions", function() {
-  //   chain = myqb().union(
-  //     raw(myqb().select('*').from('users').where('id', '=', 1)).wrap('(', ')'),
-  //     raw(myqb().select('*').from('users').where('id', '=', 2)).wrap('(', ')')
-  //   ).orderBy('id').limit(10).toSQL();
-  //   expect(chain.sql).to.equal('(select * from `users` where `id` = ?) union (select * from `users` where `id` = ?) order by `id` asc limit ?');
-  //   expect(chain.bindings).to.eql([1, 2, 10]);
-  // });
-
   it('union alls', () => {
     const chain = qb()
       .select('*')
@@ -3614,6 +3607,39 @@ describe('QueryBuilder', () => {
         bindings: [10],
       },
     });
+  });
+
+  it('limits with skip binding', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .limit(10, { skipBinding: true })
+        .offset(5, true),
+      {
+        mysql: {
+          sql: 'select * from `users` limit 10 offset 5',
+        },
+        sqlite3: {
+          sql: 'select * from `users` limit 10 offset 5',
+        },
+        mssql: {
+          sql: 'select * from [users] offset 5 rows fetch next 10 rows only',
+        },
+        oracledb: {
+          sql: 'select * from (select row_.*, ROWNUM rownum_ from (select * from "users") row_ where rownum <= 15) where rownum_ > 5',
+        },
+        pg: {
+          sql: 'select * from "users" limit 10 offset 5',
+        },
+        cockroachdb: {
+          sql: 'select * from "users" limit 10 offset 5',
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" limit 10 offset 5',
+        },
+      }
+    );
   });
 
   it('limits and raw selects', () => {
