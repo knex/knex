@@ -1568,13 +1568,26 @@ export default [
   {
     type: "method",
     method: "offset",
-    example: ".offset(value)",
-    description: "Adds an offset clause to the query.",
+    example: ".offset(value, options={skipBinding: boolean})",
+    description: "Adds an offset clause to the query. An optional skipBinding parameter may be specified which would avoid setting offset as a prepared value (some databases don't allow prepared values for offset).",
     children: [
       {
         type: "runnable",
         content: `
           knex.select('*').from('users').offset(10)
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').offset(10).toSQL().sql
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          // Offset value isn't a prepared value.
+          knex.select('*').from('users').offset(10, {skipBinding: true}).toSQL().sql
         `
       }
     ]
@@ -1582,13 +1595,26 @@ export default [
   {
     type: "method",
     method: "limit",
-    example: ".limit(value)",
-    description: "Adds a limit clause to the query.",
+    example: ".limit(value, options={skipBinding: boolean})",
+    description: "Adds a limit clause to the query. An optional skipBinding parameter may be specified to avoid adding limit as a prepared value (some databases don't allow prepared values for limit).",
     children: [
       {
         type: "runnable",
         content: `
           knex.select('*').from('users').limit(10).offset(30)
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.select('*').from('users').limit(10).offset(30).toSQL().sql
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          // Limit value isn't a prepared value.
+          knex.select('*').from('users').limit(10, {skipBinding: true}).offset(30).toSQL().sql
         `
       }
     ]
