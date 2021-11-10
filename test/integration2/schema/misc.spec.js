@@ -323,6 +323,8 @@ describe('Schema (misc)', () => {
           });
 
           it('copy table with additionnal column', async () => {
+            await knex.schema.dropTableIfExists('table_copied');
+            await knex.schema.dropTableIfExists('table_to_copy');
             await knex.schema
               .createTableLike(
                 'table_copied',
@@ -335,12 +337,12 @@ describe('Schema (misc)', () => {
               .testSql((tester) => {
                 tester('mysql', [
                   'create table `table_copied` like `table_to_copy`',
-                  'alter table `table_copied` add `add_col` text, add `numeric_col` int',
+                  'alter table `table_copied` add `add_col` text, add `add_num_col` int',
                 ]);
                 tester(
                   ['pg', 'cockroachdb'],
                   [
-                    'create table "table_copied" (like "users" including all, "add_col" text, "numeric_col" integer)',
+                    'create table "table_copied" (like "users" including all, "add_col" text, "add_num_col" integer)',
                   ]
                 );
                 tester('pg-redshift', [
@@ -351,7 +353,7 @@ describe('Schema (misc)', () => {
                 tester('sqlite3', [
                   'create table `table_copied` as select * from `table_to_copy` where 0=1',
                   'alter table `table_copied` add column `add_col` text',
-                  'alter table `users_like` add column `add_num_col` integer',
+                  'alter table `table_copied` add column `add_num_col` integer',
                 ]);
                 tester('oracledb', [
                   'create table "table_copied" as (select * from "table_to_copy" where 0=1)',
@@ -359,7 +361,7 @@ describe('Schema (misc)', () => {
                 ]);
                 tester('mssql', [
                   'SELECT * INTO [table_copied] FROM [table_to_copy] WHERE 0=1',
-                  'ALTER TABLE [table_copied] ADD [add_col] nvarchar(max), [numeric_col] int',
+                  'ALTER TABLE [table_copied] ADD [add_col] nvarchar(max), [add_num_col] int"',
                 ]);
               });
 
