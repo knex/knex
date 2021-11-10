@@ -123,6 +123,20 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('create table like another with additionnal columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('numeric_col');
+      })
+      .toSQL();
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" (like "users" including all, "add_col" text, "numeric_col" integer)'
+    );
+  });
+
   it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()

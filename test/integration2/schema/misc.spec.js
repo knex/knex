@@ -321,6 +321,61 @@ describe('Schema (misc)', () => {
                 expect(Object.keys(res)).to.have.all.members(['id', 'data']);
               });
           });
+
+          it('copy table with additionnal column', async () => {
+            await knex.schema
+              .createTableLike(
+                'table_copied',
+                'table_to_copy',
+                function (table) {
+                  table.text('add_col');
+                  table.integer('add_num_col');
+                }
+              )
+              .testSql((tester) => {
+                tester('mysql', [
+                  'create table `table_copied` like `table_to_copy`',
+                  'alter table `table_copied` add `add_col` text, add `numeric_col` int',
+                ]);
+                tester(
+                  ['pg', 'cockroachdb'],
+                  [
+                    'create table "table_copied" (like "users" including all, "add_col" text, "numeric_col" integer)',
+                  ]
+                );
+                tester('pg-redshift', [
+                  'create table "table_copied" (like "table_to_copy")',
+                  'alter table "table_copied" add column "add_col" varchar(max)',
+                  'alter table "table_copied" add column "add_num_col" integer',
+                ]);
+                tester('sqlite3', [
+                  'create table `table_copied` as select * from `table_to_copy` where 0=1',
+                  'alter table `table_copied` add column `add_col` text',
+                  'alter table `users_like` add column `add_num_col` integer',
+                ]);
+                tester('oracledb', [
+                  'create table "table_copied" as (select * from "table_to_copy" where 0=1)',
+                  'alter table "table_copied" add ("add_col" clob, "add_num_col" integer)',
+                ]);
+                tester('mssql', [
+                  'SELECT * INTO [table_copied] FROM [table_to_copy] WHERE 0=1',
+                  'ALTER TABLE [table_copied] ADD [add_col] nvarchar(max), [numeric_col] int',
+                ]);
+              });
+
+            expect(await knex.schema.hasTable('table_copied')).to.equal(true);
+
+            await knex('table_copied')
+              .columnInfo()
+              .then((res) => {
+                expect(Object.keys(res)).to.have.all.members([
+                  'id',
+                  'data',
+                  'add_col',
+                  'add_num_col',
+                ]);
+              });
+          });
         });
 
         describe('increments types - postgres', () => {

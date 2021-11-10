@@ -46,6 +46,23 @@ module.exports = function (dialect) {
       );
     });
 
+    it('create table like another with additionnal columns', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTableLike('users_like', 'users', function (table) {
+          table.text('add_col');
+          table.integer('numeric_col');
+        })
+        .toSQL();
+      expect(tableSql.length).to.equal(2);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users_like` like `users`'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table `users_like` add `add_col` text, add `numeric_col` int'
+      );
+    });
+
     it('test basic create table with incrementing without primary key', function () {
       tableSql = client
         .schemaBuilder()

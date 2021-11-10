@@ -50,6 +50,26 @@ describe('SQLite SchemaBuilder', function () {
     );
   });
 
+  it('test create table like with additionnal columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('add_num_col');
+      });
+
+    expect(tableSql.toSQL().length).to.equal(3);
+    expect(tableSql.toSQL()[0].sql).to.equal(
+      'create table `users_like` as select * from `users` where 0=1'
+    );
+    expect(tableSql.toSQL()[1].sql).to.equal(
+      'alter table `users_like` add column `add_col` text'
+    );
+    expect(tableSql.toSQL()[2].sql).to.equal(
+      'alter table `users_like` add column `add_num_col` integer'
+    );
+  });
+
   describe('views', function () {
     let knexSqlite3;
 
