@@ -341,7 +341,7 @@ describe('Schema (misc)', () => {
                 tester(
                   ['pg', 'cockroachdb'],
                   [
-                    'create table "table_copied" (like "users" including all, "add_col" text, "add_num_col" integer)',
+                    'create table "table_copied" (like "table_to_copy" including all, "add_col" text, "add_num_col" integer)',
                   ]
                 );
                 tester('pg-redshift', [
