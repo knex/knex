@@ -324,7 +324,6 @@ describe('Schema (misc)', () => {
 
           it('copy table with additionnal column', async () => {
             await knex.schema.dropTableIfExists('table_copied');
-            await knex.schema.dropTableIfExists('table_to_copy');
             await knex.schema
               .createTableLike(
                 'table_copied',
@@ -361,7 +360,7 @@ describe('Schema (misc)', () => {
                 ]);
                 tester('mssql', [
                   'SELECT * INTO [table_copied] FROM [table_to_copy] WHERE 0=1',
-                  'ALTER TABLE [table_copied] ADD [add_col] nvarchar(max), [add_num_col] int"',
+                  'ALTER TABLE [table_copied] ADD [add_col] nvarchar(max), [add_num_col] int',
                 ]);
               });
 
