@@ -38,6 +38,26 @@ describe('Redshift SchemaBuilder', function () {
     );
   });
 
+  it('create table like another with additional columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('add_num_col');
+      })
+      .toSQL();
+    expect(tableSql.length).to.equal(3);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" (like "users")'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users_like" add column "add_col" varchar(max)'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'alter table "users_like" add column "add_num_col" integer'
+    );
+  });
+
   it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()

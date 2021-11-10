@@ -50,6 +50,23 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('create table like another with additionnal columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('numeric_col');
+      })
+      .toSQL();
+    expect(tableSql.length).to.equal(2);
+    expect(tableSql[0].sql).to.equal(
+      'SELECT * INTO [users_like] FROM [users] WHERE 0=1'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'ALTER TABLE [users_like] ADD [add_col] nvarchar(max), [numeric_col] int'
+    );
+  });
+
   describe('views', function () {
     let knexMssql;
 
