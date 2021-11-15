@@ -1304,12 +1304,12 @@ export declare namespace Knex {
     andOnVal(column1: string, operator: string, value: Value): JoinClause;
     orOnVal(column1: string, value: Value): JoinClause;
     orOnVal(column1: string, operator: string, value: Value): JoinClause;
-    onIn(column1: string, values: readonly any[]): JoinClause;
-    andOnIn(column1: string, values: readonly any[]): JoinClause;
-    orOnIn(column1: string, values: readonly any[]): JoinClause;
-    onNotIn(column1: string, values: readonly any[]): JoinClause;
-    andOnNotIn(column1: string, values: readonly any[]): JoinClause;
-    orOnNotIn(column1: string, values: readonly any[]): JoinClause;
+    onIn(column1: string, values: readonly any[] | Raw): JoinClause;
+    andOnIn(column1: string, values: readonly any[] | Raw): JoinClause;
+    orOnIn(column1: string, values: readonly any[] | Raw): JoinClause;
+    onNotIn(column1: string, values: readonly any[] | Raw): JoinClause;
+    andOnNotIn(column1: string, values: readonly any[] | Raw): JoinClause;
+    orOnNotIn(column1: string, values: readonly any[] | Raw): JoinClause;
     onNull(column1: string): JoinClause;
     andOnNull(column1: string): JoinClause;
     orOnNull(column1: string): JoinClause;
