@@ -1166,7 +1166,6 @@ describe('Inserts', function () {
             } else {
               expect(rows.length).to.equal(1);
             }
-            expect(rows.length).to.equal(1);
             if (isPgBased(knex)) {
               expect(_.keys(rows[0]).length).to.equal(4);
               assertNumber(knex, rows[0].account_id, insertData.account_id);
