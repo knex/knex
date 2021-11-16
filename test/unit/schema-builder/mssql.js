@@ -87,7 +87,7 @@ describe('MSSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "CREATE VIEW [adults] (name) AS select [name] from [users] where [age] > '18'"
+        "CREATE VIEW [adults] ([name]) AS select [name] from [users] where [age] > '18'"
       );
     });
 
@@ -114,7 +114,7 @@ describe('MSSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "CREATE OR ALTER VIEW [adults] (name) AS select [name] from [users] where [age] > '18'"
+        "CREATE OR ALTER VIEW [adults] ([name]) AS select [name] from [users] where [age] > '18'"
       );
     });
 
