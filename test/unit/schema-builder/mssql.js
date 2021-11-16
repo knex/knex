@@ -91,6 +91,19 @@ describe('MSSQL SchemaBuilder', function () {
       );
     });
 
+    it('basic create view without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.as(knexMssql('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "CREATE VIEW [adults] AS select [name] from [users] where [age] > '18'"
+      );
+    });
+
     it('create view or replace', async function () {
       const viewSql = client
         .schemaBuilder()
