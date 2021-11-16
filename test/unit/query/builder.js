@@ -4719,6 +4719,30 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('or on in with raw', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .join('contacts', (qb) => {
+          qb.on('users.id', '=', 'contacts.id')
+            .onIn('contacts.id', [7, 15, 23, 41])
+            .orOnIn('users.id', raw('select id from users where age > 18'));
+        }),
+      {
+        mysql:
+          'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and `contacts`.`id` in (?, ?, ?, ?) or `users`.`id` in (select id from users where age > 18)',
+        mssql:
+          'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and [contacts].[id] in (?, ?, ?, ?) or [users].[id] in (select id from users where age > 18)',
+        pg: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (select id from users where age > 18)',
+        'pg-redshift':
+          'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (select id from users where age > 18)',
+        oracledb:
+          'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and "contacts"."id" in (?, ?, ?, ?) or "users"."id" in (select id from users where age > 18)',
+      }
+    );
+  });
+
   it('on not in', () => {
     testsql(
       qb()
