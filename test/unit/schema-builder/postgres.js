@@ -234,6 +234,19 @@ describe('PostgreSQL SchemaBuilder', function () {
       );
     });
 
+    it('basic create view without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view "adults" as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
     it('create view or replace', async function () {
       const viewSql = client
         .schemaBuilder()

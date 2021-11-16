@@ -69,11 +69,48 @@ describe('Views', () => {
                 ]
               );
               tester('mssql', [
-                "CREATE VIEW [view_test] (a, b) AS select [a], [b] from [table_view] where [b] > '10'",
+                "CREATE VIEW [view_test] ([a], [b]) AS select [a], [b] from [table_view] where [b] > '10'",
               ]);
             });
 
-          // We test if the select on the view work and if results are good
+          // We test if the select on the view works and if results are good
+          await knex
+            .select(['a', 'b'])
+            .from('view_test')
+            .then(function (results) {
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
+            });
+        });
+
+        it('create view without columns', async () => {
+          await knex.schema
+            .createView('view_test', function (view) {
+              view.as(
+                knex('table_view').select('a', 'b').where('b', '>', '10')
+              );
+            })
+            .testSql((tester) => {
+              tester(
+                ['pg', 'pg-redshift', 'cockroachdb', 'oracledb'],
+                [
+                  'create view "view_test" as select "a", "b" from "table_view" where "b" > \'10\'',
+                ]
+              );
+              tester(
+                ['sqlite3', 'mysql'],
+                [
+                  "create view `view_test` as select `a`, `b` from `table_view` where `b` > '10'",
+                ]
+              );
+              tester('mssql', [
+                "CREATE VIEW [view_test] AS select [a], [b] from [table_view] where [b] > '10'",
+              ]);
+            });
+
+          // We test if the select on the view works and if results are good
           await knex
             .select(['a', 'b'])
             .from('view_test')
