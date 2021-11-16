@@ -3034,7 +3034,7 @@ export default [
     type: "text",
     content: [
       "**Important:** this feature is experimental and its API may change in the future.",
-      "It allows to add custom function the the Query Builder.",
+      "It allows to add custom function to the Query Builder.",
       "Example:"
     ]
   },
