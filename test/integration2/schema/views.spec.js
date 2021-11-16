@@ -69,7 +69,7 @@ describe('Views', () => {
                 ]
               );
               tester('mssql', [
-                "CREATE VIEW [view_test] (a, b) AS select [a], [b] from [table_view] where [b] > '10'",
+                "CREATE VIEW [view_test] ([a], [b]) AS select [a], [b] from [table_view] where [b] > '10'",
               ]);
             });
 
