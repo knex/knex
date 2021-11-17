@@ -20,12 +20,19 @@ const {
   createAccounts,
   createCompositeKeyTable,
   createTestTableTwo,
+  createCities,
   dropTables,
   createDefaultTable,
   createParentAndChildTables,
 } = require('../../../util/tableCreatorHelper');
-const { insertAccounts } = require('../../../util/dataInsertHelper');
-const { assertNumberArrayStrict } = require('../../../util/assertHelper');
+const {
+  insertAccounts,
+  insertCities,
+} = require('../../../util/dataInsertHelper');
+const {
+  assertNumberArrayStrict,
+  assertJsonEquals,
+} = require('../../../util/assertHelper');
 const {
   getAllDbs,
   getKnexForDb,
@@ -1233,6 +1240,149 @@ describe('Selects', function () {
               }
             }
           );
+      });
+
+      describe('json selections', () => {
+        before(async () => {
+          await knex.schema.dropTableIfExists('cities');
+          await createCities(knex);
+        });
+
+        beforeEach(async () => {
+          await knex('cities').truncate();
+          await insertCities(knex);
+        });
+
+        it('json extract', async () => {
+          const res = await knex
+            .jsonExtract('descriptions', '$.short', 'shortDescription')
+            .from('cities');
+          expect(res).to.eql([
+            { shortDescription: 'beautiful city' },
+            { shortDescription: 'large city' },
+          ]);
+        });
+
+        it('json multiple extract', async () => {
+          const res = await knex
+            .jsonExtract([
+              ['descriptions', '$.short', 'shortDescription'],
+              ['population', '$.current', 'currentPop'],
+              ['statistics', '$.roads.min', 'minRoads'],
+              ['statistics', '$.hotYears[0]', 'firstHotYear'],
+            ])
+            .from('cities');
+          assertJsonEquals(
+            [res[0], res[1]],
+            [
+              {
+                shortDescription: 'beautiful city',
+                currentPop: 10000000,
+                minRoads: 1234,
+                firstHotYear: null,
+              },
+              {
+                shortDescription: 'large city',
+                currentPop: 1500000,
+                minRoads: 1455,
+                firstHotYear: 2012,
+              },
+            ]
+          );
+        });
+
+        it('json set', async () => {
+          const res = await knex
+            .jsonSet('population', '$.max', '999999999', 'maxUpdated')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].maxUpdated, res[1].maxUpdated],
+            [
+              { current: 10000000, min: 50000, max: '999999999' },
+              { current: 1500000, min: 44000, max: '999999999' },
+            ]
+          );
+        });
+
+        it('json insert', async () => {
+          const res = await knex
+            .jsonInsert('population', '$.year2021', '747477', 'popIn2021Added')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].popIn2021Added, res[1].popIn2021Added],
+            [
+              {
+                current: 10000000,
+                min: 50000,
+                max: 12000000,
+                year2021: '747477',
+              },
+              {
+                current: 1500000,
+                min: 44000,
+                max: 1200000,
+                year2021: '747477',
+              },
+            ]
+          );
+        });
+
+        it('json remove', async () => {
+          const res = await knex
+            .jsonRemove('population', '$.min', 'popMinRemoved')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].popMinRemoved, res[1].popMinRemoved],
+            [
+              { current: 10000000, max: 12000000 },
+              { current: 1500000, max: 1200000 },
+            ]
+          );
+        });
+
+        it('json insert then extract', async () => {
+          const res = await knex
+            .jsonExtract(
+              knex.jsonInsert('population', '$.test', '1234'),
+              '$.test',
+              'insertExtract'
+            )
+            .from('cities');
+          assertJsonEquals(
+            [res[0], res[1]],
+            [{ insertExtract: '1234' }, { insertExtract: '1234' }]
+          );
+        });
+
+        it('json remove, set then extract', async () => {
+          const res = await knex
+            .jsonExtract([
+              [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
+              [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
+              [
+                knex.jsonSet('population', '$.current', '1234'),
+                '$',
+                'currentModified',
+              ],
+            ])
+            .from('cities');
+          assertJsonEquals(
+            [res[0], res[1]],
+            [
+              {
+                currentModified:
+                  '{"current":"1234","min":50000,"max":12000000}',
+                withoutMax: '{"current":10000000,"min":50000}',
+                withoutMin: '{"current":10000000,"max":12000000}',
+              },
+              {
+                currentModified: '{"current":"1234","min":44000,"max":1200000}',
+                withoutMax: '{"current":1500000,"min":44000}',
+                withoutMin: '{"current":1500000,"max":1200000}',
+              },
+            ]
+          );
+        });
       });
     });
   });

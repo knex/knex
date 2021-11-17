@@ -19,8 +19,12 @@ const {
   createTestTableTwo,
   dropTables,
   createDefaultTable,
+  createCities,
 } = require('../../../util/tableCreatorHelper');
-const { insertAccounts } = require('../../../util/dataInsertHelper');
+const {
+  insertAccounts,
+  insertCities,
+} = require('../../../util/dataInsertHelper');
 
 const {
   getAllDbs,
@@ -28,6 +32,7 @@ const {
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
 const { TEST_TIMESTAMP } = require('../../../util/constants.js');
+const { assertJsonEquals } = require('../../../util/assertHelper');
 
 describe('Where', function () {
   getAllDbs().forEach((db) => {
@@ -606,6 +611,130 @@ describe('Where', function () {
         //Also expect raw's bindings to not have been modified by calling .toSQL() (preserving original bindings)
         expect(raw.bindings).to.eql(expected1);
         expect(raw2.bindings).to.eql(expected2);
+      });
+
+      describe('json wheres', () => {
+        before(async () => {
+          await knex.schema.dropTableIfExists('cities');
+          await createCities(knex);
+        });
+
+        beforeEach(async () => {
+          await knex('cities').truncate();
+          await insertCities(knex);
+        });
+
+        it('where json object', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonObject('descriptions', {
+              type: 'bigcity',
+              short: 'beautiful city',
+              long: 'beautiful and dirty city',
+            });
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
+        it('where not json object', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereNotJsonObject('descriptions', {
+              type: 'bigcity',
+              short: 'beautiful city',
+              long: 'beautiful and dirty city',
+            });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Milan',
+            },
+            {
+              name: 'Oslo',
+            },
+          ]);
+        });
+
+        it('where json path greater than numeric', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '>', 1000);
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
+        it('where json path equal numeric', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '=', 1455);
+          expect(result[0]).to.eql({
+            name: 'Milan',
+          });
+        });
+
+        it('where multiple json path', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '<', 2000)
+            .andWhereJsonPath('temperature', '$.desc', '=', 'cold');
+          expect(result.length).to.equal(2);
+          assertJsonEquals(
+            [result[0], result[1]],
+            [
+              {
+                name: 'Paris',
+              },
+              {
+                name: 'Oslo',
+              },
+            ]
+          );
+        });
+
+        it('where json superset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where descriptions json object contains type : 'bigcity'
+            .whereJsonSupersetOf('descriptions', {
+              type: 'bigcity',
+            });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
+            },
+          ]);
+        });
+
+        it('where json subset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where descriptions json object contains type : 'bigcity'
+            .whereJsonSubsetOf('temperature', {
+              desc: 'cold',
+              desc2: 'very cold',
+            });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris', // contains only desc: 'cold' but it's matched
+            },
+            {
+              name: 'Oslo',
+            },
+          ]);
+        });
       });
     });
   });

@@ -4792,6 +4792,28 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('on json path join', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .join('contacts', (qb) => {
+          qb.onJsonPathEquals(
+            'users.infos',
+            '$.name',
+            'contacts.data',
+            '$.infos.name'
+          );
+        }),
+      {
+        pg: {
+          sql: 'select * from "users" inner join "contacts" on jsonb_path_query_first("users"."infos", ?) = jsonb_path_query_first("contacts"."data", ?)',
+          bindings: ['$.name', '$.infos.name'],
+        },
+      }
+    );
+  });
+
   it('raw expressions in select', () => {
     testsql(qb().select(raw('substr(foo, 6)')).from('users'), {
       mysql: {
@@ -10386,6 +10408,373 @@ describe('QueryBuilder', () => {
           },
         }
       );
+    });
+  });
+
+  describe('json functions', () => {
+    describe('json manipulation', () => {
+      it('should extract json value', () => {
+        testsql(qb().jsonExtract('name', '$.names.firstName').from('users'), {
+          pg: {
+            sql: 'select jsonb_path_query("name", ?) from "users"',
+            bindings: ['$.names.firstName'],
+          },
+          mysql: {
+            sql: 'select json_unquote(json_extract(`name`, ?)) from `users`',
+            bindings: ['$.names.firstName'],
+          },
+          mssql: {
+            sql: 'select JSON_VALUE([name], ?) from [users]',
+            bindings: ['$.names.firstName'],
+          },
+          oracledb: {
+            sql: 'select json_query("name", ?) from "users"',
+            bindings: ['$.names.firstName'],
+          },
+          sqlite3: {
+            sql: 'select json_extract(`name`, ?) from `users`',
+            bindings: ['$.names.firstName'],
+          },
+          'pg-redshift': {
+            sql: 'select json_extract_path_text("name", ?, ?) from "users"',
+            bindings: ['names', 'firstName'],
+          },
+        });
+      });
+
+      it('should extract json value with alias', () => {
+        testsql(qb().jsonExtract('json_col', '$.name', 'name').from('users'), {
+          pg: {
+            sql: 'select jsonb_path_query("json_col", ?) as "name" from "users"',
+            bindings: ['$.name'],
+          },
+          mysql: {
+            sql: 'select json_unquote(json_extract(`json_col`, ?)) as `name` from `users`',
+            bindings: ['$.name'],
+          },
+          mssql: {
+            sql: 'select JSON_VALUE([json_col], ?) as [name] from [users]',
+            bindings: ['$.name'],
+          },
+          oracledb: {
+            sql: 'select json_query("json_col", ?) "name" from "users"',
+            bindings: ['$.name'],
+          },
+          sqlite3: {
+            sql: 'select json_extract(`json_col`, ?) as `name` from `users`',
+            bindings: ['$.name'],
+          },
+          'pg-redshift': {
+            sql: 'select json_extract_path_text("json_col", ?) as "name" from "users"',
+            bindings: ['name'],
+          },
+        });
+      });
+
+      it('should extract json values with mutiple extracts', () => {
+        testsql(
+          qb()
+            .jsonExtract([
+              ['json_col', '$.name', 'name'],
+              ['json_col', '$.last_name', 'last_name'],
+              ['json_col', '$.infos.age', 'age'],
+              ['json_col', '$.infos.gender', 'gender'],
+            ])
+            .from('users'),
+          {
+            pg: {
+              sql:
+                'select jsonb_path_query("json_col", ?) as "name", jsonb_path_query("json_col", ?) as "last_name", ' +
+                'jsonb_path_query("json_col", ?) as "age", jsonb_path_query("json_col", ?) as "gender" from "users"',
+              bindings: [
+                '$.name',
+                '$.last_name',
+                '$.infos.age',
+                '$.infos.gender',
+              ],
+            },
+            mysql: {
+              sql:
+                'select json_unquote(json_extract(`json_col`, ?)) as `name`, json_unquote(json_extract(`json_col`, ?)) ' +
+                'as `last_name`, json_unquote(json_extract(`json_col`, ?)) as `age`, json_unquote(json_extract' +
+                '(`json_col`, ?)) as `gender` from `users`',
+              bindings: [
+                '$.name',
+                '$.last_name',
+                '$.infos.age',
+                '$.infos.gender',
+              ],
+            },
+            mssql: {
+              sql:
+                'select JSON_VALUE([json_col], ?) as [name], JSON_VALUE([json_col], ?) as [last_name], ' +
+                'JSON_VALUE([json_col], ?) as [age], JSON_VALUE([json_col], ?) as [gender] from [users]',
+              bindings: [
+                '$.name',
+                '$.last_name',
+                '$.infos.age',
+                '$.infos.gender',
+              ],
+            },
+            oracledb: {
+              sql:
+                'select json_query("json_col", ?) "name", json_query("json_col", ?) "last_name", ' +
+                'json_query("json_col", ?) "age", json_query("json_col", ?) "gender" from "users"',
+              bindings: [
+                '$.name',
+                '$.last_name',
+                '$.infos.age',
+                '$.infos.gender',
+              ],
+            },
+            sqlite3: {
+              sql:
+                'select json_extract(`json_col`, ?) as `name`, json_extract(`json_col`, ?) as `last_name`, ' +
+                'json_extract(`json_col`, ?) as `age`, json_extract(`json_col`, ?) as `gender` from `users`',
+              bindings: [
+                '$.name',
+                '$.last_name',
+                '$.infos.age',
+                '$.infos.gender',
+              ],
+            },
+            'pg-redshift': {
+              sql:
+                'select json_extract_path_text("json_col", ?) as "name", ' +
+                'json_extract_path_text("json_col", ?) as "last_name", json_extract_path_text("json_col", ?, ?) as "age", ' +
+                'json_extract_path_text("json_col", ?, ?) as "gender" from "users"',
+              bindings: [
+                'name',
+                'last_name',
+                'infos',
+                'age',
+                'infos',
+                'gender',
+              ],
+            },
+          }
+        );
+      });
+
+      it('should set json value', () => {
+        testsql(
+          qb().jsonSet('address', '$.street.numbers[2]', '5').from('users'),
+          {
+            pg: {
+              sql: 'select jsonb_set("address", ?, ?) from "users"',
+              bindings: ['{street,numbers,2}', '5'],
+            },
+            mysql: {
+              sql: 'select json_set(`address`, ?, ?) from `users`',
+              bindings: ['$.street.numbers[2]', '5'],
+            },
+            mssql: {
+              sql: 'select JSON_MODIFY([address], ?, ?) from [users]',
+              bindings: ['$.street.numbers[2]', '5'],
+            },
+            oracledb: {
+              sql: 'select json_transform("address", set ? = ?) from "users"',
+              bindings: ['$.street.numbers[2]', '5'],
+            },
+            sqlite3: {
+              sql: 'select json_set(`address`, ?, ?) from `users`',
+              bindings: ['$.street.numbers[2]', '5'],
+            },
+          }
+        );
+      });
+
+      it('should set json value with pg path syntax', async function () {
+        testsql(
+          qb().jsonSet('address', '{street,numbers,2}', '5').from('users'),
+          {
+            pg: {
+              sql: 'select jsonb_set("address", ?, ?) from "users"',
+              bindings: ['{street,numbers,2}', '5'],
+            },
+          }
+        );
+      });
+
+      it('should set json value with nested function', async function () {
+        testsql(
+          qb()
+            .jsonSet(
+              qb().jsonExtract('cities', '$.mainStreet'),
+              '$.street.numbers[1]',
+              "{'test': 2}"
+            )
+            .from('users'),
+          {
+            pg: {
+              sql: 'select jsonb_set(jsonb_path_query("cities", ?), ?, ?) from "users"',
+              bindings: ['$.mainStreet', '{street,numbers,1}', "{'test': 2}"],
+            },
+            mysql: {
+              sql: 'select json_set(json_unquote(json_extract(`cities`, ?)), ?, ?) from `users`',
+              bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
+            },
+            mssql: {
+              sql: 'select JSON_MODIFY(select JSON_VALUE([cities], ?), ?, ?) from [users]',
+              bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
+            },
+            oracledb: {
+              sql: 'select json_transform(json_query("cities", ?), set ? = ?) from "users"',
+              bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
+            },
+            sqlite3: {
+              sql: 'select json_set(json_extract(`cities`, ?), ?, ?) from `users`',
+              bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
+            },
+          }
+        );
+      });
+
+      it('should insert json', async function () {
+        testsql(qb().jsonInsert('address', '$.mainStreet', '5').from('users'), {
+          pg: {
+            sql: 'select jsonb_insert("address", ?, ?) from "users"',
+            bindings: ['{mainStreet}', '5'],
+          },
+          mysql: {
+            sql: 'select json_insert(`address`, ?, ?) from `users`',
+            bindings: ['$.mainStreet', '5'],
+          },
+          mssql: {
+            sql: 'select JSON_MODIFY([address], ?, ?) from [users]',
+            bindings: ['$.mainStreet', '5'],
+          },
+          oracledb: {
+            sql: 'select json_transform("address", insert ? = ?) from "users"',
+            bindings: ['$.mainStreet', '5'],
+          },
+          sqlite3: {
+            sql: 'select json_insert(`address`, ?, ?) from `users`',
+            bindings: ['$.mainStreet', '5'],
+          },
+        });
+      });
+
+      it('should remove path in json', async function () {
+        testsql(qb().jsonRemove('address', '$.street[1]').from('users'), {
+          pg: 'select "address" #- \'{street,1}\' from "users"',
+        });
+      });
+    });
+
+    describe('where json', function () {
+      it('where equals json', async function () {
+        testsql(
+          qb()
+            .select()
+            .from('users')
+            .whereJsonObject('address', { street: 'street1', number: 5 })
+            .orWhereNotJsonObject('address', {
+              street: 'street2',
+              number: 7,
+            }),
+          {
+            pg: {
+              sql: 'select * from "users" where "address" = ? or "address" != ?',
+              bindings: [
+                '{"street":"street1","number":5}',
+                '{"street":"street2","number":7}',
+              ],
+            },
+          }
+        );
+      });
+
+      it('where json column is equals to the value returned by a json path', async function () {
+        testsql(
+          qb()
+            .select()
+            .from('users')
+            .whereJsonPath('address', '$.street.number', '>', 5),
+          {
+            pg: {
+              sql: 'select * from "users" where jsonb_path_query_first("address", ?)::int > ?',
+              bindings: ['$.street.number', 5],
+            },
+            sqlite3: {
+              sql: 'select * from `users` where json_extract(`address`, ?) > ?',
+              bindings: ['$.street.number', 5],
+            },
+          }
+        );
+      });
+
+      it('where a json column is a superset of value', async function () {
+        testsql(
+          qb()
+            .select()
+            .from('users')
+            .whereJsonSupersetOf('address', { test: 'value' }),
+          {
+            pg: {
+              sql: 'select * from "users" where "address" @> ?',
+              bindings: ['{"test":"value"}'],
+            },
+          }
+        );
+      });
+
+      it('where a json column is a superset of another json column', async function () {
+        testsql(
+          qb()
+            .select()
+            .from('users')
+            .whereJsonSupersetOf('address', 'address2'),
+          {
+            pg: 'select * from "users" where "address" @> ?',
+          }
+        );
+      });
+
+      it('where a json column is not a superset of value', async function () {
+        testsql(
+          qb()
+            .select()
+            .from('users')
+            .whereJsonNotSupersetOf('address', { test: 'value' }),
+          {
+            pg: {
+              sql: 'select * from "users" where not "address" @> ?',
+              bindings: ['{"test":"value"}'],
+            },
+          }
+        );
+      });
+
+      it('where a json column be a subset of value', async function () {
+        testsql(
+          qb()
+            .select()
+            .from('users')
+            .whereJsonSubsetOf('address', { test: 'value' }),
+          {
+            pg: {
+              sql: 'select * from "users" where "address" <@ ?',
+              bindings: ['{"test":"value"}'],
+            },
+          }
+        );
+      });
+
+      it('where a json column is not subset of value', async function () {
+        testsql(
+          qb()
+            .select()
+            .from('users')
+            .whereJsonNotSubsetOf('address', { test: 'value' }),
+          {
+            pg: {
+              sql: 'select * from "users" where not "address" <@ ?',
+              bindings: ['{"test":"value"}'],
+            },
+          }
+        );
+      });
     });
   });
 });
