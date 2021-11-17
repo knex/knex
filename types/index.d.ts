@@ -2003,6 +2003,9 @@ export declare namespace Knex {
     renameColumn(from: string, to: string): TableBuilder;
     integer(columnName: string, length?: number): ColumnBuilder;
     tinyint(columnName: string, length?: number): ColumnBuilder;
+    smallint(columnName: string): ColumnBuilder;
+    mediumint(columnName: string): ColumnBuilder;
+    bigint(columnName: string): ColumnBuilder;
     bigInteger(columnName: string): ColumnBuilder;
     text(columnName: string, textType?: string): ColumnBuilder;
     string(columnName: string, length?: number): ColumnBuilder;
