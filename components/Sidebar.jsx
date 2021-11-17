@@ -298,7 +298,6 @@ export default class Sidebar extends Component {
           <li><b><a href="#Interfaces-Promises">Promises</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Interfaces-then">then</a></li>
           <li>&nbsp;&nbsp;– <a href="#Interfaces-catch">catch</a></li>
-          <li>&nbsp;&nbsp;– <a href="#Interfaces-return">return</a></li>
           <li><b><a href="#Interfaces-Callbacks">Callbacks</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Interfaces-asCallback">asCallback</a></li>
           <li><b><a href="#Interfaces-Streams">Streams</a></b></li>
