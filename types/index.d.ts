@@ -2075,11 +2075,13 @@ export declare namespace Knex {
       columns: readonly string[],
       foreignKeyName?: string
     ): MultikeyForeignConstraintBuilder;
+    check(checkPredicate: string, bindings?: any[], constraintName?: string) : TableBuilder;
     dropForeign(columnNames: string | readonly string[], foreignKeyName?: string): TableBuilder;
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropTimestamps(): TableBuilder;
+    dropChecks(checkConstraintNames: string | string[]): TableBuilder;
     queryContext(context: any): TableBuilder;
   }
 
@@ -2132,7 +2134,16 @@ export declare namespace Knex {
     queryContext(context: any): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
+    check(checkPredicate: string, bindings?: any, constraintName?: string): ColumnBuilder;
+    checkPositive(constraintName?: string): ColumnBuilder;
+    checkNegative(constraintName?: string): ColumnBuilder;
+    checkIn(values : string[], constraintName?: string): ColumnBuilder;
+    checkNotIn(values : string[], constraintName?: string): ColumnBuilder;
+    checkBetween(values : any[] | any[][], constraintName?: string): ColumnBuilder;
+    checkLength(operator : string, length: number, constraintName?: string): ColumnBuilder;
+    checkRegex(regex: string, constraintName?: string): ColumnBuilder;
   }
+
   interface ForeignConstraintBuilder {
     references(columnName: string): ReferencingColumnBuilder;
   }
