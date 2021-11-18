@@ -828,9 +828,9 @@ describe('Schema (misc)', () => {
               }
               table.integer('integer_column', 5);
               table.tinyint('tinyint_column', 5);
-              table.smallint('smallint_column', 5);
-              table.mediumint('mediumint_column', 5);
-              table.bigint('bigint_column', 5);
+              table.smallint('smallint_column');
+              table.mediumint('mediumint_column');
+              table.bigint('bigint_column');
             })
             .testSql((tester) => {
               tester('mysql', [
