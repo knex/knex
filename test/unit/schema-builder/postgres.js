@@ -1671,6 +1671,34 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo');
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" uuid'
+    );
+  });
+
+  it('adding binary uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo', { useBinaryUuid: true });
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" uuid'
+    );
+  });
+
   it('set comment', function () {
     tableSql = client
       .schemaBuilder()

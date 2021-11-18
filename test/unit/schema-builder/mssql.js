@@ -1167,6 +1167,32 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo');
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD [foo] uniqueidentifier'
+    );
+  });
+
+  it('adding binary uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo', { useBinaryUuid: true });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'ALTER TABLE [users] ADD [foo] binary(16)');
+  });
+
   it('is possible to set raw statements in defaultTo, #146', function () {
     tableSql = client
       .schemaBuilder()
