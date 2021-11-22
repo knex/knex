@@ -2605,6 +2605,17 @@ export declare namespace Knex {
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
+  interface Seed {
+    seed: (knex: Knex) => PromiseLike<any>;
+  }
+
+  interface SeedSource<TSeedSpec> {
+    getSeeds(loadExtensions: readonly string[], recursive?: boolean, runSpecificSeed?: boolean): Promise<TSeedSpec[]>;
+    getSeedName(seed: TSeedSpec): string;
+    getSeed(seed: TSeedSpec): Seed;
+    validateSeedStructure(filepath: string): Promise<void>
+  }
+
   interface SeederConfig<V extends {} = any> {
     extension?: string;
     directory?: string | readonly string[];
@@ -2615,6 +2626,7 @@ export declare namespace Knex {
     sortDirsSeparately?: boolean;
     stub?: string;
     variables?: V;
+    seedSource?: SeedSource<unknown>;
   }
 
   class Seeder {
