@@ -2606,7 +2606,7 @@ export declare namespace Knex {
   }
 
   interface Seed {
-    seed: (knex: Knex) => PromiseLike<any>;
+    seed: (knex: Knex) => PromiseLike<void>;
   }
 
   interface SeedSource<TSeedSpec> {
