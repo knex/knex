@@ -2610,8 +2610,7 @@ export declare namespace Knex {
   }
 
   interface SeedSource<TSeedSpec> {
-    getSeeds(loadExtensions: readonly string[], recursive?: boolean, runSpecificSeed?: boolean): Promise<TSeedSpec[]>;
-    getSeedName(seed: TSeedSpec): string;
+    getSeeds(config: SeederConfig): Promise<TSeedSpec[]>;
     getSeed(seed: TSeedSpec): Promise<Seed>;
     validateSeedStructure(filepath: string): Promise<void>;
   }
