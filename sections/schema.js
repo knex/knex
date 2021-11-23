@@ -671,6 +671,10 @@ export default [
       type: 'code',
       language: 'js',
       content: `table.enu('column', null, { useNative: true, existingType: true, enumName: 'foo_type', schemaName: 'public' })`
+    }, {
+      type: 'text',
+      language: 'js',
+      content: `Knex does not provide any way to alter enumerations after creation. To change an enumeration later on you must use Knex.raw, and the appropriate command for your database.`
     }
     ]
   },
