@@ -2612,7 +2612,6 @@ export declare namespace Knex {
   interface SeedSource<TSeedSpec> {
     getSeeds(config: SeederConfig): Promise<TSeedSpec[]>;
     getSeed(seed: TSeedSpec): Promise<Seed>;
-    validateSeedStructure(filepath: string): Promise<void>;
   }
 
   interface SeederConfig<V extends {} = any> {
