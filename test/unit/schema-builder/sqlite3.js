@@ -110,14 +110,30 @@ describe('SQLite SchemaBuilder', function () {
     });
 
     it('create view or replace', async function () {
-      expect(() => {
-        tableSql = client
-          .schemaBuilder()
-          .view('users', function (view) {
-            view.column('oldName').rename('newName').defaultTo('10');
-          })
-          .toSQL();
-      }).to.throw('rename column of views is not supported by this dialect.');
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "DROP VIEW IF EXISTS `adults`; CREATE VIEW `adults` (`name`) AS select `name` from `users` where `age` > '18'"
+      );
+    });
+
+    it('create view or replace without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "DROP VIEW IF EXISTS `adults`; CREATE VIEW `adults` AS select `name` from `users` where `age` > '18'"
+      );
     });
 
     it('create view with check options', async function () {

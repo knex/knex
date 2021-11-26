@@ -143,6 +143,13 @@ describe('Views', () => {
                   "create or replace view `view_test` (`a`, `b`) as select `a`, `b` from `table_view` where `b` > '10'",
                 ]
               );
+              tester(
+                ['sqlite3'],
+                [
+                  'drop view if exists `view_test`',
+                  "create view `view_test` (`a`, `b`) as select `a`, `b` from `table_view` where `b` > '10'",
+                ]
+              );
               tester('mssql', [
                 "CREATE OR ALTER VIEW [view_test] ([a], [b]) AS select [a], [b] from [table_view] where [b] > '10'",
               ]);
@@ -175,9 +182,16 @@ describe('Views', () => {
                 ]
               );
               tester(
-                ['sqlite3', 'mysql'],
+                ['mysql'],
                 [
                   "create or replace view `view_test` as select `a`, `b` from `table_view` where `b` > '10'",
+                ]
+              );
+              tester(
+                ['sqlite3'],
+                [
+                  'drop view if exists `view_test`',
+                  "create view `view_test` as select `a`, `b` from `table_view` where `b` > '10'",
                 ]
               );
               tester('mssql', [
