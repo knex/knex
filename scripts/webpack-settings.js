@@ -1,4 +1,4 @@
-import ExtractTextPlugin from 'extract-text-webpack-plugin'
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 import ip from 'ip'
 import webpack from 'webpack'
 import yargs from 'yargs'
@@ -24,9 +24,9 @@ const devEntryBundle = [
   entryFile,
 ]
 const plugins = [
-  new webpack.IgnorePlugin(/package\.json/, /mssql/),
+  new webpack.IgnorePlugin({resourceRegExp : /package\.json/, contextRegExp : /mssql/}),
   new webpack.NoEmitOnErrorsPlugin(),
-  new ExtractTextPlugin('[name].css'),
+  new MiniCssExtractPlugin({filename: '[name].css'}),
   new webpack.DefinePlugin({
     'process.env': {
       NODE_ENV: JSON.stringify(options.optimizeMinimize ? 'production' : 'development')
@@ -38,6 +38,21 @@ export default {
 
   resolve: {
     extensions: ['.js', '.jsx'],
+    preferRelative: true,
+    fallback: {
+      "timers": false,
+      "util": false,
+      "tty": false,
+      "crypto": false,
+      "path-browserify": false,
+      "stream-browserify": false,
+      "os-browserify": false,
+      "assert": false,
+      "stream": false,
+      "os": false,
+      "path": false,
+      "fs": false
+    }
   },
 
   devtool: 'source-map',
@@ -51,10 +66,6 @@ export default {
     path: path.join(__dirname, '../build'),
     publicPath: options.debug ? `${webpackDevServerAddress}/build/` : '/build/',
   },
-  
-  node: {
-    fs: 'empty',
-  },
 
   module: {
     rules: [
@@ -66,24 +77,27 @@ export default {
         test: /\.jsx?$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
-        query: {
+        options: {
           cacheDirectory: true
         }
       },
       {
         test: /\.css/,
-        loader: ExtractTextPlugin.extract({ 
-          fallback: 'style-loader', 
-          use: `css-loader${cssSourceMap}` 
-        })
+        use: [MiniCssExtractPlugin.loader, `css-loader${cssSourceMap}`],
       },
       {
         test: /\.jpe?g$|\.gif$|\.png|\.ico$/,
-        loader: 'file?name=[name].[ext]'
+        loader: 'file',
+        options: {
+          name : '[name].[ext]'
+        }
       },
       {
         test: /\.eot$|\.ttf$|\.svg$|\.woff2?$/,
-        loader: 'file?name=[name].[ext]'
+        loader: 'file',
+        options: {
+          name : '[name].[ext]'
+        }
       },
       {
         test: /ansi-styles|chalk|tarn/,

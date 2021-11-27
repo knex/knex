@@ -218,7 +218,7 @@ export default [
       {
         type: "runnable",
         content: `
-          knex.schema.refreshMaterializedView('users_view');
+          knex.schema.refreshMaterializedView('users_view')
         `
       }
     ]
@@ -232,7 +232,7 @@ export default [
       {
         type: "runnable",
         content: `
-          knex.schema.dropView('users_view');
+          knex.schema.dropView('users_view')
         `
       }
     ]
@@ -246,7 +246,7 @@ export default [
       {
         type: "runnable",
         content: `
-          knex.schema.dropViewIfExists('users_view');
+          knex.schema.dropViewIfExists('users_view')
         `
       }
     ]
@@ -260,7 +260,7 @@ export default [
       {
         type: "runnable",
         content: `
-          knex.schema.dropMaterializedView('users_view');
+          knex.schema.dropMaterializedView('users_view')
         `
       }
     ]
@@ -274,7 +274,7 @@ export default [
       {
         type: "runnable",
         content: `
-          knex.schema.dropMaterializedViewIfExists('users_view');
+          knex.schema.dropMaterializedViewIfExists('users_view')
         `
       }
     ]
@@ -288,7 +288,7 @@ export default [
       {
         type: "runnable",
         content: `
-          knex.schema.renameView('users_view');
+          knex.schema.renameView('users_view')
         `
       }
     ]

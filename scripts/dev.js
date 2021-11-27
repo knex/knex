@@ -16,15 +16,14 @@ portfinder.getPorts(2, {}, (portFinderErr, [docsPort, webpackPort]) => {
     process.exit(1)
   }
 
-  formatOutputStream('webpack-dev-server', execa('nodemon', [
+  formatOutputStream('webpack serve', execa('nodemon', [
       '--watch', 'webpack',
       '--watch', 'scripts/webpack.config.js',
-      '--exec', 'webpack-dev-server',
+      '--exec', 'webpack serve',
       '--',
       '--config', 'scripts/webpack.config.js',
       '--color',
       '--port', webpackPort,
-      '--debug',
       '--hot',
       '--host', ip.address()
   ]))
