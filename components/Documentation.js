@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 
 import Section from './Section'
 import Container from './Container'
@@ -20,6 +20,7 @@ import upgrading from '../sections/upgrading'
 import utility from '../sections/utility'
 import typescriptSupport from '../sections/typescript-support'
 import parseChangeLog from '../util/parseChangeLog'
+import PropTypes from "prop-types";
 
 const constants = {
   projectUrl: 'https://github.com/knex/knex',

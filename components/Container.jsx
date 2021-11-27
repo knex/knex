@@ -1,10 +1,11 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 
 import Knex from 'knex'
 
 import Sidebar from './Sidebar'
 import LanguageSelect from './LanguageSelect'
 import Fork from './Fork'
+import PropTypes from "prop-types";
 
 export default class Container extends Component {
 
@@ -47,14 +48,11 @@ export default class Container extends Component {
     }
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.initKnex()
     if (typeof window !== 'undefined') {
       window.Knex = Knex
     }
-  }
-
-  componentDidMount() {
     const next = localStorage.knexLanguage
     if (next && next !== 'mysql') {
       this.changeLanguage(next)

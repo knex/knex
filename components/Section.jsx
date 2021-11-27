@@ -1,5 +1,6 @@
-import React, { PropTypes, Component } from 'react'
+import React, { Component } from 'react'
 import prepareTree from '../util/prepareTree'
+import PropTypes from "prop-types";
 
 export default class Section extends Component {
 

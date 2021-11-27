@@ -1,6 +1,7 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component} from 'react'
 import dedent from 'dedent'
 import {js, sql, ts} from '../util/highlight'
+import PropTypes from "prop-types";
 
 export default class Code extends Component {
 

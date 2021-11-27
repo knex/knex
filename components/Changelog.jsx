@@ -1,6 +1,7 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 import List from './List'
 import marked from '../util/marked'
+import PropTypes from "prop-types";
 
 export default class Changelog extends Component {
 

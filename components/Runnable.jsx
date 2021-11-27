@@ -1,6 +1,7 @@
-import React, { PropTypes, Component } from 'react'
+import React, { Component } from 'react'
 import dedent from 'dedent'
 import {sql, js} from '../util/highlight'
+import PropTypes from "prop-types";
 
 export default class Runnable extends Component {
 

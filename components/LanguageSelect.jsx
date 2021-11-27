@@ -1,9 +1,10 @@
-import React, { PropTypes, Component } from 'react'
+import React, { Component } from 'react'
+import PropTypes, {oneOf} from "prop-types";
 
 export default class LanguageSelect extends Component {
 
   static propTypes = {
-    language: PropTypes.oneOf([
+    language: oneOf([
       'mysql', 'pg', 'redshift', 'sqlite3', 'oracle', 'mssql', 'cockroachdb'
     ]).isRequired,
     changeLanguage: PropTypes.func.isRequired

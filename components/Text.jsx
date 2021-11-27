@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import marked from '../util/marked'
+import PropTypes, {oneOfType} from "prop-types";
 
 export default class Text extends Component {
 
   static propTypes = {
-    content: React.PropTypes.oneOfType([
-      React.PropTypes.string,
-      React.PropTypes.array
+    content: oneOfType([
+      PropTypes.string,
+      PropTypes.array
     ])
   };
 
