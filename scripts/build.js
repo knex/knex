@@ -15,7 +15,6 @@ formatOutputStream('docs-server', execa('babel-node', [
 ], {env}))
 
 formatOutputStream('webpack', execa('webpack', [
-  '-p',
   '--config', 'scripts/webpack.config.js',
   '--color'
 ], {env}))
