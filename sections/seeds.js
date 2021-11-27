@@ -20,6 +20,9 @@ export default [
       "`recursive`: if true, will find seed files recursively in the directory / directories specified",
       "`specific`: a specific seed file or an array of seed files to run from the seeds directory, if its value is `undefined` it will run all the seeds (default `undefined`). If an array is specified, seed files will be run in the same order as the array",
       "`sortDirsSeparately`: if true and multiple directories are specified, all seeds from a single directory will be executed before executing seeds in the next folder (default `false`)",
+      "`seedSource`: specify a custom seed source, see [Custom Seed Source](#custom-seed-sources) for more info (default filesystem)",
+      "`extension`: extension to be used for newly generated seeds (default `js`)",
+      "`timestampFilenamePrefix`: whether timestamp should be added as a prefix for newly generated seeds (default `false`)",
     ]
   },
   {
@@ -41,5 +44,42 @@ export default [
     example: "knex.seed.run([config])",
     description: "Runs all seed files for the current environment.",
     children: [    ]
+  },
+  {
+    type: "heading",
+    size: "md",
+    content: "Custom seed sources",
+    href: "custom-seed-sources"
+  },
+  {
+    type: "text",
+    content:
+        "Knex supports custom seed sources, allowing you full control of where your seeds come from. This can be useful for custom folder structures, when bundling with webpack/browserify and other scenarios."
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      // Create a custom seed source class
+      class MySeedSource {
+        // Must return a Promise containing a list of seeds. 
+        // Seeds can be whatever you want, they will be passed as
+        // arguments to getSeed
+        getSeeds() {
+          // In this example we are just returning seed names
+          return Promise.resolve(['seed1'])
+        }
+
+        getSeed(seed) {
+          switch(seed) {
+            case 'seed1':
+              return (knex) => { /* ... */ }
+          }
+        }
+      }
+
+      // pass an instance of your seed source as knex config
+      knex.seed.run({ seedSource: new MySeedSource() })
+    `
   }
 ]
