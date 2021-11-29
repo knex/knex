@@ -59,10 +59,13 @@ function isCockroachDB(knex) {
   return getDriverName(knex) === drivers.CockroachDB;
 }
 
+function isBetterSQLite3(knex) {
+  return getDriverName(knex) === drivers.BetterSQLite3;
+}
 /**
  *
  * @param knex
- * @param {('pg'|'pgnative'|'pg-redshift'|'oracledb'|'mysql'|'mysql2'|'mssql'|'sqlite3'|'cockroachdb')[]} supportedDbs - supported DB values in DRIVER_NAMES from lib/constants.
+ * @param {('pg'|'pgnative'|'pg-redshift'|'oracledb'|'mysql'|'mysql2'|'mssql'|'sqlite3'|'cockroachdb'|'better-sqlite3')[]} supportedDbs - supported DB values in DRIVER_NAMES from lib/constants.
  * @returns {*}
  */
 function isOneOfDbs(knex, supportedDbs) {
@@ -82,4 +85,5 @@ module.exports = {
   isPgBasedDriverName,
   isRedshift,
   isSQLite,
+  isBetterSQLite3,
 };
