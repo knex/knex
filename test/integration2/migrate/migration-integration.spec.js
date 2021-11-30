@@ -1332,7 +1332,7 @@ describe('Migrations', function () {
         it('should insert is_locked value to 1 if lock table not exists', async () => {
           const result = await ensureTable('test', undefined, knex);
 
-          expect(result.rowCount).is.equal(1);
+          expect(!!(result || result.length)).is.true;
           const data = await knex('test_lock').select('*');
           expect(data[0]).to.have.property('is_locked');
           expect(Number.parseInt(data[0].is_locked)).to.not.be.ok;
