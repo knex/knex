@@ -25,6 +25,9 @@ const {
 } = require('../../util/db-helpers');
 const { assertNumber } = require('../../util/assertHelper');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const {
+  ensureTable,
+} = require('../../../lib/migrations/migrate/table-creator');
 
 describe('Migrations', function () {
   getAllDbs().forEach((db) => {
@@ -1318,6 +1321,35 @@ describe('Migrations', function () {
               directory: 'test/integration2/migrate/test',
             });
           }
+        });
+      });
+
+      describe('Test lock row', async () => {
+        beforeEach(async () => {
+          await knex.schema.dropTableIfExists('test_lock');
+        });
+
+        it('should insert is_locked value to 1 if lock table not exists', async () => {
+          const result = await ensureTable('test', undefined, knex);
+
+          expect(result.rowCount).is.equal(1);
+          const data = await knex('test_lock').select('*');
+          expect(data[0]).to.have.property('is_locked');
+          expect(Number.parseInt(data[0].is_locked)).to.not.be.ok;
+        });
+
+        it('should is_locked value still be 1 if row already exists', async () => {
+          await knex.schema.createTable('test_lock', (t) => {
+            t.increments('index').primary();
+            t.integer('is_locked');
+          });
+          await knex('test_lock').insert({ is_locked: 1 });
+
+          const result = await ensureTable('test', undefined, knex);
+          expect(result).to.false;
+          const data = await knex('test_lock').select('*');
+          expect(data[0]).to.have.property('is_locked');
+          expect(Number.parseInt(data[0].is_locked)).to.be.ok;
         });
       });
     });
