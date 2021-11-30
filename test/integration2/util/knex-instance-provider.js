@@ -12,6 +12,7 @@ const Db = {
   SQLite: 'sqlite3',
   Oracle: 'oracledb',
   CockroachDB: 'cockroachdb',
+  BetterSqlite3: 'better-sqlite3',
 };
 
 const defaultDbs = [
@@ -22,6 +23,7 @@ const defaultDbs = [
   Db.SQLite,
   Db.MSSQL,
   Db.CockroachDB,
+  Db.BetterSqlite3,
 ];
 
 function getAllDbs() {
@@ -40,6 +42,16 @@ const poolSqlite = {
   acquireTimeoutMillis: 1000,
   afterCreate: function (connection, callback) {
     connection.run('PRAGMA foreign_keys = ON', callback);
+  },
+};
+
+const poolBetterSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function (connection, callback) {
+    connection.prepare('PRAGMA foreign_keys = ON').run();
+    callback(null, connection);
   },
 };
 
@@ -145,6 +157,14 @@ const testConfigs = {
     seeds,
   },
 
+  'better-sqlite3': {
+    client: 'better-sqlite3',
+    connection: testConfig.sqlite3 || ':memory:',
+    pool: poolBetterSqlite,
+    migrations,
+    seeds,
+  },
+
   mssql: {
     client: 'mssql',
     connection: testConfig.mssql || {
@@ -174,6 +194,7 @@ const testConfigs = {
 };
 
 function getKnexForDb(db, configOverrides = {}) {
+  console.log(db);
   const config = testConfigs[db];
   return knex({
     ...config,
