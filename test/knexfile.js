@@ -11,7 +11,7 @@ const _ = require('lodash');
 const testIntegrationDialects = (
   process.env.DB ||
   'sqlite3 postgres pgnative mysql mysql2 mssql oracledb cockroachdb better-sqlite3'
-).match(/\w+/g);
+).match(/[\w-]+/g);
 
 console.log(`ENV DB: ${process.env.DB}`);
 
@@ -38,7 +38,7 @@ const poolBetterSqlite = {
   acquireTimeoutMillis: 1000,
   afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
-    connection.prepare('PRAGMA foreign_keys = ON', callback).run();
+    connection.prepare('PRAGMA foreign_keys = ON').run();
     callback(null, connection);
   },
 };
@@ -175,7 +175,7 @@ const testConfigs = {
     seeds,
   },
 
-  better: {
+  'better-sqlite3': {
     client: 'better-sqlite3',
     connection: testConfig.sqlite3 || {
       filename: __dirname + '/test.sqlite3',
@@ -204,6 +204,7 @@ const testConfigs = {
 module.exports = _.reduce(
   testIntegrationDialects,
   function (res, dialectName) {
+    console.log(dialectName);
     res[dialectName] = testConfigs[dialectName];
     return res;
   },
