@@ -388,13 +388,28 @@ describe('Additional', function () {
             t.uuid('uuid_col_binary', { useBinaryUuid: true });
           });
           const originalUuid = '3f06af63-a93c-11e4-9797-00505690773f';
+
+          let uuidToInsert;
+
+          if (isPostgreSQL(knex) || isCockroachDB(knex)) {
+            uuidToInsert = originalUuid;
+          } else {
+            uuidToInsert = knex.fn.uuidToBin(originalUuid);
+          }
+
           await knex('uuid_table').insert({
-            uuid_col_binary: knex.fn.uuidToBin(originalUuid),
+            uuid_col_binary: uuidToInsert,
           });
           const uuid = await knex('uuid_table').select('uuid_col_binary');
-          expect(knex.fn.binToUuid(uuid[0].uuid_col_binary)).to.equal(
-            originalUuid
-          );
+
+          let expectedUuid;
+          if (isPostgreSQL(knex) || isCockroachDB(knex)) {
+            expectedUuid = uuid[0].uuid_col_binary;
+          } else {
+            expectedUuid = knex.fn.binToUuid(uuid[0].uuid_col_binary);
+          }
+
+          expect(expectedUuid).to.equal(originalUuid);
         });
 
         it('#2184 - should properly escape table name for SQLite columnInfo', function () {
