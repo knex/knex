@@ -375,6 +375,28 @@ describe('Additional', function () {
           expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
         });
 
+        it('should allow using .fn-methods to convert uuid to binary', function () {
+          const originalUuid = '6c825dc9-c98f-37ab-b01b-416294811a84';
+          const binary = knex.fn.uuidToBin(originalUuid);
+          const uuid = knex.fn.binToUuid(binary);
+          expect(uuid).to.equal(originalUuid);
+        });
+
+        it('should insert binary uuid and retreive it', async () => {
+          await knex.schema.dropTableIfExists('uuid_table');
+          await knex.schema.createTable('uuid_table', (t) => {
+            t.uuid('uuid_col_binary', { useBinaryUuid: true });
+          });
+          const originalUuid = '3f06af63-a93c-11e4-9797-00505690773f';
+          await knex('uuid_table').insert({
+            uuid_col_binary: knex.fn.uuidToBin(originalUuid),
+          });
+          const uuid = await knex('uuid_table').select('uuid_col_binary');
+          expect(knex.fn.binToUuid(uuid[0].uuid_col_binary)).to.equal(
+            originalUuid
+          );
+        });
+
         it('#2184 - should properly escape table name for SQLite columnInfo', function () {
           if (!isSQLite(knex)) {
             return this.skip();
