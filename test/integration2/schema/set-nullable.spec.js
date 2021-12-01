@@ -6,6 +6,7 @@ const {
   isSQLite,
   isPostgreSQL,
   isMysql,
+  isBetterSQLite3,
   isOracle,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
@@ -48,8 +49,8 @@ describe('Schema', () => {
               expect(queries.sql).to.eql([
                 'CREATE TABLE `_knex_temp_alter111` (`id_nullable` integer NULL, `id_not_nullable` integer)',
                 'INSERT INTO _knex_temp_alter111 SELECT * FROM primary_table;',
-                'DROP TABLE "primary_table"',
-                'ALTER TABLE "_knex_temp_alter111" RENAME TO "primary_table"',
+                "DROP TABLE 'primary_table'",
+                "ALTER TABLE '_knex_temp_alter111' RENAME TO 'primary_table'",
               ]);
             }
 
@@ -88,6 +89,9 @@ describe('Schema', () => {
               errorMessage = 'cannot be null';
             } else if (isOracle(knex)) {
               errorMessage = 'ORA-01400: cannot insert NULL into';
+            } else if (isBetterSQLite3(knex)) {
+              errorMessage =
+                'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - NOT NULL constraint failed: primary_table.id_nullable';
             } else if (isSQLite(knex)) {
               errorMessage =
                 'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - SQLITE_CONSTRAINT: NOT NULL constraint failed: primary_table.id_nullable';

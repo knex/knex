@@ -52,7 +52,10 @@ function isRedshift(knex) {
 }
 
 function isSQLite(knex) {
-  return getDriverName(knex) === drivers.SQLite;
+  return (
+    getDriverName(knex) === drivers.SQLite ||
+    getDriverName(knex) === drivers.BetterSQLite3
+  );
 }
 
 function isCockroachDB(knex) {
