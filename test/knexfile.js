@@ -204,7 +204,6 @@ const testConfigs = {
 module.exports = _.reduce(
   testIntegrationDialects,
   function (res, dialectName) {
-    console.log(dialectName);
     res[dialectName] = testConfigs[dialectName];
     return res;
   },

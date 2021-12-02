@@ -194,7 +194,6 @@ const testConfigs = {
 };
 
 function getKnexForDb(db, configOverrides = {}) {
-  console.log(db);
   const config = testConfigs[db];
   return knex({
     ...config,
