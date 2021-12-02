@@ -5,8 +5,6 @@ const logger = require('./logger');
 const config = require('../knexfile');
 const fs = require('fs');
 
-console.log(config);
-
 Object.keys(config).forEach((dialectName) => {
   console.log(`Loading integration suite for dialect ${dialectName}`);
   const resolvedConfig = config[dialectName];
