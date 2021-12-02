@@ -1207,6 +1207,7 @@ describe('Selects', function () {
                 'sqlite3',
                 'oracledb',
                 'cockroachdb',
+                'better-sqlite3',
               ]);
 
               if (knex.client.driverName !== 'cockroachdb') {
