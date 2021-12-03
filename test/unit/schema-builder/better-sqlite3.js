@@ -5,8 +5,8 @@ const { expect } = require('chai');
 let tableSql;
 
 const sinon = require('sinon');
-const SQLite3_Client = require('../../../lib/dialects/better-sqlite3');
-const client = new SQLite3_Client({ client: 'better-sqlite3' });
+const Client_BetterSQLite3 = require('../../../lib/dialects/better-sqlite3');
+const client = new Client_BetterSQLite3({ client: 'better-sqlite3' });
 const {
   parseCreateTable,
   parseCreateIndex,
@@ -20,7 +20,7 @@ const _ = require('lodash');
 const { equal, deepEqual } = require('assert');
 const knex = require('../../../knex');
 
-describe('SQLite SchemaBuilder', function () {
+describe('BetterSQLite3 SchemaBuilder', function () {
   it('basic create table', function () {
     tableSql = client
       .schemaBuilder()
