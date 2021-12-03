@@ -13,6 +13,7 @@ const {
   isMssql,
   isCockroachDB,
   isPostgreSQL,
+  isBetterSQLite3,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
@@ -1305,6 +1306,9 @@ describe('Schema (misc)', () => {
               tester('pg-redshift', [
                 'create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')',
               ]);
+              tester('better-sqlite3', [
+                "create table `bool_test` (`one` boolean, `two` boolean default '0', `three` boolean default '1', `four` boolean default '1', `five` boolean default '0')",
+              ]);
               tester('sqlite3', [
                 "create table `bool_test` (`one` boolean, `two` boolean default '0', `three` boolean default '1', `four` boolean default '1', `five` boolean default '0')",
               ]);
@@ -1784,6 +1788,15 @@ describe('Schema (misc)', () => {
               );
 
               const autoinc = !!res.rows[0].ident;
+              expect(autoinc).to.equal(true);
+            } else if (isBetterSQLite3(knex)) {
+              const res = await knex.raw(
+                `SELECT 'is-autoincrement' as ident
+                       FROM sqlite_master
+                       WHERE tbl_name = ? AND sql LIKE '%AUTOINCREMENT%'`,
+                [tableName]
+              );
+              const autoinc = !!res[0].ident;
               expect(autoinc).to.equal(true);
             } else if (isSQLite(knex)) {
               const res = await knex.raw(

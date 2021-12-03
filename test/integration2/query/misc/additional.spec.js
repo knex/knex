@@ -350,6 +350,8 @@ describe('Additional', function () {
               "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
             [drivers.Redshift]:
               "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+            [drivers.BetterSQLite3]:
+              "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.SQLite]:
               "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
