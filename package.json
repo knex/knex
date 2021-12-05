@@ -95,6 +95,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.11.6",
+    "@vscode/sqlite3": "^5.0.7",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^3.1.0",
@@ -122,7 +123,6 @@
     "sinon": "^12.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.20",
-    "sqlite3": "npm:@vscode/sqlite3@^5.0.7",
     "tap-spec": "^5.0.0",
     "tape": "^5.3.1",
     "tedious": "^12.2.0",
