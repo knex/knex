@@ -85,7 +85,7 @@ services:
       - 'until /usr/local/bin/psql postgres://testuser:knextest@postgres/knex_test -c "SELECT 1"; do sleep 5; done'
 
   cockroachdb:
-    image: cockroachdb/cockroach:latest-v21.1
+    image: cockroachdb/cockroach:latest-v21.2
     container_name: crdb
     hostname: crdb
     command: start-single-node --cluster-name=example-single-node --insecure
