@@ -2139,7 +2139,7 @@ export declare namespace Knex {
     checkNegative(constraintName?: string): ColumnBuilder;
     checkIn(values: string[], constraintName?: string): ColumnBuilder;
     checkNotIn(values: string[], constraintName?: string): ColumnBuilder;
-    checkBetween(values:  any[] | any[][], constraintName?: string): ColumnBuilder;
+    checkBetween(values: any[] | any[][], constraintName?: string): ColumnBuilder;
     checkLength(operator: string, length: number, constraintName?: string): ColumnBuilder;
     checkRegex(regex: string, constraintName?: string): ColumnBuilder;
   }
