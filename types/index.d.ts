@@ -2075,7 +2075,7 @@ export declare namespace Knex {
       columns: readonly string[],
       foreignKeyName?: string
     ): MultikeyForeignConstraintBuilder;
-    check(checkPredicate: string, bindings?: any[], constraintName?: string) : TableBuilder;
+    check(checkPredicate: string, bindings?: any[], constraintName?: string): TableBuilder;
     dropForeign(columnNames: string | readonly string[], foreignKeyName?: string): TableBuilder;
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
@@ -2137,10 +2137,10 @@ export declare namespace Knex {
     check(checkPredicate: string, bindings?: any, constraintName?: string): ColumnBuilder;
     checkPositive(constraintName?: string): ColumnBuilder;
     checkNegative(constraintName?: string): ColumnBuilder;
-    checkIn(values : string[], constraintName?: string): ColumnBuilder;
-    checkNotIn(values : string[], constraintName?: string): ColumnBuilder;
-    checkBetween(values : any[] | any[][], constraintName?: string): ColumnBuilder;
-    checkLength(operator : string, length: number, constraintName?: string): ColumnBuilder;
+    checkIn(values: string[], constraintName?: string): ColumnBuilder;
+    checkNotIn(values: string[], constraintName?: string): ColumnBuilder;
+    checkBetween(values:  any[] | any[][], constraintName?: string): ColumnBuilder;
+    checkLength(operator: string, length: number, constraintName?: string): ColumnBuilder;
     checkRegex(regex: string, constraintName?: string): ColumnBuilder;
   }
 
