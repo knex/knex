@@ -6717,6 +6717,34 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('lock only some tables for update (with array #4878)', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('foo')
+        .where('bar', '=', 'baz')
+        .forUpdate(['lo', 'rem']),
+      {
+        mysql: {
+          sql: 'select * from `foo` where `bar` = ? for update',
+          bindings: ['baz'],
+        },
+        pg: {
+          sql: 'select * from "foo" where "bar" = ? for update of "lo", "rem"',
+          bindings: ['baz'],
+        },
+        mssql: {
+          sql: 'select * from [foo] with (UPDLOCK) where [bar] = ?',
+          bindings: ['baz'],
+        },
+        oracledb: {
+          sql: 'select * from "foo" where "bar" = ? for update',
+          bindings: ['baz'],
+        },
+      }
+    );
+  });
+
   it('lock for update with skip locked #1937', () => {
     testsql(qb().select('*').from('foo').first().forUpdate().skipLocked(), {
       mysql: {
