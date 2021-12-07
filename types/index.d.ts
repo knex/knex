@@ -914,7 +914,7 @@ export declare namespace Knex {
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: string | readonly string[],
+      column: string | readonly (string | Raw)[] | Raw,
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -1007,7 +1007,7 @@ export declare namespace Knex {
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = any>(
-      returning: string | readonly string[],
+      returning: string | readonly (string | Raw)[] | Raw,
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
@@ -1781,7 +1781,7 @@ export declare namespace Knex {
     ): BatchInsertBuilder<TRecord, TResult2>;
     // if data with specific type passed, exclude this method
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: unknown extends TRecord ? string | readonly string[] : never
+      column: unknown extends TRecord ? string | readonly (string | Raw)[] | Raw: never
     ): BatchInsertBuilder<TRecord, TResult2>;
   }
 
