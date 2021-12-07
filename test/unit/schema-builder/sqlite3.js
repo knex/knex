@@ -894,6 +894,34 @@ describe('SQLite SchemaBuilder', function () {
     equal(tableSql[0].sql, 'alter table `users` add column `foo` blob');
   });
 
+  it('adding uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo');
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table `users` add column `foo` char(36)'
+    );
+  });
+
+  it('adding binary uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo', { useBinaryUuid: true });
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table `users` add column `foo` binary(16)'
+    );
+  });
+
   it('allows for on delete cascade with foreign keys, #166', function () {
     tableSql = client
       .schemaBuilder()
