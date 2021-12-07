@@ -289,6 +289,9 @@ export default class Sidebar extends Component {
         </a>
         <ul className="toc_section">
           <li>- <a href="#Utility-BatchInsert">Batch Insert</a></li>
+          <li>- <a href="#Utility-now">now</a></li>
+          <li>- <a href="#Utility-binToUuid">binToUuid</a></li>
+          <li>- <a href="#Utility-uuidToBin">uuidToBin</a></li>
         </ul>
 
         <a className="toc_title" href="#Interfaces">

@@ -709,8 +709,8 @@ export default [
   {
     type: "method",
     method: "uuid",
-    example: "table.uuid(name)",
-    description: "Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling back to a char(36) in other databases.",
+    example: "table.uuid(name, options=({[useBinaryUuid:boolean]})",
+    description: "Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling back to a char(36) in other databases by default. If useBinaryUuid is true, binary(16) is used. See uuidToBin function to convert uuid in binary before inserting and binToUuid to convert binary uuid to uuid.",
     children: [    ]
   },
   {
