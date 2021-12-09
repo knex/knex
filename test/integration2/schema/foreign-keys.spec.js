@@ -7,6 +7,7 @@ const {
   isPostgreSQL,
   isSQLite,
   isCockroachDB,
+  isBetterSQLite3,
 } = require('../../util/db-helpers');
 
 describe('Schema', () => {
@@ -76,8 +77,8 @@ describe('Schema', () => {
               expect(queries.sql).to.eql([
                 'CREATE TABLE `_knex_temp_alter111` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `fkey_two` integer NOT NULL, `fkey_three` integer NOT NULL, CONSTRAINT `fk_fkey_threeee` FOREIGN KEY (`fkey_three`) REFERENCES `foreign_keys_table_three` (`id`))',
                 'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
-                'DROP TABLE "foreign_keys_table_one"',
-                'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
+                "DROP TABLE 'foreign_keys_table_one'",
+                "ALTER TABLE '_knex_temp_alter111' RENAME TO 'foreign_keys_table_one'",
               ]);
             }
 
@@ -112,8 +113,8 @@ describe('Schema', () => {
             expect(queries.sql).to.eql([
               'CREATE TABLE `_knex_temp_alter111` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `fkey_two` integer NOT NULL, `fkey_three` integer NOT NULL, CONSTRAINT `fk_fkey_threeee` FOREIGN KEY (`fkey_three`) REFERENCES `foreign_keys_table_three` (`id`) ON DELETE CASCADE)',
               'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
-              'DROP TABLE "foreign_keys_table_one"',
-              'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
+              "DROP TABLE 'foreign_keys_table_one'",
+              "ALTER TABLE '_knex_temp_alter111' RENAME TO 'foreign_keys_table_one'",
             ]);
           });
 
@@ -138,8 +139,8 @@ describe('Schema', () => {
             expect(queries.sql).to.eql([
               'CREATE TABLE `_knex_temp_alter111` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `fkey_two` integer NOT NULL, `fkey_three` integer NOT NULL, CONSTRAINT `fk_fkey_threeee` FOREIGN KEY (`fkey_three`) REFERENCES `foreign_keys_table_three` (`id`) ON UPDATE CASCADE)',
               'INSERT INTO _knex_temp_alter111 SELECT * FROM foreign_keys_table_one;',
-              'DROP TABLE "foreign_keys_table_one"',
-              'ALTER TABLE "_knex_temp_alter111" RENAME TO "foreign_keys_table_one"',
+              "DROP TABLE 'foreign_keys_table_one'",
+              "ALTER TABLE '_knex_temp_alter111' RENAME TO 'foreign_keys_table_one'",
             ]);
           });
 
@@ -199,7 +200,11 @@ describe('Schema', () => {
               });
               throw new Error("Shouldn't reach this");
             } catch (err) {
-              if (isSQLite(knex)) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (99, 9999) - FOREIGN KEY constraint failed`
+                );
+              } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (99, 9999) - SQLITE_CONSTRAINT_FOREIGNKEY: FOREIGN KEY constraint failed`
                 );
@@ -330,7 +335,11 @@ describe('Schema', () => {
                 });
                 throw new Error("Shouldn't reach this");
               } catch (err) {
-                if (isSQLite(knex)) {
+                if (isBetterSQLite3(knex)) {
+                  expect(err.message).to.equal(
+                    `insert into \`foreign_keys_table_one\` (\`fkey_four_part1\`, \`fkey_four_part2\`, \`fkey_three\`, \`fkey_two\`) values ('a', 'b', 99, 9999) - FOREIGN KEY constraint failed`
+                  );
+                } else if (isSQLite(knex)) {
                   expect(err.message).to.equal(
                     `insert into \`foreign_keys_table_one\` (\`fkey_four_part1\`, \`fkey_four_part2\`, \`fkey_three\`, \`fkey_two\`) values ('a', 'b', 99, 9999) - SQLITE_CONSTRAINT_FOREIGNKEY: FOREIGN KEY constraint failed`
                   );

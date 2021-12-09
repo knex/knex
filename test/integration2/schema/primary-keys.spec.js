@@ -4,6 +4,7 @@ const {
   isSQLite,
   isPgBased,
   isCockroachDB,
+  isBetterSQLite3,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
@@ -45,7 +46,11 @@ describe('Schema', () => {
               await knex('primary_table').insert({ id_four: 1 });
               throw new Error(`Shouldn't reach this`);
             } catch (err) {
-              if (isSQLite(knex)) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_four`) values (1) - UNIQUE constraint failed: primary_table.id_four'
+                );
+              } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_four'
                 );
@@ -76,7 +81,11 @@ describe('Schema', () => {
               await knex('primary_table').insert({ id_four: 1 });
               throw new Error(`Shouldn't reach this`);
             } catch (err) {
-              if (isSQLite(knex)) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_four`) values (1) - UNIQUE constraint failed: primary_table.id_four'
+                );
+              } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_four'
                 );
@@ -112,7 +121,11 @@ describe('Schema', () => {
             try {
               await knex('primary_table').insert({ id_two: 1, id_three: 1 });
             } catch (err) {
-              if (isSQLite(knex)) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                );
+              } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
@@ -154,7 +167,11 @@ describe('Schema', () => {
               try {
                 await knex('primary_table').insert({ id_two: 1, id_three: 1 });
               } catch (err) {
-                if (isSQLite(knex)) {
+                if (isBetterSQLite3(knex)) {
+                  expect(err.message).to.equal(
+                    'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                  );
+                } else if (isSQLite(knex)) {
                   expect(err.message).to.equal(
                     'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                   );

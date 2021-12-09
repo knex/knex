@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [17.x, 16.x, 14.x, 12.x]
-        database-type: [postgres, pgnative, mysql, mssql, sqlite3, cockroachdb]
+        database-type: [postgres, pgnative, mysql, mssql, sqlite3, cockroachdb, better-sqlite3]
 
     steps:
       - name: Checkout Repository
@@ -41,7 +41,7 @@ jobs:
               --detach \
               --build \
               "${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
       - name: Initialize Database(s)
         run: |
@@ -50,7 +50,7 @@ jobs:
             up \
               --detach \
               "wait${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
       - name: Run npm install
         run: npm install
@@ -70,4 +70,4 @@ jobs:
           docker-compose \
             --file "scripts/docker-compose.yml" \
             down
-        if: matrix.database-type != 'sqlite3'
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
