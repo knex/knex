@@ -2691,16 +2691,16 @@ const main = async () => {
   // # Column Info:
 
   // $ExpectType ColumnInfo
-  await knexInstance('users').columnInfo();
+  await knexInstance('users').columnInfo('id');
 
   // $ExpectType ColumnInfo
-  await knexInstance<User>('users').columnInfo();
+  await knexInstance<User>('users').columnInfo('id');
 
   // $ExpectType ColumnInfo
-  await knexInstance('users_inferred').columnInfo();
+  await knexInstance('users_inferred').columnInfo('id');
 
   // $ExpectType ColumnInfo
-  await knexInstance('users_composite').columnInfo();
+  await knexInstance('users_composite').columnInfo('id');
 
   // # Modify:
 
