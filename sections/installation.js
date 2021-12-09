@@ -28,6 +28,7 @@ export default [
       $ npm install pg
       $ npm install pg-native
       $ npm install sqlite3
+      $ npm install better-sqlite3
       $ npm install mysql
       $ npm install mysql2
       $ npm install oracledb
@@ -99,16 +100,32 @@ export default [
   },
   {
     type: "info",
-    content: "Note: When you use the SQLite3 adapter, there is a filename required, not a network connection. For example:"
+    content: "Note: When you use the SQLite3 or Better-SQLite3 adapter, there is a filename required, not a network connection. For example:"
   },
   {
     type: "code",
     language: "js",
     content: `
       const knex = require('knex')({
-        client: 'sqlite3',
+        client: 'sqlite3', // or 'better-sqlite3'
         connection: {
           filename: "./mydb.sqlite"
+        }
+      });
+    `
+  },
+  {
+    type: "info",
+    content: "Note: You can also run either SQLite3 or Better-SQLite3 with an in-memory database by providing `:memory:` as the filename. For example:"
+  },
+  {
+    type: "code",
+    language: "js",
+    content: `
+      const knex = require('knex')({
+        client: 'sqlite3', // or 'better-sqlite3'
+        connection: {
+          filename: ":memory:"
         }
       });
     `
