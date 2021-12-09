@@ -2034,8 +2034,12 @@ export declare namespace Knex {
     /** @deprecated */
     timestamp(columnName: string, withoutTz?: boolean, precision?: number): ColumnBuilder;
     timestamps(
-      useTimestampType?: boolean,
-      makeDefaultNow?: boolean
+      useTimestamps?: boolean,
+      defaultToNow?: boolean,
+      useCamelCase?: boolean
+    ): ColumnBuilder;
+    timestamps(
+      options?: Readonly<{useTimestamps?: boolean, defaultToNow?: boolean, useCamelCase?: boolean}>
     ): void;
     geometry(columnName: string): ColumnBuilder;
     geography(columnName: string): ColumnBuilder;
@@ -2083,7 +2087,7 @@ export declare namespace Knex {
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
-    dropTimestamps(): TableBuilder;
+    dropTimestamps(useCamelCase?: boolean): TableBuilder;
     queryContext(context: any): TableBuilder;
   }
 
