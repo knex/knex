@@ -255,7 +255,7 @@ describe('PostgreSQL SchemaBuilder', function () {
           view.as(knexPg('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
-      equal(1, viewSql.length);
+      expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
         'create or replace view "adults" ("name") as select "name" from "users" where "age" > \'18\''
       );

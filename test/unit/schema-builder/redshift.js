@@ -93,7 +93,7 @@ describe('Redshift SchemaBuilder', function () {
           view.as(knexRedShift('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
-      equal(1, viewSql.length);
+      expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
         'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
       );
@@ -106,7 +106,7 @@ describe('Redshift SchemaBuilder', function () {
           view.as(knexRedShift('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
-      equal(1, viewSql.length);
+      expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
         'create view "adults" as select "name" from "users" where "age" > \'18\''
       );
@@ -120,7 +120,7 @@ describe('Redshift SchemaBuilder', function () {
           view.as(knexRedShift('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
-      equal(1, viewSql.length);
+      expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
         'create or replace view "adults" ("name") as select "name" from "users" where "age" > \'18\''
       );
@@ -133,7 +133,7 @@ describe('Redshift SchemaBuilder', function () {
           view.as(knexRedShift('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
-      equal(1, viewSql.length);
+      expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
         'create or replace view "adults" as select "name" from "users" where "age" > \'18\''
       );
@@ -148,7 +148,7 @@ describe('Redshift SchemaBuilder', function () {
           view.localCheckOption();
         })
         .toSQL();
-      equal(1, viewSqlLocalCheck.length);
+      expect(viewSqlLocalCheck.length).to.equal(1);
       expect(viewSqlLocalCheck[0].sql).to.equal(
         'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with local check option'
       );
@@ -161,7 +161,7 @@ describe('Redshift SchemaBuilder', function () {
           view.cascadedCheckOption();
         })
         .toSQL();
-      equal(1, viewSqlCascadedCheck.length);
+      expect(viewSqlCascadedCheck.length).to.equal(1);
       expect(viewSqlCascadedCheck[0].sql).to.equal(
         'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with cascaded check option'
       );

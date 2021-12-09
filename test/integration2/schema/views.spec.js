@@ -123,6 +123,23 @@ describe('Views', () => {
         });
 
         it('create or replace view', async () => {
+          // We create the view and test if all is ok
+          await knex.schema.createView('view_test', (view) => {
+            view.as(knex('table_view').select('a', 'b'));
+          });
+          await knex
+            .select(['a', 'b'])
+            .from('view_test')
+            .then(function (results) {
+              expect(results.length).to.equal(3);
+              expect(results[0].a).to.be.equal('test');
+              expect(results[1].a).to.be.equal('test2');
+              expect(results[2].a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 5);
+              assertNumber(knex, results[1].b, 12);
+              assertNumber(knex, results[2].b, 45);
+            });
+          // Now we test that the new view is replaced
           await knex.schema
             .createViewOrReplace('view_test', function (view) {
               view.columns(['a', 'b']);
@@ -160,6 +177,7 @@ describe('Views', () => {
             .select(['a', 'b'])
             .from('view_test')
             .then(function (results) {
+              expect(results.length).to.equal(2);
               assertNumber(knex, results[0].b, 12);
               assertNumber(knex, results[1].b, 45);
               expect(results[0].a).to.be.equal('test2');
@@ -168,6 +186,23 @@ describe('Views', () => {
         });
 
         it('create or replace view without columns', async () => {
+          // We create the view and test if all is ok
+          await knex.schema.createView('view_test', (view) => {
+            view.as(knex('table_view').select('a', 'b'));
+          });
+          await knex
+            .select(['a', 'b'])
+            .from('view_test')
+            .then(function (results) {
+              expect(results.length).to.equal(3);
+              expect(results[0].a).to.be.equal('test');
+              expect(results[1].a).to.be.equal('test2');
+              expect(results[2].a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 5);
+              assertNumber(knex, results[1].b, 12);
+              assertNumber(knex, results[2].b, 45);
+            });
+          // Now we test that the new view is replaced
           await knex.schema
             .createViewOrReplace('view_test', function (view) {
               view.as(

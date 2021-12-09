@@ -117,9 +117,10 @@ describe('SQLite SchemaBuilder', function () {
           view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
-      equal(1, viewSql.length);
-      expect(viewSql[0].sql).to.equal(
-        "DROP VIEW IF EXISTS `adults`; CREATE VIEW `adults` (`name`) AS select `name` from `users` where `age` > '18'"
+      expect(viewSql.length).to.equal(2);
+      expect(viewSql[0].sql).to.equal('drop view if exists `adults`');
+      expect(viewSql[1].sql).to.equal(
+        "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
       );
     });
 
@@ -130,9 +131,10 @@ describe('SQLite SchemaBuilder', function () {
           view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
-      equal(1, viewSql.length);
-      expect(viewSql[0].sql).to.equal(
-        "DROP VIEW IF EXISTS `adults`; CREATE VIEW `adults` AS select `name` from `users` where `age` > '18'"
+      expect(viewSql.length).to.equal(2);
+      expect(viewSql[0].sql).to.equal('drop view if exists `adults`');
+      expect(viewSql[1].sql).to.equal(
+        "create view `adults` as select `name` from `users` where `age` > '18'"
       );
     });
 
