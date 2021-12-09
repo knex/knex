@@ -715,6 +715,57 @@ export default [
   },
   {
     type: "method",
+    method: "geometry",
+    example: "table.geometry(name)",
+    description: "Adds a geometry column. Supported by SQLite, MSSQL and PostgreSQL.",
+    children: [
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          knex.schema.createTable(tblName, (table) => {
+            table.geometry('geometryColumn');
+          });
+          `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "geography",
+    example: "table.geography(name)",
+    description: "Adds a geography column. Supported by SQLite, MSSQL and PostgreSQL (in PostGIS extension).",
+    children: [
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          knex.schema.createTable(tblName, (table) => {
+            table.geography('geographyColumn');
+          });
+          `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "point",
+    example: "table.point(name)",
+    description: "Add a point column. Not supported by CockroachDB and MSSQL.",
+    children: [
+      {
+        type: 'code',
+        language: 'js',
+        content: `
+          knex.schema.createTable(tblName, (table) => {
+            table.point('pointColumn');
+          });
+          `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "comment",
     example: "table.comment(value)",
     description: "Sets the comment for a table.",

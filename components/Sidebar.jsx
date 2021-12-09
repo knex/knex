@@ -222,6 +222,11 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-json">json</a></li>
           <li>– <a href="#Schema-jsonb">jsonb</a></li>
           <li>– <a href="#Schema-uuid">uuid</a></li>
+
+          <li>– <a href="#Schema-geometry">geometry</a></li>
+          <li>– <a href="#Schema-geography">geography</a></li>
+          <li>– <a href="#Schema-point">point</a></li>
+
           <li>– <a href="#Schema-comment">comment</a></li>
           <li>– <a href="#Schema-engine">engine</a></li>
           <li>– <a href="#Schema-charset">charset</a></li>
