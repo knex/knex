@@ -79,7 +79,8 @@ export default [
     content: "Since there is no unified syntax for array bindings, instead you need to treat them as multiple values by adding `?` directly in your query."
   },
   {
-    type: "runnable",
+    type: "code",
+    language: "js",
     content: `
       const myArray = [1,2,3]
       knex.raw('select * from users where id in (' + myArray.map(_ => '?').join(',') + ')', [...myArray]);

@@ -160,6 +160,24 @@ export default [
   },
   {
     type: "method",
+    method: "alterTable",
+    example: "knex.schema.alterTable(tableName, callback)",
+    description: "Chooses a database table, and then modifies the table, using the Schema Building functions inside of the callback.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.schema.alterTable('users', function (table) {
+            table.dropColumn('name');
+            table.string('first_name');
+            table.string('last_name');
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "createView",
     example: "knex.schema.createView(tableName, callback)",
     description: "Creates a new view on the database, with a callback function to modify the view's structure, using the schema-building commands.",
@@ -317,7 +335,8 @@ export default [
     description: "Generates complete SQL commands for applying described schema changes, without executing anything. Useful when knex is being used purely as a query builder. Generally produces same result as .toSQL(), with a notable exception with SQLite, which relies on asynchronous calls to the database for building part of its schema modification statements",
     children: [
       {
-        type: "runnable",
+        type: "code",
+        language: "js",
         content: `
             const ddlCommands = knex.schema.alterTable(
               'users',
