@@ -188,7 +188,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-createViewOrReplace">createViewOrReplace</a></li>
           <li>– <a href="#Schema-createMaterializedView">createMaterializedView</a></li>
           <li>– <a href="#Schema-refreshMaterializedView">refreshMaterializedView</a></li>
-          <li>– <a href="#Schema-drowView">drowView</a></li>
+          <li>– <a href="#Schema-dropView">dropView</a></li>
           <li>– <a href="#Schema-dropViewIfExists">dropViewIfExists</a></li>
           <li>– <a href="#Schema-dropMaterializedView">dropMaterializedView</a></li>
           <li>– <a href="#Schema-dropMaterializedViewIfExists">dropMaterializedViewIfExists</a></li>

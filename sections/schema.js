@@ -243,7 +243,7 @@ export default [
   },
   {
     type: "method",
-    method: "drowView",
+    method: "dropView",
     example: "knex.schema.dropView(viewName)",
     description: "Drop view on the database.",
     children: [
