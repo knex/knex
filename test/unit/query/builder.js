@@ -10657,7 +10657,26 @@ describe('QueryBuilder', () => {
 
       it('should remove path in json', async function () {
         testsql(qb().jsonRemove('address', '$.street[1]').from('users'), {
-          pg: 'select "address" #- \'{street,1}\' from "users"',
+          pg: {
+            sql: 'select "address" #- ? from "users"',
+            bindings: ['{street,1}'],
+          },
+          mysql: {
+            sql: 'select json_remove(`address`,?) from `users`',
+            bindings: ['$.street[1]'],
+          },
+          mssql: {
+            sql: 'select JSON_MODIFY([address],?, NULL) from [users]',
+            bindings: ['$.street[1]'],
+          },
+          oracledb: {
+            sql: 'select json_transform("address", remove ? from "users"',
+            bindings: ['$.street[1]'],
+          },
+          sqlite3: {
+            sql: 'select json_remove(`address`,?) from `users`',
+            bindings: ['$.street[1]'],
+          },
         });
       });
     });
@@ -10681,6 +10700,34 @@ describe('QueryBuilder', () => {
                 '{"street":"street2","number":7}',
               ],
             },
+            mysql: {
+              sql: 'select * from `users` where json_contains(`address`, ?) or not json_contains(`address`, ?)',
+              bindings: [
+                '{"street":"street1","number":5}',
+                '{"street":"street2","number":7}',
+              ],
+            },
+            mssql: {
+              sql: 'select * from [users] where [address] = ? or [address] != ?',
+              bindings: [
+                '{"street":"street1","number":5}',
+                '{"street":"street2","number":7}',
+              ],
+            },
+            oracledb: {
+              sql: 'select * from "users" where "address" = ? or "address" != ?',
+              bindings: [
+                '{"street":"street1","number":5}',
+                '{"street":"street2","number":7}',
+              ],
+            },
+            sqlite3: {
+              sql: 'select * from `users` where `address` = ? or `address` != ?',
+              bindings: [
+                '{"street":"street1","number":5}',
+                '{"street":"street2","number":7}',
+              ],
+            },
           }
         );
       });
@@ -10694,6 +10741,18 @@ describe('QueryBuilder', () => {
           {
             pg: {
               sql: 'select * from "users" where jsonb_path_query_first("address", ?)::int > ?',
+              bindings: ['$.street.number', 5],
+            },
+            mysql: {
+              sql: 'select * from `users` where json_extract(`address`, ?) > ?',
+              bindings: ['$.street.number', 5],
+            },
+            mssql: {
+              sql: 'select * from [users] where JSON_VALUE([address], ?) > ?',
+              bindings: ['$.street.number', 5],
+            },
+            oracledb: {
+              sql: 'select * from "users" where json_value("address", ?) > ?',
               bindings: ['$.street.number', 5],
             },
             sqlite3: {
@@ -10715,18 +10774,10 @@ describe('QueryBuilder', () => {
               sql: 'select * from "users" where "address" @> ?',
               bindings: ['{"test":"value"}'],
             },
-          }
-        );
-      });
-
-      it('where a json column is a superset of another json column', async function () {
-        testsql(
-          qb()
-            .select()
-            .from('users')
-            .whereJsonSupersetOf('address', 'address2'),
-          {
-            pg: 'select * from "users" where "address" @> ?',
+            mysql: {
+              sql: 'select * from `users` where json_contains(`address`,?)',
+              bindings: ['{"test":"value"}'],
+            },
           }
         );
       });
@@ -10740,6 +10791,10 @@ describe('QueryBuilder', () => {
           {
             pg: {
               sql: 'select * from "users" where not "address" @> ?',
+              bindings: ['{"test":"value"}'],
+            },
+            mysql: {
+              sql: 'select * from `users` where not json_contains(`address`,?)',
               bindings: ['{"test":"value"}'],
             },
           }
@@ -10757,6 +10812,10 @@ describe('QueryBuilder', () => {
               sql: 'select * from "users" where "address" <@ ?',
               bindings: ['{"test":"value"}'],
             },
+            mysql: {
+              sql: 'select * from `users` where json_contains(?,`address`)',
+              bindings: ['{"test":"value"}'],
+            },
           }
         );
       });
@@ -10770,6 +10829,10 @@ describe('QueryBuilder', () => {
           {
             pg: {
               sql: 'select * from "users" where not "address" <@ ?',
+              bindings: ['{"test":"value"}'],
+            },
+            mysql: {
+              sql: 'select * from `users` where not json_contains(?,`address`)',
               bindings: ['{"test":"value"}'],
             },
           }
