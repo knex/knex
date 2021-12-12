@@ -188,7 +188,7 @@ describe('MSSQL dialect', () => {
             await knex.schema.alterTable(tableName, function () {
               this.unique(['x', 'y'], { indexName });
             });
-            expect(
+            await expect(
               knex
                 .insert([
                   { x: 1, y: 1 },
@@ -220,7 +220,7 @@ describe('MSSQL dialect', () => {
                 constraint: true,
               });
             });
-            expect(
+            await expect(
               knex
                 .insert([
                   { x: 1, y: 1 },
