@@ -198,15 +198,12 @@ async function insertCities(knex) {
 }
 
 async function insertCountry(knex) {
-  await knex('country').insert(
-    {
-      name: 'France',
-      climate: {
-        type: 'cold',
-      },
+  await knex('country').insert({
+    name: 'France',
+    climate: {
+      type: 'cold',
     },
-    'id'
-  );
+  });
   await knex('country').insert({
     name: 'Italy',
     climate: {
