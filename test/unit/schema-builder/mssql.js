@@ -570,6 +570,20 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('test adding unique constraint', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.unique('foo', { indexName: 'bar', constraint: true });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD CONSTRAINT [bar] UNIQUE ([foo])'
+    );
+  });
+
   it('test adding index', function () {
     tableSql = client
       .schemaBuilder()
