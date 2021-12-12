@@ -10670,7 +10670,7 @@ describe('QueryBuilder', () => {
             bindings: ['$.street[1]'],
           },
           oracledb: {
-            sql: 'select json_transform("address", remove ? from "users"',
+            sql: 'select json_transform("address", remove ? from "users")',
             bindings: ['$.street[1]'],
           },
           sqlite3: {

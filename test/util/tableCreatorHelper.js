@@ -97,7 +97,6 @@ async function createParentAndChildTables(knex) {
 
 async function createCities(knex) {
   await knex.schema.createTable('cities', (table) => {
-    table.bigIncrements('id');
     table.string('name');
     table.jsonb('population');
     table.jsonb('descriptions');
@@ -108,7 +107,6 @@ async function createCities(knex) {
 
 async function createCountry(knex) {
   await knex.schema.createTable('country', (table) => {
-    table.bigIncrements('id');
     table.string('name');
     table.jsonb('climate');
   });

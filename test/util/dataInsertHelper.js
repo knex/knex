@@ -120,90 +120,81 @@ function insertAccount(knex, overrides) {
 }
 
 async function insertCities(knex) {
-  await knex('cities').insert(
-    {
-      name: 'Paris',
-      population: {
-        current: 10000000,
-        min: 50000,
-        max: 12000000,
-      },
-      descriptions: {
-        type: 'bigcity',
-        short: 'beautiful city',
-        long: 'beautiful and dirty city',
-      },
-      statistics: {
-        size: 1000000,
-        buildings: 1232121,
-        roads: {
-          min: 1234,
-          max: 1333,
-        },
-      },
-      temperature: {
-        desc: 'cold',
+  await knex('cities').insert({
+    name: 'Paris',
+    population: {
+      current: 10000000,
+      min: 50000,
+      max: 12000000,
+    },
+    descriptions: {
+      type: 'bigcity',
+      short: 'beautiful city',
+      long: 'beautiful and dirty city',
+    },
+    statistics: {
+      size: 1000000,
+      buildings: 1232121,
+      roads: {
+        min: 1234,
+        max: 1333,
       },
     },
-    'id'
-  );
-  await knex('cities').insert(
-    {
-      name: 'Milan',
-      population: {
-        current: 1500000,
-        min: 44000,
-        max: 1200000,
-      },
-      descriptions: {
-        type: 'bigcity',
-        short: 'large city',
-        long: 'large and sunny city',
-      },
-      statistics: {
-        size: 1200000,
-        buildings: 12121,
-        roads: {
-          min: 1455,
-          max: 1655,
-        },
-        hotYears: [2012, 2015, 2021],
-      },
-      temperature: {
-        desc: 'warm',
-      },
+    temperature: {
+      desc: 'cold',
     },
-    'id'
-  );
-  await knex('cities').insert(
-    {
-      name: 'Oslo',
-      population: {
-        current: 1456478,
-        min: 44000,
-        max: 1450000,
-      },
-      descriptions: {
-        type: 'city',
-        short: 'cold city',
-        long: 'cold and cool city',
-      },
-      statistics: {
-        size: 4500000,
-        buildings: 44454,
-        roads: {
-          min: 140,
-          max: 156,
-        },
-        hotYears: [2016],
-      },
-      temperature: {
-        desc: 'verycold',
-        desc2: 'very cold',
-      },
+  });
+  await knex('cities').insert({
+    name: 'Milan',
+    population: {
+      current: 1500000,
+      min: 44000,
+      max: 1200000,
     },
-    'id'
-  );
+    descriptions: {
+      type: 'bigcity',
+      short: 'large city',
+      long: 'large and sunny city',
+    },
+    statistics: {
+      size: 1200000,
+      buildings: 12121,
+      roads: {
+        min: 1455,
+        max: 1655,
+      },
+      hotYears: [2012, 2015, 2021],
+    },
+    temperature: {
+      desc: 'warm',
+    },
+  });
+  await knex('cities').insert({
+    name: 'Oslo',
+    population: {
+      current: 1456478,
+      min: 44000,
+      max: 1450000,
+    },
+    descriptions: {
+      type: 'city',
+      short: 'cold city',
+      long: 'cold and cool city',
+    },
+    statistics: {
+      size: 4500000,
+      buildings: 44454,
+      roads: {
+        min: 140,
+        max: 156,
+      },
+      hotYears: [2016],
+    },
+    temperature: {
+      desc: 'verycold',
+      desc2: 'very cold',
+    },
+  });
 }
 
 async function insertCountry(knex) {
@@ -216,15 +207,12 @@ async function insertCountry(knex) {
     },
     'id'
   );
-  await knex('country').insert(
-    {
-      name: 'Italy',
-      climate: {
-        type: 'warm',
-      },
+  await knex('country').insert({
+    name: 'Italy',
+    climate: {
+      type: 'warm',
     },
-    'id'
-  );
+  });
 }
 
 module.exports = {

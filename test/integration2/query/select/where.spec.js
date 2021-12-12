@@ -613,7 +613,7 @@ describe('Where', function () {
         expect(raw2.bindings).to.eql(expected2);
       });
 
-      describe.only('json wheres', () => {
+      describe('json wheres', () => {
         before(async () => {
           await knex.schema.dropTableIfExists('cities');
           await createCities(knex);
