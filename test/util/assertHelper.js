@@ -61,6 +61,7 @@ function assertJsonEquals(jsons, jsonsExpected) {
   if (!Array.isArray(jsonsExpected)) {
     jsonsExpected = [jsonsExpected];
   }
+  expect(jsons.length).to.equal(jsonsExpected.length);
   jsons.forEach((json, i) => {
     const jsonExpected = JSON.parse(
       isObject(json) ? JSON.stringify(json) : json

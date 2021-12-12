@@ -1355,7 +1355,8 @@ describe('Selects', function () {
           );
         });
 
-        // todo : fix for Mysql
+        // TODO : fix format of json in assert (mysql dont have same field order, postgres not same formatting).
+        // TODO : fix MSSQL, return null for values
         it.skip('json remove, set then extract', async () => {
           const res = await knex
             .jsonExtract([
@@ -1378,6 +1379,11 @@ describe('Selects', function () {
               currentModified: '{"current":"1234","min":44000,"max":1200000}',
               withoutMax: '{"current":1500000,"min":44000}',
               withoutMin: '{"current":1500000,"max":1200000}',
+            },
+            {
+              currentModified: '{"current":"1234","min":44000,"max":1450000}',
+              withoutMax: '{"current":1456478,"min":44000}',
+              withoutMin: '{"current":1456478,"max":1450000}',
             },
           ]);
         });

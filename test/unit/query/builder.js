@@ -10679,6 +10679,40 @@ describe('QueryBuilder', () => {
           },
         });
       });
+
+      it('should insert then extract', async function () {
+        testsql(
+          qb()
+            .jsonExtract(
+              qb().jsonInsert('population', '$.test', '1234'),
+              '$.test',
+              'insertExtract'
+            )
+            .from('cities'),
+          {
+            pg: {
+              sql: 'select jsonb_path_query(jsonb_insert("population", ?, ?), ?) as "insertExtract" from "cities"',
+              bindings: ['{test}', '1234', '$.test'],
+            },
+            mysql: {
+              sql: 'select json_unquote(json_extract(json_insert(`population`, ?, ?), ?)) as `insertExtract` from `cities`',
+              bindings: ['$.test', '1234', '$.test'],
+            },
+            mssql: {
+              sql: 'select JSON_VALUE(JSON_MODIFY([population], ?, ?), ?) as [insertExtract] from [cities]',
+              bindings: ['$.test', '1234', '$.test'],
+            },
+            oracledb: {
+              sql: 'select json_query(json_transform("population", insert ? = ?), ?) "insertExtract" from "cities"',
+              bindings: ['$.test', '1234', '$.test'],
+            },
+            sqlite3: {
+              sql: 'select json_extract(json_insert(`population`, ?, ?), ?) as `insertExtract` from `cities`',
+              bindings: ['$.test', '1234', '$.test'],
+            },
+          }
+        );
+      });
     });
 
     describe('where json', function () {
