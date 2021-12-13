@@ -10615,7 +10615,7 @@ describe('QueryBuilder', () => {
               bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
             },
             mssql: {
-              sql: 'select JSON_MODIFY(select JSON_VALUE([cities], ?), ?, ?) from [users]',
+              sql: 'select JSON_MODIFY(JSON_VALUE([cities], ?), ?, ?) from [users]',
               bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
             },
             oracledb: {
@@ -10670,7 +10670,7 @@ describe('QueryBuilder', () => {
             bindings: ['$.street[1]'],
           },
           oracledb: {
-            sql: 'select json_transform("address", remove ? from "users")',
+            sql: 'select json_transform("address", remove ?) from "users"',
             bindings: ['$.street[1]'],
           },
           sqlite3: {
