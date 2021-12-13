@@ -125,19 +125,19 @@ services:
       - -c
       - 'until /usr/local/bin/psql postgres://testuser:knextest@pgnative/knex_test -c "SELECT 1"; do sleep 5; done'
 
-  oracledbxe:
+  oracledb:
     image: quillbuilduser/oracle-18-xe
     container_name: oracledbxe_container
     ports:
       - '21521:1521'
     environment:
       - ORACLE_ALLOW_REMOTE=true
-  waitoracledbxe:
+  waitoracledb:
     image: quillbuilduser/oracle-18-xe
     links:
-      - oracledbxe
+      - oracledb
     depends_on:
-      - oracledbxe
+      - oracledb
     environment:
       - ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE
     entrypoint:
