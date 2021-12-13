@@ -264,6 +264,31 @@ describe('Schema', () => {
             );
             expect(fks.length).to.equal(1);
           });
+
+          it('can alter a table in sqlite while another table has a foreign key constraint on this table', async () => {
+            if (!isSQLite(knex)) {
+              return;
+            }
+
+            await knex.schema.alterTable('foreign_keys_table_two', (table) => {
+              table.integer('alter_column');
+            });
+            await knex.schema.alterTable('foreign_keys_table_one', (table) => {
+              table.foreign('fkey_two').references('foreign_keys_table_two.id');
+            });
+
+            await knex('foreign_keys_table_two').insert({ alter_column: 1 });
+            await knex('foreign_keys_table_one').insert({
+              fkey_two: 1,
+              fkey_three: 1,
+            });
+
+            await expect(
+              knex.schema.alterTable('foreign_keys_table_two', (table) => {
+                table.dropColumn('alter_column');
+              })
+            ).to.not.be.eventually.rejected;
+          });
         });
 
         describe('Schema (Foreign keys)', () => {
