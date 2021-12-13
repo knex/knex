@@ -1242,7 +1242,7 @@ describe('Selects', function () {
           );
       });
 
-      describe('json selections', () => {
+      describe.only('json selections', () => {
         before(async () => {
           await knex.schema.dropTableIfExists('cities');
           await createCities(knex);
@@ -1355,37 +1355,116 @@ describe('Selects', function () {
           );
         });
 
-        // TODO : fix format of json in assert (mysql dont have same field order, postgres not same formatting).
-        // TODO : fix MSSQL, return null for values
-        it.skip('json remove, set then extract', async () => {
+        it('json remove then extract', async () => {
+          await knex
+            .jsonExtract(
+              knex.jsonRemove('population', '$.min'),
+              '$.max',
+              'maxPop'
+            )
+            .from('cities')
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select json_unquote(json_extract(json_remove(`population`,?), ?)) as `maxPop` from `cities`',
+                ['$.min', '$.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: '1200000' },
+                  { maxPop: '1450000' },
+                ]
+              );
+              tester(
+                'pg',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{min}', '$.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'pgnative',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{min}', '$.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'pg-redshift',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{min}', '$.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: 1200000 },
+                  { maxPop: 1450000 },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select json_extract(json_remove(`population`,?), ?) as `maxPop` from `cities`',
+                ['$.min', '$.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'mssql',
+                'select JSON_VALUE(JSON_MODIFY([population],?, NULL), ?) as [maxPop] from [cities]',
+                ['$.min', '$.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: '1200000' },
+                  { maxPop: '1450000' },
+                ]
+              );
+            });
+        });
+
+        it('json remove, set then extract', async () => {
           const res = await knex
-            .jsonExtract([
-              [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
-              [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
+            .jsonExtract(
               [
-                knex.jsonSet('population', '$.current', '1234'),
-                '$',
-                'currentModified',
+                [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
+                [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
+                [
+                  knex.jsonSet('population', '$.current', '1234'),
+                  '$',
+                  'currentModified',
+                ],
               ],
-            ])
+              false
+            )
             .from('cities');
-          assertJsonEquals(res, [
-            {
-              currentModified: '{"current":"1234","min":50000,"max":12000000}',
-              withoutMax: '{"current":10000000,"min":50000}',
-              withoutMin: '{"current":10000000,"max":12000000}',
-            },
-            {
-              currentModified: '{"current":"1234","min":44000,"max":1200000}',
-              withoutMax: '{"current":1500000,"min":44000}',
-              withoutMin: '{"current":1500000,"max":1200000}',
-            },
-            {
-              currentModified: '{"current":"1234","min":44000,"max":1450000}',
-              withoutMax: '{"current":1456478,"min":44000}',
-              withoutMin: '{"current":1456478,"max":1450000}',
-            },
-          ]);
+          assertJsonEquals(res[0].currentModified, {
+            current: '1234',
+            min: 50000,
+            max: 12000000,
+          });
+          assertJsonEquals(res[0].withoutMax, {
+            current: 10000000,
+            min: 50000,
+          });
+          assertJsonEquals(res[0].withoutMin, {
+            current: 10000000,
+            max: 12000000,
+          });
+
+          assertJsonEquals(res[1].currentModified, {
+            current: '1234',
+            min: 44000,
+            max: 1200000,
+          });
+          assertJsonEquals(res[1].withoutMax, { current: 1500000, min: 44000 });
+          assertJsonEquals(res[1].withoutMin, {
+            current: 1500000,
+            max: 1200000,
+          });
+
+          assertJsonEquals(res[2].currentModified, {
+            current: '1234',
+            min: 44000,
+            max: 1450000,
+          });
+          assertJsonEquals(res[2].withoutMax, { current: 1456478, min: 44000 });
+          assertJsonEquals(res[2].withoutMin, {
+            current: 1456478,
+            max: 1450000,
+          });
         });
       });
     });
