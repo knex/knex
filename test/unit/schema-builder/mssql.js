@@ -574,7 +574,7 @@ describe('MSSQL SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function () {
-        this.unique('foo', { indexName: 'bar', constraint: true });
+        this.unique('foo', { indexName: 'bar', useConstraint: true });
       })
       .toSQL();
 

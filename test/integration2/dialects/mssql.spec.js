@@ -217,7 +217,7 @@ describe('MSSQL dialect', () => {
             await knex.schema.alterTable(tableName, function () {
               this.unique(['x', 'y'], {
                 indexName: indexName,
-                constraint: true,
+                useConstraint: true,
               });
             });
             await expect(
