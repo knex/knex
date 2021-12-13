@@ -896,8 +896,8 @@ export default [
     type: "method",
     method: "unique",
     href:"Schema-table-unique",
-    example: "table.unique(columns, options={[indexName: string], [deferrable:'not deferrable'|'immediate'|'deferred'], [storageEngineIndexType:'btree'|'hash']})",
-    description: "Adds an unique index to a table over the given `columns`. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. A default index name using the columns is used unless indexName is specified. If you need to create a composite index, pass an array of column to `columns`. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.",
+    example: "table.unique(columns, options={[indexName: string], [deferrable:'not deferrable'|'immediate'|'deferred'], [storageEngineIndexType:'btree'|'hash'], [useConstraint:true|false]})",
+    description: "Adds an unique index to a table over the given `columns`. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : https://dev.mysql.com/doc/refman/8.0/en/create-index.html. A default index name using the columns is used unless indexName is specified. If you need to create a composite index, pass an array of column to `columns`. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object. In MSSQL you can set the `useConstraint` option to true to create a unique constraint instead of a unique index.",
     children: [
       {
         type: 'code',
@@ -908,6 +908,9 @@ export default [
           })
           knex.schema.alterTable('job', function(t) {
             t.unique(['account_id', 'program_id'], {indexName: 'users_composite_index', deferrable:'deferred', storageEngineIndexType: 'hash'})
+          })
+          knex.schema.alterTable('job', function(t) {
+            t.unique(['account_id', 'program_id'], {indexName: 'users_composite_index', useConstraint:true})
           })
         `
       },
