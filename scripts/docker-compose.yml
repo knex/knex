@@ -127,7 +127,7 @@ services:
 
   oracledb:
     image: quillbuilduser/oracle-18-xe
-    container_name: oracledbxe_container
+    container_name: oracledb_container
     ports:
       - '21521:1521'
     environment:
@@ -143,7 +143,7 @@ services:
     entrypoint:
       - bash
       - -c
-      - 'until /opt/oracle/product/18c/dbhomeXE/bin/sqlplus -s sys/Oracle18@oracledbxe/XE as sysdba <<< "SELECT 13376411 FROM DUAL; exit;" | grep "13376411"; do echo "Could not connect to oracle... sleep for a while"; sleep 5; done'
+      - 'until /opt/oracle/product/18c/dbhomeXE/bin/sqlplus -s sys/Oracle18@oracledb/XE as sysdba <<< "SELECT 13376411 FROM DUAL; exit;" | grep "13376411"; do echo "Could not connect to oracle... sleep for a while"; sleep 5; done'
 
 volumes:
   mysql_data:

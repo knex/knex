@@ -43,17 +43,16 @@ jobs:
               "${{ matrix.database-type }}"
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
+      - name: Run npm install
+        run: npm install
+
       - name: Initialize Database(s)
         run: |
           docker-compose \
             --file "scripts/docker-compose.yml" \
             up \
-              --detach \
               "wait${{ matrix.database-type }}"
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
-
-      - name: Run npm install
-        run: npm install
 
       - name: Install pg-native
         run: npm i pg-native

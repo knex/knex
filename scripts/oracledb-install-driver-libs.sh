@@ -55,21 +55,21 @@ function main () {
 function do_install () {
     do_changes="$1"
     printf "\nEnsuring oracle containers from docker-compose are up ...\n"
-    docker-compose -f "$docker_compose_file" up --build -d oracledbxe
-    docker-compose -f "$docker_compose_file" up waitoracledbxe
+    docker-compose -f "$docker_compose_file" up --build -d oracledb
+    docker-compose -f "$docker_compose_file" up waitoracledb
     printf "\nSleeping an extra 15 seconds to ensure oracle has fully started ...\n"
     sleep 15
     printf "\nInstalling oracle client libs to db container ...\n"
     set -x
-    docker-compose -f "$docker_compose_file" exec oracledbxe curl http://yum.oracle.com/public-yum-ol7.repo -o /etc/yum.repos.d/public-yum-ol7.repo
-    docker-compose -f "$docker_compose_file" exec oracledbxe yum install -y yum-utils
-    docker-compose -f "$docker_compose_file" exec oracledbxe yum-config-manager --enable ol7_oracle_instantclient
-    docker-compose -f "$docker_compose_file" exec oracledbxe yum install -y oracle-instantclient18.3-basiclite
+    docker-compose -f "$docker_compose_file" exec -T oracledb curl http://yum.oracle.com/public-yum-ol7.repo -o /etc/yum.repos.d/public-yum-ol7.repo
+    docker-compose -f "$docker_compose_file" exec -T oracledb yum install -y yum-utils
+    docker-compose -f "$docker_compose_file" exec -T oracledb yum-config-manager --enable ol7_oracle_instantclient
+    docker-compose -f "$docker_compose_file" exec -T oracledb yum install -y oracle-instantclient18.3-basiclite
     set +x
     printf "\nCopying to host's ~/lib directory and adding to ldconfig ...\n"
     if [ "$do_changes" = "true" ]; then
         set -x
-        docker cp oracledbxe_container:/usr/lib/oracle/18.3/client64/lib/ ~/
+        docker cp oracledb_container:/usr/lib/oracle/18.3/client64/lib/ ~/
         sudo sh -c "echo $HOME/lib > /etc/ld.so.conf.d/oracle-instantclient.conf"
         sudo ldconfig
         set +x
