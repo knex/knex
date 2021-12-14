@@ -627,7 +627,7 @@ describe('Selects', function () {
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col"',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
               [],
               [2, 4, 1, 3]
             );
@@ -678,7 +678,7 @@ describe('Selects', function () {
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col"',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
               [],
               [1, 3, 2, 4]
             );
