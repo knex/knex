@@ -509,6 +509,12 @@ export declare namespace Knex {
     fullOuterJoin: Join<TRecord, TResult>;
     crossJoin: Join<TRecord, TResult>;
 
+    // Json manipulation
+    jsonExtract: JsonExtract<TRecord, TResult>;
+    jsonSet: JsonSet<TRecord, TResult>;
+    jsonInsert: JsonInsert<TRecord, TResult>;
+    jsonRemove: JsonRemove<TRecord, TResult>;
+
     // Using
     using: Using<TRecord, TResult>;
 
@@ -1120,6 +1126,30 @@ export declare namespace Knex {
     <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord = any, TInnerResult = any>(
       subQueryBuilders: readonly QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
+  }
+
+  interface JsonExtraction {
+    column: string | Raw | QueryBuilder;
+    path: string;
+    alias?: string;
+    singleValue?: boolean;
+  }
+
+  interface JsonExtract<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, alias?: string, singleValue?: boolean): QueryBuilder<TRecord, TResult>;
+    (column: JsonExtraction[] | any[][], singleValue?: boolean): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonSet<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonInsert<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonRemove<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
   }
 
   interface HintComment<TRecord extends {} = any, TResult extends {} = any> {
