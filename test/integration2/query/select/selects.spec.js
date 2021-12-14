@@ -1242,7 +1242,7 @@ describe('Selects', function () {
           );
       });
 
-      describe.only('json selections', () => {
+      describe('json selections', () => {
         before(async () => {
           await knex.schema.dropTableIfExists('cities');
           await createCities(knex);
@@ -1292,7 +1292,11 @@ describe('Selects', function () {
           );
         });
 
-        it('json set', async () => {
+        it('json set', async function () {
+          // jsonSet is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
           const res = await knex
             .jsonSet('population', '$.max', '999999999', 'maxUpdated')
             .from('cities');
@@ -1305,7 +1309,11 @@ describe('Selects', function () {
           );
         });
 
-        it('json insert', async () => {
+        it('json insert', async function () {
+          // jsonInsert is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
           const res = await knex
             .jsonInsert('population', '$.year2021', '747477', 'popIn2021Added')
             .from('cities');
@@ -1328,7 +1336,11 @@ describe('Selects', function () {
           );
         });
 
-        it('json remove', async () => {
+        it('json remove', async function () {
+          // jsonRemove is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
           const res = await knex
             .jsonRemove('population', '$.min', 'popMinRemoved')
             .from('cities');
@@ -1341,7 +1353,10 @@ describe('Selects', function () {
           );
         });
 
-        it('json insert then extract', async () => {
+        it('json insert then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
           const res = await knex
             .jsonExtract(
               knex.jsonInsert('population', '$.test', '1234'),
@@ -1355,7 +1370,10 @@ describe('Selects', function () {
           );
         });
 
-        it('json remove then extract', async () => {
+        it('json remove then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
           await knex
             .jsonExtract(
               knex.jsonRemove('population', '$.min'),
@@ -1415,7 +1433,10 @@ describe('Selects', function () {
             });
         });
 
-        it('json remove, set then extract', async () => {
+        it('json remove, set then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
           const res = await knex
             .jsonExtract(
               [
