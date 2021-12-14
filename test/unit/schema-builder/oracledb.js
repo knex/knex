@@ -1032,9 +1032,7 @@ describe('OracleDb SchemaBuilder', function () {
       .toSQL();
 
     expect(tableSql.length).to.equal(1);
-    expect(tableSql[0].sql).to.equal(
-      'alter table "users" add "foo" binary(16)'
-    );
+    expect(tableSql[0].sql).to.equal('alter table "users" add "foo" raw(16)');
   });
 
   it('test set comment', function () {
