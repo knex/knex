@@ -672,7 +672,7 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc, "string_col" asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
               [],
               [1, 3, 2, 4]
             );
