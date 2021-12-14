@@ -745,12 +745,11 @@ describe('Schema (misc)', () => {
                 'create table `test_table_timestamp` (`id` integer not null primary key autoincrement, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP)',
               ]);
               tester('oracledb', [
-                `create table "test_table_timestamp"
-                     (
-                       "id"         number(20, 0) not null primary key,
-                       "created_at" timestamp with local time zone not null default CURRENT_TIMESTAMP,
-                       "updated_at" timestamp with local time zone not null default CURRENT_TIMESTAMP
-                     )`,
+                `create table "test_table_timestamp" ("id" number(20, 0) not null primary key, "createdAt" timestamp with local time zone default CURRENT_TIMESTAMP not null, "updatedAt" timestamp with local time zone default CURRENT_TIMESTAMP not null)`,
+                `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_timestamp_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_typ` +
+                  `e = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_timestamp';  execute immediate ('create or replace trigger "gT8ntVvbOANQHra05aYo1kc6cCI"  BEFORE INSERT on` +
+                  ` "test_table_timestamp"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_timestamp_seq".nextval into :new."' || PK_N` +
+                  `AME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_timestamp"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
               ]);
               tester('mssql', [
                 'CREATE TABLE [test_table_timestamp] ([id] bigint identity(1,1) not null primary key, [createdAt] datetime2 not null CONSTRAINT [test_table_timestamp_createdat_default] DEFAULT CURRENT_TIMESTAMP, [updatedAt] datetime2 not null CONSTRAINT [test_table_timestamp_updatedat_default] DEFAULT CURRENT_TIMESTAMP)',
