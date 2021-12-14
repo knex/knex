@@ -10428,8 +10428,8 @@ describe('QueryBuilder', () => {
             bindings: ['$.names.firstName'],
           },
           oracledb: {
-            sql: 'select json_query("name", ?) from "users"',
-            bindings: ['$.names.firstName'],
+            sql: 'select json_value("name", \'$.names.firstName\') from "users"',
+            bindings: [],
           },
           sqlite3: {
             sql: 'select json_extract(`name`, ?) from `users`',
@@ -10457,8 +10457,8 @@ describe('QueryBuilder', () => {
             bindings: ['$.name'],
           },
           oracledb: {
-            sql: 'select json_query("json_col", ?) "name" from "users"',
-            bindings: ['$.name'],
+            sql: 'select json_value("json_col", \'$.name\') "name" from "users"',
+            bindings: [],
           },
           sqlite3: {
             sql: 'select json_extract(`json_col`, ?) as `name` from `users`',
@@ -10518,14 +10518,9 @@ describe('QueryBuilder', () => {
             },
             oracledb: {
               sql:
-                'select json_query("json_col", ?) "name", json_query("json_col", ?) "last_name", ' +
-                'json_query("json_col", ?) "age", json_query("json_col", ?) "gender" from "users"',
-              bindings: [
-                '$.name',
-                '$.last_name',
-                '$.infos.age',
-                '$.infos.gender',
-              ],
+                'select json_value("json_col", \'$.name\') "name", json_value("json_col", \'$.last_name\') "last_name",' +
+                ' json_value("json_col", \'$.infos.age\') "age", json_value("json_col", \'$.infos.gender\') "gender" from "users"',
+              bindings: [],
             },
             sqlite3: {
               sql:
@@ -10619,8 +10614,8 @@ describe('QueryBuilder', () => {
               bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
             },
             oracledb: {
-              sql: 'select json_transform(json_query("cities", ?), set ? = ?) from "users"',
-              bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
+              sql: 'select json_transform(json_value("cities", \'$.mainStreet\'), set ? = ?) from "users"',
+              bindings: ['$.street.numbers[1]', "{'test': 2}"],
             },
             sqlite3: {
               sql: 'select json_set(json_extract(`cities`, ?), ?, ?) from `users`',
@@ -10703,8 +10698,8 @@ describe('QueryBuilder', () => {
               bindings: ['$.test', '1234', '$.test'],
             },
             oracledb: {
-              sql: 'select json_query(json_transform("population", insert ? = ?), ?) "insertExtract" from "cities"',
-              bindings: ['$.test', '1234', '$.test'],
+              sql: 'select json_value(json_transform("population", insert ? = ?), \'$.test\') "insertExtract" from "cities"',
+              bindings: ['$.test', '1234'],
             },
             sqlite3: {
               sql: 'select json_extract(json_insert(`population`, ?, ?), ?) as `insertExtract` from `cities`',
@@ -10786,8 +10781,8 @@ describe('QueryBuilder', () => {
               bindings: ['$.street.number', 5],
             },
             oracledb: {
-              sql: 'select * from "users" where json_value("address", ?) > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from "users" where json_value("address", \'$.street.number\') > ?',
+              bindings: [5],
             },
             sqlite3: {
               sql: 'select * from `users` where json_extract(`address`, ?) > ?',
