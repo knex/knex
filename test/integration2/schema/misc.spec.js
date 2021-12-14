@@ -698,18 +698,7 @@ describe('Schema (misc)', () => {
                 'create index `test_table_one_logins_index` on `test_table_one` (`logins`)',
               ]);
               tester('oracledb', [
-                `create table "test_table_one"
-                     (
-                       "id"         number(20, 0) not null primary key,
-                       "first_name" varchar2(255),
-                       "last_name"  varchar2(255),
-                       "email"      varchar2(255) null,
-                       "logins"     integer default '1',
-                       "balance"    float   default '0',
-                       "about"      varchar2(4000),
-                       "created_at" timestamp with local time zone,
-                       "updated_at" timestamp with local time zone
-                     )`,
+                `create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default '1', "balance" float default '0', "about" varchar2(4000), "created_at" timestamp with local time zone, "updated_at" timestamp with local time zone)`,
                 'comment on table "test_table_one" is \'A table comment.\'',
                 `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_one_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger "test_table_one_autoinc_trg"  BEFORE INSERT on "test_table_one"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_one_seq".nextval into :new."' || PK_NAME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_one"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
                 'comment on column "test_table_one"."logins" is \'\'',
