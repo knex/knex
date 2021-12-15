@@ -7,6 +7,7 @@ const {
   isBetterSQLite3,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const { assertNumber } = require('../../util/assertHelper');
 
 describe('Schema', () => {
   describe('Primary keys', () => {
@@ -31,7 +32,7 @@ describe('Schema', () => {
         });
 
         afterEach(async () => {
-          await knex.schema.dropTable('primary_table');
+          await knex.schema.dropTableIfExists('primary_table');
         });
 
         describe('createPrimaryKey', () => {
@@ -61,6 +62,103 @@ describe('Schema', () => {
                 );
               }
             }
+          });
+
+          it('create multiple primary keys with increments on same column', async function () {
+            await knex.schema.dropTableIfExists('table_multiple_keys');
+            await knex.schema.createTable('table_multiple_keys', function (t) {
+              t.primary(['id', 'second_id', 'other_col']);
+              t.string('second_id', 16).notNullable();
+              t.integer('other_col').notNullable();
+              t.increments('id');
+            });
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'abc',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 3,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  id: 1,
+                  second_id: 'abc',
+                  other_col: 2,
+                },
+              ]);
+            }).to.throw;
+            // It's always ok, the primary key is on three columns.
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'abc',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 3,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  id: 4,
+                  second_id: 'abc',
+                  other_col: 3,
+                },
+              ]);
+            }).to.throw;
+          });
+
+          it('create multiple primary keys with increments on other columns', async function () {
+            await knex.schema.dropTableIfExists('table_multiple_keys');
+            await knex.schema.createTable('table_multiple_keys', function (t) {
+              t.primary(['second_id', 'other_col']);
+              t.string('second_id', 16).notNullable();
+              t.integer('other_col').notNullable();
+              t.increments('id');
+            });
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'abc',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 3,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  second_id: 'abc',
+                  other_col: 2,
+                },
+              ]);
+            }).to.throw;
+            // It's always ok, the primary key is on three columns.
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'bcd',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 4,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  id: 4,
+                  second_id: 'abc',
+                  other_col: 3,
+                },
+              ]);
+            }).to.throw;
           });
 
           it('creates a primary key with a custom constraint name', async function () {
