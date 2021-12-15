@@ -384,7 +384,7 @@ describe('Additional', function () {
           expect(uuid).to.equal(originalUuid);
         });
 
-        it('should insert binary uuid and retreive it', async () => {
+        it('should insert binary uuid and retrieve it', async () => {
           await knex.schema.dropTableIfExists('uuid_table');
           await knex.schema.createTable('uuid_table', (t) => {
             t.uuid('uuid_col_binary', { useBinaryUuid: true });
