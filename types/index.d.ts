@@ -2059,6 +2059,9 @@ export declare namespace Knex {
     queryContext(context: any): SchemaBuilder;
     toString(): string;
     toSQL(): Sql;
+
+    // Cast
+    castText(value: string, alias: string): SchemaBuilder;
   }
 
   interface TableBuilder {
@@ -2766,6 +2769,7 @@ export declare namespace Knex {
     runner(builder: any): any;
     transaction(container: any, config: any, outerTx: any): Transaction;
     raw(...args: any[]): any;
+    castText(...args: any[]): any;
     ref(...args: any[]): Ref<any, any>;
     query(connection: any, obj: any): any;
     stream(connection: any, obj: any, stream: any, options: any): any;
