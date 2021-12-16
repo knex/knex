@@ -1973,7 +1973,7 @@ describe('Joins', function () {
         it('join on json path value', async () => {
           const result = await knex('cities')
             .select('cities.name as cityName', 'country.name as countryName')
-            .join('country', function () {
+            .join('country', () => {
               this.onJsonPathEquals(
                 'temperature',
                 '$.desc',

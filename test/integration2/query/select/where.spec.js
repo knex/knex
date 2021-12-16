@@ -714,7 +714,7 @@ describe('Where', function () {
           }
           const result = await knex('cities')
             .select('name')
-            // where descriptions json object contains type : 'bigcity'
+            // where temperature json object is included in given object
             .whereJsonSubsetOf('temperature', {
               desc: 'cold',
               desc2: 'very cold',
