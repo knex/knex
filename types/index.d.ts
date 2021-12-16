@@ -1149,7 +1149,7 @@ export declare namespace Knex {
   }
 
   interface JsonRemove<TRecord extends {} = any, TResult extends {} = any> {
-    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+    (column: string | Raw | QueryBuilder, path: string, alias?: string): QueryBuilder<TRecord, TResult>;
   }
 
   interface HintComment<TRecord extends {} = any, TResult extends {} = any> {
