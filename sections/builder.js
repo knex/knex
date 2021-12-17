@@ -377,6 +377,132 @@ export default [
     ]
   },
   {
+    type: "method",
+    method: "jsonExtract",
+    example: ".jsonExtract(column|builder|raw|array[], path, [alias], [singleValue])",
+    description: "Extract a value from a json column given a JsonPath. An alias can be specified. The singleValue boolean"  +
+        "can be used to specify, with Oracle or MSSQL, if the value returned by the function is a single value or an array/object value." +
+        "An array of arrays can be used to specify multiple extractions with one call to this function.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonExtract('json_col', '$.name')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonExtract('json_col', '$.name', 'accountName')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonExtract('json_col', '$.name', 'accountName', true)
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonExtract([ 
+            ['json_col', '$.name', 'accountName'], 
+            ['json_col', '$.lastName', 'accountLastName'] 
+          ])
+        `
+      },
+      {
+        type: "text",
+        content: [
+            "All json*() functions can be used directly from knex object and can be nested."
+        ]
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('cities').jsonExtract([
+                [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
+                [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
+                [
+                  knex.jsonSet('population', '$.current', '1234'),
+                  '$',
+                  'currentModified',
+                ]
+              ])
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "jsonSet",
+    example: ".jsonSet(column|builder|raw, path, value, [alias])",
+    description: "Return a json value/object/array where a given value is set at the given JsonPath. Value can be single value or json object. If a value already exists at the given place, the value is replaced."  +
+        "Not supported by Redshift and versions before Oracle 21c.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonSet('json_col', '$.name', 'newName', 'newNameCol')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonSet('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "jsonInsert",
+    example: ".jsonInsert(column|builder|raw, path, value, [alias])",
+    description: "Return a json value/object/array where a given value is inserted at the given JsonPath. Value can be single value or json object. If a value exists at the given path, the value is not replaced."  +
+        "Not supported by Redshift and versions before Oracle 21c.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonInsert('json_col', '$.name', 'newName', 'newNameCol')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonInsert(knex.jsonExtract('json_col', '$.otherAccount'), '$.name', { "name": "newName" }, 'newNameCol')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "jsonRemove",
+    example: ".jsonRemove(column|builder|raw, path, [alias])",
+    description: "Return a json value/object/array where a given value is removed at the given JsonPath."  +
+        "Not supported by Redshift and versions before Oracle 21c.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonRemove('json_col', '$.name', 'colWithRemove')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('accounts').jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+        `
+      }
+    ]
+  },
+  {
     type: "heading",
     size: "md",
     content: "Where Clauses",
@@ -759,6 +885,69 @@ export default [
         type: "runnable",
         content: `
           knex('users').whereILike('email', '%mail%')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "whereJsonObject",
+    example: ".whereJsonObject(column, string|json|builder|raw)",
+    description: "Adds a where clause with json object comparison on given json column.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('users').whereJsonObject('json_col', { "name" : "user_name"})
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "whereJsonPath",
+    example: ".whereJsonPath(column, jsonPath, operator, value)",
+    description: "Adds a where clause with comparison of a value returned by a JsonPath given an operator and a value.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('users').whereJsonPath('json_col', '$.age', '>', 18)
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users').whereJsonPath('json_col', '$.name', '=', 'username')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "whereJsonSupersetOf",
+    example: ".whereJsonSupersetOf(column, string|json|builder|raw)",
+    description: "Adds a where clause where the comparison is true if a json given by the column include a given value. Only on MySQL, PostgreSQL and CockroachDB.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex('users').whereJsonSupersetOf('hobbies', { "sport" : "foot" })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "whereJsonSubsetOf",
+    example: ".whereJsonSubsetOf(column, string|json|builder|raw)",
+    description: "Adds a where clause where the comparison is true if a json given by the column is included in a given value. Only on MySQL, PostgreSQL and CockroachDB.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          // given a hobby column with { "sport" : "tennis" }, the where clause is true
+          knex('users').whereJsonSubsetOf('hobby', { "sport" : "tennis", "book" : "fantasy" })
         `
       }
     ]
@@ -1163,6 +1352,29 @@ export default [
         knex.select('*').from('users').join('contacts', function() {
           this.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [5, 30])
         })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "onJsonPathEquals",
+    example: ".onJsonPathEquals(column, range)",
+    description: "Adds a onJsonPathEquals clause to the query. The clause performs a join on value returned by two json paths on two json columns.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+        knex('cities')
+          .select('cities.name as cityName', 'country.name as countryName')
+          .join('country', function () {
+            this.onJsonPathEquals(
+              'country_name', // json column in cities
+              '$.country.name', // json path to country name in 'country_name' column
+              'description', // json column in country
+              '$.name' // json field in 'description' column
+            );
+          });
         `
       }
     ]

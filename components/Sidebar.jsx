@@ -55,7 +55,11 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-fromRaw">fromRaw</a></li>
           <li>– <a href="#Builder-with">with</a></li>
           <li>– <a href="#Builder-withRecursive">withRecursive</a></li>
-          <li>– <a href="#Builder-withSchema">withSchema</a></li>
+
+          <li>– <a href="#Builder-jsonExtract">jsonExtract</a></li>
+          <li>– <a href="#Builder-jsonSet">jsonSet</a></li>
+          <li>– <a href="#Builder-jsonInsert">jsonInsert</a></li>
+          <li>– <a href="#Builder-jsonRemove">jsonRemove</a></li>
 
           <li><b><a href="#Builder-wheres">Where Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-where">where</a></li>
@@ -71,6 +75,11 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-whereRaw">whereRaw</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-whereLike">whereLike</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-whereILike">whereILike</a></li>
+
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereJsonObject">whereJsonObject</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereJsonPath">whereJsonPath</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereJsonSupersetOf">whereJsonSupersetOf</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-whereJsonSubsetOf">whereJsonSubsetOf</a></li>
 
           <li><b><a href="#Builder-join">Join Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-join">join</a></li>
@@ -92,6 +101,7 @@ export default class Sidebar extends Component {
           <li>&nbsp;&nbsp;– <a href="#Builder-onNotExists">onNotExists</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-onBetween">onBetween</a></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-onNotBetween">onNotBetween</a></li>
+          <li>&nbsp;&nbsp;– <a href="#Builder-onJsonPathEquals">onJsonPathEquals</a></li>
 
           <li><b><a href="#Builder-clear">Clear Methods:</a></b></li>
           <li>&nbsp;&nbsp;– <a href="#Builder-clear">clear</a></li>
