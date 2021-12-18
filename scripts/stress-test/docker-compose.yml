@@ -14,7 +14,7 @@ services:
       - "mysql"
       - "postgresql"
       - "pgnative"
-      - "oracledbxe"
+      - "oracledb"
       - "mssql"
 
   mysql:
@@ -41,8 +41,8 @@ services:
       - POSTGRES_PASSWORD=postgresrootpassword
       - POSTGRES_USER=postgres
 
-  oracledbxe:
-    image: wnameless/oracle-xe-11g
+  oracledb:
+    image: quillbuilduser/oracle-18-xe
     ports:
       - "31521:1521"
     environment:

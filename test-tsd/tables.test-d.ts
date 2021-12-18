@@ -66,6 +66,29 @@ const main = async () => {
     await knexInstance.first('id').from('users_composite')
   );
 
+  expectType<Record<keyof User, Knex.ColumnInfo>>(
+    await knexInstance<User>('users').columnInfo()
+  );
+  expectType<Record<string | number | symbol, Knex.ColumnInfo>>(
+    await knexInstance('users').columnInfo()
+  );
+  expectType<Record<keyof User, Knex.ColumnInfo>>(
+    await knexInstance('users_inferred').columnInfo()
+  );
+  expectType<Record<keyof User, Knex.ColumnInfo>>(
+    await knexInstance('users_composite').columnInfo()
+  );
+  expectType<Knex.ColumnInfo>(
+    await knexInstance('users_inferred').columnInfo('id')
+  );
+  expectType<Knex.ColumnInfo>(
+    await knexInstance('users_composite').columnInfo('id')
+  );
+  expectType<Knex.ColumnInfo>(await knexInstance('users').columnInfo('id'));
+  expectType<Knex.ColumnInfo>(
+    await knexInstance<User>('users').columnInfo('id')
+  );
+
   //These tests simply check if type work by showing that it does not throw syntax error
 
   knexInstance.schema.createTable('testTable',(table) => {

@@ -42,7 +42,7 @@ jobs:
         run: npm run test:coverage
         env:
           CI: true
-          DB: "postgres pgnative mysql mysql2 mssql sqlite3, cockroachdb"
+          DB: "postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb"
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Databases

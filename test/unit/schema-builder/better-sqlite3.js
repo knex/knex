@@ -5,8 +5,8 @@ const { expect } = require('chai');
 let tableSql;
 
 const sinon = require('sinon');
-const SQLite3_Client = require('../../../lib/dialects/sqlite3');
-const client = new SQLite3_Client({ client: 'sqlite3' });
+const Client_BetterSQLite3 = require('../../../lib/dialects/better-sqlite3');
+const client = new Client_BetterSQLite3({ client: 'better-sqlite3' });
 const {
   parseCreateTable,
   parseCreateIndex,
@@ -20,7 +20,7 @@ const _ = require('lodash');
 const { equal, deepEqual } = require('assert');
 const knex = require('../../../knex');
 
-describe('SQLite SchemaBuilder', function () {
+describe('BetterSQLite3 SchemaBuilder', function () {
   it('basic create table', function () {
     tableSql = client
       .schemaBuilder()
@@ -892,34 +892,6 @@ describe('SQLite SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     equal(tableSql[0].sql, 'alter table `users` add column `foo` blob');
-  });
-
-  it('adding uuid', function () {
-    tableSql = client
-      .schemaBuilder()
-      .table('users', function (table) {
-        table.uuid('foo');
-      })
-      .toSQL();
-
-    expect(tableSql.length).to.equal(1);
-    expect(tableSql[0].sql).to.equal(
-      'alter table `users` add column `foo` char(36)'
-    );
-  });
-
-  it('adding binary uuid', function () {
-    tableSql = client
-      .schemaBuilder()
-      .table('users', function (table) {
-        table.uuid('foo', { useBinaryUuid: true });
-      })
-      .toSQL();
-
-    expect(tableSql.length).to.equal(1);
-    expect(tableSql[0].sql).to.equal(
-      'alter table `users` add column `foo` binary(16)'
-    );
   });
 
   it('allows for on delete cascade with foreign keys, #166', function () {

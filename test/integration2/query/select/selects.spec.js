@@ -572,116 +572,128 @@ describe('Selects', function () {
           .createTable('OrderByNullTest', function (table) {
             table.increments('id').primary();
             table.string('null_col').nullable().defaultTo(null);
+            // string col to have some order of records with nulls
+            table.string('string_col');
           });
 
         await knex('OrderByNullTest').insert([
           {
             null_col: 'test',
+            string_col: 'a',
+          },
+          {
+            null_col: null,
+            string_col: 'b',
           },
           {
             null_col: 'test2',
+            string_col: 'c',
           },
           {
             null_col: null,
-          },
-          {
-            null_col: null,
+            string_col: 'd',
           },
         ]);
 
         await knex('OrderByNullTest')
           .pluck('id')
-          .orderBy('null_col', 'asc', 'first')
+          .orderBy([
+            { column: 'null_col', order: 'asc', nulls: 'first' },
+            { column: 'string_col' },
+          ])
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `string_col` asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
               [],
-              ['3', '4', '1', '2']
+              ['2', '4', '1', '3']
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `string_col` asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1) asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1) asc, [string_col] asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
           });
 
         await knex('OrderByNullTest')
           .pluck('id')
-          .orderBy('null_col', 'asc', 'last')
+          .orderBy([
+            { column: 'null_col', order: 'asc', nulls: 'last' },
+            { column: 'string_col' },
+          ])
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
               [],
-              ['1', '2', '3', '4']
+              ['1', '3', '2', '4']
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0) asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0) asc, [string_col] asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
           });
         await knex.schema.dropTable('OrderByNullTest');
@@ -1214,6 +1226,7 @@ describe('Selects', function () {
                 'sqlite3',
                 'oracledb',
                 'cockroachdb',
+                'better-sqlite3',
               ]);
 
               if (knex.client.driverName !== 'cockroachdb') {

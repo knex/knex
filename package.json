@@ -28,12 +28,13 @@
     "test:mysql2": "cross-env DB=mysql2 npm run test:db",
     "test:oracledb": "cross-env DB=oracledb npm run test:db",
     "test:sqlite": "cross-env DB=sqlite3 npm run test:db",
+    "test:better-sqlite3": "cross-env DB=better-sqlite3 npm run test:db",
     "test:postgres": "cross-env DB=postgres npm run test:db",
     "test:cockroachdb": "cross-env DB=cockroachdb npm run test:db",
     "test:pgnative": "cross-env DB=pgnative npm run test:db",
     "test:tape": "node test/tape/index.js | tap-spec",
     "test:cli": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
-    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledbxe",
+    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledb postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledb",
     "db:start:no-oracle": "docker-compose -f scripts/docker-compose.yml up --build -d mysql postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres",
     "db:stop": "docker-compose -f scripts/docker-compose.yml down",
     "db:start:postgres": "docker-compose -f scripts/docker-compose.yml up --build -d postgres && docker-compose -f scripts/docker-compose.yml up waitpostgres",
@@ -46,7 +47,7 @@
     "db:stop:mssql": "docker-compose -f scripts/docker-compose.yml down",
     "db:start:cockroachdb": "docker-compose -f scripts/docker-compose.yml up --build -d cockroachdb && docker-compose -f scripts/docker-compose.yml up waitcockroachdb",
     "db:stop:cockroachdb": "docker-compose -f scripts/docker-compose.yml down",
-    "db:start:oracle": "docker-compose -f scripts/docker-compose.yml up --build -d oracledbxe && docker-compose -f scripts/docker-compose.yml up waitoracledbxe",
+    "db:start:oracle": "docker-compose -f scripts/docker-compose.yml up --build -d oracledb && docker-compose -f scripts/docker-compose.yml up waitoracledb",
     "db:stop:oracle": "docker-compose -f scripts/docker-compose.yml down",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
@@ -55,7 +56,7 @@
   "dependencies": {
     "colorette": "2.0.16",
     "commander": "^8.3.0",
-    "debug": "4.3.2",
+    "debug": "4.3.3",
     "escalade": "^3.1.1",
     "esm": "^3.2.25",
     "getopts": "2.3.0",
@@ -64,7 +65,7 @@
     "pg-connection-string": "2.5.0",
     "rechoir": "^0.8.0",
     "resolve-from": "^5.0.0",
-    "tarn": "^3.0.1",
+    "tarn": "^3.0.2",
     "tildify": "2.0.0"
   },
   "peerDependenciesMeta": {
@@ -85,6 +86,9 @@
     },
     "sqlite3": {
       "optional": true
+    },
+    "better-sqlite3": {
+      "optional": true
     }
   },
   "lint-staged": {
@@ -95,6 +99,8 @@
   },
   "devDependencies": {
     "@types/node": "^16.11.6",
+    "@vscode/sqlite3": "^5.0.7",
+    "better-sqlite3": "^7.4.5",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^3.1.0",
@@ -122,14 +128,13 @@
     "sinon": "^12.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.20",
-    "sqlite3": "^5.0.2",
     "tap-spec": "^5.0.0",
     "tape": "^5.3.1",
     "tedious": "^12.2.0",
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.4.0",
     "tsd": "^0.19.0",
-    "typescript": "4.4.4"
+    "typescript": "4.5.4"
   },
   "buildDependencies": [
     "rimraf"
@@ -180,6 +185,9 @@
     {
       "name": "Brian Lauber",
       "web": "https://briandamaged.org"
+    },
+    {
+      "name": "Olivier Cavadenti"
     }
   ],
   "browser": {

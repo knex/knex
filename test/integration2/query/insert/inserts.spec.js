@@ -1031,9 +1031,7 @@ describe('Inserts', function () {
             );
             tester(
               'oracledb',
-              `insert into "test_table_two" ("account_id", "details", "status")
-                 values (?, ?, ?) returning "account_id","details"
-                 into ?,?`,
+              `insert into "test_table_two" ("account_id", "details", "status") values (?, ?, ?) returning "account_id","details" into ?,?`,
               [
                 10,
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',

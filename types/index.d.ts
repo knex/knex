@@ -945,7 +945,7 @@ export declare namespace Knex {
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: string | readonly string[],
+      column: string | readonly (string | Raw)[] | Raw,
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -1038,7 +1038,7 @@ export declare namespace Knex {
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = any>(
-      returning: string | readonly string[],
+      returning: string | readonly (string | Raw)[] | Raw,
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
@@ -1846,7 +1846,7 @@ export declare namespace Knex {
     ): BatchInsertBuilder<TRecord, TResult2>;
     // if data with specific type passed, exclude this method
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: unknown extends TRecord ? string | readonly string[] : never
+      column: unknown extends TRecord ? string | readonly (string | Raw)[] | Raw: never
     ): BatchInsertBuilder<TRecord, TResult2>;
   }
 
@@ -1877,7 +1877,8 @@ export declare namespace Knex {
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
-    columnInfo(column?: keyof TRecord): Promise<ColumnInfo>;
+    columnInfo(column: keyof DeferredKeySelection.Resolve<TRecord>): Promise<ColumnInfo>;
+    columnInfo(): Promise<Record<keyof DeferredKeySelection.Resolve<TRecord>, ColumnInfo>>;
 
     forUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forUpdate(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
@@ -1931,7 +1932,7 @@ export declare namespace Knex {
     readonly [Symbol.toStringTag]: string;
   }
   interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys>, StringTagSupport {
-    generateDdlCommands(): Promise<{ pre: string[], sql: string[], post: string[] }>;
+    generateDdlCommands(): Promise<{ pre: string[], sql: string[], check: string | null, post: string[] }>;
     toQuery(): string;
     options(options: Readonly<{ [key: string]: any }>): this;
     connection(connection: any): this;
@@ -2098,8 +2099,12 @@ export declare namespace Knex {
     /** @deprecated */
     timestamp(columnName: string, withoutTz?: boolean, precision?: number): ColumnBuilder;
     timestamps(
-      useTimestampType?: boolean,
-      makeDefaultNow?: boolean
+      useTimestamps?: boolean,
+      defaultToNow?: boolean,
+      useCamelCase?: boolean
+    ): ColumnBuilder;
+    timestamps(
+      options?: Readonly<{useTimestamps?: boolean, defaultToNow?: boolean, useCamelCase?: boolean}>
     ): void;
     geometry(columnName: string): ColumnBuilder;
     geography(columnName: string): ColumnBuilder;
@@ -2117,7 +2122,7 @@ export declare namespace Knex {
     ): ColumnBuilder;
     json(columnName: string): ColumnBuilder;
     jsonb(columnName: string): ColumnBuilder;
-    uuid(columnName: string): ColumnBuilder;
+    uuid(columnName: string, options?: Readonly<{useBinaryUuid?: boolean}>): ColumnBuilder;
     comment(val: string): void;
     specificType(columnName: string, type: string): ColumnBuilder;
     primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
@@ -2135,7 +2140,7 @@ export declare namespace Knex {
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
-    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, storageEngineIndexType?: string, deferrable?: deferrableType}>): TableBuilder;
+    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, storageEngineIndexType?: string, deferrable?: deferrableType, useConstraint?: boolean}>): TableBuilder;
     /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
@@ -2147,7 +2152,7 @@ export declare namespace Knex {
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
-    dropTimestamps(): TableBuilder;
+    dropTimestamps(useCamelCase?: boolean): TableBuilder;
     queryContext(context: any): TableBuilder;
   }
 
