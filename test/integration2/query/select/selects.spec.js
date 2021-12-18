@@ -1268,7 +1268,7 @@ describe('Selects', function () {
           const res = await knex
             .jsonExtract([
               ['descriptions', '$.short', 'shortDescription'],
-              ['population', '$.current', 'currentPop'],
+              ['population', '$.current.value', 'currentPop'],
               ['statistics', '$.roads.min', 'minRoads'],
               ['statistics', '$.hotYears[0]', 'firstHotYear'],
             ])
@@ -1298,13 +1298,25 @@ describe('Selects', function () {
             this.skip();
           }
           const res = await knex
-            .jsonSet('population', '$.max', '999999999', 'maxUpdated')
+            .jsonSet('population', '$.minMax.max', '999999999', 'maxUpdated')
             .from('cities');
           assertJsonEquals(
             [res[0].maxUpdated, res[1].maxUpdated],
             [
-              { current: 10000000, min: 50000, max: '999999999' },
-              { current: 1500000, min: 44000, max: '999999999' },
+              {
+                current: { value: 10000000 },
+                minMax: {
+                  min: 50000,
+                  max: '999999999',
+                },
+              },
+              {
+                current: { value: 1500000 },
+                minMax: {
+                  min: 44000,
+                  max: '999999999',
+                },
+              },
             ]
           );
         });
@@ -1321,15 +1333,23 @@ describe('Selects', function () {
             [res[0].popIn2021Added, res[1].popIn2021Added],
             [
               {
-                current: 10000000,
-                min: 50000,
-                max: 12000000,
+                current: {
+                  value: 10000000,
+                },
+                minMax: {
+                  min: 50000,
+                  max: 12000000,
+                },
                 year2021: '747477',
               },
               {
-                current: 1500000,
-                min: 44000,
-                max: 1200000,
+                current: {
+                  value: 1500000,
+                },
+                minMax: {
+                  min: 44000,
+                  max: 1200000,
+                },
                 year2021: '747477',
               },
             ]
@@ -1342,13 +1362,27 @@ describe('Selects', function () {
             this.skip();
           }
           const res = await knex
-            .jsonRemove('population', '$.min', 'popMinRemoved')
+            .jsonRemove('population', '$.minMax.min', 'popMinRemoved')
             .from('cities');
           assertJsonEquals(
             [res[0].popMinRemoved, res[1].popMinRemoved],
             [
-              { current: 10000000, max: 12000000 },
-              { current: 1500000, max: 1200000 },
+              {
+                current: {
+                  value: 10000000,
+                },
+                minMax: {
+                  max: 12000000,
+                },
+              },
+              {
+                current: {
+                  value: 1500000,
+                },
+                minMax: {
+                  max: 1200000,
+                },
+              },
             ]
           );
         });
@@ -1376,8 +1410,8 @@ describe('Selects', function () {
           }
           await knex
             .jsonExtract(
-              knex.jsonRemove('population', '$.min'),
-              '$.max',
+              knex.jsonRemove('population', '$.minMax.min'),
+              '$.minMax.max',
               'maxPop'
             )
             .from('cities')
@@ -1385,7 +1419,7 @@ describe('Selects', function () {
               tester(
                 'mysql',
                 'select json_unquote(json_extract(json_remove(`population`,?), ?)) as `maxPop` from `cities`',
-                ['$.min', '$.max'],
+                ['$.minMax.min', '$.minMax.max'],
                 [
                   { maxPop: '12000000' },
                   { maxPop: '1200000' },
@@ -1395,19 +1429,19 @@ describe('Selects', function () {
               tester(
                 'pg',
                 'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
-                ['{min}', '$.max'],
+                ['{minMax,min}', '$.minMax.max'],
                 [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
               );
               tester(
                 'pgnative',
                 'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
-                ['{min}', '$.max'],
+                ['{minMax,min}', '$.minMax.max'],
                 [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
               );
               tester(
                 'pg-redshift',
                 'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
-                ['{min}', '$.max'],
+                ['{minMax,min}', '$.minMax.max'],
                 [
                   { maxPop: '12000000' },
                   { maxPop: 1200000 },
@@ -1417,13 +1451,13 @@ describe('Selects', function () {
               tester(
                 'sqlite3',
                 'select json_extract(json_remove(`population`,?), ?) as `maxPop` from `cities`',
-                ['$.min', '$.max'],
+                ['$.minMax.min', '$.minMax.max'],
                 [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
               );
               tester(
                 'mssql',
                 'select JSON_VALUE(JSON_MODIFY([population],?, NULL), ?) as [maxPop] from [cities]',
-                ['$.min', '$.max'],
+                ['$.minMax.min', '$.minMax.max'],
                 [
                   { maxPop: '12000000' },
                   { maxPop: '1200000' },
@@ -1440,11 +1474,19 @@ describe('Selects', function () {
           const res = await knex
             .jsonExtract(
               [
-                [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
-                [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
                 [
-                  knex.jsonSet('population', '$.current', '1234'),
-                  '$',
+                  knex.jsonRemove('population', '$.minMax.min'),
+                  '$.minMax',
+                  'withoutMin',
+                ],
+                [
+                  knex.jsonRemove('population', '$.minMax.max'),
+                  '$.minMax',
+                  'withoutMax',
+                ],
+                [
+                  knex.jsonSet('population', '$.current.value', '1234'),
+                  '$.current',
                   'currentModified',
                 ],
               ],
@@ -1452,38 +1494,28 @@ describe('Selects', function () {
             )
             .from('cities');
           assertJsonEquals(res[0].currentModified, {
-            current: '1234',
-            min: 50000,
-            max: 12000000,
+            value: '1234',
           });
           assertJsonEquals(res[0].withoutMax, {
-            current: 10000000,
             min: 50000,
           });
           assertJsonEquals(res[0].withoutMin, {
-            current: 10000000,
             max: 12000000,
           });
 
           assertJsonEquals(res[1].currentModified, {
-            current: '1234',
-            min: 44000,
-            max: 1200000,
+            value: '1234',
           });
-          assertJsonEquals(res[1].withoutMax, { current: 1500000, min: 44000 });
+          assertJsonEquals(res[1].withoutMax, { min: 44000 });
           assertJsonEquals(res[1].withoutMin, {
-            current: 1500000,
             max: 1200000,
           });
 
           assertJsonEquals(res[2].currentModified, {
-            current: '1234',
-            min: 44000,
-            max: 1450000,
+            value: 1234,
           });
-          assertJsonEquals(res[2].withoutMax, { current: 1456478, min: 44000 });
+          assertJsonEquals(res[2].withoutMax, { min: 44000 });
           assertJsonEquals(res[2].withoutMin, {
-            current: 1456478,
             max: 1450000,
           });
         });

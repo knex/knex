@@ -123,9 +123,13 @@ async function insertCities(knex) {
   await knex('cities').insert({
     name: 'Paris',
     population: {
-      current: 10000000,
-      min: 50000,
-      max: 12000000,
+      current: {
+        value: 10000000,
+      },
+      minMax: {
+        min: 50000,
+        max: 12000000,
+      },
     },
     descriptions: {
       type: 'bigcity',
@@ -147,9 +151,13 @@ async function insertCities(knex) {
   await knex('cities').insert({
     name: 'Milan',
     population: {
-      current: 1500000,
-      min: 44000,
-      max: 1200000,
+      current: {
+        value: 1500000,
+      },
+      minMax: {
+        min: 44000,
+        max: 1200000,
+      },
     },
     descriptions: {
       type: 'bigcity',
@@ -172,9 +180,13 @@ async function insertCities(knex) {
   await knex('cities').insert({
     name: 'Oslo',
     population: {
-      current: 1456478,
-      min: 44000,
-      max: 1450000,
+      current: {
+        value: 1456478,
+      },
+      minMax: {
+        min: 44000,
+        max: 1450000,
+      },
     },
     descriptions: {
       type: 'city',
