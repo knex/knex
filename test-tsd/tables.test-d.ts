@@ -69,6 +69,13 @@ const main = async () => {
   expectType<Pick<User, 'id'> | undefined>(
     await knexInstance.first('id').from('users_composite')
   );
+  
+  expectType<number[]>(
+  	await knexInstance.from('users_inferred').pluck('id')
+  )
+  expectType<number[]>(
+  	await knexInstance.from('users_composite').pluck('id')
+  )
 
   expectType<Record<keyof User, Knex.ColumnInfo>>(
     await knexInstance<User>('users').columnInfo()
