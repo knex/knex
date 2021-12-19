@@ -65,6 +65,13 @@ const main = async () => {
   expectType<Pick<User, 'id'> | undefined>(
     await knexInstance.first('id').from('users_composite')
   );
+  
+  expectType<number[]>(
+  	await knexInstance.from('users_inferred').pluck('id')
+  )
+  expectType<number[]>(
+  	await knexInstance.from('users_composite').pluck('id')
+  )
 
   //These tests simply check if type work by showing that it does not throw syntax error
 
