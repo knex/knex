@@ -10467,6 +10467,10 @@ describe('QueryBuilder', () => {
             sql: 'select json_extract_path_text("name", ?, ?) from "users"',
             bindings: ['names', 'firstName'],
           },
+          cockroachdb: {
+            sql: 'select json_extract_path("name", ?, ?) from "users"',
+            bindings: ['names', 'firstName'],
+          },
         });
       });
 
@@ -10494,6 +10498,10 @@ describe('QueryBuilder', () => {
           },
           'pg-redshift': {
             sql: 'select json_extract_path_text("json_col", ?) as "name" from "users"',
+            bindings: ['name'],
+          },
+          cockroachdb: {
+            sql: 'select json_extract_path("json_col", ?) as "name" from "users"',
             bindings: ['name'],
           },
         });
@@ -10575,6 +10583,19 @@ describe('QueryBuilder', () => {
                 'gender',
               ],
             },
+            cockroachdb: {
+              sql:
+                'select json_extract_path("json_col", ?) as "name", json_extract_path("json_col", ?) as "last_name",' +
+                ' json_extract_path("json_col", ?, ?) as "age", json_extract_path("json_col", ?, ?) as "gender" from "users"',
+              bindings: [
+                'name',
+                'last_name',
+                'infos',
+                'age',
+                'infos',
+                'gender',
+              ],
+            },
           }
         );
       });
@@ -10603,6 +10624,10 @@ describe('QueryBuilder', () => {
               sql: 'select json_set(`address`, ?, ?) from `users`',
               bindings: ['$.street.numbers[2]', '5'],
             },
+            cockroachdb: {
+              sql: 'select jsonb_set("address", ?, ?) from "users"',
+              bindings: ['{street,numbers,2}', '5'],
+            },
           }
         );
       });
@@ -10612,6 +10637,10 @@ describe('QueryBuilder', () => {
           qb().jsonSet('address', '{street,numbers,2}', '5').from('users'),
           {
             pg: {
+              sql: 'select jsonb_set("address", ?, ?) from "users"',
+              bindings: ['{street,numbers,2}', '5'],
+            },
+            cockroachdb: {
               sql: 'select jsonb_set("address", ?, ?) from "users"',
               bindings: ['{street,numbers,2}', '5'],
             },
@@ -10649,6 +10678,10 @@ describe('QueryBuilder', () => {
               sql: 'select json_set(json_extract(`cities`, ?), ?, ?) from `users`',
               bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
             },
+            cockroachdb: {
+              sql: 'select jsonb_set(json_extract_path("cities", ?), ?, ?) from "users"',
+              bindings: ['mainStreet', '{street,numbers,1}', "{'test': 2}"],
+            },
           }
         );
       });
@@ -10675,6 +10708,10 @@ describe('QueryBuilder', () => {
             sql: 'select json_insert(`address`, ?, ?) from `users`',
             bindings: ['$.mainStreet', '5'],
           },
+          cockroachdb: {
+            sql: 'select jsonb_insert("address", ?, ?) from "users"',
+            bindings: ['{mainStreet}', '5'],
+          },
         });
       });
 
@@ -10699,6 +10736,10 @@ describe('QueryBuilder', () => {
           sqlite3: {
             sql: 'select json_remove(`address`,?) from `users`',
             bindings: ['$.street[1]'],
+          },
+          cockroachdb: {
+            sql: 'select "address" #- ? from "users"',
+            bindings: ['{street,1}'],
           },
         });
       });
@@ -10732,6 +10773,10 @@ describe('QueryBuilder', () => {
             sqlite3: {
               sql: 'select json_extract(json_insert(`population`, ?, ?), ?) as `insertExtract` from `cities`',
               bindings: ['$.test', '1234', '$.test'],
+            },
+            cockroachdb: {
+              sql: 'select json_extract_path(jsonb_insert("population", ?, ?), ?) as "insertExtract" from "cities"',
+              bindings: ['{test}', '1234', 'test'],
             },
           }
         );
@@ -10785,6 +10830,13 @@ describe('QueryBuilder', () => {
                 '{"street":"street2","number":7}',
               ],
             },
+            cockroachdb: {
+              sql: 'select * from "users" where "address" = ? or "address" != ?',
+              bindings: [
+                '{"street":"street1","number":5}',
+                '{"street":"street2","number":7}',
+              ],
+            },
           }
         );
       });
@@ -10816,6 +10868,10 @@ describe('QueryBuilder', () => {
               sql: 'select * from `users` where json_extract(`address`, ?) > ?',
               bindings: ['$.street.number', 5],
             },
+            cockroachdb: {
+              sql: 'select * from "users" where json_extract_path("address", ?, ?)::int > ?',
+              bindings: ['street', 'number', 5],
+            },
           }
         );
       });
@@ -10833,6 +10889,10 @@ describe('QueryBuilder', () => {
             },
             mysql: {
               sql: 'select * from `users` where json_contains(`address`,?)',
+              bindings: ['{"test":"value"}'],
+            },
+            cockroachdb: {
+              sql: 'select * from "users" where "address" @> ?',
               bindings: ['{"test":"value"}'],
             },
           }
@@ -10854,6 +10914,10 @@ describe('QueryBuilder', () => {
               sql: 'select * from `users` where not json_contains(`address`,?)',
               bindings: ['{"test":"value"}'],
             },
+            cockroachdb: {
+              sql: 'select * from "users" where not "address" @> ?',
+              bindings: ['{"test":"value"}'],
+            },
           }
         );
       });
@@ -10873,6 +10937,10 @@ describe('QueryBuilder', () => {
               sql: 'select * from `users` where json_contains(?,`address`)',
               bindings: ['{"test":"value"}'],
             },
+            cockroachdb: {
+              sql: 'select * from "users" where "address" <@ ?',
+              bindings: ['{"test":"value"}'],
+            },
           }
         );
       });
@@ -10890,6 +10958,10 @@ describe('QueryBuilder', () => {
             },
             mysql: {
               sql: 'select * from `users` where not json_contains(?,`address`)',
+              bindings: ['{"test":"value"}'],
+            },
+            cockroachdb: {
+              sql: 'select * from "users" where not "address" <@ ?',
               bindings: ['{"test":"value"}'],
             },
           }
