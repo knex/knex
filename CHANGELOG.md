@@ -1,5 +1,12 @@
 # Master (Unreleased)
 
+# 0.95.15 - 22 December, 2021
+
+### Bug fixes:
+
+- Oracle:
+- MariaDB: lock row fix during migration in MariaDB and Oracle #4865
+
 # 0.95.14 - 09 November, 2021
 
 ### Bug fixes:
