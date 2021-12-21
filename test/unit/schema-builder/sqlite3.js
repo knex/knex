@@ -19,7 +19,6 @@ const {
 const _ = require('lodash');
 const { equal, deepEqual } = require('assert');
 const knex = require('../../../knex');
-const { isSQLite } = require('../../util/db-helpers');
 
 describe('SQLite SchemaBuilder', function () {
   it('basic create table', function () {
