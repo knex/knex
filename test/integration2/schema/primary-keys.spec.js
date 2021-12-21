@@ -7,7 +7,6 @@ const {
   isBetterSQLite3,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { assertNumber } = require('../../util/assertHelper');
 
 describe('Schema', () => {
   describe('Primary keys', () => {
