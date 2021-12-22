@@ -20,12 +20,19 @@ const {
   createAccounts,
   createCompositeKeyTable,
   createTestTableTwo,
+  createCities,
   dropTables,
   createDefaultTable,
   createParentAndChildTables,
 } = require('../../../util/tableCreatorHelper');
-const { insertAccounts } = require('../../../util/dataInsertHelper');
-const { assertNumberArrayStrict } = require('../../../util/assertHelper');
+const {
+  insertAccounts,
+  insertCities,
+} = require('../../../util/dataInsertHelper');
+const {
+  assertNumberArrayStrict,
+  assertJsonEquals,
+} = require('../../../util/assertHelper');
 const {
   getAllDbs,
   getKnexForDb,
@@ -1246,6 +1253,285 @@ describe('Selects', function () {
               }
             }
           );
+      });
+
+      describe('json selections', () => {
+        before(async () => {
+          await knex.schema.dropTableIfExists('cities');
+          await createCities(knex);
+        });
+
+        beforeEach(async () => {
+          await knex('cities').truncate();
+          await insertCities(knex);
+        });
+
+        it('json extract', async () => {
+          const res = await knex
+            .jsonExtract('descriptions', '$.short', 'shortDescription')
+            .from('cities');
+          expect(res).to.eql([
+            { shortDescription: 'beautiful city' },
+            { shortDescription: 'large city' },
+            { shortDescription: 'cold city' },
+          ]);
+        });
+
+        it('json multiple extract', async () => {
+          const res = await knex
+            .jsonExtract([
+              ['descriptions', '$.short', 'shortDescription'],
+              ['population', '$.current.value', 'currentPop'],
+              ['statistics', '$.roads.min', 'minRoads'],
+              ['statistics', '$.hotYears[0]', 'firstHotYear'],
+            ])
+            .from('cities');
+          assertJsonEquals(
+            [res[0], res[1]],
+            [
+              {
+                shortDescription: 'beautiful city',
+                currentPop: 10000000,
+                minRoads: 1234,
+                firstHotYear: null,
+              },
+              {
+                shortDescription: 'large city',
+                currentPop: 1500000,
+                minRoads: 1455,
+                firstHotYear: 2012,
+              },
+            ]
+          );
+        });
+
+        it('json set', async function () {
+          // jsonSet is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonSet('population', '$.minMax.max', '999999999', 'maxUpdated')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].maxUpdated, res[1].maxUpdated],
+            [
+              {
+                current: { value: 10000000 },
+                minMax: {
+                  min: 50000,
+                  max: '999999999',
+                },
+              },
+              {
+                current: { value: 1500000 },
+                minMax: {
+                  min: 44000,
+                  max: '999999999',
+                },
+              },
+            ]
+          );
+        });
+
+        it('json insert', async function () {
+          // jsonInsert is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonInsert('population', '$.year2021', '747477', 'popIn2021Added')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].popIn2021Added, res[1].popIn2021Added],
+            [
+              {
+                current: {
+                  value: 10000000,
+                },
+                minMax: {
+                  min: 50000,
+                  max: 12000000,
+                },
+                year2021: '747477',
+              },
+              {
+                current: {
+                  value: 1500000,
+                },
+                minMax: {
+                  min: 44000,
+                  max: 1200000,
+                },
+                year2021: '747477',
+              },
+            ]
+          );
+        });
+
+        it('json remove', async function () {
+          // jsonRemove is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonRemove('population', '$.minMax.min', 'popMinRemoved')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].popMinRemoved, res[1].popMinRemoved],
+            [
+              {
+                current: {
+                  value: 10000000,
+                },
+                minMax: {
+                  max: 12000000,
+                },
+              },
+              {
+                current: {
+                  value: 1500000,
+                },
+                minMax: {
+                  max: 1200000,
+                },
+              },
+            ]
+          );
+        });
+
+        it('json insert then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonExtract(
+              knex.jsonInsert('population', '$.test', '1234'),
+              '$.test',
+              'insertExtract'
+            )
+            .from('cities');
+          assertJsonEquals(
+            [res[0], res[1]],
+            [{ insertExtract: '1234' }, { insertExtract: '1234' }]
+          );
+        });
+
+        it('json remove then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          await knex
+            .jsonExtract(
+              knex.jsonRemove('population', '$.minMax.min'),
+              '$.minMax.max',
+              'maxPop'
+            )
+            .from('cities')
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select json_unquote(json_extract(json_remove(`population`,?), ?)) as `maxPop` from `cities`',
+                ['$.minMax.min', '$.minMax.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: '1200000' },
+                  { maxPop: '1450000' },
+                ]
+              );
+              tester(
+                'pg',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{minMax,min}', '$.minMax.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'pgnative',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{minMax,min}', '$.minMax.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'pg-redshift',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{minMax,min}', '$.minMax.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: 1200000 },
+                  { maxPop: 1450000 },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select json_extract(json_remove(`population`,?), ?) as `maxPop` from `cities`',
+                ['$.minMax.min', '$.minMax.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'mssql',
+                'select JSON_VALUE(JSON_MODIFY([population],?, NULL), ?) as [maxPop] from [cities]',
+                ['$.minMax.min', '$.minMax.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: '1200000' },
+                  { maxPop: '1450000' },
+                ]
+              );
+            });
+        });
+
+        it('json remove, set then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonExtract(
+              [
+                [
+                  knex.jsonRemove('population', '$.minMax.min'),
+                  '$.minMax',
+                  'withoutMin',
+                ],
+                [
+                  knex.jsonRemove('population', '$.minMax.max'),
+                  '$.minMax',
+                  'withoutMax',
+                ],
+                [
+                  knex.jsonSet('population', '$.current.value', '1234'),
+                  '$.current',
+                  'currentModified',
+                ],
+              ],
+              false
+            )
+            .from('cities');
+          assertJsonEquals(res[0].currentModified, {
+            value: '1234',
+          });
+          assertJsonEquals(res[0].withoutMax, {
+            min: 50000,
+          });
+          assertJsonEquals(res[0].withoutMin, {
+            max: 12000000,
+          });
+
+          assertJsonEquals(res[1].currentModified, {
+            value: '1234',
+          });
+          assertJsonEquals(res[1].withoutMax, { min: 44000 });
+          assertJsonEquals(res[1].withoutMin, {
+            max: 1200000,
+          });
+
+          assertJsonEquals(res[2].currentModified, {
+            value: 1234,
+          });
+          assertJsonEquals(res[2].withoutMax, { min: 44000 });
+          assertJsonEquals(res[2].withoutMin, {
+            max: 1450000,
+          });
+        });
       });
     });
   });

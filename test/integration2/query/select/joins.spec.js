@@ -7,6 +7,8 @@ const { isOracle, isMssql } = require('../../../util/db-helpers');
 const {
   insertTestTableTwoData,
   insertAccounts,
+  insertCities,
+  insertCountry,
 } = require('../../../util/dataInsertHelper');
 const {
   getAllDbs,
@@ -17,6 +19,8 @@ const {
   dropTables,
   createAccounts,
   createTestTableTwo,
+  createCities,
+  createCountry,
 } = require('../../../util/tableCreatorHelper');
 const { assertNumber } = require('../../../util/assertHelper');
 
@@ -1949,6 +1953,45 @@ describe('Joins', function () {
         expect(rows2.length).to.equal(2);
         assertNumber(knex, rows2[0].testcolumn, 50);
         assertNumber(knex, rows2[1].testcolumn, 70);
+      });
+
+      describe('json joins', () => {
+        before(async () => {
+          await knex.schema.dropTableIfExists('cities');
+          await knex.schema.dropTableIfExists('country');
+          await createCities(knex);
+          await createCountry(knex);
+        });
+
+        beforeEach(async () => {
+          await knex('cities').truncate();
+          await knex('country').truncate();
+          await insertCities(knex);
+          await insertCountry(knex);
+        });
+
+        it('join on json path value', async () => {
+          const result = await knex('cities')
+            .select('cities.name as cityName', 'country.name as countryName')
+            .join('country', function () {
+              this.onJsonPathEquals(
+                'temperature',
+                '$.desc',
+                'climate',
+                '$.type'
+              );
+            });
+          expect(result).to.eql([
+            {
+              cityName: 'Paris',
+              countryName: 'France',
+            },
+            {
+              cityName: 'Milan',
+              countryName: 'Italy',
+            },
+          ]);
+        });
       });
     });
   });

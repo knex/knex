@@ -509,6 +509,12 @@ export declare namespace Knex {
     fullOuterJoin: Join<TRecord, TResult>;
     crossJoin: Join<TRecord, TResult>;
 
+    // Json manipulation
+    jsonExtract: JsonExtract<TRecord, TResult>;
+    jsonSet: JsonSet<TRecord, TResult>;
+    jsonInsert: JsonInsert<TRecord, TResult>;
+    jsonRemove: JsonRemove<TRecord, TResult>;
+
     // Using
     using: Using<TRecord, TResult>;
 
@@ -551,6 +557,31 @@ export declare namespace Knex {
     whereNotBetween: WhereBetween<TRecord, TResult>;
     orWhereNotBetween: WhereBetween<TRecord, TResult>;
     andWhereNotBetween: WhereBetween<TRecord, TResult>;
+
+    whereJsonObject: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonObject: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonObject: WhereJsonObject<TRecord, TResult>;
+    whereNotJsonObject: WhereJsonObject<TRecord, TResult>;
+    orWhereNotJsonObject: WhereJsonObject<TRecord, TResult>;
+    andWhereNotJsonObject: WhereJsonObject<TRecord, TResult>;
+
+    whereJsonPath: WhereJsonPath<TRecord, TResult>;
+    orWhereJsonPath: WhereJsonPath<TRecord, TResult>;
+    andWhereJsonPath: WhereJsonPath<TRecord, TResult>;
+
+    whereJsonSupersetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonSupersetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonSupersetOf: WhereJsonObject<TRecord, TResult>;
+    whereJsonNotSupersetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonNotSupersetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonNotSupersetOf: WhereJsonObject<TRecord, TResult>;
+
+    whereJsonSubsetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonSubsetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonSubsetOf: WhereJsonObject<TRecord, TResult>;
+    whereJsonNotSubsetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonNotSubsetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonNotSubsetOf: WhereJsonObject<TRecord, TResult>;
 
     // Group by
     groupBy: GroupBy<TRecord, TResult>;
@@ -1097,6 +1128,30 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
+  interface JsonExtraction {
+    column: string | Raw | QueryBuilder;
+    path: string;
+    alias?: string;
+    singleValue?: boolean;
+  }
+
+  interface JsonExtract<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, alias?: string, singleValue?: boolean): QueryBuilder<TRecord, TResult>;
+    (column: JsonExtraction[] | any[][], singleValue?: boolean): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonSet<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonInsert<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonRemove<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, alias?: string): QueryBuilder<TRecord, TResult>;
+  }
+
   interface HintComment<TRecord extends {} = any, TResult extends {} = any> {
     (hint: string): QueryBuilder<TRecord, TResult>;
     (hints: readonly string[]): QueryBuilder<TRecord, TResult>;
@@ -1328,6 +1383,8 @@ export declare namespace Knex {
     onNotBetween(column1: string, range: readonly [any, any]): JoinClause;
     andOnNotBetween(column1: string, range: readonly [any, any]): JoinClause;
     orOnNotBetween(column1: string, range: readonly [any, any]): JoinClause;
+    onJsonPathEquals(columnFirst: string, jsonPathFirst: string, columnSecond: string, jsonPathSecond: string): JoinClause;
+    orOnJsonPathEquals(columnFirst: string, jsonPathFirst: string, columnSecond: string, jsonPathSecond: string): JoinClause;
     using(
       column: string | readonly string[] | Raw | { [key: string]: string | Raw }
     ): JoinClause;
@@ -1461,6 +1518,14 @@ export declare namespace Knex {
     <TRecordInner, TResultInner>(
       query: QueryBuilder<TRecordInner, TResultInner>
     ): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface WhereJsonObject<TRecord = any, TResult = unknown[]> {
+    (columnName: keyof TRecord, value: any): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface WhereJsonPath<TRecord = any, TResult = unknown[]> {
+    (columnName: keyof TRecord, jsonPath: string, operator: string, value: any): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereIn<TRecord = any, TResult = unknown[]> {
