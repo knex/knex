@@ -1576,6 +1576,15 @@ describe('Schema (misc)', () => {
           knex.schema.hasTable('').then((resp) => {
             expect(resp).to.equal(false);
           }));
+
+        it('should parse table name if wrapIdentifier is specified', () => {
+          knex.client.config.wrapIdentifier = (value, origImpl, queryContext) =>
+            origImpl(_.snakeCase(value));
+
+          knex.schema.hasTable('testTableTwo').then((resp) => {
+            expect(resp).to.equal(true);
+          });
+        });
       });
 
       describe('renameTable', () => {
