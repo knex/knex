@@ -8,7 +8,7 @@ const { isSQLite, isMssql, isMysql } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
 
-describe.only('Checks', () => {
+describe('Checks', () => {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
