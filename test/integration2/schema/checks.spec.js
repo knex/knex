@@ -8,7 +8,7 @@ const { isSQLite, isMssql, isMysql } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
 
-describe.only('Checks', () => {
+describe('Checks', () => {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
@@ -403,7 +403,6 @@ describe.only('Checks', () => {
           table.integer('price');
         });
         expect(await knex('check_test').insert([{ price: -5 }])).to.not.throw;
-
         // Alter table with check constraint fail, we have row that violated the constraint
         let error;
         try {
@@ -417,14 +416,13 @@ describe.only('Checks', () => {
 
         // empty the table to add the constraint
         await knex('check_test').truncate();
-
         await knex.schema
           .table('check_test', (table) => {
             table.integer('price').checkPositive().alter();
           })
           .testSql((tester) => {
             tester(
-              ['pg', 'pg-redshift', 'cockroachdb'],
+              ['pg', 'pg-redshift'],
               [
                 'alter table "check_test" alter column "price" drop default',
                 'alter table "check_test" alter column "price" drop not null',
@@ -432,6 +430,13 @@ describe.only('Checks', () => {
                 'alter table "check_test" add constraint check_test_price_1 check("price" > 0)',
               ]
             );
+            tester('cockroachdb', [
+              'SET enable_experimental_alter_column_type_general = true',
+              'alter table "check_test" alter column "price" drop default',
+              'alter table "check_test" alter column "price" drop not null',
+              'alter table "check_test" alter column "price" type integer using ("price"::integer)',
+              'alter table "check_test" add constraint check_test_price_1 check("price" > 0)',
+            ]);
             tester('oracledb', [
               'alter table "check_test" modify "price" integer',
               'alter table "check_test" add constraint check_test_price_1 check("price" > 0)',
