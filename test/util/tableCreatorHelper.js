@@ -95,6 +95,23 @@ async function createParentAndChildTables(knex) {
   });
 }
 
+async function createCities(knex) {
+  await knex.schema.createTable('cities', (table) => {
+    table.string('name');
+    table.jsonb('population');
+    table.jsonb('descriptions');
+    table.jsonb('statistics');
+    table.jsonb('temperature');
+  });
+}
+
+async function createCountry(knex) {
+  await knex.schema.createTable('country', (table) => {
+    table.string('name');
+    table.jsonb('climate');
+  });
+}
+
 async function dropTables(knex) {
   await knex.schema.dropTableIfExists('accounts');
   await knex.schema.dropTableIfExists('users');
@@ -117,5 +134,7 @@ module.exports = {
   createUsers,
   createTestTableTwo,
   createParentAndChildTables,
+  createCities,
+  createCountry,
   dropTables,
 };

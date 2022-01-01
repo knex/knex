@@ -350,6 +350,8 @@ describe('Additional', function () {
               "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
             [drivers.Redshift]:
               "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+            [drivers.BetterSQLite3]:
+              "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.SQLite]:
               "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
@@ -373,6 +375,43 @@ describe('Additional', function () {
           expect(knex.fn.now().prototype === knex.raw().prototype);
           expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
           expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
+        });
+
+        it('should allow using .fn-methods to convert uuid to binary', function () {
+          const originalUuid = '6c825dc9-c98f-37ab-b01b-416294811a84';
+          const binary = knex.fn.uuidToBin(originalUuid);
+          const uuid = knex.fn.binToUuid(binary);
+          expect(uuid).to.equal(originalUuid);
+        });
+
+        it('should insert binary uuid and retrieve it', async () => {
+          await knex.schema.dropTableIfExists('uuid_table');
+          await knex.schema.createTable('uuid_table', (t) => {
+            t.uuid('uuid_col_binary', { useBinaryUuid: true });
+          });
+          const originalUuid = '3f06af63-a93c-11e4-9797-00505690773f';
+
+          let uuidToInsert;
+
+          if (isPostgreSQL(knex) || isCockroachDB(knex)) {
+            uuidToInsert = originalUuid;
+          } else {
+            uuidToInsert = knex.fn.uuidToBin(originalUuid);
+          }
+
+          await knex('uuid_table').insert({
+            uuid_col_binary: uuidToInsert,
+          });
+          const uuid = await knex('uuid_table').select('uuid_col_binary');
+
+          let expectedUuid;
+          if (isPostgreSQL(knex) || isCockroachDB(knex)) {
+            expectedUuid = uuid[0].uuid_col_binary;
+          } else {
+            expectedUuid = knex.fn.binToUuid(uuid[0].uuid_col_binary);
+          }
+
+          expect(expectedUuid).to.equal(originalUuid);
         });
 
         it('#2184 - should properly escape table name for SQLite columnInfo', function () {

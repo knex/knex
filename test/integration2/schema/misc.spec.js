@@ -13,6 +13,7 @@ const {
   isMssql,
   isCockroachDB,
   isPostgreSQL,
+  isBetterSQLite3,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
@@ -697,18 +698,7 @@ describe('Schema (misc)', () => {
                 'create index `test_table_one_logins_index` on `test_table_one` (`logins`)',
               ]);
               tester('oracledb', [
-                `create table "test_table_one"
-                     (
-                       "id"         number(20, 0) not null primary key,
-                       "first_name" varchar2(255),
-                       "last_name"  varchar2(255),
-                       "email"      varchar2(255) null,
-                       "logins"     integer default '1',
-                       "balance"    float   default '0',
-                       "about"      varchar2(4000),
-                       "created_at" timestamp with local time zone,
-                       "updated_at" timestamp with local time zone
-                     )`,
+                `create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default '1', "balance" float default '0', "about" varchar2(4000), "created_at" timestamp with local time zone, "updated_at" timestamp with local time zone)`,
                 'comment on table "test_table_one" is \'A table comment.\'',
                 `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_one_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger "test_table_one_autoinc_trg"  BEFORE INSERT on "test_table_one"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_one_seq".nextval into :new."' || PK_NAME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_one"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
                 'comment on column "test_table_one"."logins" is \'\'',
@@ -726,6 +716,47 @@ describe('Schema (misc)', () => {
                 'CREATE INDEX [test_table_one_logins_index] ON [test_table_one] ([logins])',
               ]);
             }));
+
+        it('create table with timestamps options', async () => {
+          await knex.schema
+            .createTable('test_table_timestamp', (table) => {
+              if (isMysql(knex)) table.engine('InnoDB');
+              table.bigIncrements('id');
+              table.timestamps({
+                useTimestamps: false,
+                defaultToNow: true,
+                useCamelCase: true,
+              });
+            })
+            .testSql((tester) => {
+              tester('mysql', [
+                'create table `test_table_timestamp` (`id` bigint unsigned not null auto_increment primary key, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP) default character set utf8 engine = InnoDB',
+              ]);
+              tester(
+                ['pg', 'cockroachdb'],
+                [
+                  'create table "test_table_timestamp" ("id" bigserial primary key, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
+                ]
+              );
+              tester('pg-redshift', [
+                'create table "test_table_timestamp" ("id" bigint identity(1,1) primary key not null, "createdAt" timestamptz not null default CURRENT_TIMESTAMP, "updatedAt" timestamptz not null default CURRENT_TIMESTAMP)',
+              ]);
+              tester('sqlite3', [
+                'create table `test_table_timestamp` (`id` integer not null primary key autoincrement, `createdAt` datetime not null default CURRENT_TIMESTAMP, `updatedAt` datetime not null default CURRENT_TIMESTAMP)',
+              ]);
+              tester('oracledb', [
+                `create table "test_table_timestamp" ("id" number(20, 0) not null primary key, "createdAt" timestamp with local time zone default CURRENT_TIMESTAMP not null, "updatedAt" timestamp with local time zone default CURRENT_TIMESTAMP not null)`,
+                `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_timestamp_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_typ` +
+                  `e = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_timestamp';  execute immediate ('create or replace trigger "gT8ntVvbOANQHra05aYo1kc6cCI"  BEFORE INSERT on` +
+                  ` "test_table_timestamp"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_timestamp_seq".nextval into :new."' || PK_N` +
+                  `AME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_timestamp"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
+              ]);
+              tester('mssql', [
+                'CREATE TABLE [test_table_timestamp] ([id] bigint identity(1,1) not null primary key, [createdAt] datetime2 not null CONSTRAINT [test_table_timestamp_createdat_default] DEFAULT CURRENT_TIMESTAMP, [updatedAt] datetime2 not null CONSTRAINT [test_table_timestamp_updatedat_default] DEFAULT CURRENT_TIMESTAMP)',
+              ]);
+            });
+          await knex.schema.dropTableIfExists('test_table_timestamp');
+        });
 
         it('is possible to set the db engine with the table.engine', () =>
           knex.schema
@@ -828,9 +859,9 @@ describe('Schema (misc)', () => {
               }
               table.integer('integer_column', 5);
               table.tinyint('tinyint_column', 5);
-              table.smallint('smallint_column', 5);
-              table.mediumint('mediumint_column', 5);
-              table.bigint('bigint_column', 5);
+              table.smallint('smallint_column');
+              table.mediumint('mediumint_column');
+              table.bigint('bigint_column');
             })
             .testSql((tester) => {
               tester('mysql', [
@@ -1304,6 +1335,9 @@ describe('Schema (misc)', () => {
               );
               tester('pg-redshift', [
                 'create table "bool_test" ("one" boolean, "two" boolean default \'0\', "three" boolean default \'1\', "four" boolean default \'1\', "five" boolean default \'0\')',
+              ]);
+              tester('better-sqlite3', [
+                "create table `bool_test` (`one` boolean, `two` boolean default '0', `three` boolean default '1', `four` boolean default '1', `five` boolean default '0')",
               ]);
               tester('sqlite3', [
                 "create table `bool_test` (`one` boolean, `two` boolean default '0', `three` boolean default '1', `four` boolean default '1', `five` boolean default '0')",
@@ -1784,6 +1818,15 @@ describe('Schema (misc)', () => {
               );
 
               const autoinc = !!res.rows[0].ident;
+              expect(autoinc).to.equal(true);
+            } else if (isBetterSQLite3(knex)) {
+              const res = await knex.raw(
+                `SELECT 'is-autoincrement' as ident
+                       FROM sqlite_master
+                       WHERE tbl_name = ? AND sql LIKE '%AUTOINCREMENT%'`,
+                [tableName]
+              );
+              const autoinc = !!res[0].ident;
               expect(autoinc).to.equal(true);
             } else if (isSQLite(knex)) {
               const res = await knex.raw(

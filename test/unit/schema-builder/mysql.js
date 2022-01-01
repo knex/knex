@@ -1115,6 +1115,34 @@ module.exports = function (dialect) {
       );
     });
 
+    it('adding uuid', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.uuid('foo');
+        })
+        .toSQL();
+
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` char(36)'
+      );
+    });
+
+    it('adding binary uuid', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.uuid('foo', { useBinaryUuid: true });
+        })
+        .toSQL();
+
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` binary(16)'
+      );
+    });
+
     it('test set comment', function () {
       tableSql = client
         .schemaBuilder()
@@ -1193,6 +1221,42 @@ module.exports = function (dialect) {
           })
           .toSQL();
       }).to.throw(TypeError);
+    });
+
+    it('set comment to old comment limit (size 60+) #4863', function () {
+      const warnMessages = [];
+      client.logger = {
+        warn: (msg) => {
+          warnMessages.push(msg);
+        },
+      };
+      client
+        .schemaBuilder()
+        .createTable('user', function (t) {
+          t.comment(
+            "A big comment. If we write more than 60 characters here it shouldn't trigger any warning since mysql and mariaDB maximum length is 1024 characters. Please fix this warning, it's annoying when a migration is taking place with multiple long comments."
+          );
+        })
+        .toSQL();
+      expect(warnMessages.length).to.equal(0);
+    });
+
+    it('set comment to current comment limit (size 1024+) #4863', function () {
+      const warnMessages = [];
+      client.logger = {
+        warn: (msg) => {
+          warnMessages.push(msg);
+        },
+      };
+      client
+        .schemaBuilder()
+        .createTable('users', function (t) {
+          t.comment('big comment'.repeat(100));
+        })
+        .toSQL();
+      expect(warnMessages[0]).to.equal(
+        'The max length for a table comment is 1024 characters'
+      );
     });
 
     it('should alter columns with the alter flag', function () {

@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('@vscode/sqlite3');
 const { expect } = require('chai');
 const { execCommand } = require('cli-testlab');
 const { getRootDir } = require('./cli-test-utils');

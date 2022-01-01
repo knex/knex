@@ -509,6 +509,12 @@ export declare namespace Knex {
     fullOuterJoin: Join<TRecord, TResult>;
     crossJoin: Join<TRecord, TResult>;
 
+    // Json manipulation
+    jsonExtract: JsonExtract<TRecord, TResult>;
+    jsonSet: JsonSet<TRecord, TResult>;
+    jsonInsert: JsonInsert<TRecord, TResult>;
+    jsonRemove: JsonRemove<TRecord, TResult>;
+
     // Using
     using: Using<TRecord, TResult>;
 
@@ -551,6 +557,31 @@ export declare namespace Knex {
     whereNotBetween: WhereBetween<TRecord, TResult>;
     orWhereNotBetween: WhereBetween<TRecord, TResult>;
     andWhereNotBetween: WhereBetween<TRecord, TResult>;
+
+    whereJsonObject: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonObject: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonObject: WhereJsonObject<TRecord, TResult>;
+    whereNotJsonObject: WhereJsonObject<TRecord, TResult>;
+    orWhereNotJsonObject: WhereJsonObject<TRecord, TResult>;
+    andWhereNotJsonObject: WhereJsonObject<TRecord, TResult>;
+
+    whereJsonPath: WhereJsonPath<TRecord, TResult>;
+    orWhereJsonPath: WhereJsonPath<TRecord, TResult>;
+    andWhereJsonPath: WhereJsonPath<TRecord, TResult>;
+
+    whereJsonSupersetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonSupersetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonSupersetOf: WhereJsonObject<TRecord, TResult>;
+    whereJsonNotSupersetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonNotSupersetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonNotSupersetOf: WhereJsonObject<TRecord, TResult>;
+
+    whereJsonSubsetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonSubsetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonSubsetOf: WhereJsonObject<TRecord, TResult>;
+    whereJsonNotSubsetOf: WhereJsonObject<TRecord, TResult>;
+    orWhereJsonNotSubsetOf: WhereJsonObject<TRecord, TResult>;
+    andWhereJsonNotSubsetOf: WhereJsonObject<TRecord, TResult>;
 
     // Group by
     groupBy: GroupBy<TRecord, TResult>;
@@ -914,7 +945,7 @@ export declare namespace Knex {
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: string | readonly string[],
+      column: string | readonly (string | Raw)[] | Raw,
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -1007,7 +1038,7 @@ export declare namespace Knex {
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = any>(
-      returning: string | readonly string[],
+      returning: string | readonly (string | Raw)[] | Raw,
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     delete<TResult2 = number>(): QueryBuilder<TRecord, TResult2>;
@@ -1095,6 +1126,30 @@ export declare namespace Knex {
     <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord = any, TInnerResult = any>(
       subQueryBuilders: readonly QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
+  }
+
+  interface JsonExtraction {
+    column: string | Raw | QueryBuilder;
+    path: string;
+    alias?: string;
+    singleValue?: boolean;
+  }
+
+  interface JsonExtract<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, alias?: string, singleValue?: boolean): QueryBuilder<TRecord, TResult>;
+    (column: JsonExtraction[] | any[][], singleValue?: boolean): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonSet<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonInsert<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface JsonRemove<TRecord extends {} = any, TResult extends {} = any> {
+    (column: string | Raw | QueryBuilder, path: string, alias?: string): QueryBuilder<TRecord, TResult>;
   }
 
   interface HintComment<TRecord extends {} = any, TResult extends {} = any> {
@@ -1328,6 +1383,8 @@ export declare namespace Knex {
     onNotBetween(column1: string, range: readonly [any, any]): JoinClause;
     andOnNotBetween(column1: string, range: readonly [any, any]): JoinClause;
     orOnNotBetween(column1: string, range: readonly [any, any]): JoinClause;
+    onJsonPathEquals(columnFirst: string, jsonPathFirst: string, columnSecond: string, jsonPathSecond: string): JoinClause;
+    orOnJsonPathEquals(columnFirst: string, jsonPathFirst: string, columnSecond: string, jsonPathSecond: string): JoinClause;
     using(
       column: string | readonly string[] | Raw | { [key: string]: string | Raw }
     ): JoinClause;
@@ -1461,6 +1518,14 @@ export declare namespace Knex {
     <TRecordInner, TResultInner>(
       query: QueryBuilder<TRecordInner, TResultInner>
     ): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface WhereJsonObject<TRecord = any, TResult = unknown[]> {
+    (columnName: keyof TRecord, value: any): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface WhereJsonPath<TRecord = any, TResult = unknown[]> {
+    (columnName: keyof TRecord, jsonPath: string, operator: string, value: any): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereIn<TRecord = any, TResult = unknown[]> {
@@ -1781,7 +1846,7 @@ export declare namespace Knex {
     ): BatchInsertBuilder<TRecord, TResult2>;
     // if data with specific type passed, exclude this method
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: unknown extends TRecord ? string | readonly string[] : never
+      column: unknown extends TRecord ? string | readonly (string | Raw)[] | Raw: never
     ): BatchInsertBuilder<TRecord, TResult2>;
   }
 
@@ -1812,7 +1877,8 @@ export declare namespace Knex {
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
-    columnInfo(column?: keyof TRecord): Promise<ColumnInfo>;
+    columnInfo(column: keyof DeferredKeySelection.Resolve<TRecord>): Promise<ColumnInfo>;
+    columnInfo(): Promise<Record<keyof DeferredKeySelection.Resolve<TRecord>, ColumnInfo>>;
 
     forUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forUpdate(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
@@ -1866,7 +1932,7 @@ export declare namespace Knex {
     readonly [Symbol.toStringTag]: string;
   }
   interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys>, StringTagSupport {
-    generateDdlCommands(): Promise<{ pre: string[], sql: string[], post: string[] }>;
+    generateDdlCommands(): Promise<{ pre: string[], sql: string[], check: string | null, post: string[] }>;
     toQuery(): string;
     options(options: Readonly<{ [key: string]: any }>): this;
     connection(connection: any): this;
@@ -2003,6 +2069,9 @@ export declare namespace Knex {
     renameColumn(from: string, to: string): TableBuilder;
     integer(columnName: string, length?: number): ColumnBuilder;
     tinyint(columnName: string, length?: number): ColumnBuilder;
+    smallint(columnName: string): ColumnBuilder;
+    mediumint(columnName: string): ColumnBuilder;
+    bigint(columnName: string): ColumnBuilder;
     bigInteger(columnName: string): ColumnBuilder;
     text(columnName: string, textType?: string): ColumnBuilder;
     string(columnName: string, length?: number): ColumnBuilder;
@@ -2030,8 +2099,12 @@ export declare namespace Knex {
     /** @deprecated */
     timestamp(columnName: string, withoutTz?: boolean, precision?: number): ColumnBuilder;
     timestamps(
-      useTimestampType?: boolean,
-      makeDefaultNow?: boolean
+      useTimestamps?: boolean,
+      defaultToNow?: boolean,
+      useCamelCase?: boolean
+    ): ColumnBuilder;
+    timestamps(
+      options?: Readonly<{useTimestamps?: boolean, defaultToNow?: boolean, useCamelCase?: boolean}>
     ): void;
     geometry(columnName: string): ColumnBuilder;
     geography(columnName: string): ColumnBuilder;
@@ -2049,7 +2122,7 @@ export declare namespace Knex {
     ): ColumnBuilder;
     json(columnName: string): ColumnBuilder;
     jsonb(columnName: string): ColumnBuilder;
-    uuid(columnName: string): ColumnBuilder;
+    uuid(columnName: string, options?: Readonly<{useBinaryUuid?: boolean}>): ColumnBuilder;
     comment(val: string): void;
     specificType(columnName: string, type: string): ColumnBuilder;
     primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
@@ -2067,7 +2140,7 @@ export declare namespace Knex {
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
-    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, storageEngineIndexType?: string, deferrable?: deferrableType}>): TableBuilder;
+    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, storageEngineIndexType?: string, deferrable?: deferrableType, useConstraint?: boolean}>): TableBuilder;
     /** @deprecated */
     unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
@@ -2080,7 +2153,7 @@ export declare namespace Knex {
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
-    dropTimestamps(): TableBuilder;
+    dropTimestamps(useCamelCase?: boolean): TableBuilder;
     dropChecks(checkConstraintNames: string | string[]): TableBuilder;
     queryContext(context: any): TableBuilder;
   }
@@ -2613,6 +2686,15 @@ export declare namespace Knex {
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
+  interface Seed {
+    seed: (knex: Knex) => PromiseLike<void>;
+  }
+
+  interface SeedSource<TSeedSpec> {
+    getSeeds(config: SeederConfig): Promise<TSeedSpec[]>;
+    getSeed(seed: TSeedSpec): Promise<Seed>;
+  }
+
   interface SeederConfig<V extends {} = any> {
     extension?: string;
     directory?: string | readonly string[];
@@ -2623,6 +2705,7 @@ export declare namespace Knex {
     sortDirsSeparately?: boolean;
     stub?: string;
     variables?: V;
+    seedSource?: SeedSource<unknown>;
   }
 
   class Seeder {
