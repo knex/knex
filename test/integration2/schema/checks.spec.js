@@ -53,18 +53,49 @@ describe('Checks', () => {
         ).to.undefined;
       }
 
+      it('create table with raw check on table', async () => {
+        await knex.schema.dropTableIfExists('check_test');
+        await knex.schema
+          .createTable('check_test', function (table) {
+            table.string('col1');
+            table.string('col2');
+            table.check('?? = ??', ['col1', 'col2']);
+          })
+          .testSql((tester) => {
+            tester(
+              ['pg', 'pg-redshift', 'cockroachdb'],
+              [
+                'create table "check_test" ("col1" varchar(255), "col2" varchar(255), check ("col1" = "col2"))',
+              ]
+            );
+            tester(
+              ['oracledb'],
+              [
+                'create table "check_test" ("name" varchar2(255) check ("name" LIKE \'%val%\'))',
+              ]
+            );
+            tester('mysql', [
+              'create table `check_test` (`col1` varchar(255), `col2` varchar(255), check (`col1` = `col2`)) default character set utf8',
+            ]);
+            tester('sqlite3', [
+              'create table `check_test` (`col1` varchar(255), `col2` varchar(255), check (`col1` = `col2`))',
+            ]);
+            tester('mssql', [
+              'CREATE TABLE [check_test] ([col1] nvarchar(255), [col2] nvarchar(255), check ([col1] = [col2]))',
+            ]);
+          });
+
+        await checkTest(
+          { col1: 'test', col2: 'test' },
+          { col1: 'test', col2: 'test2' }
+        );
+      });
+
       it('create table with raw check', async () => {
         await knex.schema.dropTableIfExists('check_test');
         await knex.schema
           .createTable('check_test', function (table) {
-            let colName = '"name"';
-            if (isMssql(knex)) {
-              colName = '[name]';
-            }
-            if (isMysql(knex) || isSQLite(knex)) {
-              colName = '`name`';
-            }
-            table.string('name').check(colName + ' LIKE ?', ['%val%']);
+            table.string('name').check('?? LIKE ?', ['name', '%val%']);
           })
           .testSql((tester) => {
             tester(
