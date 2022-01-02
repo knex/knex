@@ -4,7 +4,7 @@ const { expect } = require('chai');
 
 require('lodash');
 
-const { isSQLite, isMssql, isMysql } = require('../../util/db-helpers');
+const { isSQLite, isMssql } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
 
