@@ -1577,21 +1577,19 @@ describe('Schema (misc)', () => {
             expect(resp).to.equal(false);
           }));
 
-        it('should not parse table name if wrapIdentifier is not specified', () => {
+        it('should not parse table name if wrapIdentifier is not specified', async () => {
           knex.client.config.wrapIdentifier = null;
 
-          knex.schema.hasTable('testTableTwo').then((resp) => {
-            expect(resp).to.equal(false);
-          });
+          const resp = await knex.schema.hasTable('testTableTwo');
+          expect(resp).to.equal(false);
         });
 
-        it('should parse table name if wrapIdentifier is specified', () => {
+        it('should parse table name if wrapIdentifier is specified', async () => {
           knex.client.config.wrapIdentifier = (value, origImpl, queryContext) =>
             origImpl(_.snakeCase(value));
 
-          knex.schema.hasTable('testTableTwo').then((resp) => {
-            expect(resp).to.equal(true);
-          });
+          const resp = await knex.schema.hasTable('testTableTwo');
+          expect(resp).to.equal(true);
         });
       });
 
