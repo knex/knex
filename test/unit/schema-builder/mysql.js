@@ -68,13 +68,14 @@ module.exports = function (dialect) {
         .schemaBuilder()
         .createTable('users', function (table) {
           table.increments('id');
+          // In MySQL a autoincrement column is always a primary key
           table.increments('other_id', { primaryKey: false });
         })
         .toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null auto_increment)'
+        'create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null)'
       );
     });
 
@@ -665,13 +666,14 @@ module.exports = function (dialect) {
       tableSql = client
         .schemaBuilder()
         .table('users', function () {
+          // In MySQL a autoincrement column is always a primary key
           this.bigIncrements('id', { primaryKey: false });
         })
         .toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'alter table `users` add `id` bigint unsigned not null auto_increment'
+        'alter table `users` add `id` bigint unsigned not null'
       );
     });
 
