@@ -472,7 +472,13 @@ export default [
     type: "method",
     method: "increments",
     example: "table.increments(name, options={[primaryKey: boolean = true])",
-    description: "Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). This will be used as the primary key for the table. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial). Note that a primary key is created by default, but you can override this behaviour by passing the `primaryKey` option.",
+    description: "Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). " +
+        "This will be used as the primary key for the table if the column isn't in another primary key. Also available is a bigIncrements " +
+    "if you wish to add a bigint incrementing number (in PostgreSQL bigserial). Note that a primary key is created by default if the column " +
+     "isn't in primary key (with primary function), but you can override this behaviour by passing the `primaryKey` option. If you use this function " +
+    "with primary function, the column is added to the composite primary key. With SQLite, autoincrement column need to be a primary key, " +
+        "so if primary function is used, primary keys are transformed in unique index. MySQL don't support autoincrement column without primary key, so multiple queries" +
+    " are generated to create int column, add increments column to composite primary key then modify the column to autoincrement column.",
     children: [
       {
         type: 'code',
@@ -483,7 +489,15 @@ export default [
             table.increments('userId');
             table.string('name');
           });
-
+          
+          // create table 'users' with a composite primary key ('userId', 'name'). 
+          // increments doesn't generate primary key.
+          knex.schema.createTable('users', function (table) {
+            table.primary(['userId', 'name']);
+            table.increments('userId');
+            table.string('name');
+          });
+          
           // reference the 'users' primary key in new table 'posts'
           knex.schema.createTable('posts', function (table) {
             table.integer('author').unsigned().notNullable();
