@@ -1578,6 +1578,8 @@ describe('Schema (misc)', () => {
           }));
 
         it('should not parse table name if wrapIdentifier is not specified', () => {
+          knex.client.config.wrapIdentifier = null;
+
           knex.schema.hasTable('testTableTwo').then((resp) => {
             expect(resp).to.equal(false);
           });
