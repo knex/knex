@@ -1578,18 +1578,22 @@ describe('Schema (misc)', () => {
           }));
 
         describe('sqlite only', () => {
-          if (!isSQLite(knex)) {
-            return Promise.resolve();
-          }
+          it('should not parse table name if wrapIdentifier is not specified', async function () {
+            if (!isSQLite(knex)) {
+              return this.skip();
+            }
 
-          it('should not parse table name if wrapIdentifier is not specified', async () => {
             knex.client.config.wrapIdentifier = null;
 
             const resp = await knex.schema.hasTable('testTableTwo');
-            expect(resp).to.equal(false);
+            expect(resp).to.equal(true);
           });
 
-          it('should parse table name if wrapIdentifier is specified', async () => {
+          it('should parse table name if wrapIdentifier is specified', async function () {
+            if (!isSQLite(knex)) {
+              return this.skip();
+            }
+
             knex.client.config.wrapIdentifier = (
               value,
               origImpl,
@@ -1597,7 +1601,7 @@ describe('Schema (misc)', () => {
             ) => origImpl(_.snakeCase(value));
 
             const resp = await knex.schema.hasTable('testTableTwo');
-            expect(resp).to.equal(true);
+            expect(resp).to.equal(false);
           });
         });
       });
