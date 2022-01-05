@@ -1242,18 +1242,6 @@ describe('OracleDb SchemaBuilder', function () {
   });
 
   describe('Checks tests', function () {
-    it('allows adding checks', function () {
-      tableSql = client
-        .schemaBuilder()
-        .table('user', function (t) {
-          t.integer('price').check('price > ??', [5]);
-        })
-        .toSQL();
-      expect(tableSql[0].sql).to.equal(
-        'alter table "user" add "price" integer check (price > 5)'
-      );
-    });
-
     it('allows adding checks positive', function () {
       tableSql = client
         .schemaBuilder()
