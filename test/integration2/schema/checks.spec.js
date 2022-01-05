@@ -91,40 +91,6 @@ describe('Checks', () => {
         );
       });
 
-      it('create table with raw check', async () => {
-        await knex.schema.dropTableIfExists('check_test');
-        await knex.schema
-          .createTable('check_test', function (table) {
-            table.string('name').check('?? LIKE ?', ['name', '%val%']);
-          })
-          .testSql((tester) => {
-            tester(
-              ['pg', 'pg-redshift', 'cockroachdb'],
-              [
-                'create table "check_test" ("name" varchar(255) check ("name" LIKE \'%val%\'))',
-              ]
-            );
-            tester(
-              ['oracledb'],
-              [
-                'create table "check_test" ("name" varchar2(255) check ("name" LIKE \'%val%\'))',
-              ]
-            );
-            tester('mysql', [
-              "create table `check_test` (`name` varchar(255) check (`name` LIKE '%val%')) default character set utf8",
-            ]);
-            tester('sqlite3', [
-              "create table `check_test` (`name` varchar(255) check (`name` LIKE '%val%'))",
-            ]);
-            tester('mssql', [
-              "CREATE TABLE [check_test] ([name] nvarchar(255) check ([name] LIKE '%val%'))",
-            ]);
-          });
-
-        await checkTest({ name: 'valentin' }, { name: 'martin' });
-        await checkTest({ name: 'valery' }, { name: 'olivier' });
-      });
-
       it('create table with numeric positive check', async () => {
         await knex.schema.dropTableIfExists('check_test');
         await knex.schema
