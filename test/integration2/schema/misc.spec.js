@@ -1586,7 +1586,7 @@ describe('Schema (misc)', () => {
             knex.client.config.wrapIdentifier = null;
 
             const resp = await knex.schema.hasTable('testTableTwo');
-            expect(resp).to.equal(true);
+            expect(resp).to.be.false;
           });
 
           it('should parse table name if wrapIdentifier is specified', async function () {
@@ -1601,7 +1601,7 @@ describe('Schema (misc)', () => {
             ) => origImpl(_.snakeCase(value));
 
             const resp = await knex.schema.hasTable('testTableTwo');
-            expect(resp).to.equal(false);
+            expect(resp).to.be.true;
           });
         });
       });
