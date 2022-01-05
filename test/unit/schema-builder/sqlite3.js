@@ -214,15 +214,15 @@ describe('SQLite SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .createTable('users', function (table) {
-        table.increments('id');
-        table.increments('other_id', { primaryKey: false });
+        // This make nothing in SQLite, autoincrement without primary key is a syntax error.
+        table.increments('id', { primaryKey: false });
       })
       .toSQL();
 
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table `users` (`id` integer not null primary key autoincrement, `other_id` integer not null autoincrement)'
+      'create table `users` (`id` integer not null primary key autoincrement)'
     );
   });
 
@@ -563,6 +563,7 @@ describe('SQLite SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
+        // This make nothing in SQLite, autoincrement without primary key is a syntax error.
         table.bigIncrements('id', { primaryKey: false });
       })
       .toSQL();
@@ -570,7 +571,7 @@ describe('SQLite SchemaBuilder', function () {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'alter table `users` add column `id` integer not null autoincrement'
+      'alter table `users` add column `id` integer not null primary key autoincrement'
     );
   });
 
