@@ -2148,11 +2148,13 @@ export declare namespace Knex {
       columns: readonly string[],
       foreignKeyName?: string
     ): MultikeyForeignConstraintBuilder;
+    check(checkPredicate: string, bindings?: Record<string, any>, constraintName?: string): TableBuilder;
     dropForeign(columnNames: string | readonly string[], foreignKeyName?: string): TableBuilder;
     dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
     dropTimestamps(useCamelCase?: boolean): TableBuilder;
+    dropChecks(checkConstraintNames: string | string[]): TableBuilder;
     queryContext(context: any): TableBuilder;
   }
 
@@ -2185,6 +2187,7 @@ export declare namespace Knex {
 
   type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
   type storageEngineIndexType = 'hash' | 'btree';
+  type lengthOperator = '>' | '<' | '<=' | '>=' | '!=' | '=';
 
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
@@ -2205,7 +2208,15 @@ export declare namespace Knex {
     queryContext(context: any): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
+    checkPositive(constraintName?: string): ColumnBuilder;
+    checkNegative(constraintName?: string): ColumnBuilder;
+    checkIn(values: string[], constraintName?: string): ColumnBuilder;
+    checkNotIn(values: string[], constraintName?: string): ColumnBuilder;
+    checkBetween(values: any[] | any[][], constraintName?: string): ColumnBuilder;
+    checkLength(operator: lengthOperator, length: number, constraintName?: string): ColumnBuilder;
+    checkRegex(regex: string, constraintName?: string): ColumnBuilder;
   }
+
   interface ForeignConstraintBuilder {
     references(columnName: string): ReferencingColumnBuilder;
   }
