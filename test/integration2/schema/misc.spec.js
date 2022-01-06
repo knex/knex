@@ -2183,6 +2183,42 @@ describe('Schema (misc)', () => {
               }));
         });
       });
+
+      describe('sqlite ddl', () => {
+        before(async () => {
+          if (!isSQLite(knex)) {
+            return;
+          }
+
+          await knex.schema.createTable('CREATE TABLE', (table) => {
+            table.primary();
+            table.integer('alter_column');
+          });
+
+          await knex('CREATE TABLE').insert({ alter_column: 1 });
+        });
+
+        after(async () => {
+          if (!isSQLite(knex)) {
+            return;
+          }
+
+          await knex.schema.dropTable('CREATE TABLE');
+        });
+
+        it('properly executes any ddl command when the table name is a substring of "CREATE TABLE"', async () => {
+          if (!isSQLite(knex)) {
+            return;
+          }
+
+          await expect(
+            knex.schema.alterTable('CREATE TABLE', (table) => {
+              table.string('alter_column').alter();
+            })
+          ).to.not.be.eventually.rejected;
+        });
+      });
+
       it('supports named primary keys', async () => {
         const constraintName = 'pk-test';
         const tableName = 'namedpk';
