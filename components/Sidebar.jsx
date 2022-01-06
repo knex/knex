@@ -233,7 +233,6 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-json">json</a></li>
           <li>– <a href="#Schema-jsonb">jsonb</a></li>
           <li>– <a href="#Schema-uuid">uuid</a></li>
-
           <li>– <a href="#Schema-geometry">geometry</a></li>
           <li>– <a href="#Schema-geography">geography</a></li>
           <li>– <a href="#Schema-point">point</a></li>
@@ -278,6 +277,16 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-checkOption">checkOption</a></li>
           <li>– <a href="#Schema-localCheckOption">localCheckOption</a></li>
           <li>– <a href="#Schema-cascadedCheckOption">cascadedCheckOption</a></li>
+          <li><a href="#Checks"><b>Check:</b></a></li>
+          <li>– <a href="#Schema-check">check</a></li>
+          <li>– <a href="#Schema-checkPositive">checkPositive</a></li>
+          <li>– <a href="#Schema-checkNegative">checkNegative</a></li>
+          <li>– <a href="#Schema-checkIn">checkIn</a></li>
+          <li>– <a href="#Schema-checkNotIn">checkNotIn</a></li>
+          <li>– <a href="#Schema-checkBetween">checkBetween</a></li>
+          <li>– <a href="#Schema-checkLength">checkLength</a></li>
+          <li>– <a href="#Schema-checkRegex">checkRegex</a></li>
+          <li>– <a href="#Schema-dropChecks">dropChecks</a></li>
         </ul>
 
         <a className="toc_title" href="#Raw">

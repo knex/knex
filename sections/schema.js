@@ -1282,5 +1282,175 @@ export default [
     example: "view.cascadedCheckOption()",
     description: "Add cascaded check option on the view definition. On MySQL, PostgreSQL and Redshift.",
     children: [ ]
+  },
+  {
+    type: "heading",
+    size: "md",
+    content: "Checks:",
+    href: "Checks"
+  },
+  {
+    type: "method",
+    method: "check",
+    example: "table.check(checkPredicate, [bindings], [constraintName]))",
+    description: "Specify a check on table or column with raw predicate.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.integer('price_min');
+            table.integer('price');
+            table.check('?? >= ??', ['price', 'price_min']);
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "checkPositive",
+    example: "column.checkPositive([constraintName])",
+    description: "Specify a check on column that test if the value of column is positive.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.integer('price').checkPositive();
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "checkNegative",
+    example: "column.checkNegative([constraintName])",
+    description: "Specify a check on column that test if the value of column is negative.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.integer('price_decrease').checkNegative();
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "checkIn",
+    example: "column.checkIn(values, [constraintName])",
+    description: "Specify a check on column that test if the value of column is contained in a set of specified values.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.string('type').checkIn(['table', 'chair', 'sofa']);
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "checkNotIn",
+    example: "column.checkNotIn(values, [constraintName])",
+    description: "Specify a check on column that test if the value of column is not contains in a set of specified values.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.string('type').checkNotIn(['boot', 'shoe']);
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "checkBetween",
+    example: "column.checkBetween(values, [constraintName])",
+    description: "Specify a check on column that test if the value of column is within a range of values.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.integer('price').checkBetween([0, 100]);
+          })
+          // You can add checks on multiple intervals
+          knex.schema.createTable('product', function (table) {
+            table.integer('price').checkBetween([ [0, 20], [30,40] ]);
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "checkLength",
+    example: "column.checkLength(operator, length, [constraintName])",
+    description: "Specify a check on column that test if the length of a string match the predicate.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            // operator can be =, !=, <=, >=, <, >
+            t.varchar('phone').checkLength('=', 8);
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "checkRegex",
+    example: "column.checkRegex(regex, [constraintName])",
+    description: "Specify a check on column that test if the value match the specified regular expression. In MSSQL only simple pattern matching in supported but not regex syntax.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.string('phone').checkRegex('[0-9]{8}');
+            // In MSSQL, {8} syntax don't work, you need to duplicate [0-9].
+            table.string('phone').checkRegex('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
+          })
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "dropChecks",
+    example: "table.dropChecks([checkConstraintNames])",
+    description: "Drop checks constraint given an array of constraint names.",
+    children: [
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex.schema.createTable('product', function (table) {
+            table.integer('price').checkPositive('price_check'):
+            table.integer('price_proportion').checkBetween([0, 100],'price_proportion_check'):
+            table.dropChecks(['price_check', 'price_proportion_check']);
+          })
+        `
+      }
+    ]
   }
 ]
