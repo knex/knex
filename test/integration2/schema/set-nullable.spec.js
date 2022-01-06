@@ -48,9 +48,9 @@ describe('Schema', () => {
             if (isSQLite(knex)) {
               expect(queries.sql).to.eql([
                 'CREATE TABLE `_knex_temp_alter111` (`id_nullable` integer NULL, `id_not_nullable` integer)',
-                'INSERT INTO _knex_temp_alter111 SELECT * FROM primary_table;',
-                "DROP TABLE 'primary_table'",
-                "ALTER TABLE '_knex_temp_alter111' RENAME TO 'primary_table'",
+                'INSERT INTO "_knex_temp_alter111" SELECT * FROM "primary_table";',
+                'DROP TABLE "primary_table"',
+                'ALTER TABLE "_knex_temp_alter111" RENAME TO "primary_table"',
               ]);
             }
 
