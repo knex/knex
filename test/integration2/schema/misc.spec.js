@@ -1576,6 +1576,34 @@ describe('Schema (misc)', () => {
           knex.schema.hasTable('').then((resp) => {
             expect(resp).to.equal(false);
           }));
+
+        describe('sqlite only', () => {
+          it('should not parse table name if wrapIdentifier is not specified', async function () {
+            if (!isSQLite(knex)) {
+              return this.skip();
+            }
+
+            knex.client.config.wrapIdentifier = null;
+
+            const resp = await knex.schema.hasTable('testTableTwo');
+            expect(resp).to.be.false;
+          });
+
+          it('should parse table name if wrapIdentifier is specified', async function () {
+            if (!isSQLite(knex)) {
+              return this.skip();
+            }
+
+            knex.client.config.wrapIdentifier = (
+              value,
+              origImpl,
+              queryContext
+            ) => origImpl(_.snakeCase(value));
+
+            const resp = await knex.schema.hasTable('testTableTwo');
+            expect(resp).to.be.true;
+          });
+        });
       });
 
       describe('renameTable', () => {
