@@ -50,8 +50,7 @@ describe('Oracle', () => {
       const compiler = knexInstance.client.queryCompiler(qb);
       const sql = compiler.insert();
       expect(sql).to.eql({
-        sql:
-          'insert into "fakeTable" ("id") values (default) returning "id" into ?',
+        sql: 'insert into "fakeTable" ("id") values (default) returning "id" into ?',
         outBinding: [['id']],
         returning: ['id'],
       });

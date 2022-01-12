@@ -13,7 +13,8 @@ module.exports = (knexfile) => {
     if (
       dialect !== 'sqlite3' &&
       dialect !== 'oracledb' &&
-      dialect !== 'mssql'
+      dialect !== 'mssql' &&
+      dialect !== 'cockroachdb'
     ) {
       const knexConf = _.cloneDeep(knexfile[key]);
       knexConf.connection.database = knexConf.connection.db =

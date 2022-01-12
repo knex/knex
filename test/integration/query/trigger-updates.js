@@ -3,6 +3,8 @@
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 const { isMssql } = require('../../util/db-helpers');
+const { dropTables, createAccounts } = require('../../util/tableCreatorHelper');
+const { insertAccounts } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Updates with Triggers', function () {
@@ -13,6 +15,12 @@ module.exports = function (knex) {
       if (!isMssql(knex)) {
         this.skip('This test is MSSQL only');
       }
+    });
+
+    before(async () => {
+      await dropTables(knex);
+      await createAccounts(knex);
+      await insertAccounts(knex);
     });
 
     describe('Trigger Specific Tests', function () {
@@ -199,7 +207,7 @@ module.exports = function (knex) {
         // Reset all table data to original stats of original tests
       });
 
-      it('should allow returning for updates in postgresql', function () {
+      it('should allow returning for updates in PostgreSQL and MSSQL', function () {
         return knex('accounts')
           .where('id', 1)
           .update(

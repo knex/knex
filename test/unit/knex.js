@@ -2,7 +2,7 @@ const Knex = require('../../lib/index');
 const QueryBuilder = require('../../lib/query/querybuilder');
 const { expect } = require('chai');
 const sqliteConfig = require('../knexfile').sqlite3;
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('@vscode/sqlite3');
 const { noop } = require('lodash');
 const sinon = require('sinon');
 
@@ -336,9 +336,8 @@ describe('knex', () => {
     const knexWithParams = knex.withUserParams();
     knexWithParams.client.config.postProcessResponse = null;
     const builderForTable = knex('tableName').where('1 = 1');
-    const builderWithParamsForTable = knexWithParams('tableName').where(
-      '1 = 1'
-    );
+    const builderWithParamsForTable =
+      knexWithParams('tableName').where('1 = 1');
 
     expect(knex.client.config.postProcessResponse).to.equal(noop);
     expect(knexWithParams.client.config.postProcessResponse).to.equal(null);

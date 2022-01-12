@@ -12,8 +12,19 @@ const {
   isOracle,
   isMssql,
   isPostgreSQL,
+  isCockroachDB,
 } = require('../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../util/constants');
+const {
+  dropTables,
+  createAccounts,
+  createTestTableTwo,
+} = require('../../util/tableCreatorHelper');
+const {
+  insertTestTableTwoData,
+  insertAccounts,
+} = require('../../util/dataInsertHelper');
+const { assertNumber } = require('../../util/assertHelper');
 
 module.exports = function (knex) {
   // Certain dialects do not have proper insert with returning, so if this is true
@@ -22,6 +33,15 @@ module.exports = function (knex) {
   let fkid = 1;
 
   describe('Transactions', function () {
+    before(async () => {
+      await dropTables(knex);
+      await createAccounts(knex);
+      await createTestTableTwo(knex);
+
+      await insertAccounts(knex);
+      await insertTestTableTwoData(knex);
+    });
+
     it('can run with asCallback', function (ok) {
       knex
         .transaction(function (t) {
@@ -54,7 +74,7 @@ module.exports = function (knex) {
           return knex.transacting(trx).select(knex.raw(query));
         })
         .then((rows) => {
-          expect(rows[0].result).to.equal(1);
+          assertNumber(knex, rows[0].result, 1);
           return transaction.commit();
         });
     });
@@ -255,7 +275,12 @@ module.exports = function (knex) {
         });
     });
 
-    it('should be able to run schema methods', async () => {
+    it('should be able to run schema methods', async function () {
+      // CockroachDB requires schema changes to happen before any writes, so trying to execute migrations in transaction directly fails due to attempt to get lock first
+      if (isCockroachDB(knex)) {
+        return this.skip();
+      }
+
       let __knexUid,
         count = 0;
       const err = new Error('error message');
@@ -727,63 +752,63 @@ module.exports = function (knex) {
         })
       ).to.be.rejected;
     });
-  });
 
-  it('handles promise rejections in nested Transactions (#3706)', async function () {
-    const fn = sinon.stub();
-    process.on('unhandledRejection', fn);
-    try {
-      await knex.transaction(async function (trx1) {
-        // These two lines together will cause the underlying Transaction
-        // to be rejected.  Prior to #3706, this rejection would be unhandled.
-        const trx2 = await trx1.transaction(undefined, {
-          doNotRejectOnRollback: false,
+    it('handles promise rejections in nested Transactions (#3706)', async function () {
+      const fn = sinon.stub();
+      process.on('unhandledRejection', fn);
+      try {
+        await knex.transaction(async function (trx1) {
+          // These two lines together will cause the underlying Transaction
+          // to be rejected.  Prior to #3706, this rejection would be unhandled.
+          const trx2 = await trx1.transaction(undefined, {
+            doNotRejectOnRollback: false,
+          });
+          await trx2.rollback();
+
+          await expect(trx2.executionPromise).to.have.been.rejected;
         });
-        await trx2.rollback();
 
-        await expect(trx2.executionPromise).to.have.been.rejected;
+        expect(fn).have.not.been.called;
+      } finally {
+        process.removeListener('unhandledRejection', fn);
+      }
+    });
+
+    context('when a `connection` is passed in explicitly', function () {
+      beforeEach(function () {
+        this.sandbox = sinon.createSandbox();
       });
 
-      expect(fn).have.not.been.called;
-    } finally {
-      process.removeListener('unhandledRejection', fn);
-    }
-  });
+      afterEach(function () {
+        this.sandbox.restore();
+      });
 
-  context('when a `connection` is passed in explicitly', function () {
-    beforeEach(function () {
-      this.sandbox = sinon.createSandbox();
-    });
+      it('assumes the caller will release the connection', async function () {
+        this.sandbox.spy(knex.client, 'releaseConnection');
+        const conn = await knex.client.acquireConnection();
+        try {
+          await knex.transaction(
+            async function (trx) {
+              // Do nothing!
+            },
+            { connection: conn }
+          );
+        } catch (err) {
+          // Do nothing.  The transaction could have failed due to some other
+          // bug, and it might have still released the connection in the process.
+        }
 
-    afterEach(function () {
-      this.sandbox.restore();
-    });
+        expect(knex.client.releaseConnection).to.have.not.been.calledWith(conn);
 
-    it('assumes the caller will release the connection', async function () {
-      this.sandbox.spy(knex.client, 'releaseConnection');
-      const conn = await knex.client.acquireConnection();
-      try {
-        await knex.transaction(
-          async function (trx) {
-            // Do nothing!
-          },
-          { connection: conn }
-        );
-      } catch (err) {
-        // Do nothing.  The transaction could have failed due to some other
-        // bug, and it might have still released the connection in the process.
-      }
+        // By design, this line will only be reached if the connection
+        // was never released.
+        knex.client.releaseConnection(conn);
 
-      expect(knex.client.releaseConnection).to.have.not.been.calledWith(conn);
-
-      // By design, this line will only be reached if the connection
-      // was never released.
-      knex.client.releaseConnection(conn);
-
-      // Note: It's still possible that the test might fail due to a Timeout
-      // even after concluding.  This is because the underlying implementation
-      // might have opened another connection by mistake, but never actually
-      // closed it. (Ex: this was the case for OracleDB before fixing #3721)
+        // Note: It's still possible that the test might fail due to a Timeout
+        // even after concluding.  This is because the underlying implementation
+        // might have opened another connection by mistake, but never actually
+        // closed it. (Ex: this was the case for OracleDB before fixing #3721)
+      });
     });
   });
 };

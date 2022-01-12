@@ -5,14 +5,26 @@ const testConfig =
 
 const Db = {
   PostgresSQL: 'postgres',
+  PgNative: 'pgnative',
   MySQL: 'mysql',
   MySQL2: 'mysql2',
   MSSQL: 'mssql',
   SQLite: 'sqlite3',
   Oracle: 'oracledb',
+  CockroachDB: 'cockroachdb',
+  BetterSqlite3: 'better-sqlite3',
 };
 
-const defaultDbs = [Db.PostgresSQL, Db.MySQL, Db.MySQL2, Db.SQLite, Db.MSSQL];
+const defaultDbs = [
+  Db.PostgresSQL,
+  Db.PgNative,
+  Db.MySQL,
+  Db.MySQL2,
+  Db.SQLite,
+  Db.MSSQL,
+  Db.CockroachDB,
+  Db.BetterSqlite3,
+];
 
 function getAllDbs() {
   return process.env.DB ? process.env.DB.split(' ') : defaultDbs;
@@ -30,6 +42,16 @@ const poolSqlite = {
   acquireTimeoutMillis: 1000,
   afterCreate: function (connection, callback) {
     connection.run('PRAGMA foreign_keys = ON', callback);
+  },
+};
+
+const poolBetterSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function (connection, callback) {
+    connection.prepare('PRAGMA foreign_keys = ON').run();
+    callback(null, connection);
   },
 };
 
@@ -97,10 +119,48 @@ const testConfigs = {
     seeds,
   },
 
+  cockroachdb: {
+    client: 'cockroachdb',
+    connection: testConfig.cockroachdb || {
+      adapter: 'cockroachdb',
+      port: 26257,
+      host: 'localhost',
+      database: 'test',
+      user: 'root',
+      password: '',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  pgnative: {
+    client: Db.PgNative,
+    connection: testConfig.pgnative || {
+      adapter: 'postgresql',
+      port: 25433,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
   sqlite3: {
     client: 'sqlite3',
     connection: testConfig.sqlite3 || ':memory:',
     pool: poolSqlite,
+    migrations,
+    seeds,
+  },
+
+  'better-sqlite3': {
+    client: 'better-sqlite3',
+    connection: testConfig.sqlite3 || ':memory:',
+    pool: poolBetterSqlite,
     migrations,
     seeds,
   },

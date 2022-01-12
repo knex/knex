@@ -15,16 +15,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [14.x]
+        node-version: [16.x]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v2.4.1
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
@@ -35,11 +35,14 @@ jobs:
       - name: Run npm install
         run: npm install
 
+      - name: Install pg-native
+        run: npm i pg-native
+
       - name: Run Tests
         run: npm run test:coverage
         env:
           CI: true
-          DB: "postgres mysql mysql2 mssql sqlite3"
+          DB: "postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb"
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Databases

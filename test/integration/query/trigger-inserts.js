@@ -10,12 +10,29 @@ const {
   isSQLite,
   isOracle,
   isMysql,
+  isPgBased,
 } = require('../../util/db-helpers');
+const {
+  dropTables,
+  createTestTableTwo,
+  createAccounts,
+} = require('../../util/tableCreatorHelper');
 
 module.exports = function (knex) {
   describe('Insert with Triggers', function () {
     // Trigger options
     const insertTriggerOptions = { includeTriggerModifications: true };
+
+    beforeEach(async () => {
+      await dropTables(knex);
+      await createTestTableTwo(knex, false);
+      await createAccounts(knex);
+    });
+
+    afterEach(async () => {
+      // ToDo can remove after other tests are migrated
+      // await dropTables(knex)
+    });
 
     before(function () {
       if (!isMssql(knex)) {
@@ -42,11 +59,9 @@ module.exports = function (knex) {
           this.skip('This test is MSSQL only');
         }
 
-        await knex.schema.hasTable('users').then(async function (exists) {
-          if (exists) {
-            await knex.schema.dropTable(primaryTable);
-            await knex.schema.dropTable(secondaryTable);
-          }
+        await knex.schema.hasTable('users').then(async function () {
+          await knex.schema.dropTableIfExists(primaryTable);
+          await knex.schema.dropTableIfExists(secondaryTable);
 
           // Create tables
           await knex.schema.createTable(primaryTable, function (table) {
@@ -186,10 +201,6 @@ module.exports = function (knex) {
         if (!isMssql(knex)) {
           this.skip('This test is MSSQL only');
         }
-
-        // Reset all table data to original stats of original tests
-        await knex('accounts').truncate();
-        await knex('test_table_two').truncate();
       });
 
       it('should handle simple inserts', function () {
@@ -198,7 +209,7 @@ module.exports = function (knex) {
             {
               first_name: 'Test',
               last_name: 'User',
-              email: 'test@example.com',
+              email: 'test1@example.com',
               logins: 1,
               about: 'Lorem ipsum Dolore labore incididunt enim.',
               created_at: TEST_TIMESTAMP,
@@ -214,7 +225,7 @@ module.exports = function (knex) {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -228,7 +239,7 @@ module.exports = function (knex) {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -242,7 +253,7 @@ module.exports = function (knex) {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -256,7 +267,7 @@ module.exports = function (knex) {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -270,7 +281,7 @@ module.exports = function (knex) {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -287,7 +298,7 @@ module.exports = function (knex) {
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
-                'test@example.com',
+                'test1@example.com',
                 'Test',
                 'User',
                 1,
@@ -365,7 +376,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['2', '3']
+              ['1', '2']
             );
             tester(
               'pg-redshift',
@@ -434,7 +445,7 @@ module.exports = function (knex) {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['2', '3']
+              ['1', '2']
             );
             tester(
               'mssql',
@@ -585,7 +596,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['4', '5']
+              ['1', '2']
             );
             tester(
               'pg-redshift',
@@ -654,7 +665,7 @@ module.exports = function (knex) {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['4', '5']
+              ['1', '2']
             );
             tester(
               'mssql',
@@ -680,11 +691,26 @@ module.exports = function (knex) {
           });
       });
 
-      it('will fail when multiple inserts are made into a unique column', function () {
+      it('will fail when multiple inserts are made into a unique column', async function () {
         if (isRedshift(knex)) {
           return this.skip();
         }
-        return knex('accounts')
+
+        await knex('accounts').insert(
+          {
+            first_name: 'Test',
+            last_name: 'User',
+            email: 'test5@example.com',
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            logins: 2,
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          'id',
+          insertTriggerOptions
+        );
+
+        await knex('accounts')
           .where('id', '>', 1)
           .orWhere('x', 2)
           .insert(
@@ -810,7 +836,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [7]
+              [1]
             );
             tester(
               'pg',
@@ -824,7 +850,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['7']
+              ['1']
             );
             tester(
               'pg-redshift',
@@ -869,7 +895,7 @@ module.exports = function (knex) {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['7']
+              ['1']
             );
             tester(
               'mssql',
@@ -883,7 +909,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: '7' }]
+              [{ id: '1' }]
             );
           });
       });
@@ -1020,7 +1046,7 @@ module.exports = function (knex) {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [4]
+              [1]
             );
             tester(
               'pg',
@@ -1056,7 +1082,7 @@ module.exports = function (knex) {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [4]
+              [1]
             );
             tester(
               'oracledb',
@@ -1135,12 +1161,11 @@ module.exports = function (knex) {
               ],
               [
                 {
-                  id: 5,
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
@@ -1157,12 +1182,11 @@ module.exports = function (knex) {
               ],
               [
                 {
-                  id: 5,
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
@@ -1176,24 +1200,22 @@ module.exports = function (knex) {
               ],
               [
                 {
-                  id: 5,
+                  id: 1,
                   account_id: 10,
                   details:
                     'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                   status: 0,
-                  json_data: null,
                 },
               ]
             );
           })
           .then(function (rows) {
             expect(rows.length).to.equal(1);
-            if (isPostgreSQL(knex)) {
+            if (isPgBased(knex)) {
               expect(_.keys(rows[0]).length).to.equal(5);
               expect(rows[0].account_id).to.equal(insertData.account_id);
               expect(rows[0].details).to.equal(insertData.details);
               expect(rows[0].status).to.equal(insertData.status);
-              expect(rows[0].json_data).to.equal(null);
             }
           });
       });
@@ -1261,7 +1283,7 @@ module.exports = function (knex) {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'ignoretest@example.com',
+          email: 'ignoretest1@example.com',
           name: 'BEFORE',
         });
 
@@ -1269,7 +1291,7 @@ module.exports = function (knex) {
         try {
           await knex('upsert_tests')
             .insert(
-              { email: 'ignoretest@example.com', name: 'AFTER' },
+              { email: 'ignoretest1@example.com', name: 'AFTER' },
               'email',
               insertTriggerOptions
             )
@@ -1279,17 +1301,17 @@ module.exports = function (knex) {
               tester(
                 'mysql',
                 'insert ignore into `upsert_tests` (`email`, `name`) values (?, ?)',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do nothing returning "email"',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
-                ['ignoretest@example.com', 'AFTER']
+                ['ignoretest1@example.com', 'AFTER']
               );
             });
         } catch (err) {
@@ -1303,7 +1325,7 @@ module.exports = function (knex) {
 
         // Assert: there is still only 1 row, and that it HAS NOT been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'ignoretest@example.com' })
+          .where({ email: 'ignoretest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('BEFORE');
@@ -1326,7 +1348,7 @@ module.exports = function (knex) {
         // Setup: Create row to conflict against
         await knex('upsert_composite_key_tests').insert({
           org: 'acme-inc',
-          email: 'ignoretest@example.com',
+          email: 'ignoretest1@example.com',
           name: 'BEFORE',
         });
 
@@ -1336,7 +1358,7 @@ module.exports = function (knex) {
             .insert(
               {
                 org: 'acme-inc',
-                email: 'ignoretest@example.com',
+                email: 'ignoretest1@example.com',
                 name: 'AFTER',
               },
               'email',
@@ -1348,17 +1370,17 @@ module.exports = function (knex) {
               tester(
                 'mysql',
                 'insert ignore into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?)',
-                ['ignoretest@example.com', 'AFTER', 'acme-inc']
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
               tester(
                 'pg',
                 'insert into "upsert_composite_key_tests" ("email", "name", "org") values (?, ?, ?) on conflict ("org", "email") do nothing returning "email"',
-                ['ignoretest@example.com', 'AFTER', 'acme-inc']
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
-                ['ignoretest@example.com', 'AFTER', 'acme-inc']
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
             });
         } catch (err) {
@@ -1372,7 +1394,7 @@ module.exports = function (knex) {
 
         // Assert: there is still only 1 row, and that it HAS NOT been updated
         const rows = await knex('upsert_composite_key_tests')
-          .where({ email: 'ignoretest@example.com' })
+          .where({ email: 'ignoretest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('BEFORE');
@@ -1393,7 +1415,7 @@ module.exports = function (knex) {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'mergetest@example.com',
+          email: 'mergetest1@example.com',
           name: 'BEFORE',
         });
 
@@ -1401,7 +1423,7 @@ module.exports = function (knex) {
         try {
           await knex('upsert_tests')
             .insert(
-              { email: 'mergetest@example.com', name: 'AFTER' },
+              { email: 'mergetest1@example.com', name: 'AFTER' },
               'email',
               insertTriggerOptions
             )
@@ -1411,17 +1433,17 @@ module.exports = function (knex) {
               tester(
                 'mysql',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
-                ['mergetest@example.com', 'AFTER']
+                ['mergetest1@example.com', 'AFTER']
               );
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" returning "email"',
-                ['mergetest@example.com', 'AFTER']
+                ['mergetest1@example.com', 'AFTER']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
-                ['mergetest@example.com', 'AFTER']
+                ['mergetest1@example.com', 'AFTER']
               );
             });
         } catch (err) {
@@ -1435,7 +1457,7 @@ module.exports = function (knex) {
 
         // Check that row HAS been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'mergetest@example.com' })
+          .where({ email: 'mergetest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('AFTER');
@@ -1457,7 +1479,7 @@ module.exports = function (knex) {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'mergetest@example.com',
+          email: 'mergetest1@example.com',
           role: 'tester',
           name: 'BEFORE',
         });
@@ -1466,7 +1488,7 @@ module.exports = function (knex) {
         try {
           await knex('upsert_tests')
             .insert(
-              { email: 'mergetest@example.com', name: 'AFTER' },
+              { email: 'mergetest1@example.com', name: 'AFTER' },
               'email',
               insertTriggerOptions
             )
@@ -1477,12 +1499,12 @@ module.exports = function (knex) {
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "upsert_tests"."role" = ? returning "email"',
-                ['mergetest@example.com', 'AFTER', 'tester']
+                ['mergetest1@example.com', 'AFTER', 'tester']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
-                ['mergetest@example.com', 'AFTER', 'tester']
+                ['mergetest1@example.com', 'AFTER', 'tester']
               );
             });
         } catch (err) {
@@ -1505,7 +1527,7 @@ module.exports = function (knex) {
 
         // Check that row HAS been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'mergetest@example.com' })
+          .where({ email: 'mergetest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('AFTER');
@@ -1527,7 +1549,7 @@ module.exports = function (knex) {
 
         // Setup: Create row to conflict against
         await knex('upsert_tests').insert({
-          email: 'mergetest@example.com',
+          email: 'mergetest1@example.com',
           role: 'tester',
           name: 'BEFORE',
         });
@@ -1536,7 +1558,7 @@ module.exports = function (knex) {
         try {
           await knex('upsert_tests')
             .insert(
-              { email: 'mergetest@example.com', name: 'AFTER' },
+              { email: 'mergetest1@example.com', name: 'AFTER' },
               'email',
               insertTriggerOptions
             )
@@ -1547,12 +1569,12 @@ module.exports = function (knex) {
               tester(
                 'pg',
                 'insert into "upsert_tests" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "upsert_tests"."role" = ? returning "email"',
-                ['mergetest@example.com', 'AFTER', 'fake-role']
+                ['mergetest1@example.com', 'AFTER', 'fake-role']
               );
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
-                ['mergetest@example.com', 'AFTER', 'fake-role']
+                ['mergetest1@example.com', 'AFTER', 'fake-role']
               );
             });
         } catch (err) {
@@ -1575,7 +1597,7 @@ module.exports = function (knex) {
 
         // Check that row HAS NOT been updated
         const rows = await knex('upsert_tests')
-          .where({ email: 'mergetest@example.com' })
+          .where({ email: 'mergetest1@example.com' })
           .select();
         expect(rows.length).to.equal(1);
         expect(rows[0].name).to.equal('BEFORE');

@@ -6,6 +6,7 @@ const { expect } = require('chai');
 let tableSql;
 
 const Redshift_Client = require('../../../lib/dialects/redshift');
+const knex = require('../../../knex');
 const client = new Redshift_Client({ client: 'redshift' });
 
 const equal = require('assert').equal;
@@ -26,6 +27,37 @@ describe('Redshift SchemaBuilder', function () {
     );
   });
 
+  it('create table like another', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users')
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" (like "users")'
+    );
+  });
+
+  it('create table like another with additional columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('add_num_col');
+      })
+      .toSQL();
+    expect(tableSql.length).to.equal(3);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" (like "users")'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users_like" add column "add_col" varchar(max)'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'alter table "users_like" add column "add_num_col" integer'
+    );
+  });
+
   it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()
@@ -41,6 +73,154 @@ describe('Redshift SchemaBuilder', function () {
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add column "email" varchar(255)'
     );
+  });
+
+  describe('views', function () {
+    let knexRedShift;
+
+    before(function () {
+      knexRedShift = knex({
+        client: 'redshift',
+        connection: {},
+      });
+    });
+
+    it('basic create view', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('basic create view without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view "adults" as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view or replace', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view or replace "adults" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view with check options', async function () {
+      const viewSqlLocalCheck = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+          view.localCheckOption();
+        })
+        .toSQL();
+      equal(1, viewSqlLocalCheck.length);
+      expect(viewSqlLocalCheck[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with local check option'
+      );
+
+      const viewSqlCascadedCheck = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+          view.cascadedCheckOption();
+        })
+        .toSQL();
+      equal(1, viewSqlCascadedCheck.length);
+      expect(viewSqlCascadedCheck[0].sql).to.equal(
+        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with cascaded check option'
+      );
+    });
+
+    it('drop view', function () {
+      tableSql = client.schemaBuilder().dropView('users').toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "users"');
+    });
+
+    it('drop view with schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .dropView('users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view "myschema"."users"');
+    });
+
+    it('rename and change default of column of view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .view('users', function (view) {
+          view.column('oldName').rename('newName').defaultTo('10');
+        })
+        .toSQL();
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter view "users" rename "oldName" to "newName"'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter view "users" alter "oldName" set default 10'
+      );
+    });
+
+    it('rename view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .renameView('old_view', 'new_view')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter view "old_view" rename to "new_view"'
+      );
+    });
+
+    it('create materialized view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createMaterializedView('mat_view', function (view) {
+          view.columns(['name']);
+          view.as(knexRedShift('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('refresh view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .refreshMaterializedView('view_to_refresh')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'refresh materialized view "view_to_refresh"'
+      );
+    });
   });
 
   it('alter table with schema', function () {
@@ -670,6 +850,34 @@ describe('Redshift SchemaBuilder', function () {
     );
   });
 
+  it('adding uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo');
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" char(36)'
+    );
+  });
+
+  it('adding binary uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo', { useBinaryUuid: true });
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" binary(16)'
+    );
+  });
+
   it('allows adding default json objects when the column is json', function () {
     tableSql = client
       .schemaBuilder()
@@ -792,5 +1000,130 @@ describe('Redshift SchemaBuilder', function () {
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add constraint "testconstraintname" primary key ("test")'
     );
+  });
+
+  describe('Checks tests', function () {
+    it('allows adding checks positive', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkPositive();
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" > 0)'
+      );
+    });
+
+    it('allows adding checks negative', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkNegative();
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" < 0)'
+      );
+    });
+
+    it('allows adding checks in', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.string('animal').checkIn(['cat', 'dog']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "animal" varchar(255) check ("animal" in (\'cat\',\'dog\'))'
+      );
+    });
+
+    it('allows adding checks not in', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.string('animal').checkNotIn(['cat', 'dog']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "animal" varchar(255) check ("animal" not in (\'cat\',\'dog\'))'
+      );
+    });
+
+    it('allows adding checks between', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkBetween([10, 15]);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" between 10 and 15)'
+      );
+    });
+
+    it('allows adding checks between with multiple intervals', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkBetween([
+            [10, 15],
+            [20, 25],
+          ]);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" between 10 and 15 or "price" between 20 and 25)'
+      );
+    });
+
+    it('allows adding checks between strings', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkBetween(['banana', 'orange']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" between \'banana\' and \'orange\')'
+      );
+    });
+
+    it('allows length equals', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.varchar('phone').checkLength('=', 8);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "phone" varchar(255) check (length("phone") = 8)'
+      );
+    });
+
+    it('check regexp', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.varchar('phone').checkRegex('[0-9]{8}');
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "phone" varchar(255) check ("phone" ~ \'[0-9]{8}\')'
+      );
+    });
+
+    it('drop checks', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.dropChecks(['check_constraint1', 'check_constraint2']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" drop constraint check_constraint1, drop constraint check_constraint2'
+      );
+    });
   });
 });

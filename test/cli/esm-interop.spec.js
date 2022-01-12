@@ -3,7 +3,7 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const { execCommand } = require('cli-testlab');
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('@vscode/sqlite3');
 const semver = require('semver');
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 const NODE_VERSION = Number((/v(\d+)/i.exec(process.version) || [])[1]);
@@ -863,6 +863,11 @@ describe('esm interop and mjs support', () => {
 
   for (const spec of fixture) {
     it(spec.title, async function () {
+      // This whole suite got broken in this version
+      if (semver.gte(process.version, 'v16.6.0')) {
+        return this.skip();
+      }
+
       const {
         testCase,
         knexfile = 'knexfile.js',
