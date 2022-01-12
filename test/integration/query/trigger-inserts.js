@@ -245,7 +245,7 @@ module.exports = function (knex) {
                 1,
                 TEST_TIMESTAMP,
               ],
-              ['1']
+              [{ id: 1 }]
             );
             tester(
               'pg-redshift',
@@ -290,7 +290,7 @@ module.exports = function (knex) {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['1']
+              [{ id: 1 }]
             );
             tester(
               'mssql',
@@ -466,7 +466,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: '2' }, { id: '3' }]
+              [{ id: '1' }, { id: '2' }]
             );
           });
       });
@@ -686,7 +686,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: '4' }, { id: '5' }]
+              [{ id: '1' }, { id: '2' }]
             );
           });
       });
@@ -850,7 +850,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['1']
+              [[{ id: 1 }]]
             );
             tester(
               'pg-redshift',
@@ -937,7 +937,7 @@ module.exports = function (knex) {
                   'pg',
                   'insert into "trigger_retest_insert" default values returning "id"',
                   [],
-                  [1]
+                  [{ id: 1 }]
                 );
                 tester(
                   'pg-redshift',
@@ -959,7 +959,7 @@ module.exports = function (knex) {
                       return v.toString() === '[object ReturningHelper:id]';
                     },
                   ],
-                  ['1']
+                  [{ id: 1 }]
                 );
                 tester(
                   'mssql',

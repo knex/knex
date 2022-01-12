@@ -98,7 +98,7 @@ describe('Inserts', function () {
                 1,
                 TEST_TIMESTAMP,
               ],
-              ['1']
+              [{ id: 1 }]
             );
             tester(
               'pg-redshift',
@@ -143,7 +143,7 @@ describe('Inserts', function () {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['1']
+              [{ id: 1 }]
             );
             tester(
               'mssql',
@@ -157,7 +157,7 @@ describe('Inserts', function () {
                 1,
                 TEST_TIMESTAMP,
               ],
-              ['1']
+              [{ id: 1 }]
             );
           });
       });
@@ -228,7 +228,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['1', '2']
+              [{ id: 1 }, { id: 2 }]
             );
             tester(
               'pg-redshift',
@@ -297,7 +297,7 @@ describe('Inserts', function () {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['1', '2']
+              [{ id: 1 }, { id: 2 }]
             );
             tester(
               'mssql',
@@ -318,7 +318,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['1', '2']
+              [{ id: 1 }, { id: 2 }]
             );
           });
       });
@@ -446,7 +446,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['1', '2']
+              [{ id: 1 }, { id: 2 }]
             );
             tester(
               'pg-redshift',
@@ -515,7 +515,7 @@ describe('Inserts', function () {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['1', '2']
+              [{ id: 1 }, { id: 2 }]
             );
             tester(
               'mssql',
@@ -536,7 +536,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['1', '2']
+              [{ id: 1 }, { id: 2 }]
             );
           });
       });
@@ -696,7 +696,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['1']
+              [[{ id: 1 }]]
             );
             tester(
               'pg-redshift',
@@ -741,7 +741,7 @@ describe('Inserts', function () {
                   return v.toString() === '[object ReturningHelper:id]';
                 },
               ],
-              ['1']
+              [[{ id: 1 }]]
             );
             tester(
               'mssql',
@@ -755,7 +755,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              ['1']
+              [{ id: 1 }]
             );
           });
       });
@@ -883,7 +883,7 @@ describe('Inserts', function () {
                   'pg',
                   'insert into "test_default_table" default values returning "id"',
                   [],
-                  [1]
+                  [{ id: 1 }]
                 );
                 tester(
                   'pg-redshift',
@@ -905,13 +905,13 @@ describe('Inserts', function () {
                       return v.toString() === '[object ReturningHelper:id]';
                     },
                   ],
-                  ['1']
+                  [{ id: 1 }]
                 );
                 tester(
                   'mssql',
                   'insert into [test_default_table] output inserted.[id] default values',
                   [],
-                  [1]
+                  [{ id: 1 }]
                 );
               });
           });
@@ -939,7 +939,7 @@ describe('Inserts', function () {
                   'pg',
                   'insert into "test_default_table2" default values returning "id"',
                   [],
-                  [1]
+                  [{ id: 1 }]
                 );
                 tester(
                   'pg-redshift',
@@ -961,13 +961,13 @@ describe('Inserts', function () {
                       return v.toString() === '[object ReturningHelper:id]';
                     },
                   ],
-                  ['1']
+                  [{ id: 1 }]
                 );
                 tester(
                   'mssql',
                   'insert into [test_default_table2] output inserted.[id] default values',
                   [],
-                  [1]
+                  [{ id: 1 }]
                 );
               });
           });
