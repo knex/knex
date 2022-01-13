@@ -850,7 +850,7 @@ module.exports = function (knex) {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }]
+              [{ id: '1' }]
             );
             tester(
               'pg-redshift',
@@ -994,7 +994,7 @@ module.exports = function (knex) {
                   'pg',
                   'insert into "trigger_retest_insert2" default values returning "id"',
                   [],
-                  [1]
+                  [{ id: '1' }]
                 );
                 tester(
                   'pg-redshift',
@@ -1022,7 +1022,7 @@ module.exports = function (knex) {
                   'mssql',
                   'select top(0) [t].[id] into #out from [trigger_retest_insert2] as t left join [trigger_retest_insert2] on 0=1;insert into [trigger_retest_insert2] output inserted.[id] into #out default values; select [id] from #out; drop table #out;',
                   [],
-                  [{ id: 1 }]
+                  [{ id: '1' }]
                 );
               });
           });

@@ -696,7 +696,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }]
+              [{ id: '1' }]
             );
             tester(
               'pg-redshift',
