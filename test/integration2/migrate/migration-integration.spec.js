@@ -247,9 +247,18 @@ describe('Migrations', function () {
                     .del();
                 }
                 return knex('knex_migrations')
-                  .where('id', migration1[0])
-                  .orWhere('id', migration2[0])
-                  .orWhere('id', migration3[0])
+                  .where(
+                    'id',
+                    !isNaN(migration1[0]) ? migration1[0] : migration1[0].id
+                  )
+                  .orWhere(
+                    'id',
+                    !isNaN(migration2[0]) ? migration2[0] : migration2[0].id
+                  )
+                  .orWhere(
+                    'id',
+                    !isNaN(migration3[0]) ? migration3[0] : migration3[0].id
+                  )
                   .del();
               });
           });
