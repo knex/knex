@@ -98,7 +98,7 @@ describe('Inserts', function () {
                 1,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }]
+              [{ id: '1' }]
             );
             tester(
               'pg-redshift',
@@ -157,7 +157,7 @@ describe('Inserts', function () {
                 1,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }]
+              [{ id: '1' }]
             );
           });
       });
@@ -228,7 +228,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }, { id: 2 }]
+              [{ id: '1' }, { id: '2' }]
             );
             tester(
               'pg-redshift',
@@ -318,7 +318,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }, { id: 2 }]
+              [{ id: '1' }, { id: '2' }]
             );
           });
       });
@@ -446,7 +446,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }, { id: 2 }]
+              [{ id: '1' }, { id: '2' }]
             );
             tester(
               'pg-redshift',
@@ -536,7 +536,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }, { id: 2 }]
+              [{ id: '1' }, { id: '2' }]
             );
           });
       });
@@ -696,7 +696,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [[{ id: 1 }]]
+              [{ id: 1 }]
             );
             tester(
               'pg-redshift',
@@ -755,7 +755,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [{ id: 1 }]
+              [{ id: '1' }]
             );
           });
       });
