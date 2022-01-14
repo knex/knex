@@ -1690,29 +1690,35 @@ describe('Schema (misc)', () => {
 
       describe('addColumn', () => {
         describe('mysql only', () => {
-          before(() =>
-            knex.schema
-              .createTable('add_column_test_mysql', (tbl) => {
-                tbl.integer('field_foo');
-                tbl.integer('field_bar');
-              })
-              .then(() =>
-                knex.schema.alterTable('add_column_test_mysql', (tbl) => {
-                  tbl.integer('field_foo').comment('foo').alter();
-                  tbl.integer('field_bar').comment('bar').alter();
-                  tbl.integer('field_first').first().comment('First');
-                  tbl
-                    .integer('field_after_foo')
-                    .after('field_foo')
-                    .comment('After');
-                  tbl
-                    .increments('field_nondefault_increments')
-                    .comment('Comment on increment col');
+          before(() => {
+            if (isMysql(knex)) {
+              return knex.schema
+                .createTable('add_column_test_mysql', (tbl) => {
+                  tbl.integer('field_foo');
+                  tbl.integer('field_bar');
                 })
-              )
-          );
+                .then(() =>
+                  knex.schema.alterTable('add_column_test_mysql', (tbl) => {
+                    tbl.integer('field_foo').comment('foo').alter();
+                    tbl.integer('field_bar').comment('bar').alter();
+                    tbl.integer('field_first').first().comment('First');
+                    tbl
+                      .integer('field_after_foo')
+                      .after('field_foo')
+                      .comment('After');
+                    tbl
+                      .increments('field_nondefault_increments')
+                      .comment('Comment on increment col');
+                  })
+                )
+            }
+          });
 
-          after(() => knex.schema.dropTable('add_column_test_mysql'));
+          after(() => {
+            if (isMysql(knex)) {
+              knex.schema.dropTable('add_column_test_mysql')
+            }
+          });
 
           it('should columns order be correctly with after and first', function () {
             if (!isMysql(knex)) {
