@@ -552,7 +552,7 @@ describe('Schema (misc)', () => {
 
         describe('enum - postgres', () => {
           afterEach(async () => {
-            if (!isPgBased(knex)) {
+            if (isPgBased(knex)) {
               await knex.schema
                 .dropTableIfExists('native_enum_test')
                 .raw('DROP TYPE IF EXISTS "foo_type"')
