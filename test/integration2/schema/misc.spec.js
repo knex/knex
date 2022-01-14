@@ -381,10 +381,6 @@ describe('Schema (misc)', () => {
         });
 
         describe('increments types - postgres', () => {
-          if (!isPgBased(knex)) {
-            return Promise.resolve();
-          }
-
           before(async () => {
             await knex.schema.createTable(
               'increments_columns_1_test',
@@ -405,7 +401,11 @@ describe('Schema (misc)', () => {
             await knex.schema.dropTable('increments_columns_2_test');
           });
 
-          it('#2210 - creates an incrementing column with a comment', () => {
+          it('#2210 - creates an incrementing column with a comment', function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
+
             const table_name = 'increments_columns_1_test';
             const expected_column = 'id';
             const expected_comment = 'comment_1';
@@ -441,7 +441,11 @@ describe('Schema (misc)', () => {
               });
           });
 
-          it('#2210 - creates an incrementing column with a specified name and comment', () => {
+          it('#2210 - creates an incrementing column with a specified name and comment', function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
+
             const table_name = 'increments_columns_2_test';
             const expected_column = 'named_2';
             const expected_comment = 'comment_2';
@@ -479,10 +483,6 @@ describe('Schema (misc)', () => {
         });
 
         describe('increments types - mysql', () => {
-          if (!isMysql(knex)) {
-            return Promise.resolve();
-          }
-
           before(() =>
             Promise.all([
               knex.schema.createTable('increments_columns_1_test', (table) => {
@@ -501,7 +501,11 @@ describe('Schema (misc)', () => {
             ])
           );
 
-          it('#2210 - creates an incrementing column with a comment', () => {
+          it('#2210 - creates an incrementing column with a comment', function () {
+            if (!isMysql(knex)) {
+              return this.skip();
+            }
+
             const table_name = 'increments_columns_1_test';
             const expected_column = 'id';
             const expected_comment = 'comment_1';
@@ -521,7 +525,11 @@ describe('Schema (misc)', () => {
               });
           });
 
-          it('#2210 - creates an incrementing column with a specified name and comment', () => {
+          it('#2210 - creates an incrementing column with a specified name and comment', function () {
+            if (!isMysql(knex)) {
+              return this.skip();
+            }
+
             const table_name = 'increments_columns_2_test';
             const expected_column = 'named_2';
             const expected_comment = 'comment_2';
@@ -543,19 +551,20 @@ describe('Schema (misc)', () => {
         });
 
         describe('enum - postgres', () => {
-          if (!isPgBased(knex)) {
-            return Promise.resolve();
-          }
+          afterEach(async () => {
+            if (isPgBased(knex)) {
+              await knex.schema
+                .dropTableIfExists('native_enum_test')
+                .raw('DROP TYPE IF EXISTS "foo_type"')
+                .raw('DROP SCHEMA IF EXISTS "test" CASCADE')
+          }});
 
-          afterEach(() =>
-            knex.schema
-              .dropTableIfExists('native_enum_test')
-              .raw('DROP TYPE IF EXISTS "foo_type"')
-              .raw('DROP SCHEMA IF EXISTS "test" CASCADE')
-          );
+          it('uses native type with schema', function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
 
-          it('uses native type with schema', () =>
-            knex.schema.createSchemaIfNotExists('test').then(() => {
+            return knex.schema.createSchemaIfNotExists('test').then(() => {
               return knex.schema
                 .withSchema('test')
                 .createTable('native_enum_test', (table) => {
@@ -577,10 +586,15 @@ describe('Schema (misc)', () => {
                     ]
                   );
                 });
-            }));
+            });
+          });
 
-          it('uses native type when useNative is specified', () =>
-            knex.schema
+          it('uses native type when useNative is specified', function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
+
+            return knex.schema
               .createTable('native_enum_test', (table) => {
                 table
                   .enum('foo_column', ['a', 'b', 'c'], {
@@ -598,10 +612,14 @@ describe('Schema (misc)', () => {
                     'create table "native_enum_test" ("foo_column" "foo_type" not null, "id" uuid not null)',
                   ]
                 );
-              }));
+              });
+          });
 
-          it('uses an existing native type when useNative and existingType are specified', () =>
-            knex
+          it('uses an existing native type when useNative and existingType are specified', function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
+            return knex
               .raw("create type \"foo_type\" as enum ('a', 'b', 'c')")
               .then(() => {
                 return knex.schema
@@ -623,7 +641,8 @@ describe('Schema (misc)', () => {
                       ]
                     );
                   });
-              }));
+              });
+          });
         });
 
         it('Callback function must be supplied', () => {
@@ -1627,11 +1646,11 @@ describe('Schema (misc)', () => {
             }));
 
           describe('sqlite only', () => {
-            if (!isSQLite(knex)) {
-              return Promise.resolve();
-            }
+            it('checks whether a column exists without being case sensitive, resolving with a boolean', async function () {
+              if (!isSQLite(knex)) {
+                return this.skip();
+              }
 
-            it('checks whether a column exists without being case sensitive, resolving with a boolean', async () => {
               const exists = await knex.schema.hasColumn(
                 'accounts',
                 'FIRST_NAME'
@@ -1644,10 +1663,6 @@ describe('Schema (misc)', () => {
 
         describe('using processorss', () => {
           describe('sqlite and pg only', () => {
-            if (!isSQLite(knex) && !isPgBased(knex)) {
-              return Promise.resolve();
-            }
-
             beforeEach(() => {
               knex.client.config.postProcessResponse = postProcessResponse;
               knex.client.config.wrapIdentifier = wrapIdentifier;
@@ -1658,46 +1673,59 @@ describe('Schema (misc)', () => {
               knex.client.config.wrapIdentifier = null;
             });
 
-            it('checks whether a column exists, resolving with a boolean', () =>
-              knex.schema.hasColumn('accounts', 'firstName').then((exists) => {
-                expect(exists).to.equal(false);
-              }));
+            it('checks whether a column exists, resolving with a boolean', async function () {
+              if (!isSQLite(knex) && !isPgBased(knex)) {
+                return this.skip();
+              }
+
+              const exists = await knex.schema.hasColumn(
+                'accounts',
+                'firstName'
+              );
+              expect(exists).to.equal(false);
+            });
           });
         });
       });
 
       describe('addColumn', () => {
         describe('mysql only', () => {
-          if (!isMysql(knex)) {
-            return Promise.resolve(true);
-          }
-
-          before(() =>
-            knex.schema
-              .createTable('add_column_test_mysql', (tbl) => {
-                tbl.integer('field_foo');
-                tbl.integer('field_bar');
-              })
-              .then(() =>
-                knex.schema.alterTable('add_column_test_mysql', (tbl) => {
-                  tbl.integer('field_foo').comment('foo').alter();
-                  tbl.integer('field_bar').comment('bar').alter();
-                  tbl.integer('field_first').first().comment('First');
-                  tbl
-                    .integer('field_after_foo')
-                    .after('field_foo')
-                    .comment('After');
-                  tbl
-                    .increments('field_nondefault_increments')
-                    .comment('Comment on increment col');
+          before(() => {
+            if (isMysql(knex)) {
+              return knex.schema
+                .createTable('add_column_test_mysql', (tbl) => {
+                  tbl.integer('field_foo');
+                  tbl.integer('field_bar');
                 })
-              )
-          );
+                .then(() =>
+                  knex.schema.alterTable('add_column_test_mysql', (tbl) => {
+                    tbl.integer('field_foo').comment('foo').alter();
+                    tbl.integer('field_bar').comment('bar').alter();
+                    tbl.integer('field_first').first().comment('First');
+                    tbl
+                      .integer('field_after_foo')
+                      .after('field_foo')
+                      .comment('After');
+                    tbl
+                      .increments('field_nondefault_increments')
+                      .comment('Comment on increment col');
+                  })
+                )
+            }
+          });
 
-          after(() => knex.schema.dropTable('add_column_test_mysql'));
+          after(() => {
+            if (isMysql(knex)) {
+              knex.schema.dropTable('add_column_test_mysql')
+            }
+          });
 
-          it('should columns order be correctly with after and first', () =>
-            knex
+          it('should columns order be correctly with after and first', function () {
+            if (!isMysql(knex)) {
+              return this.skip();
+            }
+
+            return knex
               .raw('SHOW CREATE TABLE `add_column_test_mysql`')
               .then((schema) => {
                 // .columnInfo() keys does not guaranteed fields order.
@@ -1727,7 +1755,8 @@ describe('Schema (misc)', () => {
                 expect(comments[2]).to.equal('After');
                 expect(comments[3]).to.equal('bar');
                 expect(comments[4]).to.equal('Comment on increment col');
-              }));
+              });
+          });
         });
       });
 
@@ -2118,10 +2147,10 @@ describe('Schema (misc)', () => {
         });
       });
 
-      it('should warn attempting to create primary from nonexistent columns', () => {
+      it('should warn attempting to create primary from nonexistent columns', function () {
         // Redshift only
         if (!isRedshift(knex)) {
-          return Promise.resolve(true);
+          return this.skip();
         }
         const tableName = 'no_test_column';
         const constraintName = 'testconstraintname';
@@ -2154,9 +2183,9 @@ describe('Schema (misc)', () => {
       });
 
       //Unit tests checks SQL -- This will test running those queries, no hard assertions here.
-      it('#1430 - .primary() & .dropPrimary() same for all dialects', async () => {
+      it('#1430 - .primary() & .dropPrimary() same for all dialects', async function () {
         if (isSQLite(knex)) {
-          return Promise.resolve();
+          return this.skip();
         }
         const constraintName = 'testconstraintname';
         const tableName = 'primarytest';
@@ -2179,9 +2208,6 @@ describe('Schema (misc)', () => {
         describe('sqlite3 only', () => {
           const tableName = 'invalid_field_test_sqlite3';
           const fieldName = 'field_foo';
-          if (!isSQLite(knex)) {
-            return Promise.resolve();
-          }
 
           before(() =>
             knex.schema.createTable(tableName, (tbl) => {
@@ -2191,16 +2217,25 @@ describe('Schema (misc)', () => {
 
           after(() => knex.schema.dropTable(tableName));
 
-          it('should return empty resultset when referencing an existent column', () =>
-            knex(tableName)
+          it('should return empty resultset when referencing an existent column', function () {
+            if (!isSQLite(knex)) {
+              return this.skip();
+            }
+
+            return knex(tableName)
               .select()
               .where(fieldName, 'something')
               .then((rows) => {
                 expect(rows.length).to.equal(0);
-              }));
+              });
+          });
 
-          it('should throw when referencing a non-existent column', () =>
-            knex(tableName)
+          it('should throw when referencing a non-existent column', function() {
+            if (!isSQLite(knex)) {
+              return this.skip();
+            }
+
+            return knex(tableName)
               .select()
               .where(fieldName + 'foo', 'something')
               .then(() => {
@@ -2208,7 +2243,8 @@ describe('Schema (misc)', () => {
               })
               .catch((err) => {
                 expect(err.code).to.equal('SQLITE_ERROR');
-              }));
+              });
+          });
         });
       });
 
