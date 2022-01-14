@@ -551,12 +551,13 @@ describe('Schema (misc)', () => {
         });
 
         describe('enum - postgres', () => {
-          afterEach(() =>
-            knex.schema
-              .dropTableIfExists('native_enum_test')
-              .raw('DROP TYPE IF EXISTS "foo_type"')
-              .raw('DROP SCHEMA IF EXISTS "test" CASCADE')
-          );
+          afterEach(async () => {
+            if (!isPgBased(knex)) {
+              await knex.schema
+                .dropTableIfExists('native_enum_test')
+                .raw('DROP TYPE IF EXISTS "foo_type"')
+                .raw('DROP SCHEMA IF EXISTS "test" CASCADE')
+          }});
 
           it('uses native type with schema', function () {
             if (!isPgBased(knex)) {
