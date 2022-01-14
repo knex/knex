@@ -9985,40 +9985,6 @@ describe('QueryBuilder', () => {
     }).to.throw(Error);
   });
 
-  it('should warn to user when use `.returning()` function in SQLite3', () => {
-    const loggerConfigForTestingWarnings = {
-      log: {
-        warn: (message) => {
-          if (
-            message ===
-            '.returning() is not supported by sqlite3 and will not have any effect.'
-          ) {
-            throw new Error(message);
-          }
-        },
-      },
-    };
-
-    const sqlite3ClientForWarnings = new SQLite3_Client(
-      Object.assign({ client: 'sqlite3' }, loggerConfigForTestingWarnings)
-    );
-
-    expect(() => {
-      testsql(
-        qb().into('users').insert({ email: 'foo' }).returning('id'),
-        {
-          sqlite3: {
-            sql: 'insert into `users` (`email`) values (?)',
-            bindings: ['foo'],
-          },
-        },
-        {
-          sqlite3: sqlite3ClientForWarnings,
-        }
-      );
-    }).to.throw(Error);
-  });
-
   it('join with subquery using .withSchema', () => {
     testsql(
       qb()
