@@ -2223,7 +2223,7 @@ describe('Schema (misc)', () => {
               });
           });
 
-          it('should throw when referencing a non-existent column', () => {
+          it('should throw when referencing a non-existent column', function() {
             if (!isSQLite(knex)) {
               return this.skip();
             }
