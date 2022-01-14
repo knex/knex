@@ -328,7 +328,7 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
-export interface Knex<TRecord extends {} = any, TResult = unknown[]>
+export interface Knex<TRecord extends {} = any, TResult = Record<string, any>[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
     tableName: TTable,
