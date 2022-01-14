@@ -130,7 +130,7 @@
     "source-map-support": "^0.5.21",
     "tap-spec": "^5.0.0",
     "tape": "^5.4.0",
-    "tedious": "^12.2.0",
+    "tedious": "^14.0.0",
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.4.0",
     "tsd": "^0.19.1",
