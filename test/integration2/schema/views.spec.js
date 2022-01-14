@@ -122,6 +122,130 @@ describe('Views', () => {
             });
         });
 
+        it('create or replace view', async () => {
+          // We create the view and test if all is ok
+          await knex.schema.createView('view_test', (view) => {
+            view.as(knex('table_view').select('a', 'b'));
+          });
+          await knex
+            .select(['a', 'b'])
+            .from('view_test')
+            .then(function (results) {
+              expect(results.length).to.equal(3);
+              expect(results[0].a).to.be.equal('test');
+              expect(results[1].a).to.be.equal('test2');
+              expect(results[2].a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 5);
+              assertNumber(knex, results[1].b, 12);
+              assertNumber(knex, results[2].b, 45);
+            });
+          // Now we test that the new view is replaced
+          await knex.schema
+            .createViewOrReplace('view_test', function (view) {
+              view.columns(['a', 'b']);
+              view.as(
+                knex('table_view').select('a', 'b').where('b', '>', '10')
+              );
+            })
+            .testSql((tester) => {
+              tester(
+                ['pg', 'pg-redshift', 'cockroachdb', 'oracledb'],
+                [
+                  'create or replace view "view_test" ("a", "b") as select "a", "b" from "table_view" where "b" > \'10\'',
+                ]
+              );
+              tester(
+                ['mysql'],
+                [
+                  "create or replace view `view_test` (`a`, `b`) as select `a`, `b` from `table_view` where `b` > '10'",
+                ]
+              );
+              tester(
+                ['sqlite3'],
+                [
+                  'drop view if exists `view_test`',
+                  "create view `view_test` (`a`, `b`) as select `a`, `b` from `table_view` where `b` > '10'",
+                ]
+              );
+              tester('mssql', [
+                "CREATE OR ALTER VIEW [view_test] ([a], [b]) AS select [a], [b] from [table_view] where [b] > '10'",
+              ]);
+            });
+
+          // We test if the select on the view works and if results are good
+          await knex
+            .select(['a', 'b'])
+            .from('view_test')
+            .then(function (results) {
+              expect(results.length).to.equal(2);
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
+            });
+        });
+
+        it('create or replace view without columns', async () => {
+          // We create the view and test if all is ok
+          await knex.schema.createView('view_test', (view) => {
+            view.as(knex('table_view').select('a', 'b'));
+          });
+          await knex
+            .select(['a', 'b'])
+            .from('view_test')
+            .then(function (results) {
+              expect(results.length).to.equal(3);
+              expect(results[0].a).to.be.equal('test');
+              expect(results[1].a).to.be.equal('test2');
+              expect(results[2].a).to.be.equal('test3');
+              assertNumber(knex, results[0].b, 5);
+              assertNumber(knex, results[1].b, 12);
+              assertNumber(knex, results[2].b, 45);
+            });
+          // Now we test that the new view is replaced
+          await knex.schema
+            .createViewOrReplace('view_test', function (view) {
+              view.as(
+                knex('table_view').select('a', 'b').where('b', '>', '10')
+              );
+            })
+            .testSql((tester) => {
+              tester(
+                ['pg', 'pg-redshift', 'cockroachdb', 'oracledb'],
+                [
+                  'create or replace view "view_test" as select "a", "b" from "table_view" where "b" > \'10\'',
+                ]
+              );
+              tester(
+                ['mysql'],
+                [
+                  "create or replace view `view_test` as select `a`, `b` from `table_view` where `b` > '10'",
+                ]
+              );
+              tester(
+                ['sqlite3'],
+                [
+                  'drop view if exists `view_test`',
+                  "create view `view_test` as select `a`, `b` from `table_view` where `b` > '10'",
+                ]
+              );
+              tester('mssql', [
+                "CREATE OR ALTER VIEW [view_test] AS select [a], [b] from [table_view] where [b] > '10'",
+              ]);
+            });
+
+          // We test if the select on the view works and if results are good
+          await knex
+            .select(['a', 'b'])
+            .from('view_test')
+            .then(function (results) {
+              assertNumber(knex, results[0].b, 12);
+              assertNumber(knex, results[1].b, 45);
+              expect(results[0].a).to.be.equal('test2');
+              expect(results[1].a).to.be.equal('test3');
+            });
+        });
+
         it('create materialized view', async function () {
           if (isMssql(knex) || isSQLite(knex) || isMysql(knex)) {
             return this.skip();
