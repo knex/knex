@@ -197,7 +197,7 @@ export default [
     type: "method",
     method: "createViewOrReplace",
     example: "knex.schema.createViewOrReplace(tableName, callback)",
-    description: "Creates a new view or replace it on the database, with a callback function to modify the view's structure, using the schema-building commands.",
+    description: "Creates a new view or replace it on the database, with a callback function to modify the view's structure, using the schema-building commands. You need to specify at least the same columns in same order (you can add extra columns). In SQLite, this function generate drop/create view queries (view columns can be different).",
     children: [
       {
         type: "runnable",
