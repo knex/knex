@@ -271,7 +271,7 @@ describe('Additional', function () {
           knex.client.config.wrapIdentifier = origHooks.wrapIdentifier;
         });
 
-        it.only('should return the correct column when a single property is given to returning', () => {
+        it('should return the correct column when a single property is given to returning', () => {
           if (!isPostgreSQL(knex) && !isMssql(knex) && !isSQLite(knex)) {
             return;
           }
