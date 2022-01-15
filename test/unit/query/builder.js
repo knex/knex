@@ -208,7 +208,7 @@ describe('Custom identifier wrapping', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here`',
+          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`',
         },
         pg: {
           sql: 'insert into "users_wrapper_was_here" ("email_wrapper_was_here", "name_wrapper_was_here") values (?, ?), (?, ?) returning "id_wrapper_was_here"',
@@ -260,7 +260,7 @@ describe('Custom identifier wrapping', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here`',
+          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`, `name_wrapper_was_here`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         pg: {
@@ -5422,7 +5422,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`',
         },
         pg: {
           sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?) returning "id"',
@@ -5473,7 +5473,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`, `name`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         pg: {
