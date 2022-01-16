@@ -529,8 +529,8 @@ export default [
   {
     type: "method",
     method: "integer",
-    example: "table.integer(name)",
-    description: "Adds an integer column.",
+    example: "table.integer(name, length)",
+    description: "Adds an integer column. On PostgreSQL you cannot adjust the length, you need to use other option such as bigInteger, etc",
     children: [    ]
   },
   {
@@ -538,6 +538,34 @@ export default [
     method: "bigInteger",
     example: "table.bigInteger(name)",
     description: "In MySQL or PostgreSQL, adds a bigint column, otherwise adds a normal integer. Note that bigint data is returned as a string in queries because JavaScript may be unable to parse them without loss of precision.",
+    children: [    ]
+  },
+  {
+    type: "method",
+    method: "tinyint",
+    example: "table.tinyint(name, length)",
+    description: "Adds a tinyint column",
+    children: [    ]
+  },
+  {
+    type: "method",
+    method: "smallint",
+    example: "table.smallint(name)",
+    description: "Adds a smallint column",
+    children: [    ]
+  },
+  {
+    type: "method",
+    method: "mediumint",
+    example: "table.mediumint(name)",
+    description: "Adds a mediumint column",
+    children: [    ]
+  },
+  {
+    type: "method",
+    method: "bigint",
+    example: "table.bigint(name)",
+    description: "Adds a bigint column",
     children: [    ]
   },
   {
