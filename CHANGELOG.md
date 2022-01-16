@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 1.0.1 - 16 January, 2022
+
+### Bug fixes:
+
+- Fix package.json metadata
+
 # 1.0.0 - 16 January, 2022
 
 ### Breaking changes
