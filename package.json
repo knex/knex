@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex",
   "types": "types/index.d.ts",
@@ -85,6 +85,9 @@
       "optional": true
     },
     "sqlite3": {
+      "optional": true
+    },
+    "@vscode/sqlite3": {
       "optional": true
     },
     "better-sqlite3": {
@@ -202,6 +205,8 @@
     "pg-query-stream": false,
     "oracle": false,
     "sqlite3": false,
+    "@vscode/sqlite3": false,
+    "better-sqlite3": false,
     "oracledb": false
   },
   "react-native": {
