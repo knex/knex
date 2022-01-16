@@ -5,7 +5,7 @@
   "main": "knex",
   "types": "types/index.d.ts",
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "scripts": {
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",

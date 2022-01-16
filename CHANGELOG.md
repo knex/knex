@@ -1,5 +1,80 @@
 # Master (Unreleased)
 
+# 1.0.0 - 16 January, 2022
+
+### Breaking changes
+
+- Dropped support for Node 10;
+- Replaced unsupported `sqlite3` driver with `@vscode/sqlite3`;
+- Changed data structure from `RETURNING` operation to be consistent with `SELECT`;
+- Changed Migrator to return list of migrations as objects consistently.
+
+### New features:
+
+- Support fromRaw #4781
+- Support zero precision in timestamp/datetime #4784
+- Support whereLike and whereILike #4779
+- Add JSDoc (TS flavor) to stub files #4809
+- Allow skip binding in limit and offset #4811
+- Support creating a new table in the database based on another table #4821
+- Accept Raw on onIn joins #4830
+- Implement support for custom seed sources #4842
+- Add binary uuid option #4836
+- ForUpdate array parameter #4882
+- Add camel case to timestamps method #4803
+- Advanced JSON support #4859
+- Add type to TypeScript knexfile #4909
+- Checks Constraints Support #4874
+- Support creating multiple PKs with increments #4903
+- Enable wrapIdentifier for SQLite .hasTable #4915
+- MSSQL: Add support for unique constraint #4887
+- SQLite: New dialect, using better-sqlite3 driver #4871
+- SQLite: Switch to @vscode/sqlite3 #4866
+- SQLite: Support createViewOrReplace #4856
+- SQLite: Support RETURNING statements for better-sqlite3 driver #4934
+- PostgreSQL: Support JOIN and USING syntax for Delete Statement #4800
+
+### Bug fixes:
+
+- Fix overzealous warning on use of whereNot with "in" or "between" #4780
+- Fix Union all + first syntax error #4799
+- Make view columns optional in create view like #4829
+- Insert lock row fix during migration #4865
+- Fix for createViewOrReplace #4856
+- SQLite: Fix foreign key constraints when altering a table #4189
+- MySQL: Validate connection fix #4794
+- MySQL: Set comment size warning limit to 1024 #4867
+
+### Typings:
+
+- Allow string indexType in index creation #4791
+- Add missing ints typings #4832
+- Returning method types #4881
+- Improve columnInfo type #4868
+
+# 0.95.15 - 22 December, 2021
+
+### Bug fixes:
+
+- Oracle:
+- MariaDB: lock row fix during migration in MariaDB and Oracle #4865
+
+# 0.95.14 - 09 November, 2021
+
+### Bug fixes:
+
+- MySQL: mysql2 dialect validate connection fix #4794
+
+# 0.95.13 - 02 November, 2021
+
+### Bug fixes:
+
+- PostgreSQL: Support zero precision in timestamp/datetime #4784
+
+### Typings:
+
+- Allow string indexType in index creation #4791
+
 # 0.95.12 - 28 October, 2021
 
 ### New features:
