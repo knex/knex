@@ -19,7 +19,7 @@ Node.js, featuring:
 - both a [promise](https://knexjs.org/#Interfaces-Promises) and [callback](https://knexjs.org/#Interfaces-Callbacks) API
 - a [thorough test suite](https://github.com/knex/knex/actions)
 
-Node.js versions 10+ are supported.
+Node.js versions 12+ are supported.
 
 * Take a look at the [full documentation](https://knexjs.org) to get started!
 * Browse the [list of plugins and tools](https://github.com/knex/knex/blob/master/ECOSYSTEM.md) built for knex
