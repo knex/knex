@@ -33,7 +33,7 @@
     "ip": "^1.1.5",
     "knex": "*",
     "marked": "^0.7.0",
-    "mini-css-extract-plugin": "^2.4.5",
+    "mini-css-extract-plugin": "2.4.5",
     "node-static": "^0.7.11",
     "nodemon": "^2.0.15",
     "portfinder": "^1.0.28",
