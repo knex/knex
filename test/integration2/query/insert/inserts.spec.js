@@ -116,7 +116,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -253,7 +253,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -471,7 +471,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -602,7 +602,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -714,7 +714,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?) returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -1021,7 +1021,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
+              'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?) returning `account_id`, `details`',
               [
                 10,
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
@@ -1382,7 +1382,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing returning `email`',
                 ['ignoretest1@example.com', 'AFTER']
               );
             });
@@ -1444,7 +1444,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict do nothing',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict do nothing returning `email`',
                 ['ignoretest1@example.com', 'AFTER']
               );
             });
@@ -1512,7 +1512,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
+                'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing returning `email`',
                 ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
             });
@@ -1571,7 +1571,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
                 ['mergetest1@example.com', 'AFTER']
               );
             });
@@ -1628,7 +1628,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
                 ['mergetest1@example.com', 'AFTER', 'tester']
               );
             });
@@ -1694,7 +1694,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
                 ['mergetest1@example.com', 'AFTER', 'fake-role']
               );
             });
@@ -1770,7 +1770,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`",
+                "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`",
                 ['mergedest@example.com']
               );
             });
@@ -1838,7 +1838,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = (SELECT name FROM upsert_value_source)',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = (SELECT name FROM upsert_value_source) returning `email`',
                 ['mergedest@example.com', 'SHOULD NOT BE USED']
               );
             });
@@ -1906,7 +1906,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = excluded.`name`',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = excluded.`name` returning `email`',
                 ['mergedest@example.com', 'SHOULD BE USED']
               );
             });
@@ -1971,7 +1971,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+                'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
                 ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
               );
             });

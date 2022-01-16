@@ -20,6 +20,7 @@ const {
   isPgBased,
   isPgNative,
   isCockroachDB,
+  isBetterSQLite3,
 } = require('../../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../../util/constants');
 const {
@@ -51,11 +52,6 @@ describe('Additional', function () {
         await dropTables(knex);
         await createAccounts(knex, false, false);
         await createTestTableTwo(knex);
-      });
-
-      beforeEach(async () => {
-        await knex('accounts').truncate();
-        await insertAccounts(knex);
       });
 
       after(async () => {
@@ -148,16 +144,23 @@ describe('Additional', function () {
         });
 
         it('should process response done through a stream', (done) => {
-          let response;
-          const stream = knex('accounts').limit(1).stream();
+          knex('accounts')
+            .truncate()
+            .then(() => {
+              return insertAccounts(knex, 'accounts');
+            })
+            .then(() => {
+              let response;
+              const stream = knex('accounts').limit(1).stream();
 
-          stream.on('data', (res) => {
-            response = res;
-          });
-          stream.on('finish', () => {
-            expect(response.callCount).to.equal(1);
-            done();
-          });
+              stream.on('data', (res) => {
+                response = res;
+              });
+              stream.on('finish', () => {
+                expect(response.callCount).to.equal(1);
+                done();
+              });
+            });
         });
 
         it('should pass query context for responses through a stream', (done) => {
@@ -234,9 +237,6 @@ describe('Additional', function () {
 
       describe('returning with wrapIdentifier and postProcessResponse` (TODO: fix to work on all possible dialects)', function () {
         const origHooks = {};
-        if (!isPostgreSQL(knex) || !isMssql(knex)) {
-          return;
-        }
 
         before('setup custom hooks', () => {
           origHooks.postProcessResponse =
@@ -273,15 +273,27 @@ describe('Additional', function () {
         });
 
         it('should return the correct column when a single property is given to returning', () => {
+          if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
+            return;
+          }
+
           return knex('accounts_foo')
             .insert({ balance_foo: 123 })
             .returning('balance_foo')
             .then((res) => {
-              expect(res).to.eql([123]);
+              expect(res).to.eql([
+                {
+                  balance_foo: 123,
+                },
+              ]);
             });
         });
 
         it('should return the correct columns when multiple properties are given to returning', () => {
+          if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
+            return;
+          }
+
           return knex('accounts_foo')
             .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
             .returning(['balance_foo', 'email_foo'])
