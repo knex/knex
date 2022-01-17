@@ -520,6 +520,8 @@ export declare namespace Knex {
 
     // Withs
     with: With<TRecord, TResult>;
+    withMaterialized: With<TRecord, TResult>;
+    withNotMaterialized: With<TRecord, TResult>;
     withRecursive: With<TRecord, TResult>;
     withRaw: WithRaw<TRecord, TResult>;
     withSchema: WithSchema<TRecord, TResult>;
