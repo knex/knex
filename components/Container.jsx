@@ -25,6 +25,20 @@ export default class Container extends Component {
     }
   }
 
+  componentWillMount() {
+    this.initKnex();
+  }
+
+  componentDidMount() {
+    if (typeof window !== 'undefined') {
+      window.Knex = Knex
+    }
+    const next = localStorage.knexLanguage
+    if (next && next !== 'mysql') {
+      this.changeLanguage(next)
+    }
+  }
+
   registry = new Set();
 
   changeLanguage = (language) => {
@@ -45,17 +59,6 @@ export default class Container extends Component {
     this.registry.forEach(component => component.forceUpdate())
     if (typeof window !== 'undefined') {
       window.knex = this.knex
-    }
-  }
-
-  componentDidMount() {
-    this.initKnex()
-    if (typeof window !== 'undefined') {
-      window.Knex = Knex
-    }
-    const next = localStorage.knexLanguage
-    if (next && next !== 'mysql') {
-      this.changeLanguage(next)
     }
   }
 

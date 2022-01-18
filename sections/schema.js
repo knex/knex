@@ -323,7 +323,7 @@ export default [
           knex.schema.alterView('view_test', function (view) {
             view.column('first_name').rename('name_user');
             view.column('bio').defaultTo('empty');
-          }
+          })
         `
       }
     ]

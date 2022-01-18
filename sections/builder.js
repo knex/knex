@@ -1374,7 +1374,7 @@ export default [
               'description', // json column in country
               '$.name' // json field in 'description' column
             );
-          });
+          })
         `
       }
     ]

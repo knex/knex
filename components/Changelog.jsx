@@ -26,10 +26,10 @@ export default class Changelog extends Component {
 
   state = {
     showFull: false
-  };
-
-  componentWillMount() {
-    this.changes = prepareChangelog(this.props.content, this.props.version)
+  }
+  constructor(props) {
+    super(props);
+    this.changes = prepareChangelog(this.props.content, this.props.version);
   }
 
   handleShowFull = (e) => {

@@ -19,7 +19,8 @@ export default class Section extends Component {
     }
   }
 
-  componentWillMount() {
+  constructor(props) {
+    super(props);
     this.prepareContent(this.props.content)
   }
 
