@@ -9391,6 +9391,47 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it("wrapped 'with' materialized clause select", () => {
+    testsql(
+      qb()
+        .withMaterialized('withClause', function () {
+          this.select('foo').from('users');
+        })
+        .select('*')
+        .from('withClause'),
+      {
+        mssql:
+          'with [withClause] as (select [foo] from [users]) select * from [withClause]',
+        pg: 'with "withClause" as materialized (select "foo" from "users") select * from "withClause"',
+        sqlite3:
+          'with `withClause` as (select `foo` from `users`) select * from `withClause`',
+        'pg-redshift':
+          'with "withClause" as (select "foo" from "users") select * from "withClause"',
+        oracledb:
+          'with "withClause" as (select "foo" from "users") select * from "withClause"',
+      }
+    );
+    testsql(
+      qb()
+        .withNotMaterialized('withClause', function () {
+          this.select('foo').from('users');
+        })
+        .select('*')
+        .from('withClause'),
+      {
+        mssql:
+          'with [withClause] as (select [foo] from [users]) select * from [withClause]',
+        pg: 'with "withClause" as not materialized (select "foo" from "users") select * from "withClause"',
+        sqlite3:
+          'with `withClause` as (select `foo` from `users`) select * from `withClause`',
+        'pg-redshift':
+          'with "withClause" as (select "foo" from "users") select * from "withClause"',
+        oracledb:
+          'with "withClause" as (select "foo" from "users") select * from "withClause"',
+      }
+    );
+  });
+
   it("wrapped 'with' clause select", () => {
     testsql(
       qb()
