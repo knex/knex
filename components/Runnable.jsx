@@ -16,12 +16,8 @@ export default class Runnable extends Component {
     knexSubscribe: PropTypes.func.isRequired
   };
 
-  componentWillMount() {
-    this.runOutput()
-  }
-
-  componentDidMount() {
-    this.unsubscribe = this.context.knexSubscribe(this)
+  constructor(props) {
+    super(props);
   }
 
   componentWillUnmount() {
@@ -30,6 +26,11 @@ export default class Runnable extends Component {
 
   componentWillUpdate() {
     this.runOutput()
+  }
+
+  componentWillMount() {
+    this.runOutput()
+    this.unsubscribe = this.context.knexSubscribe(this)
   }
 
   runOutput() {
