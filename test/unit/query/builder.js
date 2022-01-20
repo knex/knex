@@ -9482,6 +9482,40 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it("wrapped 'withMaterialized' clause update", () => {
+    testsql(
+      qb()
+        .withMaterialized('withClause', function () {
+          this.select('foo').from('users');
+        })
+        .update({ foo: 'updatedFoo' })
+        .where('email', '=', 'foo')
+        .from('users'),
+      {
+        sqlite3:
+          'with `withClause` as materialized (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
+        pg: 'with "withClause" as materialized (select "foo" from "users") update "users" set "foo" = ? where "email" = ?',
+      }
+    );
+  });
+
+  it("wrapped 'withNotMaterialized' clause update", () => {
+    testsql(
+      qb()
+        .withNotMaterialized('withClause', function () {
+          this.select('foo').from('users');
+        })
+        .update({ foo: 'updatedFoo' })
+        .where('email', '=', 'foo')
+        .from('users'),
+      {
+        sqlite3:
+          'with `withClause` as not materialized (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
+        pg: 'with "withClause" as not materialized (select "foo" from "users") update "users" set "foo" = ? where "email" = ?',
+      }
+    );
+  });
+
   it("wrapped 'with' clause delete", () => {
     testsql(
       qb()

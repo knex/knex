@@ -628,7 +628,9 @@ describe('knex', () => {
       await knex('some_nonexisten_table')
         .select()
         .catch((err) => {
-          expect(err.stack.split('\n')[1]).to.match(/at createQueryBuilder \(/); // the index 1 might need adjustment if the code is refactored
+          expect(err.stack.split('\n')[1]).to.match(
+            /at Object.queryBuilder \(/
+          ); // the index 1 might need adjustment if the code is refactored
           expect(typeof err.originalStack).to.equal('string');
         });
 
