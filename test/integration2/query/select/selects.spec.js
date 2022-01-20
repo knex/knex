@@ -1093,6 +1093,29 @@ describe('Selects', function () {
           });
       });
 
+      it('MATERIALIZED CTE', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        await knex('test_default_table').truncate();
+        await knex('test_default_table').insert([
+          { string: 'something', tinyint: 1 },
+        ]);
+
+        const materialized = await knex
+          .withMaterialized('t', knex('test_default_table'))
+          .from('t')
+          .first();
+        expect(materialized.tinyint).to.equal(1);
+
+        const notMaterialized = await knex
+          .withNotMaterialized('t', knex('test_default_table'))
+          .from('t')
+          .first();
+        expect(notMaterialized.tinyint).to.equal(1);
+      });
+
       it('forUpdate().skipLocked() with order by should return the first non-locked row', async function () {
         // Note: this test doesn't work properly on MySQL - see https://bugs.mysql.com/bug.php?id=67745
         if (!isPostgreSQL(knex)) {
