@@ -1255,6 +1255,34 @@ describe('Selects', function () {
           );
       });
 
+      describe('with (not) materialized tests', () => {
+        before(async function () {
+          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+            return this.skip();
+          }
+          await knex('test_default_table').truncate();
+          await knex('test_default_table').insert([
+            { string: 'something', tinyint: 1 },
+          ]);
+        });
+
+        it('with materialized', async function () {
+          const materialized = await knex('t')
+            .withMaterialized('t', knex('test_default_table'))
+            .from('t')
+            .first();
+          expect(materialized.tinyint).to.equal(1);
+        });
+
+        it('with not materialized', async function () {
+          const notMaterialized = await knex('t')
+            .withNotMaterialized('t', knex('test_default_table'))
+            .from('t')
+            .first();
+          expect(notMaterialized.tinyint).to.equal(1);
+        });
+      });
+
       describe('json selections', () => {
         before(async () => {
           await knex.schema.dropTableIfExists('cities');
