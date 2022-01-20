@@ -23,8 +23,8 @@ describe('Schema', () => {
               table.bigInteger(colNameBigInt);
             });
             await knex(tblName).insert({
-              integer: 15,
-              bigInteger: 15,
+              [colNameInt]: 15,
+              [colNameBigInt]: 15,
             });
           });
 
