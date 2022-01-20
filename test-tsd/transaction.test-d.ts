@@ -1,15 +1,8 @@
 import knexDefault, { Knex } from '../types';
-import { clientConfig } from './common';
+import { clientConfig, Article } from './common';
 import { expectType } from 'tsd';
 
 const knexInstance = knexDefault(clientConfig);
-
-interface Article {
-  id: number;
-  subject: string;
-  body?: string;
-  authorId?: string;
-}
 
 const main = async () => {
   // # Select:
@@ -30,6 +23,18 @@ const main = async () => {
       .insert(articles)
       .into<Article>('articles')
       .returning(['id', 'subject']);
+  }));
+
+  expectType<Pick<Article, "id" | "subject">[]>(await knexInstance.transaction((trx) => {
+    const articles: Article[] = [
+      { id: 1, subject: 'Canterbury Tales' },
+      { id: 2, subject: 'Moby Dick' },
+      { id: 3, subject: 'Hamlet' },
+    ];
+    return trx
+      .insert(articles)
+      .into<Article>('articles')
+      .returning(['id', trx.raw('subject')]);
   }));
 
   expectType<Article[]>(await knexInstance.transaction((trx) => {
@@ -95,4 +100,12 @@ const main = async () => {
         .catch(trx.rollback);
     }
   ));
+
+  const transactionConfig: Knex.TransactionConfig = {
+    isolationLevel: 'serializable',
+    userParams: {},
+    doNotRejectOnRollback: true,
+    connection: {}
+  }
+  expectType<Knex.TransactionConfig>(transactionConfig)
 }

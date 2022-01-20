@@ -4,6 +4,7 @@ const path = require('path');
 const tildify = require('tildify');
 
 const { FileTestHelper, execCommand } = require('cli-testlab');
+const color = require('colorette');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -100,7 +101,9 @@ module.exports = {
           return execCommand(
             `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
             {
-              expectedOutput: `Working directory changed to ${expectedCWD}`,
+              expectedOutput: `Working directory changed to ${color.magenta(
+                expectedCWD
+              )}`,
             }
           );
         });
@@ -119,7 +122,9 @@ module.exports = {
               return execCommand(
                 `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
                 {
-                  expectedOutput: `Working directory changed to ${expectedCWD}`,
+                  expectedOutput: `Working directory changed to ${color.magenta(
+                    expectedCWD
+                  )}`,
                 }
               );
             });

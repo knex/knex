@@ -23,7 +23,7 @@ test(`pool evicts dead resources when factory.validate rejects`, async (t) => {
     },
 
     validate: (res) => {
-      return res.error ? false : true;
+      return !res.error;
     },
 
     destroy: (res) => {
@@ -87,7 +87,51 @@ test('#823, should not skip pool construction pool config is not defined', funct
   }
 });
 
-test('#2321 dead connections are not evicted from pool', async (t) => {
+test('#2321 dead connections are not evicted from pool (mysql)', async (t) => {
+  if (knexfile['mysql']) {
+    const knex = makeKnex(knexfile['mysql']);
+
+    t.plan(10);
+    try {
+      await Promise.all(
+        Array.from(Array(30)).map(() => {
+          // kill all connections in pool
+          return knex.raw(`KILL connection_id()`).catch(() => {
+            // just ignore errors
+          });
+        })
+      );
+
+      // TODO: It looks like this test case can trigger the race condition
+      //       outlined in this issue comment:
+      //
+      //         https://github.com/knex/knex/issues/3636#issuecomment-592005391
+      //
+      //       For now, we're working around this problem by introducing a
+      //       1 second delay.  But, we should revisit this once the connection
+      //       pool logic has been refactored.
+      await delay(1000); // wait driver to notice connection errors (2ms was enough locally)
+
+      // all connections are dead, so they should be evicted from pool and this should work
+      await Promise.all(
+        Array.from(Array(10)).map(() =>
+          knex.select(1).then(() => t.pass('Read data'))
+        )
+      );
+    } catch (e) {
+      t.fail(
+        `Should have created new connection and execute the query, got : ${e}`
+      );
+    } finally {
+      t.end();
+      await knex.destroy();
+    }
+  } else {
+    t.end();
+  }
+});
+
+test('#2321 dead connections are not evicted from pool (mysql2)', async (t) => {
   if (knexfile['mysql2']) {
     const knex = makeKnex(knexfile['mysql2']);
 

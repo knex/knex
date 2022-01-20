@@ -7,12 +7,14 @@ services:
       - "8474:8474"
       - "23306:23306"
       - "25432:25432"
+      - "25433:25433"
       - "21521:21521"
       - "21433:21433"
     links:
       - "mysql"
       - "postgresql"
-      - "oracledbxe"
+      - "pgnative"
+      - "oracledb"
       - "mssql"
 
   mysql:
@@ -31,8 +33,16 @@ services:
       - POSTGRES_PASSWORD=postgresrootpassword
       - POSTGRES_USER=postgres
 
-  oracledbxe:
-    image: wnameless/oracle-xe-11g
+  pgnative:
+    image: mdillon/postgis
+    ports:
+      - "35433:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgresrootpassword
+      - POSTGRES_USER=postgres
+
+  oracledb:
+    image: quillbuilduser/oracle-18-xe
     ports:
       - "31521:1521"
     environment:
