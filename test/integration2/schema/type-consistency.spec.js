@@ -40,7 +40,7 @@ describe('Schema', () => {
 
           it('Retrieves DB bigIntegers as JS strings', async () => {
             const record = await knex.select('*').from(tblName).first();
-            expect(record[colNameInt]).to.be.a('string').that.equals('15');
+            expect(record[colNameBigInt]).to.be.a('string').that.equals('15');
           });
         });
       });
