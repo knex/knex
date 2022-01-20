@@ -1255,6 +1255,18 @@ describe('Selects', function () {
           );
       });
 
+      it('with query', async function () {
+        await knex('test_default_table').truncate();
+        await knex('test_default_table').insert([
+          { string: 'something', tinyint: 1 },
+        ]);
+        const withQuery = await knex('t')
+          .with('t', knex('test_default_table'))
+          .from('t')
+          .first();
+        expect(withQuery.tinyint).to.equal(1);
+      });
+
       describe('with (not) materialized tests', () => {
         before(async function () {
           if (!isPostgreSQL(knex) && !isSQLite(knex)) {
