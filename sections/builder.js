@@ -364,6 +364,62 @@ export default [
   },
   {
     type: "method",
+    method: "withMaterialized",
+    example: ".withMaterialized(alias, [columns], callback|builder|raw)",
+    description: "Add a \"with\" materialized clause to the query. \"With\" materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.withMaterialized('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.withMaterialized('with_alias', ["title"], knex.raw('select "title" from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.withMaterialized('with_alias', (qb) => {
+            qb.select('*').from('books').where('author', 'Test')
+          }).select('*').from('with_alias')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
+    method: "withNotMaterialized",
+    example: ".withNotMaterialized(alias, [columns], callback|builder|raw)",
+    description: "Add a \"with\" not materialized clause to the query. \"With\" not materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.",
+    children: [
+      {
+        type: "runnable",
+        content: `
+          knex.withNotMaterialized('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.withNotMaterialized('with_alias', ["title"], knex.raw('select "title" from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex.withNotMaterialized('with_alias', (qb) => {
+            qb.select('*').from('books').where('author', 'Test')
+          }).select('*').from('with_alias')
+        `
+      }
+    ]
+  },
+  {
+    type: "method",
     method: "withSchema",
     example: ".withSchema([schemaName])",
     description: "Specifies the schema to be used as prefix of table name.",

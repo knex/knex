@@ -55,6 +55,8 @@ export default class Sidebar extends Component {
           <li>– <a href="#Builder-fromRaw">fromRaw</a></li>
           <li>– <a href="#Builder-with">with</a></li>
           <li>– <a href="#Builder-withRecursive">withRecursive</a></li>
+          <li>– <a href="#Builder-withMaterialized">withMaterialized</a></li>
+          <li>– <a href="#Builder-withNotMaterialized">withNotMaterialized</a></li>
 
           <li>– <a href="#Builder-jsonExtract">jsonExtract</a></li>
           <li>– <a href="#Builder-jsonSet">jsonSet</a></li>
