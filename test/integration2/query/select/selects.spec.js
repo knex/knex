@@ -1275,9 +1275,8 @@ describe('Selects', function () {
           if (!isPostgreSQL(knex) && !isSQLite(knex)) {
             return this.skip();
           }
-          const materialized = await knex
+          const materialized = await knex('t')
             .withMaterialized('t', knex('test_default_table'))
-            .from('t')
             .first();
           expect(materialized.tinyint).to.equal(1);
         });
@@ -1286,9 +1285,8 @@ describe('Selects', function () {
           if (!isPostgreSQL(knex) && !isSQLite(knex)) {
             return this.skip();
           }
-          const notMaterialized = await knex
+          const notMaterialized = await knex('t')
             .withNotMaterialized('t', knex('test_default_table'))
-            .from('t')
             .first();
           expect(notMaterialized.tinyint).to.equal(1);
         });
