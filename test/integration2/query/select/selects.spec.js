@@ -1255,31 +1255,27 @@ describe('Selects', function () {
           );
       });
 
-      it('with query', async function () {
-        await knex('test_default_table').truncate();
-        await knex('test_default_table').insert([
-          { string: 'something', tinyint: 1 },
-        ]);
-        const withQuery = await knex('t')
-          .with('t', knex('test_default_table'))
-          .from('t')
-          .first();
-        expect(withQuery.tinyint).to.equal(1);
-      });
-
-      describe('with (not) materialized tests', () => {
+      describe('"with" tests', () => {
         before(async function () {
-          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
-            return this.skip();
-          }
           await knex('test_default_table').truncate();
           await knex('test_default_table').insert([
             { string: 'something', tinyint: 1 },
           ]);
         });
 
+        it('with', async function () {
+          const withQuery = await knex
+            .with('t', knex('test_default_table'))
+            .from('t')
+            .first();
+          expect(withQuery.tinyint).to.equal(1);
+        });
+
         it('with materialized', async function () {
-          const materialized = await knex('t')
+          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+            return this.skip();
+          }
+          const materialized = await knex
             .withMaterialized('t', knex('test_default_table'))
             .from('t')
             .first();
@@ -1287,7 +1283,10 @@ describe('Selects', function () {
         });
 
         it('with not materialized', async function () {
-          const notMaterialized = await knex('t')
+          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+            return this.skip();
+          }
+          const notMaterialized = await knex
             .withNotMaterialized('t', knex('test_default_table'))
             .from('t')
             .first();
