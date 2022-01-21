@@ -407,6 +407,22 @@ describe('Updates', function () {
             );
           });
       });
+
+      it('with update query', async function () {
+        await knex
+          .with('withClause', function () {
+            this.select('last_name')
+              .from('accounts')
+              .where('email', '=', 'test1@example.com');
+          })
+          .update({ last_name: 'olivier' })
+          .where('last_name', '=', 'User')
+          .from('accounts');
+        const results = await knex('accounts')
+          .from('accounts')
+          .where('email', '=', 'test1@example.com');
+        expect(results[0].last_name).to.equal('olivier');
+      });
     });
   });
 });
