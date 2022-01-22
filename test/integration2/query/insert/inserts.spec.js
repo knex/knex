@@ -2022,14 +2022,11 @@ describe('Inserts', function () {
         // Perform insert..merge (upsert)
         try {
           await knex('upsert_tests')
-            .insert(
-              [
-                { email: 'one@example.com', name: 'AFTER', type: 'type1' },
-                { email: 'two@example.com', name: 'AFTER', type: 'type1' },
-                { email: 'three@example.com', name: 'AFTER', type: 'type1' },
-              ],
-              'email'
-            )
+            .insert([
+              { email: 'one@example.com', name: 'AFTER', type: 'type1' },
+              { email: 'two@example.com', name: 'AFTER', type: 'type1' },
+              { email: 'three@example.com', name: 'AFTER', type: 'type1' },
+            ])
             .onConflict(knex.raw("(email) where type = 'type1'"))
             .merge()
             .testSql(function (tester) {
@@ -2040,7 +2037,7 @@ describe('Inserts', function () {
               );
               tester(
                 'pg',
-                'insert into "upsert_tests" ("email", "name", "type") values (?, ?, ?), (?, ?, ?), (?, ?, ?) on conflict (email) where type = \'type1\' do update set "email" = excluded."email", "name" = excluded."name", "type" = excluded."type" returning "email"',
+                'insert into "upsert_tests" ("email", "name", "type") values (?, ?, ?), (?, ?, ?), (?, ?, ?) on conflict (email) where type = \'type1\' do update set "email" = excluded."email", "name" = excluded."name", "type" = excluded."type"',
                 [
                   'one@example.com',
                   'AFTER',
