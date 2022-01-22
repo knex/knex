@@ -6185,6 +6185,30 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('insert ignore multiple with raw onConflict', () => {
+    testsql(
+      qb()
+        .insert([{ email: 'foo' }, { email: 'bar' }])
+        .onConflict(raw('(value) WHERE deleted_at IS NULL'))
+        .ignore()
+        .into('users'),
+      {
+        mysql: {
+          sql: 'insert ignore into `users` (`email`) values (?), (?)',
+          bindings: ['foo', 'bar'],
+        },
+        pg: {
+          sql: 'insert into "users" ("email") values (?), (?) on conflict (value) WHERE deleted_at IS NULL do nothing',
+          bindings: ['foo', 'bar'],
+        },
+        sqlite3: {
+          sql: 'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (value) WHERE deleted_at IS NULL do nothing',
+          bindings: ['foo', 'bar'],
+        },
+      }
+    );
+  });
+
   it('insert ignore with composite unique keys', () => {
     testsql(
       qb()

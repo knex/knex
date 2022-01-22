@@ -979,6 +979,10 @@ export declare namespace Knex {
       columns: string[]
     ): OnConflictQueryBuilder<TRecord, TResult>;
 
+    onConflict(
+      raw: Raw
+    ): OnConflictQueryBuilder<TRecord, TResult>;
+
     onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
 
     del(

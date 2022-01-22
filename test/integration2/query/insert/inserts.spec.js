@@ -1996,6 +1996,100 @@ describe('Inserts', function () {
         expect(row3 && row3.name).to.equal('AFTER');
       });
 
+      it('update values on conflit with "where" condition and partial unique index #4590', async function () {
+        if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+          return this.skip();
+        }
+
+        await knex.schema.dropTableIfExists('upsert_tests');
+        await knex.schema.createTable('upsert_tests', (table) => {
+          table.string('name');
+          table.string('type');
+          table.string('email');
+        });
+        await knex.raw(
+          'create unique index email_type1 ' +
+            'on upsert_tests(email) ' +
+            "where type = 'type1'"
+        );
+
+        await knex('upsert_tests').insert([
+          { email: 'one@example.com', name: 'BEFORE', type: 'type1' },
+          { email: 'two@example.com', name: 'BEFORE', type: 'type1' },
+          { email: 'two@example.com', name: 'BEFORE', type: 'type2' },
+        ]);
+
+        // Perform insert..merge (upsert)
+        try {
+          await knex('upsert_tests')
+            .insert([
+              { email: 'one@example.com', name: 'AFTER', type: 'type1' },
+              { email: 'two@example.com', name: 'AFTER', type: 'type1' },
+              { email: 'three@example.com', name: 'AFTER', type: 'type1' },
+            ])
+            .onConflict(knex.raw("(email) where type = 'type1'"))
+            .merge()
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+                ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+              );
+              tester(
+                'pg',
+                'insert into "upsert_tests" ("email", "name", "type") values (?, ?, ?), (?, ?, ?), (?, ?, ?) on conflict (email) where type = \'type1\' do update set "email" = excluded."email", "name" = excluded."name", "type" = excluded."type"',
+                [
+                  'one@example.com',
+                  'AFTER',
+                  'type1',
+                  'two@example.com',
+                  'AFTER',
+                  'type1',
+                  'three@example.com',
+                  'AFTER',
+                  'type1',
+                ]
+              );
+              tester(
+                'sqlite3',
+                'insert into `upsert_tests` (`email`, `name`, `type`) select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` where true ' +
+                  "on conflict (email) where type = 'type1' do update set `email` = excluded.`email`, `name` = excluded.`name`, `type` = excluded.`type`",
+                [
+                  'one@example.com',
+                  'AFTER',
+                  'type1',
+                  'two@example.com',
+                  'AFTER',
+                  'type1',
+                  'three@example.com',
+                  'AFTER',
+                  'type1',
+                ]
+              );
+            });
+        } catch (err) {
+          if (isOracle(knex) || isMssql(knex)) {
+            expect(err).to.be.an('error');
+            if (err.message.includes('.onConflict() is not supported for'))
+              return;
+          }
+          throw err;
+        }
+
+        // Check that row HAS been updated
+        const rows = await knex('upsert_tests')
+          .select()
+          .orderBy(['email', 'name']);
+        expect(rows.length).to.equal(4);
+
+        expect(rows).to.eql([
+          { email: 'one@example.com', name: 'AFTER', type: 'type1' }, // type1 => updated
+          { email: 'three@example.com', name: 'AFTER', type: 'type1' },
+          { email: 'two@example.com', name: 'AFTER', type: 'type1' }, // type1 => updated
+          { email: 'two@example.com', name: 'BEFORE', type: 'type2' }, // type2 => not updated
+        ]);
+      });
+
       it('#1423 should replace undefined keys in single insert with DEFAULT also in transacting query', function () {
         if (isSQLite(knex)) {
           return true;
