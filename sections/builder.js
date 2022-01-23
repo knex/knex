@@ -2056,12 +2056,31 @@ export default [
   {
     type: "method",
     method: "onConflict",
-    example: "insert(..).onConflict(column) / insert(..).onConflict([column1, column2, ...])",
+    example: "insert(..).onConflict(column) / insert(..).onConflict([column1, column2, ...]) / insert(..).onConflict(knex.raw(...))",
     description: "Implemented for the PostgreSQL, MySQL, and SQLite databases. A modifier for insert queries that specifies alternative behaviour in the case of a conflict. A conflict occurs when a table has a PRIMARY KEY or a UNIQUE index on a column (or a composite index on a set of columns) and a row being inserted has the same value as a row which already exists in the table in those column(s). The default behaviour in case of conflict is to raise an error and abort the query. Using this method you can change this behaviour to either silently ignore the error by using .onConflict().ignore() or to update the existing row with new data (perform an \"UPSERT\") by using .onConflict().merge().",
     children: [
       {
         type: "text",
         content: "Note: For PostgreSQL and SQLite, the column(s) specified by this method must either be the table's PRIMARY KEY or have a UNIQUE index on them, or the query will fail to execute. When specifying multiple columns, they must be a composite PRIMARY KEY or have composite UNIQUE index. MySQL will ignore the specified columns and always use the table's PRIMARY KEY. For cross-platform support across PostgreSQL, MySQL, and SQLite you must both explicitly specify the columns in .onConflict() and those column(s) must be the table's PRIMARY KEY."
+      },
+      {
+        type: "text",
+        content: "For PostgreSQL and SQLite, you can use knex.raw(...) function in onConflict. It can be useful to specify condition when you have partial index :"
+      },
+      {
+        type: "code",
+        language: "js",
+        content: `
+          knex('tableName')
+            .insert({
+              email: "ignore@example.com",
+              name: "John Doe",
+              active: true
+            })
+             // ignore only on email conflict and active is true.
+            .onConflict(knex.raw('(email) where active'))
+            .ignore()
+        `
       },
       {
         type: "text",
