@@ -98,7 +98,12 @@ module.exports = function (knex) {
       return _.reduce(
         val,
         function (memo, val, key) {
-          if (_.includes(['created_at', 'updated_at'], key)) {
+          if (
+            _.includes(
+              ['created_at', 'updated_at', 'createdAt', 'updatedAt'],
+              key
+            )
+          ) {
             memo[key] = TEST_TIMESTAMP;
           } else if (_.includes(['dummy_id'], key)) {
             memo[key] = TEST_ID;

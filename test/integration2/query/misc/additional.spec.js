@@ -20,6 +20,7 @@ const {
   isPgBased,
   isPgNative,
   isCockroachDB,
+  isBetterSQLite3,
 } = require('../../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../../util/constants');
 const {
@@ -51,11 +52,6 @@ describe('Additional', function () {
         await dropTables(knex);
         await createAccounts(knex, false, false);
         await createTestTableTwo(knex);
-      });
-
-      beforeEach(async () => {
-        await knex('accounts').truncate();
-        await insertAccounts(knex);
       });
 
       after(async () => {
@@ -148,16 +144,23 @@ describe('Additional', function () {
         });
 
         it('should process response done through a stream', (done) => {
-          let response;
-          const stream = knex('accounts').limit(1).stream();
+          knex('accounts')
+            .truncate()
+            .then(() => {
+              return insertAccounts(knex, 'accounts');
+            })
+            .then(() => {
+              let response;
+              const stream = knex('accounts').limit(1).stream();
 
-          stream.on('data', (res) => {
-            response = res;
-          });
-          stream.on('finish', () => {
-            expect(response.callCount).to.equal(1);
-            done();
-          });
+              stream.on('data', (res) => {
+                response = res;
+              });
+              stream.on('finish', () => {
+                expect(response.callCount).to.equal(1);
+                done();
+              });
+            });
         });
 
         it('should pass query context for responses through a stream', (done) => {
@@ -234,9 +237,6 @@ describe('Additional', function () {
 
       describe('returning with wrapIdentifier and postProcessResponse` (TODO: fix to work on all possible dialects)', function () {
         const origHooks = {};
-        if (!isPostgreSQL(knex) || !isMssql(knex)) {
-          return;
-        }
 
         before('setup custom hooks', () => {
           origHooks.postProcessResponse =
@@ -273,15 +273,27 @@ describe('Additional', function () {
         });
 
         it('should return the correct column when a single property is given to returning', () => {
+          if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
+            return;
+          }
+
           return knex('accounts_foo')
             .insert({ balance_foo: 123 })
             .returning('balance_foo')
             .then((res) => {
-              expect(res).to.eql([123]);
+              expect(res).to.eql([
+                {
+                  balance_foo: 123,
+                },
+              ]);
             });
         });
 
         it('should return the correct columns when multiple properties are given to returning', () => {
+          if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
+            return;
+          }
+
           return knex('accounts_foo')
             .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
             .returning(['balance_foo', 'email_foo'])
@@ -350,6 +362,8 @@ describe('Additional', function () {
               "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
             [drivers.Redshift]:
               "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
+            [drivers.BetterSQLite3]:
+              "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.SQLite]:
               "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
@@ -373,6 +387,43 @@ describe('Additional', function () {
           expect(knex.fn.now().prototype === knex.raw().prototype);
           expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
           expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
+        });
+
+        it('should allow using .fn-methods to convert uuid to binary', function () {
+          const originalUuid = '6c825dc9-c98f-37ab-b01b-416294811a84';
+          const binary = knex.fn.uuidToBin(originalUuid);
+          const uuid = knex.fn.binToUuid(binary);
+          expect(uuid).to.equal(originalUuid);
+        });
+
+        it('should insert binary uuid and retrieve it', async () => {
+          await knex.schema.dropTableIfExists('uuid_table');
+          await knex.schema.createTable('uuid_table', (t) => {
+            t.uuid('uuid_col_binary', { useBinaryUuid: true });
+          });
+          const originalUuid = '3f06af63-a93c-11e4-9797-00505690773f';
+
+          let uuidToInsert;
+
+          if (isPostgreSQL(knex) || isCockroachDB(knex)) {
+            uuidToInsert = originalUuid;
+          } else {
+            uuidToInsert = knex.fn.uuidToBin(originalUuid);
+          }
+
+          await knex('uuid_table').insert({
+            uuid_col_binary: uuidToInsert,
+          });
+          const uuid = await knex('uuid_table').select('uuid_col_binary');
+
+          let expectedUuid;
+          if (isPostgreSQL(knex) || isCockroachDB(knex)) {
+            expectedUuid = uuid[0].uuid_col_binary;
+          } else {
+            expectedUuid = knex.fn.binToUuid(uuid[0].uuid_col_binary);
+          }
+
+          expect(expectedUuid).to.equal(originalUuid);
         });
 
         it('#2184 - should properly escape table name for SQLite columnInfo', function () {

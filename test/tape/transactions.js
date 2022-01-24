@@ -2,7 +2,12 @@
 const harness = require('./harness');
 const tape = require('tape');
 const JSONStream = require('JSONStream');
-const { isOracle, isMssql, isPgBased } = require('../util/db-helpers');
+const {
+  isOracle,
+  isMssql,
+  isPgBased,
+  isCockroachDB,
+} = require('../util/db-helpers');
 const {
   createTestTableTwo,
   dropTables,
@@ -456,42 +461,45 @@ module.exports = function (knex) {
     }
   });
 
-  test('#625 - streams/transactions', 'postgresql', (t) => {
-    let cid,
-      queryCount = 0;
+  // 'unimplemented: the configuration setting "join_collapse_limit" is not supported'
+  if (!isCockroachDB(knex)) {
+    test('#625 - streams/transactions', 'postgresql', (t) => {
+      let cid,
+        queryCount = 0;
 
-    const runCommands = async (tx, commands) => {
-      for (const command of commands) {
-        await tx.raw(command);
-      }
-    };
-    return knex
-      .transaction(function (tx) {
-        runCommands(tx, [
-          'SET join_collapse_limit to 1',
-          'SET enable_nestloop = off',
-        ])
-          .then(function () {
-            const stream = tx.table('test_table').stream();
-            stream.on('end', function () {
-              tx.commit();
-              t.equal(queryCount, 5, 'Five queries run');
-            });
-            stream.pipe(JSONStream.stringify());
-          })
-          .catch(tx.rollback);
-      })
-      .on('query', function (q) {
-        if (!cid) {
-          cid = q.__knexUid;
-        } else {
-          if (cid !== q.__knexUid) {
-            throw new Error('Invalid connection ID');
-          }
+      const runCommands = async (tx, commands) => {
+        for (const command of commands) {
+          await tx.raw(command);
         }
-        queryCount++;
-      });
-  });
+      };
+      return knex
+        .transaction(function (tx) {
+          runCommands(tx, [
+            'SET join_collapse_limit to 1',
+            'SET enable_nestloop = off',
+          ])
+            .then(function () {
+              const stream = tx.table('test_table').stream();
+              stream.on('end', function () {
+                tx.commit();
+                t.equal(queryCount, 5, 'Five queries run');
+              });
+              stream.pipe(JSONStream.stringify());
+            })
+            .catch(tx.rollback);
+        })
+        .on('query', function (q) {
+          if (!cid) {
+            cid = q.__knexUid;
+          } else {
+            if (cid !== q.__knexUid) {
+              throw new Error('Invalid connection ID');
+            }
+          }
+          queryCount++;
+        });
+    });
+  }
 
   test('#785 - skipping extra transaction statements after commit / rollback', async function (t) {
     let queryCount = 0;

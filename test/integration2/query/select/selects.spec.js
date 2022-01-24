@@ -5,7 +5,6 @@ const { expect } = require('chai');
 const assert = require('assert');
 const Runner = require('../../../../lib/execution/runner');
 
-const { TEST_TIMESTAMP } = require('../../../util/constants');
 const {
   isMysql,
   isPostgreSQL,
@@ -14,17 +13,26 @@ const {
   isSQLite,
   isOracle,
   isPgBased,
+  isCockroachDB,
 } = require('../../../util/db-helpers');
 const {
   createUsers,
   createAccounts,
   createCompositeKeyTable,
   createTestTableTwo,
+  createCities,
   dropTables,
   createDefaultTable,
+  createParentAndChildTables,
 } = require('../../../util/tableCreatorHelper');
-const { insertAccounts } = require('../../../util/dataInsertHelper');
-const { assertNumberArrayStrict } = require('../../../util/assertHelper');
+const {
+  insertAccounts,
+  insertCities,
+} = require('../../../util/dataInsertHelper');
+const {
+  assertNumberArrayStrict,
+  assertJsonEquals,
+} = require('../../../util/assertHelper');
 const {
   getAllDbs,
   getKnexForDb,
@@ -564,570 +572,131 @@ describe('Selects', function () {
           .createTable('OrderByNullTest', function (table) {
             table.increments('id').primary();
             table.string('null_col').nullable().defaultTo(null);
+            // string col to have some order of records with nulls
+            table.string('string_col');
           });
 
         await knex('OrderByNullTest').insert([
           {
             null_col: 'test',
+            string_col: 'a',
+          },
+          {
+            null_col: null,
+            string_col: 'b',
           },
           {
             null_col: 'test2',
+            string_col: 'c',
           },
           {
             null_col: null,
-          },
-          {
-            null_col: null,
+            string_col: 'd',
           },
         ]);
 
         await knex('OrderByNullTest')
           .pluck('id')
-          .orderBy('null_col', 'asc', 'first')
+          .orderBy([
+            { column: 'null_col', order: 'asc', nulls: 'first' },
+            { column: 'string_col' },
+          ])
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `string_col` asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
               [],
-              ['3', '4', '1', '2']
+              ['2', '4', '1', '3']
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `string_col` asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1) asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1) asc, [string_col] asc',
               [],
-              [3, 4, 1, 2]
+              [2, 4, 1, 3]
             );
           });
 
         await knex('OrderByNullTest')
           .pluck('id')
-          .orderBy('null_col', 'asc', 'last')
+          .orderBy([
+            { column: 'null_col', order: 'asc', nulls: 'last' },
+            { column: 'string_col' },
+          ])
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
               [],
-              ['1', '2', '3', '4']
+              ['1', '3', '2', '4']
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0) asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0) asc, [string_col] asc',
               [],
-              [1, 2, 3, 4]
+              [1, 3, 2, 4]
             );
           });
         await knex.schema.dropTable('OrderByNullTest');
-      });
-
-      describe('simple "where" cases', function () {
-        it('allows key, value', function () {
-          return knex('accounts')
-            .where('id', 1)
-            .select('first_name', 'last_name')
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select `first_name`, `last_name` from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pg',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select `first_name`, `last_name` from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'mssql',
-                'select [first_name], [last_name] from [accounts] where [id] = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-            });
-        });
-
-        it('allows key, operator, value', function () {
-          return knex('accounts')
-            .where('id', 1)
-            .select('first_name', 'last_name')
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select `first_name`, `last_name` from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pg',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select `first_name`, `last_name` from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
-                'select "first_name", "last_name" from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-              tester(
-                'mssql',
-                'select [first_name], [last_name] from [accounts] where [id] = ?',
-                [1],
-                [
-                  {
-                    first_name: 'Test',
-                    last_name: 'User',
-                  },
-                ]
-              );
-            });
-        });
-
-        it('allows selecting columns with an array', function () {
-          return knex('accounts')
-            .where('id', '>', 1)
-            .select(['email', 'logins'])
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select `email`, `logins` from `accounts` where `id` > ?',
-                [1]
-              );
-              tester(
-                'pg',
-                'select "email", "logins" from "accounts" where "id" > ?',
-                [1]
-              );
-              tester(
-                'pgnative',
-                'select "email", "logins" from "accounts" where "id" > ?',
-                [1]
-              );
-              tester(
-                'pg-redshift',
-                'select "email", "logins" from "accounts" where "id" > ?',
-                [1]
-              );
-              tester(
-                'sqlite3',
-                'select `email`, `logins` from `accounts` where `id` > ?',
-                [1]
-              );
-              tester(
-                'oracledb',
-                'select "email", "logins" from "accounts" where "id" > ?',
-                [1]
-              );
-              tester(
-                'mssql',
-                'select [email], [logins] from [accounts] where [id] > ?',
-                [1]
-              );
-            });
-        });
-
-        it('allows a hash of where attrs', function () {
-          return knex('accounts')
-            .where({ id: 1 })
-            .select('*')
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select * from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    id: 1,
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'pg',
-                'select * from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    id: '1',
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select * from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    id: '1',
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select * from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    id: '1',
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select * from `accounts` where `id` = ?',
-                [1],
-                [
-                  {
-                    id: 1,
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
-                'select * from "accounts" where "id" = ?',
-                [1],
-                [
-                  {
-                    id: 1,
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-              tester(
-                'mssql',
-                'select * from [accounts] where [id] = ?',
-                [1],
-                [
-                  {
-                    id: '1',
-                    first_name: 'Test',
-                    last_name: 'User',
-                    email: 'test1@example.com',
-                    logins: 1,
-                    balance: 0,
-                    about: 'Lorem ipsum Dolore labore incididunt enim.',
-                    created_at: TEST_TIMESTAMP,
-                    updated_at: TEST_TIMESTAMP,
-                    phone: null,
-                  },
-                ]
-              );
-            });
-        });
-
-        it('allows where id: undefined or id: null as a where null clause', function () {
-          return knex('accounts')
-            .where({ id: null })
-            .select('first_name', 'email')
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select `first_name`, `email` from `accounts` where `id` is null',
-                [],
-                []
-              );
-              tester(
-                'pg',
-                'select "first_name", "email" from "accounts" where "id" is null',
-                [],
-                []
-              );
-              tester(
-                'pgnative',
-                'select "first_name", "email" from "accounts" where "id" is null',
-                [],
-                []
-              );
-              tester(
-                'pg-redshift',
-                'select "first_name", "email" from "accounts" where "id" is null',
-                [],
-                []
-              );
-              tester(
-                'sqlite3',
-                'select `first_name`, `email` from `accounts` where `id` is null',
-                [],
-                []
-              );
-              tester(
-                'oracledb',
-                'select "first_name", "email" from "accounts" where "id" is null',
-                [],
-                []
-              );
-              tester(
-                'mssql',
-                'select [first_name], [email] from [accounts] where [id] is null',
-                [],
-                []
-              );
-            });
-        });
-
-        it('allows where id = 0', function () {
-          return knex('accounts')
-            .where({ id: 0 })
-            .select()
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select * from `accounts` where `id` = ?',
-                [0],
-                []
-              );
-              tester('pg', 'select * from "accounts" where "id" = ?', [0], []);
-              tester(
-                'pgnative',
-                'select * from "accounts" where "id" = ?',
-                [0],
-                []
-              );
-              tester(
-                'pg-redshift',
-                'select * from "accounts" where "id" = ?',
-                [0],
-                []
-              );
-              tester(
-                'sqlite3',
-                'select * from `accounts` where `id` = ?',
-                [0],
-                []
-              );
-              tester(
-                'oracledb',
-                'select * from "accounts" where "id" = ?',
-                [0],
-                []
-              );
-              tester(
-                'mssql',
-                'select * from [accounts] where [id] = ?',
-                [0],
-                []
-              );
-            });
-        });
       });
 
       it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', function () {
@@ -1255,328 +824,6 @@ describe('Selects', function () {
         });
       });
 
-      it('does "orWhere" cases', function () {
-        return knex('accounts')
-          .where('id', 1)
-          .orWhere('id', '>', 2)
-          .select('first_name', 'last_name');
-      });
-
-      it('does "andWhere" cases', function () {
-        return knex('accounts')
-          .select('first_name', 'last_name', 'about')
-          .where('id', 1)
-          .andWhere('email', 'test1@example.com');
-      });
-
-      it('takes a function to wrap nested where statements', function () {
-        return Promise.all([
-          knex('accounts')
-            .where(function () {
-              this.where('id', 2);
-              this.orWhere('id', 3);
-            })
-            .select('*'),
-        ]);
-      });
-
-      it('handles "where in" cases', function () {
-        return Promise.all([
-          knex('accounts').whereIn('id', [1, 2, 3]).select(),
-        ]);
-      });
-
-      it('handles "or where in" cases', function () {
-        return knex('accounts')
-          .where('email', 'test1@example.com')
-          .orWhereIn('id', [2, 3, 4])
-          .select();
-      });
-
-      it('handles multi-column "where in" cases', async function () {
-        await knex('composite_key_test').insert([
-          {
-            column_a: 1,
-            column_b: 1,
-            details: 'One, One, One',
-            status: 1,
-          },
-          {
-            column_a: 1,
-            column_b: 2,
-            details: 'One, Two, Zero',
-            status: 0,
-          },
-          {
-            column_a: 2,
-            column_b: 2,
-            details: 'Two, Two, Zero',
-            status: 0,
-          },
-        ]);
-
-        if (!isMssql(knex)) {
-          await knex('composite_key_test')
-            .whereIn(
-              ['column_a', 'column_b'],
-              [
-                [1, 1],
-                [1, 2],
-              ]
-            )
-            .orderBy('status', 'desc')
-            .select()
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select * from `composite_key_test` where (`column_a`, `column_b`) in ((?, ?), (?, ?)) order by `status` desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'pg',
-                'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
-                'select * from "composite_key_test" where ("column_a", "column_b") in ((?, ?), (?, ?)) order by "status" desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-              tester(
-                'sqlite3',
-                'select * from `composite_key_test` where (`column_a`, `column_b`) in ( values (?, ?), (?, ?)) order by `status` desc',
-                [1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                  {
-                    column_a: 1,
-                    column_b: 2,
-                    details: 'One, Two, Zero',
-                    status: 0,
-                  },
-                ]
-              );
-            });
-        }
-      });
-
-      it('handles multi-column "where in" cases with where', function () {
-        if (!isSQLite(knex) && !isMssql(knex)) {
-          return knex('composite_key_test')
-            .where('status', 1)
-            .whereIn(
-              ['column_a', 'column_b'],
-              [
-                [1, 1],
-                [1, 2],
-              ]
-            )
-            .select()
-            .testSql(function (tester) {
-              tester(
-                'mysql',
-                'select * from `composite_key_test` where `status` = ? and (`column_a`, `column_b`) in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-              tester(
-                'pg',
-                'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-              tester(
-                'pgnative',
-                'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-              tester(
-                'pg-redshift',
-                'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-              tester(
-                'oracledb',
-                'select * from "composite_key_test" where "status" = ? and ("column_a", "column_b") in ((?, ?), (?, ?))',
-                [1, 1, 1, 1, 2],
-                [
-                  {
-                    column_a: 1,
-                    column_b: 1,
-                    details: 'One, One, One',
-                    status: 1,
-                  },
-                ]
-              );
-            });
-        }
-      });
-
-      it('handles "where exists"', function () {
-        return knex('accounts')
-          .whereExists(function () {
-            this.select('id').from('test_table_two').where({ id: 1 });
-          })
-          .select();
-      });
-
-      it('handles "where between"', function () {
-        return knex('accounts').whereBetween('id', [1, 100]).select();
-      });
-
-      it('handles "or where between"', function () {
-        return knex('accounts')
-          .whereBetween('id', [1, 100])
-          .orWhereBetween('id', [200, 300])
-          .select();
-      });
-
-      it('does where(raw)', function () {
-        if (isOracle(knex)) {
-          // special case for oracle
-          return knex('accounts')
-            .whereExists(function () {
-              this.select(knex.raw(1))
-                .from('test_table_two')
-                .where(
-                  knex.raw('"test_table_two"."account_id" = "accounts"."id"')
-                );
-            })
-            .select();
-        } else {
-          return knex('accounts')
-            .whereExists(function () {
-              this.select(knex.raw(1))
-                .from('test_table_two')
-                .where(knex.raw('test_table_two.account_id = accounts.id'));
-            })
-            .select();
-        }
-      });
-
-      it('does sub-selects', function () {
-        return knex('accounts')
-          .whereIn('id', function () {
-            this.select('account_id').from('test_table_two').where('status', 1);
-          })
-          .select('first_name', 'last_name');
-      });
-
       describe('recursive CTE support', function () {
         before(async function () {
           await knex.schema.dropTableIfExists('rcte');
@@ -1623,45 +870,6 @@ describe('Selects', function () {
           expect(names).to.contain('parent');
           expect(names).not.to.contain('nope');
         });
-      });
-
-      it('supports the <> operator', function () {
-        return knex('accounts').where('id', '<>', 2).select('email', 'logins');
-      });
-
-      it('Allows for knex.Raw passed to the `where` clause', function () {
-        if (isOracle(knex)) {
-          return knex('accounts')
-            .where(knex.raw('"id" = 2'))
-            .select('email', 'logins');
-        } else {
-          return knex('accounts')
-            .where(knex.raw('id = 2'))
-            .select('email', 'logins');
-        }
-      });
-
-      it('Retains array bindings, #228', function () {
-        const raw = knex.raw(
-          'select * from table t where t.id = ANY( ?::int[] )',
-          [[1, 2, 3]]
-        );
-        const raw2 = knex.raw('select "stored_procedure"(?, ?, ?)', [
-          1,
-          2,
-          ['a', 'b', 'c'],
-        ]);
-        const expected1 = [[1, 2, 3]];
-        const expected2 = [1, 2, ['a', 'b', 'c']];
-        expect(raw.toSQL().bindings).to.eql(
-          knex.client.prepBindings(expected1)
-        );
-        expect(raw2.toSQL().bindings).to.eql(
-          knex.client.prepBindings(expected2)
-        );
-        //Also expect raw's bindings to not have been modified by calling .toSQL() (preserving original bindings)
-        expect(raw.bindings).to.eql(expected1);
-        expect(raw2.bindings).to.eql(expected2);
       });
 
       it('always returns the response object from raw', function () {
@@ -1772,8 +980,80 @@ describe('Selects', function () {
           });
       });
 
+      it('select for no key update doesnt stop other transactions from inserting into tables that have a foreign key relationship', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        await createParentAndChildTables(knex);
+
+        return knex('parent')
+          .insert({
+            id: 1,
+          })
+          .then(() => {
+            return knex('child')
+              .insert({
+                id: 1,
+                parent_id: 1,
+              })
+              .then(() => {
+                return knex.transaction((trx) => {
+                  // select all from the parent table in the for no key update mode
+                  return trx('parent')
+                    .forNoKeyUpdate()
+                    .then((res) => {
+                      // Insert should into the child table not hang
+                      return knex('child')
+                        .insert({
+                          id: 2,
+                          parent_id: 1,
+                        })
+                        .timeout(150);
+                    });
+                });
+              });
+          });
+      });
+
+      it('select for key share blocks select for update but not select for no key update', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        return knex('test_default_table')
+          .insert({ string: 'making sure there is a row to lock' })
+          .then(() => {
+            return knex
+              .transaction((trx) => {
+                // select all from test table and lock
+                return trx('test_default_table')
+                  .forKeyShare()
+                  .then((res) => {
+                    // trying to select stuff from table in other connection should succeed with for no key update
+                    return knex('test_default_table')
+                      .forNoKeyUpdate()
+                      .timeout(200);
+                  })
+                  .then((res) => {
+                    // trying to select stuff from table in other connection should hang with for update
+                    return knex('test_default_table').forUpdate().timeout(100);
+                  });
+              })
+              .then((res) => {
+                expect('Second query should have timed out').to.be.false;
+              })
+              .catch((err) => {
+                expect(err.message).to.be.contain(
+                  'Defined query timeout of 100ms exceeded when running query'
+                );
+              });
+          });
+      });
+
       it('select for share prevents updating in other transaction', function () {
-        if (isSQLite(knex) || isOracle(knex)) {
+        // Query cancellation is not yet implemented for CockroachDB
+        if (isSQLite(knex) || isOracle(knex) || isCockroachDB(knex)) {
           return this.skip();
         }
 
@@ -1946,6 +1226,7 @@ describe('Selects', function () {
                 'sqlite3',
                 'oracledb',
                 'cockroachdb',
+                'better-sqlite3',
               ]);
 
               if (knex.client.driverName !== 'cockroachdb') {
@@ -1972,6 +1253,313 @@ describe('Selects', function () {
               }
             }
           );
+      });
+
+      describe('with (not) materialized tests', () => {
+        before(async function () {
+          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+            return this.skip();
+          }
+          await knex('test_default_table').truncate();
+          await knex('test_default_table').insert([
+            { string: 'something', tinyint: 1 },
+          ]);
+        });
+
+        it('with materialized', async function () {
+          const materialized = await knex('t')
+            .withMaterialized('t', knex('test_default_table'))
+            .from('t')
+            .first();
+          expect(materialized.tinyint).to.equal(1);
+        });
+
+        it('with not materialized', async function () {
+          const notMaterialized = await knex('t')
+            .withNotMaterialized('t', knex('test_default_table'))
+            .from('t')
+            .first();
+          expect(notMaterialized.tinyint).to.equal(1);
+        });
+      });
+
+      describe('json selections', () => {
+        before(async () => {
+          await knex.schema.dropTableIfExists('cities');
+          await createCities(knex);
+        });
+
+        beforeEach(async () => {
+          await knex('cities').truncate();
+          await insertCities(knex);
+        });
+
+        it('json extract', async () => {
+          const res = await knex
+            .jsonExtract('descriptions', '$.short', 'shortDescription')
+            .from('cities');
+          expect(res).to.eql([
+            { shortDescription: 'beautiful city' },
+            { shortDescription: 'large city' },
+            { shortDescription: 'cold city' },
+          ]);
+        });
+
+        it('json multiple extract', async () => {
+          const res = await knex
+            .jsonExtract([
+              ['descriptions', '$.short', 'shortDescription'],
+              ['population', '$.current.value', 'currentPop'],
+              ['statistics', '$.roads.min', 'minRoads'],
+              ['statistics', '$.hotYears[0]', 'firstHotYear'],
+            ])
+            .from('cities');
+          assertJsonEquals(
+            [res[0], res[1]],
+            [
+              {
+                shortDescription: 'beautiful city',
+                currentPop: 10000000,
+                minRoads: 1234,
+                firstHotYear: null,
+              },
+              {
+                shortDescription: 'large city',
+                currentPop: 1500000,
+                minRoads: 1455,
+                firstHotYear: 2012,
+              },
+            ]
+          );
+        });
+
+        it('json set', async function () {
+          // jsonSet is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonSet('population', '$.minMax.max', '999999999', 'maxUpdated')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].maxUpdated, res[1].maxUpdated],
+            [
+              {
+                current: { value: 10000000 },
+                minMax: {
+                  min: 50000,
+                  max: '999999999',
+                },
+              },
+              {
+                current: { value: 1500000 },
+                minMax: {
+                  min: 44000,
+                  max: '999999999',
+                },
+              },
+            ]
+          );
+        });
+
+        it('json insert', async function () {
+          // jsonInsert is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonInsert('population', '$.year2021', '747477', 'popIn2021Added')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].popIn2021Added, res[1].popIn2021Added],
+            [
+              {
+                current: {
+                  value: 10000000,
+                },
+                minMax: {
+                  min: 50000,
+                  max: 12000000,
+                },
+                year2021: '747477',
+              },
+              {
+                current: {
+                  value: 1500000,
+                },
+                minMax: {
+                  min: 44000,
+                  max: 1200000,
+                },
+                year2021: '747477',
+              },
+            ]
+          );
+        });
+
+        it('json remove', async function () {
+          // jsonRemove is only for Oracle21c
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonRemove('population', '$.minMax.min', 'popMinRemoved')
+            .from('cities');
+          assertJsonEquals(
+            [res[0].popMinRemoved, res[1].popMinRemoved],
+            [
+              {
+                current: {
+                  value: 10000000,
+                },
+                minMax: {
+                  max: 12000000,
+                },
+              },
+              {
+                current: {
+                  value: 1500000,
+                },
+                minMax: {
+                  max: 1200000,
+                },
+              },
+            ]
+          );
+        });
+
+        it('json insert then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonExtract(
+              knex.jsonInsert('population', '$.test', '1234'),
+              '$.test',
+              'insertExtract'
+            )
+            .from('cities');
+          assertJsonEquals(
+            [res[0], res[1]],
+            [{ insertExtract: '1234' }, { insertExtract: '1234' }]
+          );
+        });
+
+        it('json remove then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          await knex
+            .jsonExtract(
+              knex.jsonRemove('population', '$.minMax.min'),
+              '$.minMax.max',
+              'maxPop'
+            )
+            .from('cities')
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'select json_unquote(json_extract(json_remove(`population`,?), ?)) as `maxPop` from `cities`',
+                ['$.minMax.min', '$.minMax.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: '1200000' },
+                  { maxPop: '1450000' },
+                ]
+              );
+              tester(
+                'pg',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{minMax,min}', '$.minMax.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'pgnative',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{minMax,min}', '$.minMax.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'pg-redshift',
+                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                ['{minMax,min}', '$.minMax.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: 1200000 },
+                  { maxPop: 1450000 },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select json_extract(json_remove(`population`,?), ?) as `maxPop` from `cities`',
+                ['$.minMax.min', '$.minMax.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'mssql',
+                'select JSON_VALUE(JSON_MODIFY([population],?, NULL), ?) as [maxPop] from [cities]',
+                ['$.minMax.min', '$.minMax.max'],
+                [
+                  { maxPop: '12000000' },
+                  { maxPop: '1200000' },
+                  { maxPop: '1450000' },
+                ]
+              );
+            });
+        });
+
+        it('json remove, set then extract', async function () {
+          if (isOracle(knex)) {
+            this.skip();
+          }
+          const res = await knex
+            .jsonExtract(
+              [
+                [
+                  knex.jsonRemove('population', '$.minMax.min'),
+                  '$.minMax',
+                  'withoutMin',
+                ],
+                [
+                  knex.jsonRemove('population', '$.minMax.max'),
+                  '$.minMax',
+                  'withoutMax',
+                ],
+                [
+                  knex.jsonSet('population', '$.current.value', '1234'),
+                  '$.current',
+                  'currentModified',
+                ],
+              ],
+              false
+            )
+            .from('cities');
+          assertJsonEquals(res[0].currentModified, {
+            value: '1234',
+          });
+          assertJsonEquals(res[0].withoutMax, {
+            min: 50000,
+          });
+          assertJsonEquals(res[0].withoutMin, {
+            max: 12000000,
+          });
+
+          assertJsonEquals(res[1].currentModified, {
+            value: '1234',
+          });
+          assertJsonEquals(res[1].withoutMax, { min: 44000 });
+          assertJsonEquals(res[1].withoutMin, {
+            max: 1200000,
+          });
+
+          assertJsonEquals(res[2].currentModified, {
+            value: 1234,
+          });
+          assertJsonEquals(res[2].withoutMax, { min: 44000 });
+          assertJsonEquals(res[2].withoutMin, {
+            max: 1450000,
+          });
+        });
       });
     });
   });

@@ -19,12 +19,12 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v2.5.1
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
@@ -42,7 +42,7 @@ jobs:
         run: npm run test:coverage
         env:
           CI: true
-          DB: "postgres pgnative mysql mysql2 mssql sqlite3"
+          DB: "postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb"
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Databases

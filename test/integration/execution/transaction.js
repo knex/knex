@@ -12,6 +12,7 @@ const {
   isOracle,
   isMssql,
   isPostgreSQL,
+  isCockroachDB,
 } = require('../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../util/constants');
 const {
@@ -122,7 +123,9 @@ module.exports = function (knex) {
               return knex('test_table_two')
                 .transacting(t)
                 .insert({
-                  account_id: constid ? ++fkid : (id = resp[0]),
+                  account_id: constid
+                    ? ++fkid
+                    : (id = !isNaN(resp[0]) ? resp[0] : resp[0].id),
                   details: '',
                   status: 1,
                 });
@@ -163,7 +166,9 @@ module.exports = function (knex) {
               return knex('test_table_two')
                 .transacting(t)
                 .insert({
-                  account_id: constid ? ++fkid : (id = resp[0]),
+                  account_id: constid
+                    ? ++fkid
+                    : (id = !isNaN(resp[0]) ? resp[0] : resp[0].id),
                   details: '',
                   status: 1,
                 });
@@ -198,7 +203,9 @@ module.exports = function (knex) {
             })
             .then(function (resp) {
               return trx('test_table_two').insert({
-                account_id: constid ? ++fkid : (id = resp[0]),
+                account_id: constid
+                  ? ++fkid
+                  : (id = !isNaN(resp[0]) ? resp[0] : resp[0].id),
                 details: '',
                 status: 1,
               });
@@ -239,7 +246,9 @@ module.exports = function (knex) {
             .then(function (resp) {
               return trx
                 .insert({
-                  account_id: constid ? ++fkid : (id = resp[0]),
+                  account_id: constid
+                    ? ++fkid
+                    : (id = !isNaN(resp[0]) ? resp[0] : resp[0].id),
                   details: '',
                   status: 1,
                 })
@@ -266,7 +275,12 @@ module.exports = function (knex) {
         });
     });
 
-    it('should be able to run schema methods', async () => {
+    it('should be able to run schema methods', async function () {
+      // CockroachDB requires schema changes to happen before any writes, so trying to execute migrations in transaction directly fails due to attempt to get lock first
+      if (isCockroachDB(knex)) {
+        return this.skip();
+      }
+
       let __knexUid,
         count = 0;
       const err = new Error('error message');
@@ -323,7 +337,9 @@ module.exports = function (knex) {
               })
               .then(function (resp) {
                 return trx('test_table_two').insert({
-                  account_id: constid ? ++fkid : (id = resp[0]),
+                  account_id: constid
+                    ? ++fkid
+                    : (id = !isNaN(resp[0]) ? resp[0] : resp[0].id),
                   details: '',
                   status: 1,
                 });
@@ -571,7 +587,7 @@ module.exports = function (knex) {
               updated_at: new Date(),
             })
             .then(function (res0) {
-              insertedId = res0[0];
+              insertedId = !isNaN(res0[0]) ? res0[0] : res0[0].id;
             });
         }
 

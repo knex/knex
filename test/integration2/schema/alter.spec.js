@@ -5,6 +5,7 @@ const {
   getAllDbs,
   getKnexForDb,
 } = require('../util/knex-instance-provider');
+const { isMysql } = require('../../util/db-helpers');
 
 const QUERY_TABLE =
   'SELECT sql FROM sqlite_master WHERE type="table" AND tbl_name="alter_table"';
@@ -55,6 +56,31 @@ describe('Schema', () => {
             await knex.schema.dropTable('alter_table');
           });
 
+          describe('indexes and unique keys', () => {
+            it('alter table add indexes', async function () {
+              if (!isMysql(knex)) {
+                this.skip();
+              }
+              await knex.schema
+                .alterTable('alter_table', (table) => {
+                  table.index(['column_string', 'column_datetime'], 'idx_1', {
+                    indexType: 'FULLTEXT',
+                    storageEngineIndexType: 'BTREE',
+                  });
+                  table.unique('column_notNullable', {
+                    indexName: 'idx_2',
+                    storageEngineIndexType: 'HASH',
+                  });
+                })
+                .testSql((tester) => {
+                  tester('mysql', [
+                    'alter table `alter_table` add FULLTEXT index `idx_1`(`column_string`, `column_datetime`) using BTREE',
+                    'alter table `alter_table` add unique `idx_2`(`column_notNullable`) using HASH',
+                  ]);
+                });
+            });
+          });
+
           describe('alterColumns', () => {
             it('alters the type of columns', async () => {
               await knex.schema.alterTable('alter_table', (table) => {
@@ -99,7 +125,7 @@ describe('Schema', () => {
                 knex('alter_table').insert({ column_notNullable: 'text' })
               ).to.be.rejectedWith(
                 Error,
-                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT: NOT NULL constraint failed: alter_table.column_string"
+                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT_NOTNULL: NOT NULL constraint failed: alter_table.column_string"
               );
               expect(tableAfter).to.equal(
                 "CREATE TABLE \"alter_table\" (`column_integer` integer DEFAULT '0', `column_string` varchar(255) NOT NULL, `column_datetime` datetime NOT NULL DEFAULT '0', `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NULL)"
@@ -137,14 +163,14 @@ describe('Schema', () => {
                 knex('alter_table').insert({ column_notNullable: 'text' })
               ).to.be.rejectedWith(
                 Error,
-                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT: NOT NULL constraint failed: alter_table.column_nullable"
+                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT_NOTNULL: NOT NULL constraint failed: alter_table.column_nullable"
               );
               expect(tableAfter).to.equal(
                 "CREATE TABLE \"alter_table\" (`column_integer` integer, `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NOT NULL)"
               );
             });
 
-            it.skip('generates correct SQL commands when altering columns', async () => {
+            it('generates correct SQL commands when altering columns', async () => {
               const builder = knex.schema.alterTable('alter_table', (table) => {
                 table.string('column_integer').alter();
               });
@@ -153,7 +179,7 @@ describe('Schema', () => {
 
               expect(queries.sql).to.deep.equal([
                 "CREATE TABLE `_knex_temp_alter111` (`column_integer` varchar(255), `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NULL)",
-                'INSERT INTO _knex_temp_alter111 SELECT * FROM alter_table;',
+                'INSERT INTO "_knex_temp_alter111" SELECT * FROM "alter_table";',
                 'DROP TABLE "alter_table"',
                 'ALTER TABLE "_knex_temp_alter111" RENAME TO "alter_table"',
               ]);
