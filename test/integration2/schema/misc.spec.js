@@ -556,8 +556,9 @@ describe('Schema (misc)', () => {
               await knex.schema
                 .dropTableIfExists('native_enum_test')
                 .raw('DROP TYPE IF EXISTS "foo_type"')
-                .raw('DROP SCHEMA IF EXISTS "test" CASCADE')
-          }});
+                .raw('DROP SCHEMA IF EXISTS "test" CASCADE');
+            }
+          });
 
           it('uses native type with schema', function () {
             if (!isPgBased(knex)) {
@@ -1710,13 +1711,13 @@ describe('Schema (misc)', () => {
                       .increments('field_nondefault_increments')
                       .comment('Comment on increment col');
                   })
-                )
+                );
             }
           });
 
           after(() => {
             if (isMysql(knex)) {
-              knex.schema.dropTable('add_column_test_mysql')
+              knex.schema.dropTable('add_column_test_mysql');
             }
           });
 
@@ -2230,7 +2231,7 @@ describe('Schema (misc)', () => {
               });
           });
 
-          it('should throw when referencing a non-existent column', function() {
+          it('should throw when referencing a non-existent column', function () {
             if (!isSQLite(knex)) {
               return this.skip();
             }

@@ -74,6 +74,43 @@ describe('Schema', () => {
               id_not_nullable: null,
             });
           });
+
+          it('should throw error if alter a not nullable column with primary key #4401', async function () {
+            if (!isPostgreSQL(knex)) {
+              this.skip();
+            }
+            await knex.schema.dropTableIfExists('primary_table_null');
+            await knex.schema.createTable('primary_table_null', (table) => {
+              table.integer('id_not_nullable_primary').notNullable().primary();
+            });
+            let error;
+            try {
+              await knex.schema.table('primary_table_null', (table) => {
+                table.integer('id_not_nullable_primary').alter();
+              });
+            } catch (e) {
+              error = e;
+            }
+            expect(error.message).to.eq(
+              'alter table "primary_table_null" alter column "id_not_nullable_primary" drop not null - column "id_not_nullable_primary" is in a primary key'
+            );
+          });
+
+          it('should not throw error if alter a not nullable column with primary key with alterNullable is false #4401', async function () {
+            if (!isPostgreSQL(knex)) {
+              this.skip();
+            }
+            await knex.schema.dropTableIfExists('primary_table_null');
+            await knex.schema.createTable('primary_table_null', (table) => {
+              table.integer('id_not_nullable_primary').notNullable().primary();
+            });
+            // This alter doesn't throw any error now.
+            await knex.schema.table('primary_table_null', (table) => {
+              table
+                .integer('id_not_nullable_primary')
+                .alter({ alterNullable: false });
+            });
+          });
         });
 
         describe('dropNullable', () => {
