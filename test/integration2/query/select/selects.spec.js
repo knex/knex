@@ -32,6 +32,7 @@ const {
 const {
   assertNumberArrayStrict,
   assertJsonEquals,
+  assertNumber,
 } = require('../../../util/assertHelper');
 const {
   getAllDbs,
@@ -1255,31 +1256,42 @@ describe('Selects', function () {
           );
       });
 
-      describe('with (not) materialized tests', () => {
-        before(async function () {
-          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
-            return this.skip();
-          }
-          await knex('test_default_table').truncate();
-          await knex('test_default_table').insert([
-            { string: 'something', tinyint: 1 },
-          ]);
+      describe('"with" tests', () => {
+        beforeEach(async () => {
+          await knex.schema
+            .dropTableIfExists('with_table')
+            .createTable('with_table', function (table) {
+              table.integer('test');
+            });
+          await knex('with_table').insert([{ test: 1 }]);
+        });
+
+        it('with', async () => {
+          const withQuery = await knex
+            .with('t', knex('with_table'))
+            .from('t')
+            .first();
+          assertNumber(knex, withQuery.test, 1);
         });
 
         it('with materialized', async function () {
+          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+            return this.skip();
+          }
           const materialized = await knex('t')
-            .withMaterialized('t', knex('test_default_table'))
-            .from('t')
+            .withMaterialized('t', knex('with_table'))
             .first();
-          expect(materialized.tinyint).to.equal(1);
+          assertNumber(knex, materialized.test, 1);
         });
 
         it('with not materialized', async function () {
+          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+            return this.skip();
+          }
           const notMaterialized = await knex('t')
-            .withNotMaterialized('t', knex('test_default_table'))
-            .from('t')
+            .withNotMaterialized('t', knex('with_table'))
             .first();
-          expect(notMaterialized.tinyint).to.equal(1);
+          assertNumber(knex, notMaterialized.test, 1);
         });
       });
 

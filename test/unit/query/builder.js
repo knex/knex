@@ -9486,7 +9486,6 @@ describe('QueryBuilder', () => {
       }
     );
   });
-
   it("wrapped 'with' clause update", () => {
     testsql(
       qb()
@@ -9497,6 +9496,8 @@ describe('QueryBuilder', () => {
         .where('email', '=', 'foo')
         .from('users'),
       {
+        mysql:
+          'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
         mssql:
           'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
         sqlite3:

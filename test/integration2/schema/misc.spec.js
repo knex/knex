@@ -1694,6 +1694,7 @@ describe('Schema (misc)', () => {
           before(() => {
             if (isMysql(knex)) {
               return knex.schema
+                .dropTableIfExists('add_column_test_mysql')
                 .createTable('add_column_test_mysql', (tbl) => {
                   tbl.integer('field_foo');
                   tbl.integer('field_bar');
