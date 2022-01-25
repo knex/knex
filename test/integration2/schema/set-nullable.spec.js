@@ -8,6 +8,7 @@ const {
   isMysql,
   isBetterSQLite3,
   isOracle,
+  isCockroachDB,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
@@ -76,7 +77,7 @@ describe('Schema', () => {
           });
 
           it('should throw error if alter a not nullable column with primary key #4401', async function () {
-            if (!isPostgreSQL(knex)) {
+            if (!(isPostgreSQL(knex) || isCockroachDB(knex))) {
               this.skip();
             }
             await knex.schema.dropTableIfExists('primary_table_null');
@@ -97,7 +98,7 @@ describe('Schema', () => {
           });
 
           it('should not throw error if alter a not nullable column with primary key with alterNullable is false #4401', async function () {
-            if (!isPostgreSQL(knex)) {
+            if (!(isPostgreSQL(knex) || isCockroachDB(knex))) {
               this.skip();
             }
             await knex.schema.dropTableIfExists('primary_table_null');
