@@ -394,12 +394,12 @@ describe('Additional', function () {
           const binary = knex.fn.uuidToBin(originalUuid);
           const uuid = knex.fn.binToUuid(binary);
           expect(uuid).to.equal(originalUuid);
-          const binaryUnoder = knex.fn.uuidToBin(originalUuid, false);
-          const uuidUnoder = knex.fn.binToUuid(binary, false);
-          expect(binaryUnoder).to.equal(uuidUnoder);
+          const binaryUnorder = knex.fn.uuidToBin(originalUuid, false);
+          const uuidUnorder = knex.fn.binToUuid(binary, false);
+          expect(binaryUnorder).to.equal(uuidUnorder);
         });
 
-        it('should insert binary uuid and retrieve it', async () => {
+        it('should insert binary uuid and retrieve it with not ordered uuid data', async () => {
           await knex.schema.dropTableIfExists('uuid_table');
           await knex.schema.createTable('uuid_table', (t) => {
             t.uuid('uuid_col_binary', { useBinaryUuid: true });
