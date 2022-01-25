@@ -32,6 +32,7 @@ const {
 const {
   assertNumberArrayStrict,
   assertJsonEquals,
+  assertNumber,
 } = require('../../../util/assertHelper');
 const {
   getAllDbs,
@@ -1270,7 +1271,7 @@ describe('Selects', function () {
             .with('t', knex('with_table'))
             .from('t')
             .first();
-          expect(withQuery.test).to.equal(1);
+          assertNumber(knex, withQuery.test, 1);
         });
 
         it('with materialized', async function () {
@@ -1280,7 +1281,7 @@ describe('Selects', function () {
           const materialized = await knex('t')
             .withMaterialized('t', knex('with_table'))
             .first();
-          expect(materialized.test).to.equal(1);
+          assertNumber(knex, materialized.test, 1);
         });
 
         it('with not materialized', async function () {
@@ -1290,7 +1291,7 @@ describe('Selects', function () {
           const notMaterialized = await knex('t')
             .withNotMaterialized('t', knex('with_table'))
             .first();
-          expect(notMaterialized.test).to.equal(1);
+          assertNumber(knex, notMaterialized.test, 1);
         });
       });
 
