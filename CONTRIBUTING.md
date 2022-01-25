@@ -77,7 +77,7 @@ tl;dr list:
 
 Test case should initialize needed tables, insert needed data and fail...
 
-```
+```js
 const knex = require('knex')({
   client: 'pg',
   connection: 'postgres:///knex_test'
@@ -103,7 +103,7 @@ One easy way to setup database for your reproduction is to use database from kne
 
 By default, Knex runs tests against sqlite3, postgresql, mysql, mysql2, mssql and oracledb drivers. All databases can be initialized and ran with docker.
 
-Docker databases can be started and initialized and started with:
+Docker databases can be started and initialized with:
 
 ```bash
 npm run db:start

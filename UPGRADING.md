@@ -1,5 +1,164 @@
 ## Upgrading to new knex.js versions
 
+### Upgrading to version 1.0.0+
+
+* Node.js older than 12 is no longer supported, make sure to update your environment;
+* If you are using `sqlite3` driver, please replace it with `@vscode/sqlite3`;
+* `RETURNING` operations now always return an object with column names;
+* Migrator now returns list of migrations as objects.
+
+### Upgrading to version 0.95.0+
+
+* TypeScript type exports changed significantly. While `import Knex from 'knex';` used to import the knex instantiation function, the namespace and the interface for the knex instantiation function/object, there is now a clear distinction between them:
+```typescript
+import { knex } from 'knex' // this is a function that you call to instantiate knex
+import { Knex } from 'knex' // this is a namespace, and a type of a knex object
+import KnexTimeoutError = Knex.KnexTimeoutError; // this is a class from the Knex namespace
+
+const config: Knex.Config = {} // this is a type from the Knex namespace
+const knexInstance: Knex = knex(config)
+```
+
+If your code looked like this:
+```typescript
+import knex from 'knex'
+
+const config: knex.Config = {} // this is a type from the Knex namespace
+const knexInstance = knex(config)
+```
+
+Change it to
+```typescript
+import { knex, Knex } from 'knex'
+
+const config: Knex.Config = {} // this is a type from the Knex namespace
+const knexInstance = knex(config)
+```
+
+* If you were importing types such as `Config` or `QueryBuilder` directly, use `Knex` namespace instead.
+
+So change this:
+```ts
+import { QueryBuilder } from 'knex'
+
+const qb: QueryBuilder = knex('table').select('*')
+```
+
+to this:
+```ts
+import { Knex } from 'knex'
+
+const qb: Knex.QueryBuilder = knex('table').select('*')
+```
+
+* IDE autocomplete may stop working if you are using JavaScript (not TypeScript). There are reports for autocomplete still working correctly if knex is used this way:
+```js
+  const knex = require('knex').knex({
+    //connection parameters
+  });
+```
+
+It also works when using ESM imports:
+```js
+  import { knex } from 'knex'
+
+  const kn = knex({
+    //connection parameters
+  })
+```
+
+For usage as param it can be addressed like this:
+```js
+  /**
+   * @param {import("knex").Knex} db
+   */
+  function up(db) {
+    // Your code
+  }
+```
+
+* Syntax for QueryBuilder augmentation changed. Previously it looked like this:
+
+```ts
+declare module 'knex' {
+    interface QueryBuilder {
+      paginate<TResult = any[]>(params: IPaginateParams): KnexQB<any, IWithPagination<TResult>>;
+  }
+}
+```
+
+This should be changed into this:
+
+```ts
+declare module 'knex' {
+  namespace Knex {
+    interface QueryBuilder {
+      paginate<TResult = any[]>(params: IPaginateParams): KnexQB<any, IWithPagination<TResult>>;
+    }
+  }
+}
+```
+
+* TypeScript version 4.1+ is needed when using knex types now.
+
+* MSSQL driver was completely reworked in order to address the multitude of connection pool, error handling and performance issues. Since the new implementation uses `tedious` library directly instead of `mssql`, please replace `mssql` with `tedious` in your dependencies if you are using a MSSQL database.
+
+* Transaction rollback does not trigger a promise rejection for transactions with specified handler. If you want to preserve previous behavior, pass `config` object with `doNotRejectOnRollback: false`:
+```js
+  await knex.transaction(async trx => {
+    const ids = await trx('catalogues')
+      .insert({
+        name: 'Old Books'
+      }, 'id')
+  }, { doNotRejectOnRollback: false });
+```
+
+* Connection url parsing changed from legacy [url.parse](https://nodejs.org/docs/latest-v10.x/api/url.html#url_legacy_url_api) to [WHATWG URL](https://nodejs.org/docs/latest-v10.x/api/url.html#url_the_whatwg_url_api). If you have symbols, unusual for a URL (not A-z, not digits, not dot, not dash) - check [Node.js docs](https://nodejs.org/docs/latest-v10.x/api/url.html#url_percent_encoding_in_urls) for details
+
+* Global static `Knex.raw` support dropped, use instance `knex.raw` instead. (`require('knex').raw()` won't work anymore)
+
+* v8 flags are no longer supported in cli. To pass these flags use [`NODE_OPTIONS` environment variable](https://nodejs.org/api/cli.html#cli_node_options_options).
+  For example `NODE_OPTIONS="--max-old-space-size=1536" npm run knex`
+
+* Clients are now classes instead of new-able functions. Please migrate your custom clients to classes.
+
+```js
+const Client = require('knex')
+const {inherits} = require('util')
+
+// old
+function CustomClient(config) {
+  Client.call(this, config);
+  // construction logic
+}
+inherits(CustomClient, Client);
+CustomClient.prototype.methodOverride = function () {
+  // logic
+}
+
+// new
+class CustomClient extends Client {
+  // node 12+
+  driverName = 'abcd';
+  constructor(config) {
+    super(config);
+    this.driverName = 'abcd'; // bad way, will not work
+    // construction logic
+  }
+  methodOverride() {
+    // logic
+  }
+}
+// alternative to declare driverName
+CustomClient.prototype.driverName = 'abcd';
+```
+
+* There was a major internal restructuring and renaming effort. Most dialect-specific compilers/builder have dialect name as a prefix now. Also some files were moved. Make sure to make adjustments accordingly if you were referencing specific knex library files directly from your code.
+
+* "first" and "pluck" can no longer be both chained on the same operation. Previously only the last one chained was used, now this would throw an error. 
+
+* Trying to execute an operation resulting in an empty query such as inserting an empty array, will now throw an error on all database drivers.
+
 ### Upgrading to version 0.21.0+
 
 * Node.js older than 10 is no longer supported, make sure to update your environment; 
@@ -51,7 +210,7 @@ Instead, use "mysql" or "mysql2" dialects.
 
 * Including schema in tableName parameter in migrations no longer works, so this is invalid:
 
-```
+```js
 await knex.migrate.latest({
     directory: 'src/services/orders/database/migrations',
     tableName: 'orders.orders_migrations'
@@ -60,7 +219,7 @@ await knex.migrate.latest({
 
 Instead, starting from 0.14.5 you should use new parameter schemaName:
 
-```
+```js
 await knex.migrate.latest({
     directory: 'src/services/orders/database/migrations',
     tableName: 'orders_migrations',

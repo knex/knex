@@ -2,6 +2,16 @@
 const harness = require('./harness');
 const tape = require('tape');
 const JSONStream = require('JSONStream');
+const {
+  isOracle,
+  isMssql,
+  isPgBased,
+  isCockroachDB,
+} = require('../util/db-helpers');
+const {
+  createTestTableTwo,
+  dropTables,
+} = require('../util/tableCreatorHelper');
 
 module.exports = function (knex) {
   tape(knex.client.driverName + ' - transactions: before', function (t) {
@@ -51,11 +61,7 @@ module.exports = function (knex) {
     } finally {
       // BEGIN, INSERT, ROLLBACK
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-      const expectedQueryCount =
-        knex.client.driverName === 'oracledb' ||
-        knex.client.driverName === 'mssql'
-          ? 1
-          : 3;
+      const expectedQueryCount = isOracle(knex) || isMssql(knex) ? 1 : 3;
 
       t.equal(
         trxQueryCount,
@@ -87,11 +93,7 @@ module.exports = function (knex) {
     } finally {
       // BEGIN, ROLLBACK
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-      const expectedQueryCount =
-        knex.client.driverName === 'oracledb' ||
-        knex.client.driverName === 'mssql'
-          ? 0
-          : 2;
+      const expectedQueryCount = isOracle(knex) || isMssql(knex) ? 0 : 2;
 
       t.equal(
         trxQueryCount,
@@ -147,11 +149,7 @@ module.exports = function (knex) {
       // trx1: BEGIN, INSERT, ROLLBACK
       // trx2: SAVEPOINT, INSERT, SELECT, ROLLBACK TO SAVEPOINT
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-      let expectedTrx1QueryCount =
-        knex.client.driverName === 'oracledb' ||
-        knex.client.driverName === 'mssql'
-          ? 1
-          : 3;
+      let expectedTrx1QueryCount = isOracle(knex) || isMssql(knex) ? 1 : 3;
       const expectedTrx2QueryCount = 4;
       expectedTrx1QueryCount += expectedTrx2QueryCount;
       t.equal(
@@ -206,11 +204,7 @@ module.exports = function (knex) {
       // trx1: BEGIN, INSERT, ROLLBACK
       // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-      let expectedTrx1QueryCount =
-        knex.client.driverName === 'oracledb' ||
-        knex.client.driverName === 'mssql'
-          ? 1
-          : 3;
+      let expectedTrx1QueryCount = isOracle(knex) || isMssql(knex) ? 1 : 3;
       const expectedTrx2QueryCount = 2;
       expectedTrx1QueryCount += expectedTrx2QueryCount;
       t.equal(
@@ -467,42 +461,45 @@ module.exports = function (knex) {
     }
   });
 
-  test('#625 - streams/transactions', 'postgresql', (t) => {
-    let cid,
-      queryCount = 0;
+  // 'unimplemented: the configuration setting "join_collapse_limit" is not supported'
+  if (!isCockroachDB(knex)) {
+    test('#625 - streams/transactions', 'postgresql', (t) => {
+      let cid,
+        queryCount = 0;
 
-    const runCommands = async (tx, commands) => {
-      for (const command of commands) {
-        await tx.raw(command);
-      }
-    };
-    return knex
-      .transaction(function (tx) {
-        runCommands(tx, [
-          'SET join_collapse_limit to 1',
-          'SET enable_nestloop = off',
-        ])
-          .then(function () {
-            const stream = tx.table('test_table').stream();
-            stream.on('end', function () {
-              tx.commit();
-              t.equal(queryCount, 5, 'Five queries run');
-            });
-            stream.pipe(JSONStream.stringify());
-          })
-          .catch(tx.rollback);
-      })
-      .on('query', function (q) {
-        if (!cid) {
-          cid = q.__knexUid;
-        } else {
-          if (cid !== q.__knexUid) {
-            throw new Error('Invalid connection ID');
-          }
+      const runCommands = async (tx, commands) => {
+        for (const command of commands) {
+          await tx.raw(command);
         }
-        queryCount++;
-      });
-  });
+      };
+      return knex
+        .transaction(function (tx) {
+          runCommands(tx, [
+            'SET join_collapse_limit to 1',
+            'SET enable_nestloop = off',
+          ])
+            .then(function () {
+              const stream = tx.table('test_table').stream();
+              stream.on('end', function () {
+                tx.commit();
+                t.equal(queryCount, 5, 'Five queries run');
+              });
+              stream.pipe(JSONStream.stringify());
+            })
+            .catch(tx.rollback);
+        })
+        .on('query', function (q) {
+          if (!cid) {
+            cid = q.__knexUid;
+          } else {
+            if (cid !== q.__knexUid) {
+              throw new Error('Invalid connection ID');
+            }
+          }
+          queryCount++;
+        });
+    });
+  }
 
   test('#785 - skipping extra transaction statements after commit / rollback', async function (t) {
     let queryCount = 0;
@@ -537,11 +534,7 @@ module.exports = function (knex) {
       );
     } finally {
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-      const expectedQueryCount =
-        knex.client.driverName === 'oracledb' ||
-        knex.client.driverName === 'mssql'
-          ? 1
-          : 3;
+      const expectedQueryCount = isOracle(knex) || isMssql(knex) ? 1 : 3;
       t.equal(
         queryCount,
         expectedQueryCount,
@@ -565,11 +558,13 @@ module.exports = function (knex) {
     }
   });
 
-  if (knex.client.driverName === 'pg') {
-    // TODO: fix to work without old tables from mocha tests
+  if (isPgBased(knex)) {
     tape(
       'allows postgres ? operator in knex.raw() if no bindings given #519 and #888',
       async function (t) {
+        await dropTables(knex);
+        await createTestTableTwo(knex, true);
+
         t.plan(1);
         try {
           const result = await knex
@@ -579,6 +574,7 @@ module.exports = function (knex) {
           t.equal(result.length, 0, 'Table should have been empty');
         } finally {
           t.end();
+          await dropTables(knex);
         }
       }
     );
@@ -619,11 +615,7 @@ module.exports = function (knex) {
       // trx1: BEGIN, INSERT, ROLLBACK
       // trx2: SAVEPOINT, ROLLBACK TO SAVEPOINT
       // oracle & mssql: BEGIN & ROLLBACK not reported as queries
-      let expectedTrx1QueryCount =
-        knex.client.driverName === 'oracledb' ||
-        knex.client.driverName === 'mssql'
-          ? 1
-          : 3;
+      let expectedTrx1QueryCount = isOracle(knex) || isMssql(knex) ? 1 : 3;
       const expectedTrx2QueryCount = 2;
       expectedTrx1QueryCount += expectedTrx2QueryCount;
       t.equal(

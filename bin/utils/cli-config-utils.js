@@ -1,7 +1,8 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
-const { resolveClientNameWithAliases } = require('../../lib/helpers');
+const { resolveClientNameWithAliases } = require('../../lib/util/helpers');
 const fs = require('fs');
 const path = require('path');
+const escalade = require('escalade/sync');
 const tildify = require('tildify');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
@@ -78,6 +79,9 @@ function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
 
 function exit(text) {
   if (text instanceof Error) {
+    if (text.message) {
+      console.error(color.red(text.message));
+    }
     console.error(
       color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
     );
@@ -159,6 +163,36 @@ function getStubPath(configKey, env, opts) {
   return path.join(stubDirectory, stub);
 }
 
+function findUpModulePath(cwd, packageName) {
+  const modulePackagePath = escalade(cwd, (dir, names) => {
+    if (names.includes('package.json')) {
+      return 'package.json';
+    }
+    return false;
+  });
+  try {
+    const modulePackage = require(modulePackagePath);
+    if (modulePackage.name === packageName) {
+      return path.join(
+        path.dirname(modulePackagePath),
+        modulePackage.main || 'index.js'
+      );
+    }
+  } catch (e) {}
+}
+
+function findUpConfig(cwd, name, extensions) {
+  return escalade(cwd, (dir, names) => {
+    for (const ext of extensions) {
+      const filename = `${name}.${ext}`;
+      if (names.includes(filename)) {
+        return filename;
+      }
+    }
+    return false;
+  });
+}
+
 module.exports = {
   parseConfigObj,
   mkConfigObj,
@@ -169,4 +203,6 @@ module.exports = {
   getSeedExtension,
   getMigrationExtension,
   getStubPath,
+  findUpModulePath,
+  findUpConfig,
 };

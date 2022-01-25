@@ -1,13 +1,12 @@
 #!/usr/bin/env jake
 'use strict';
 /* eslint-disable no-undef */
-/* eslint-disable no-console */
 
 const os = require('os');
 const fs = require('fs');
 const rimrafSync = require('rimraf').sync;
 const path = require('path');
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('@vscode/sqlite3');
 const { assert } = require('chai');
 const {
   assertExec,

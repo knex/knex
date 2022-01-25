@@ -2,7 +2,7 @@
  * Test case for figuring out robust way to recognize if connection is dead
  * for mysql based drivers.
  */
-const delay = require('../../lib/util/delay');
+const delay = require('../../lib/execution/internal/delay');
 const toxiproxy = require('toxiproxy-node-client');
 const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');
@@ -147,7 +147,7 @@ async function main() {
     console.log('----- Recreating proxies -> cutting connections completely');
     await recreateProxy('postgresql', 25432, 5432);
     await recreateProxy('mysql', 23306, 3306);
-    await recreateProxy('oracledbxe', 21521, 1521);
+    await recreateProxy('oracledb', 21521, 1521);
   }
   setInterval(() => recreateProxies(), 2000);
 

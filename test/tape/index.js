@@ -1,10 +1,9 @@
 /*eslint no-var:0*/
 'use strict';
-// var wtf = require('wtfnode');
 require('../util/chai-setup');
-var tape = require('tape');
-var makeKnex = require('../../knex');
-var knexfile = require('../knexfile');
+const tape = require('tape');
+const makeKnex = require('../../knex');
+const knexfile = require('../knexfile');
 
 require('./parse-connection');
 require('./raw');
@@ -16,7 +15,7 @@ require('./knex');
 require('./invalid-db-setup')(knexfile);
 
 Object.keys(knexfile).forEach(function (key) {
-  var knex = makeKnex(knexfile[key]);
+  const knex = makeKnex(knexfile[key]);
 
   require('./transactions')(knex);
   require('./stream')(knex);

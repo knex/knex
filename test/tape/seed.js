@@ -1,7 +1,7 @@
 'use strict';
 
 const tape = require('tape');
-const Seed = require('../../lib/seed/Seeder');
+const Seed = require('../../lib/migrations/seed/Seeder');
 
 tape('checks config.seeds for seed config', function (t) {
   t.plan(1);

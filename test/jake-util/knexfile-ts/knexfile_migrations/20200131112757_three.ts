@@ -1,4 +1,4 @@
-import * as Knex from "../../../../knex";
+import { Knex } from "../../../..";
 
 
 export async function up(knex: Knex): Promise<any> {

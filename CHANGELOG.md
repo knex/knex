@@ -1,5 +1,501 @@
 # Master (Unreleased)
 
+# 1.0.1 - 16 January, 2022
+
+### Bug fixes:
+
+- Fix package.json metadata
+
+# 1.0.0 - 16 January, 2022
+
+### Breaking changes
+
+- Dropped support for Node 10;
+- Replaced unsupported `sqlite3` driver with `@vscode/sqlite3`;
+- Changed data structure from `RETURNING` operation to be consistent with `SELECT`;
+- Changed Migrator to return list of migrations as objects consistently.
+
+### New features:
+
+- Support fromRaw #4781
+- Support zero precision in timestamp/datetime #4784
+- Support whereLike and whereILike #4779
+- Add JSDoc (TS flavor) to stub files #4809
+- Allow skip binding in limit and offset #4811
+- Support creating a new table in the database based on another table #4821
+- Accept Raw on onIn joins #4830
+- Implement support for custom seed sources #4842
+- Add binary uuid option #4836
+- ForUpdate array parameter #4882
+- Add camel case to timestamps method #4803
+- Advanced JSON support #4859
+- Add type to TypeScript knexfile #4909
+- Checks Constraints Support #4874
+- Support creating multiple PKs with increments #4903
+- Enable wrapIdentifier for SQLite .hasTable #4915
+- MSSQL: Add support for unique constraint #4887
+- SQLite: New dialect, using better-sqlite3 driver #4871
+- SQLite: Switch to @vscode/sqlite3 #4866
+- SQLite: Support createViewOrReplace #4856
+- SQLite: Support RETURNING statements for better-sqlite3 driver #4934
+- PostgreSQL: Support JOIN and USING syntax for Delete Statement #4800
+
+### Bug fixes:
+
+- Fix overzealous warning on use of whereNot with "in" or "between" #4780
+- Fix Union all + first syntax error #4799
+- Make view columns optional in create view like #4829
+- Insert lock row fix during migration #4865
+- Fix for createViewOrReplace #4856
+- SQLite: Fix foreign key constraints when altering a table #4189
+- MySQL: Validate connection fix #4794
+- MySQL: Set comment size warning limit to 1024 #4867
+
+### Typings:
+
+- Allow string indexType in index creation #4791
+- Add missing ints typings #4832
+- Returning method types #4881
+- Improve columnInfo type #4868
+
+# 0.95.15 - 22 December, 2021
+
+### Bug fixes:
+
+- Oracle:
+- MariaDB: lock row fix during migration in MariaDB and Oracle #4865
+
+# 0.95.14 - 09 November, 2021
+
+### Bug fixes:
+
+- MySQL: mysql2 dialect validate connection fix #4794
+
+# 0.95.13 - 02 November, 2021
+
+### Bug fixes:
+
+- PostgreSQL: Support zero precision in timestamp/datetime #4784
+
+### Typings:
+
+- Allow string indexType in index creation #4791
+
+# 0.95.12 - 28 October, 2021
+
+### New features:
+
+- New dialect: CockroachDB #4742
+- New dialect: pg-native #4327
+- CockroachDB: add support for upsert #4767
+- PostgreSQL: Support SELECT .. FOR NO KEY UPDATE / KEY SHARE row level locking clauses #4755
+- PostgreSQL: Add support for 'CASCADE' in PostgreSQL 'DROP SCHEMA' queries #4713
+- MySQL: Add storage engine index Type support to index() and unique() schema #4756
+- MSSQL: Support table.primary, table.unique variant with options object #4710
+- SQLite: Add setNullable support to SQLite #4684
+- Add geometry column building #4776
+- Add support for creating table copies #1373
+- Implement support for views and materialized views #1626
+- Implement partial index support #4768
+- Support for 'is null' in 'order by' #3667
+
+### Bug fixes:
+
+- Fix support for Oracle connections passed via knex.connection() #4757
+- Avoid inserting multiple locks if a migration lock already exists #4694
+
+### Typings:
+
+- Some TableBuilder methods return wrong types #4764
+- Update JoinRaw bindings type to accept arrays #4752
+- fix onDelete/onUpdate for ColumnBuilder #4656
+
+# 0.95.11 - 03 September, 2021
+
+### New features:
+
+- Add support for nullability modification via schema builder (table.setNullable() and table.dropNullable()) #4657
+- MySQL: Add support for mysql/mariadb-client JSON parameters in connectionURIs #4629
+- MSSQL: Support comments as MS_Description properties #4632
+
+### Bug fixes:
+
+- Fix Analytic orderBy and partitionBy to follow the SQL documentation #4602
+- CLI: fix migrate:up for migrations disabling transactions #4550
+- SQLite: Fix adding a column with a foreign key constraint in SQLite #4649
+- MSSQL: columnInfo() support case-sensitive database collations #4633
+- MSSQL: Generate valid SQL for withRecursive() #4514
+- Oracle: withRecursive: omit invalid RECURSIVE keyword, include column list #4514
+
+### Improvements:
+
+- Add .mjs migration and seed stubs #4631
+- SQLite: Clean up DDL handling and move all operations to the parser-based approach #4648
+
+# 0.95.10 - 20 August, 2021
+
+### Improvements:
+
+- Use sys info function instead of connection db name #4623
+
+### Typings:
+
+- Deferrable and withkeyName should not be in ColumnBuilder #4600
+
+# 0.95.9 - 31 July, 2021
+
+### New features:
+
+- Oracle: support specifying schema for dropTable and dropSequence #4596
+- Oracle: support specifying schema for autoincrement #4594
+
+### Typings:
+
+- Add TypeScript support for deferrable, new Primary/Unique syntax #4589
+
+# 0.95.8 - 25 July, 2021
+
+### New features:
+
+- Add deferrable support for constraint #4584
+- Implement delete with join #4568
+- Add DPI error codes for Oracle #4536
+
+### Bug fixes:
+
+- Fixing PostgreSQL datetime and timestamp column created with wrong format #4578
+
+### Typings:
+
+- Improve analytic types #4576
+- MSSQL: Add trustServerCertificate option #4500
+
+# 0.95.7 - 10 July, 2021
+
+### New features:
+
+- Add ability to omit columns on an onConflict().ignore() #4557
+- CLI: Log error message #4534
+
+### Typings:
+
+- Export Knex.TransactionConfig #4498
+- Include options object in count(Distinct) typings #4491
+- Add types for analytic functions #4544
+
+# 0.95.6 - 17 May, 2021
+
+### Typings:
+
+- Export TransactionProvider type #4489
+
+# 0.95.5 - 11 May, 2021
+
+### New features:
+
+- SQLite: Add support for file open flags #4446
+- Add .cjs extension to Seeder.js to support Node ESM #4381 #4382
+
+### Bug fixes:
+
+- Remove peerDependencies to avoid auto-install on npm 7 #4480
+
+### Typings:
+
+- Fix typing for increments and bigIncrements #4406
+- Add typings for on JoinClause for onVal #4436
+- Adding Type Definition for isTransaction #4418
+- Export client class from knex namespace #4479
+
+# 0.95.4 - 26 March, 2021
+
+### Typings:
+
+- Fix mistyping of stream #4400
+
+# 0.95.3 - 25 March, 2021
+
+### New features:
+
+- PostgreSQL: Add "same" as operator #4372
+- MSSQL: Improve an estimate of the max comment length #4362
+- Throw an error if negative offset is provided #4361
+
+### Bug fixes:
+
+- Fix timeout method #4324
+- SQLite: prevent dropForeign from being silently ignored #4376
+
+### Typings:
+
+- Allow config.client to be non-client instance #4367
+- Add dropForeign arg type for single column #4363
+- Update typings for TypePreservingAggregation and stream #4377
+
+# 0.95.2 - 11 March, 2021
+
+### New features:
+
+- Improve ESM import support #4350
+
+### Bug fixes:
+
+- CLI: update ts.stub files to new TypeScript namespace #4344
+- CLI: fix TypeScript migration stub after 0.95.0 changes #4366
+
+### Typings:
+
+- Move QueryBuilder and KnexTimeoutError into knex namespace #4358
+
+### Test / internal changes:
+
+- Unify db test helpers #4356
+
+# 0.95.1 - 04 March, 2021
+
+### Bug fixes:
+
+- CLI: fix `knex init` not finding default knexfile #4339
+
+# 0.95.0 - 03 March, 2021
+
+Note: there are many breaking changes in this version, particularly in TypeScript support. Please see `UPGRADING.md` for details.
+
+### New features:
+
+- Add transaction isolation support #4185
+- Add analytic functions #4188
+- Change default to not trigger a promise rejection for transactions with a specified handler #4195
+- Make toSQL().toNative() work for Raw to match the API for QueryBuilder #4058
+- Allow 'match' operator #3569
+- Support optimizer hints #4243  
+- Add parameter to prevent autoincrement columns from being primary keys #4266
+- Make "first" and "pluck" mutually exclusive #4280  
+- Added merge strategy to allow selecting columns to upsert. #4252
+- Throw error if the array passed to insert is empty #4289
+- Events: introduce queryContext on query-error #4301
+- CLI: Use UTC timestamp for new migrations #4245  
+- MSSQL: Replace MSSQL dialect with Tedious.js implementation #2857 #4281
+- MSSQL: Use "nvarchar(max)" for ".json()" #4278
+- MSSQL: Schema builder - add predictable constraint names for default values #4319
+- MSSQL: Schema builder - attempt to drop default constraints when changing default value on columns #4321
+- SQLite: Fallback to json for sqlite3 when using jsonb #4186
+- SQLite: Return complete list of DDL commands for creating foreign keys #4194
+- SQLite: Support dropping composite foreign keys #4202
+- SQLite: Recreate indices when altering a table #4277
+- SQLite: Add support for altering columns #4322
+
+### Bug fixes:
+
+- Fix issue with .withSchema usage with joins on a subquery #4267
+- Fix issue with schema usage with FROM clause contain QueryBuilder, function or Raw #4268
+- CLI: Address raised security warnings by dropping liftoff #4122
+- CLI: Fix an issue with npm@7 and ESM when `type` was set to `'module'` in `package.json` #4295
+- PostgreSQL: Add check to only create native enum once #3658
+- SQLite: Fix foreign key "on delete" when altering a table #4225
+- SQLite: Made the constraint detection case-insensitive #4330
+- MySQL: Keep auto increment after rename #4266
+- MSSQL: don't raise query-error twice #4314
+- MSSQL: Alter column must have its own query #4317
+
+### Typings:
+
+- TypeScript 4.1+ is now required
+- Add missing onConflict overrides #4182
+- Introduce the "infamous triplet" export #4181
+- Fix type definition of Transaction #4172
+- Add typedefinitions for havingNotIn #4265
+- Include 'name' property in MigratorConfig #4300
+- Improve join and conflict types #4318
+- Fix ArrayIfAlready type #4331
+
+### Test / internal changes:
+
+- Drop global Knex.raw #4180
+- Stop using legacy url.parse API #3702
+- Various internal refactorings #4175 #4177 #4178 #4192
+- Refactor to classes #4190 #4191 #4193 #4210 #4253
+- Move transaction type tests to TSD #4208
+- Clean up destroy logic #4248  
+- Colorize code snippets in readme files #4234  
+- Add "Ecosystem" documentation for Knex plugins #4183  
+- Documentation cleanup
+- SQLite: Use SQLite "rename column" instead of a DDL helper #4200
+- SQLite: Simplify reinsert logic when altering a table #4272
+
+# 0.21.19 - 02 March, 2021
+
+- SQLite: Made the constraint detection case-insensitive #4332
+
+# 0.21.18 - 22 February, 2021
+
+- CLI: Fix an issue with npm@7 and ESM when type was set to 'module' in package.json #4295
+
+# 0.21.17 - 30 January, 2021
+
+### Bug fixes:
+
+- SQLite: Fix SQLite foreign on delete when altering a table #4261
+
+### New features:
+
+- Add support for optimizer hints (see https://github.com/knex/documentation/pull/306 for documentation) #4243
+
+# 0.21.16 - 17 January, 2021
+
+### Bug fixes:
+
+- MSSQL: Avoid passing unsupported pool param. Fixes node-mssql 7+ support #4236
+
+# 0.21.15 - 26 December, 2020
+
+### New features:
+
+- SQLite: Add primary/foreign support on alterTable #4162
+- SQLite: Add dropPrimary/dropForeign support on alterTable #4162
+
+### Typings:
+
+- Add "after" and "first" to columnBuilder types #3549 #4169
+
+### Test / internal changes:
+
+- Extract knex config resolution logic #4166
+- Run CI using GitHub Actions #4168
+- Add Node.js 15 to CI matrix #4173
+
+# 0.21.14 - 18 December, 2020
+
+### New features:
+
+- MSSQL: support "returning" on inserts, updates and deletes on tables with triggers #4152
+- Use esm import if package.json type is "module" #4158
+
+### Bug fixes:
+
+- Make sure query-response and query-error events contain _knexTxId #4160
+
+### Test / internal changes:
+
+- Improved integration test framework #4161
+
+# 0.21.13 - 12 December, 2020
+
+### New features:
+
+- SQLite: Add support for `dropForeign` #4092
+- Add support for WHERE clauses to "upsert" queries #4148
+
+### Bug fixes:
+
+- MSSQL: Avoid connection getting stuck on socket hangup #4157
+- Oracle: Support specifying non-default DB port #4147
+- Oracle: Support inserts with only default values (empty body) #4092
+- CLI: fix irregular seed file execution order #4156
+- Fix performance of asyncStackTraces with enable-source-maps node flag #4154
+
+### Typings:
+
+- PostgreSQL: Add support for application_name #4153
+- Fix types for insert to allow array #4105
+- Add types for userParams and withUserParams #4119
+- Added type for withKeyName #4139
+- Fix batchInsert definitions #4131
+- Fix types for WhereIn signature (value or query builder) #3863
+- Add types for connection config of mysql2 driver #4144
+
+### Test / internal changes:
+
+- Move TS tests to tsd (WIP) #4109 #4110
+
+# 0.21.12 - 02 November, 2020
+
+### Typings:
+
+- Reintroduce support for globally defining table/record mapping #4100
+- Add a few missing types for MSSQL Connection #4103
+- Make .ignore() and .merge() return QueryBuilder rather than QueryInterface #4102
+- Use tarn config TS types instead of generic-pool #4064
+
+# 0.21.11 - 01 November, 2020
+
+### Typings:
+
+- Revert support for globally defining table/record mapping #4099
+
+# 0.21.10 - 31 October, 2020
+
+### New features:
+
+- Upsert support (Postgres/MySQL/Sqlite) #3763
+
+### Bug fixes:
+
+- Switch to non-uuid knexQueryUids to avoid issues when mocking global date #4089
+
+### Typings:
+
+- Allow to globally define table/record mapping #4071
+
+# 0.21.9 - 27 October, 2020
+
+### New features:
+
+- add method clear(statement) to QueryBuilder #4051
+
+### Bug fixes:
+
+- CLI: fix help text being printed twice #4072
+- Oracle: columnInfo() no longer requires an Owner User #4053
+- Add missing "start" event propagation from transaction #4087
+
+# 0.21.8 - 27 October, 2020
+
+### Bug fixes:
+
+- MSSQL: Escape properly if literal '?' is needed #4053
+- Make toQuery behavior consistent with pre-0.21.7 (do not break on empty builder) #4083
+- Fix comment escaping for MySQL and PostgreSQL #4084
+
+# 0.21.7 - 25 October, 2020
+
+### New features:
+
+- CLI: Add migration stub for .cjs extension #4065
+
+### Bug fixes:
+
+- MSSQL: Add dynamic scaling for decimal values and prevents a UInt64 overflow #3910
+- MSSQL: Fix apostrophe escaping #4077
+- Ensure that semicolon is not appended to statements that already end with a semicolon #4052
+
+### Typings:
+
+- Add arguments to QueryCallback in Where #4034
+
+### Test / internal changes:
+
+- Replace lodash type-checks with native solutions #4056
+- Replace mkdirp with native recursive flag #4060
+- Replace inherits package with builtin utility #4059
+
+# 0.21.6 - 27 September, 2020
+
+### New features:
+
+- CLI: New config parameter / CLI flag to prefixing seed filename with timestamp #3873
+- CLI: throw an error when specific seed file cannot be found #4011
+- Warn if whereNot is used with 'in' or 'between' #4038
+
+### Bug fixes:
+
+- CLI: Fix double merging of config for migrator #4040
+
+### Typings:
+
+- Unify SeedsConfig and SeederConfig #4003
+- Allow string[] type for directory in SeedsConfig #4033
+
 # 0.21.5 - 17 August, 2020
 
 ### New features:
