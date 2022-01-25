@@ -1256,7 +1256,7 @@ describe('Selects', function () {
       });
 
       describe('"with" tests', () => {
-        before(async function () {
+        beforeEach(async function () {
           await knex('test_default_table').truncate();
           await knex('test_default_table').insert([
             { string: 'something', tinyint: 1 },
