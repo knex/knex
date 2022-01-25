@@ -1256,19 +1256,21 @@ describe('Selects', function () {
       });
 
       describe('"with" tests', () => {
-        beforeEach(async function () {
-          await knex('test_default_table').truncate();
-          await knex('test_default_table').insert([
-            { string: 'something', tinyint: 1 },
-          ]);
+        beforeEach(async () => {
+          await knex.schema
+            .dropTableIfExists('with_table')
+            .createTable('with_table', function (table) {
+              table.integer('test');
+            });
+          await knex('with_table').insert([{ test: 1 }]);
         });
 
-        it('with', async function () {
+        it('with', async () => {
           const withQuery = await knex
-            .with('t', knex('test_default_table'))
+            .with('t', knex('with_table'))
             .from('t')
             .first();
-          expect(withQuery.tinyint).to.equal(1);
+          expect(withQuery.test).to.equal(1);
         });
 
         it('with materialized', async function () {
@@ -1276,9 +1278,9 @@ describe('Selects', function () {
             return this.skip();
           }
           const materialized = await knex('t')
-            .withMaterialized('t', knex('test_default_table'))
+            .withMaterialized('t', knex('with_table'))
             .first();
-          expect(materialized.tinyint).to.equal(1);
+          expect(materialized.test).to.equal(1);
         });
 
         it('with not materialized', async function () {
@@ -1286,9 +1288,9 @@ describe('Selects', function () {
             return this.skip();
           }
           const notMaterialized = await knex('t')
-            .withNotMaterialized('t', knex('test_default_table'))
+            .withNotMaterialized('t', knex('with_table'))
             .first();
-          expect(notMaterialized.tinyint).to.equal(1);
+          expect(notMaterialized.test).to.equal(1);
         });
       });
 
