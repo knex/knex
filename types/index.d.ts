@@ -2210,7 +2210,7 @@ export declare namespace Knex {
     notNullable(): ColumnBuilder;
     nullable(): ColumnBuilder;
     comment(value: string): ColumnBuilder;
-    alter(): ColumnBuilder;
+    alter(options : Readonly<{alterNullable?: boolean}>): ColumnBuilder;
     queryContext(context: any): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
