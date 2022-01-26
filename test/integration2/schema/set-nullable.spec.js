@@ -106,9 +106,11 @@ describe('Schema', () => {
 
           it('should not throw error if alter a not nullable column with primary key with alterNullable is false #4401', async function () {
             // TODO: related issue for cockroach https://github.com/cockroachdb/cockroach/issues/47636
-            if (!isPostgreSQL(knex)) {
+            if (!(isPostgreSQL(knex) || isCockroachDB(knex))) {
               this.skip();
             }
+            // With CoackroachDb we don't alter type (not supported).
+            const alterType = isPostgreSQL(knex);
             await knex.schema.dropTableIfExists('primary_table_null');
             await knex.schema.createTable('primary_table_null', (table) => {
               table.integer('id_not_nullable_primary').notNullable().primary();
@@ -117,7 +119,7 @@ describe('Schema', () => {
             await knex.schema.table('primary_table_null', (table) => {
               table
                 .integer('id_not_nullable_primary')
-                .alter({ alterNullable: false });
+                .alter({ alterNullable: false, alterType: alterType });
             });
           });
         });
