@@ -92,13 +92,21 @@ describe('Schema', () => {
             } catch (e) {
               error = e;
             }
-            expect(error.message).to.eq(
-              'alter table "primary_table_null" alter column "id_not_nullable_primary" drop not null - column "id_not_nullable_primary" is in a primary key'
-            );
+            if (isCockroachDB(knex)) {
+              // TODO: related comment in issue https://github.com/cockroachdb/cockroach/issues/49329#issuecomment-1022120446
+              expect(error.message).to.eq(
+                'alter table "primary_table_null" alter column "id_not_nullable_primary" drop not null - column "id_not_nullable_primary" is in a primary index'
+              );
+            } else {
+              expect(error.message).to.eq(
+                'alter table "primary_table_null" alter column "id_not_nullable_primary" drop not null - column "id_not_nullable_primary" is in a primary key'
+              );
+            }
           });
 
           it('should not throw error if alter a not nullable column with primary key with alterNullable is false #4401', async function () {
-            if (!(isPostgreSQL(knex) || isCockroachDB(knex))) {
+            // TODO: related issue for cockroach https://github.com/cockroachdb/cockroach/issues/47636
+            if (!isPostgreSQL(knex)) {
               this.skip();
             }
             await knex.schema.dropTableIfExists('primary_table_null');
