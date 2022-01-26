@@ -395,8 +395,8 @@ describe('Additional', function () {
           const uuid = knex.fn.binToUuid(binary);
           expect(uuid).to.equal(originalUuid);
           const binaryUnorder = knex.fn.uuidToBin(originalUuid, false);
-          const uuidUnorder = knex.fn.binToUuid(binary, false);
-          expect(binaryUnorder).to.equal(uuidUnorder);
+          const uuidUnorder = knex.fn.binToUuid(binaryUnorder, false);
+          expect(uuidUnorder).to.equal(originalUuid);
         });
 
         it('should insert binary uuid and retrieve it with not ordered uuid data', async () => {
