@@ -1082,8 +1082,8 @@ export default [
   {
     type: "method",
     method: "alter",
-    example: "column.alter(options={[alterNullable: boolean = true])",
-    description: 'Marks the column as an alter / modify, instead of the default add. Note: This only works in .alterTable() and is not supported by SQlite or Amazon Redshift. Alter is *not* done incrementally over older column type so if you like to add `notNullable` and keep the old default value, the alter statement must contain both `.notNullable().defaultTo(1).alter()`. If one just tries to add `.notNullable().alter()` the old default value will be dropped. Nullable alterations are done only if alterNullable is true.',
+    example: "column.alter(options={[alterNullable: boolean = true, alterType: boolean = true])",
+    description: 'Marks the column as an alter / modify, instead of the default add. Note: This only works in .alterTable() and is not supported by SQlite or Amazon Redshift. Alter is *not* done incrementally over older column type so if you like to add `notNullable` and keep the old default value, the alter statement must contain both `.notNullable().defaultTo(1).alter()`. If one just tries to add `.notNullable().alter()` the old default value will be dropped. Nullable alterations are done only if alterNullable is true. Type alterations are done only if alterType is true.',
     children: [    ]
   },
   {
@@ -1097,6 +1097,8 @@ export default [
         t.integer('age').alter();
         // if alterNullable is false, drops only the default value
         t.integer('age').alter({alterNullable : false});
+        // if alterType is false, type of column is not altered.
+        t.integer('age').alter({alterType : false});
       });
     `
   },
