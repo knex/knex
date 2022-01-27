@@ -8,6 +8,7 @@ const {
   isMysql,
   isBetterSQLite3,
   isOracle,
+  isCockroachDB,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
@@ -76,7 +77,7 @@ describe('Schema', () => {
           });
 
           it('should throw error if alter a not nullable column with primary key #4401', async function () {
-            if (!isPostgreSQL(knex)) {
+            if (!(isPostgreSQL(knex) || isCockroachDB(knex))) {
               this.skip();
             }
             await knex.schema.dropTableIfExists('primary_table_null');
@@ -91,15 +92,25 @@ describe('Schema', () => {
             } catch (e) {
               error = e;
             }
-            expect(error.message).to.eq(
-              'alter table "primary_table_null" alter column "id_not_nullable_primary" drop not null - column "id_not_nullable_primary" is in a primary key'
-            );
+            if (isCockroachDB(knex)) {
+              // TODO: related comment in issue https://github.com/cockroachdb/cockroach/issues/49329#issuecomment-1022120446
+              expect(error.message).to.eq(
+                'alter table "primary_table_null" alter column "id_not_nullable_primary" drop not null - column "id_not_nullable_primary" is in a primary index'
+              );
+            } else {
+              expect(error.message).to.eq(
+                'alter table "primary_table_null" alter column "id_not_nullable_primary" drop not null - column "id_not_nullable_primary" is in a primary key'
+              );
+            }
           });
 
           it('should not throw error if alter a not nullable column with primary key with alterNullable is false #4401', async function () {
-            if (!isPostgreSQL(knex)) {
+            // TODO: related issue for cockroach https://github.com/cockroachdb/cockroach/issues/47636
+            if (!(isPostgreSQL(knex) || isCockroachDB(knex))) {
               this.skip();
             }
+            // With CoackroachDb we don't alter type (not supported).
+            const alterType = isPostgreSQL(knex);
             await knex.schema.dropTableIfExists('primary_table_null');
             await knex.schema.createTable('primary_table_null', (table) => {
               table.integer('id_not_nullable_primary').notNullable().primary();
@@ -108,7 +119,7 @@ describe('Schema', () => {
             await knex.schema.table('primary_table_null', (table) => {
               table
                 .integer('id_not_nullable_primary')
-                .alter({ alterNullable: false });
+                .alter({ alterNullable: false, alterType: alterType });
             });
           });
         });
