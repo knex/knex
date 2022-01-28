@@ -9,7 +9,7 @@ describe('Insert', () => {
     getAllDbs().forEach((db) => {
       describe(db, () => {
         let knex;
-        before(() => {
+        before(function () {
           knex = getKnexForDb(db);
           if (!isPostgreSQL(knex)) {
             this.skip('This test is PostgreSQL only');
