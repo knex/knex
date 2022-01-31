@@ -1412,6 +1412,22 @@ describe('Schema (misc)', () => {
                 'create index "10_test_table_logins_index" on "10_test_table" ("logins")',
               ]);
             }));
+
+        it('test boolean type with sqlite3 and better sqlite3 #4955', async function () {
+          if (!isSQLite(knex)) {
+            this.skip();
+          }
+          await knex.schema
+            .dropTableIfExists('test')
+            .createTable('test', (table) => {
+              table.boolean('value').notNullable();
+            });
+
+          await knex('test').insert([{ value: true }, { value: false }]);
+          const data = await knex('test').select();
+          expect(data[0].value).to.eq(1);
+          expect(data[1].value).to.eq(0);
+        });
       });
 
       describe('table', () => {
