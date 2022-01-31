@@ -637,6 +637,22 @@ describe('Where', function () {
           });
         });
 
+        it('where json object with string object', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonObject(
+              'descriptions',
+              `{
+              "type": "bigcity",
+              "short": "beautiful city",
+              "long": "beautiful and dirty city"
+            }`
+            );
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
         it('where not json object', async () => {
           const result = await knex('cities')
             .select('name')
@@ -697,6 +713,24 @@ describe('Where', function () {
             .whereJsonSupersetOf('descriptions', {
               type: 'bigcity',
             });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
+            },
+          ]);
+        });
+
+        it('where json superset of with string', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonSupersetOf('descriptions', '{"type": "bigcity"}');
           expect(result.length).to.equal(2);
           assertJsonEquals(result, [
             {
