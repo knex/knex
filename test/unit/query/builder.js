@@ -10923,6 +10923,26 @@ describe('QueryBuilder', () => {
         );
       });
 
+      it('where a json column is a superset of value', async function () {
+        testsql(
+          qb().select().from('users').whereJsonSupersetOf('address', 'test'),
+          {
+            pg: {
+              sql: 'select * from "users" where "address" @> ?',
+              bindings: ['test'],
+            },
+            mysql: {
+              sql: 'select * from `users` where json_contains(`address`,?)',
+              bindings: ['test'],
+            },
+            cockroachdb: {
+              sql: 'select * from "users" where "address" @> ?',
+              bindings: ['test'],
+            },
+          }
+        );
+      });
+
       it('where a json column is not a superset of value', async function () {
         testsql(
           qb()
