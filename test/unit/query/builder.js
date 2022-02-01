@@ -5800,10 +5800,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
       },
       pg: {
-        sql: 'select * from "users" order by ("foo" is not null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls first',
       },
       'pg-redshift': {
-        sql: 'select * from "users" order by ("foo" is not null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls first',
       },
     });
   });
@@ -5821,10 +5821,10 @@ describe('QueryBuilder', () => {
           sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
         },
         pg: {
-          sql: 'select * from "users" order by ("foo" is not null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls first',
         },
         'pg-redshift': {
-          sql: 'select * from "users" order by ("foo" is not null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls first',
         },
       }
     );
@@ -5839,10 +5839,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
       },
       pg: {
-        sql: 'select * from "users" order by ("foo" is null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls last',
       },
       'pg-redshift': {
-        sql: 'select * from "users" order by ("foo" is null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls last',
       },
     });
   });
@@ -5860,10 +5860,10 @@ describe('QueryBuilder', () => {
           sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
         },
         pg: {
-          sql: 'select * from "users" order by ("foo" is null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls last',
         },
         'pg-redshift': {
-          sql: 'select * from "users" order by ("foo" is null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls last',
         },
       }
     );

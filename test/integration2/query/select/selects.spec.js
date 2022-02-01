@@ -611,19 +611,19 @@ describe('Selects', function () {
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
               [],
               [2, 4, 1, 3]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
               [],
               [2, 4, 1, 3]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by ("null_col" is not null) asc, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
               [],
               ['2', '4', '1', '3']
             );
@@ -662,19 +662,19 @@ describe('Selects', function () {
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
               [],
               [1, 3, 2, 4]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
               [],
               [1, 3, 2, 4]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by ("null_col" is null) asc, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
               [],
               ['1', '3', '2', '4']
             );
