@@ -2,24 +2,27 @@
  * Test case for figuring out robust way to recognize if connection is dead
  * for mysql based drivers.
  */
-const Bluebird = require('bluebird');
+const delay = require('../../lib/execution/internal/delay');
 const toxiproxy = require('toxiproxy-node-client');
 const toxicli = new toxiproxy.Toxiproxy('http://localhost:8474');
 const rp = require('request-promise-native');
 
-async function stdMysqlQuery(con, sql) {  
+async function stdMysqlQuery(con, sql) {
   return new Promise((resolve, reject) => {
     try {
-      con.query({
-        sql,
-        timeout: 4000
-      }, function (error, results, fields) {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results);
+      con.query(
+        {
+          sql,
+          timeout: 4000,
+        },
+        function (error, results, fields) {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
         }
-      });    
+      );
     } catch (err) {
       reject(err); // double sure...
     }
@@ -31,7 +34,7 @@ async function stdMysqlQuery(con, sql) {
 
 // ------------- setup mysql db driver connection
 const mysql = require('mysql');
-let mysqlCon = {state: 'disconnected'};
+let mysqlCon = { state: 'disconnected' };
 async function mysqlQuery(sql) {
   // best way to check if connection is still alive
   if (mysqlCon.state === 'disconnected') {
@@ -41,10 +44,10 @@ async function mysqlQuery(sql) {
       user: 'root',
       password: 'mysqlrootpassword',
       port: 23306,
-      connectTimeout: 500
+      connectTimeout: 500,
     });
     // not always triggered, if this happens during query
-    mysqlCon.on('error', err => {
+    mysqlCon.on('error', (err) => {
       console.log('- STATS Mysql connection died:', err);
     });
   }
@@ -53,7 +56,7 @@ async function mysqlQuery(sql) {
 
 // ------------- setup mysql2 db driver connection
 const mysql2 = require('mysql2');
-let mysql2Con = {_fatalError: 'initmefirst'};
+let mysql2Con = { _fatalError: 'initmefirst' };
 async function mysql2Query(sql) {
   if (mysql2Con._fatalError) {
     console.log('reconnecting mysql2');
@@ -62,9 +65,9 @@ async function mysql2Query(sql) {
       user: 'root',
       password: 'mysqlrootpassword',
       port: 23306,
-      connectTimeout: 500
+      connectTimeout: 500,
     });
-    mysql2Con.on('error', err => {
+    mysql2Con.on('error', (err) => {
       console.log('- STATS Mysql2 connection died:', err);
     });
   }
@@ -76,7 +79,7 @@ async function mysql2Query(sql) {
 
 const counters = {};
 function setMysqlQueryCounters(name) {
-  const counts = counters[name] = {queries: 0, results: 0, errors: 0};
+  const counts = (counters[name] = { queries: 0, results: 0, errors: 0 });
 }
 setMysqlQueryCounters('mysql');
 setMysqlQueryCounters('mysql2');
@@ -90,67 +93,72 @@ setInterval(() => {
   const reqsPerSec = {};
   for (let key of Object.keys(counters)) {
     reqsPerSec[key] = {
-      queries: (counters[key].queries - lastCounters[key].queries),
-      results: (counters[key].results - lastCounters[key].results),
-      errors: (counters[key].errors - lastCounters[key].errors),
-    }
+      queries: counters[key].queries - lastCounters[key].queries,
+      results: counters[key].results - lastCounters[key].results,
+      errors: counters[key].errors - lastCounters[key].errors,
+    };
   }
-  console.log('------------------------ STATS PER SECOND ------------------------');
-  console.dir(reqsPerSec, {colors: true});
-  console.log('------------------------------- EOS ------------------------------');
+  console.log(
+    '------------------------ STATS PER SECOND ------------------------'
+  );
+  console.dir(reqsPerSec, { colors: true });
+  console.log(
+    '------------------------------- EOS ------------------------------'
+  );
   lastCounters = _.cloneDeep(counters);
 
   // if hang
   ///if (reqsPerSec.mysql2.queries === 0) process.exit(0);
-}, 1000);  
-
+}, 1000);
 
 async function main() {
-
   async function recreateProxy(serviceName, listenPort, proxyToPort) {
     try {
       await rp.delete({
-        url: `${toxicli.host}/proxies/${serviceName}`
-      });  
-    } catch(err) {}
+        url: `${toxicli.host}/proxies/${serviceName}`,
+      });
+    } catch (err) {}
 
     const proxy = await toxicli.createProxy({
       name: serviceName,
       listen: `0.0.0.0:${listenPort}`,
-      upstream: `${serviceName}:${proxyToPort}`
+      upstream: `${serviceName}:${proxyToPort}`,
     });
 
     // add some latency
-    await proxy.addToxic(new toxiproxy.Toxic(proxy, {
-      type: 'latency',
-      attributes: {latency: 1, jitter: 1}
-    }));
+    await proxy.addToxic(
+      new toxiproxy.Toxic(proxy, {
+        type: 'latency',
+        attributes: { latency: 1, jitter: 1 },
+      })
+    );
 
     // cause connections to be closed every some transferred bytes
-    await proxy.addToxic(new toxiproxy.Toxic(proxy, {
-      type: 'limit_data',
-      attributes: {bytes: 1000}
-    }));
+    await proxy.addToxic(
+      new toxiproxy.Toxic(proxy, {
+        type: 'limit_data',
+        attributes: { bytes: 1000 },
+      })
+    );
   }
-
 
   // create TCP proxies for simulating bad connections etc.
   async function recreateProxies() {
     console.log('----- Recreating proxies -> cutting connections completely');
     await recreateProxy('postgresql', 25432, 5432);
     await recreateProxy('mysql', 23306, 3306);
-    await recreateProxy('oracledbxe', 21521, 1521);
+    await recreateProxy('oracledb', 21521, 1521);
   }
   setInterval(() => recreateProxies(), 2000);
 
   async function loopQueries(prefix, query) {
     const counts = counters[prefix];
 
-    while(true) {
+    while (true) {
       try {
         counts.queries += 1;
         // without this delay we endup to busy failure loop
-        await Bluebird.delay(0);
+        await delay(0);
         await query();
         counts.results += 1;
       } catch (err) {
@@ -166,9 +174,11 @@ async function main() {
   loopQueries('mysql2', () => mysql2Query('select 1'));
 
   // wait forever
-  while(true) {
-    await Bluebird.delay(1000);
+  while (true) {
+    await delay(1000);
   }
 }
 
-main().then(() => console.log('DONE')).catch(err => console.log(err));
+main()
+  .then(() => console.log('DONE'))
+  .catch((err) => console.log(err));

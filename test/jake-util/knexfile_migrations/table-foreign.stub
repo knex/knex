@@ -1,0 +1,20 @@
+/* eslint func-names:0 */
+
+exports.up = function (knex) {
+  return knex.schema.createTable("", (table) => {
+    table.increments();
+    table
+      .integer("") // foreign_key_name
+      .unsigned()
+      .notNullable()
+      .references("") // table.primary_key_name
+      .onDelete("CASCADE"); // RESTRICT, CASCADE, SET NULL, NO ACTION
+    table.timestamps(true, true);
+  });
+};
+
+exports.down = function (knex) {
+  return knex.schema.dropTable("");
+};
+
+// exports.config = { transaction: false };

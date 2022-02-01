@@ -1,0 +1,19 @@
+// This is primarily used by dtslint to run tests against type definitions
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2017",
+    "lib": ["es6"],
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "knex": ["."]
+    },
+    "esModuleInterop": false,
+    "skipLibCheck": true
+  }
+}
