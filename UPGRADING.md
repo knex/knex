@@ -3,7 +3,7 @@
 ### Upgrading to version 1.0.0+
 
 * Node.js older than 12 is no longer supported, make sure to update your environment;
-* If you are using `sqlite3` driver, please replace it with `@vscode/sqlite3`;
+* If you are using `sqlite3` driver dependency, please replace it with `@vscode/sqlite3` in your `package.json`;
 * `RETURNING` operations now always return an object with column names;
 * Migrator now returns list of migrations as objects.
 
