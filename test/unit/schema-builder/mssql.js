@@ -497,7 +497,7 @@ describe('MSSQL SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'select object_id from sys.tables where object_id = object_id(?)'
+      'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?'
     );
     expect(tableSql[0].bindings[0]).to.equal('[users]');
   });
@@ -511,7 +511,7 @@ describe('MSSQL SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'select object_id from sys.tables where object_id = object_id(?)'
+      'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?'
     );
     expect(tableSql[0].bindings[0]).to.equal('[schema].[users]');
   });
