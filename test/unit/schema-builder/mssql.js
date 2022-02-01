@@ -499,7 +499,7 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?'
     );
-    expect(tableSql[0].bindings[0]).to.equal('[users]');
+    expect(tableSql[0].bindings[0]).to.equal('users');
   });
 
   it('test has table with schema', function () {
@@ -513,7 +513,7 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?'
     );
-    expect(tableSql[0].bindings[0]).to.equal('[schema].[users]');
+    expect(tableSql[0].bindings[0]).to.equal('schema.users');
   });
 
   it('test rename table with schema', function () {
