@@ -1,30 +1,31 @@
 /*eslint no-var:0*/
 'use strict';
-// var wtf = require('wtfnode');
-var tape = require('tape')
-var makeKnex = require('../../knex')
-var knexfile = require('../knexfile')
+require('../util/chai-setup');
+const tape = require('tape');
+const makeKnex = require('../../knex');
+const knexfile = require('../knexfile');
 
-require('./parse-connection')
-require('./raw')
-require('./query-builder')
-require('./seed')
-require('./migrate')
-require('./pool')
-require('./knex')
+require('./parse-connection');
+require('./raw');
+require('./query-builder');
+require('./seed');
+require('./migrate');
+require('./pool');
+require('./knex');
+require('./invalid-db-setup')(knexfile);
 
-Object.keys(knexfile).forEach(function(key) {
+Object.keys(knexfile).forEach(function (key) {
+  const knex = makeKnex(knexfile[key]);
 
-  var knex = makeKnex(knexfile[key])
-
-  require('./transactions')(knex)
-  require('./stream')(knex)
+  require('./transactions')(knex);
+  require('./stream')(knex);
+  require('./crossdb-compatibility')(knex);
 
   // Tear down the knex connection
-  tape(knex.client.driverName + ' - transactions: after', function(t) {
-    knex.destroy(function() {
-      t.ok(true, 'Knex client destroyed')
-      t.end()
-    })
-  })
-})
+  tape(knex.client.driverName + ' - transactions: after', function (t) {
+    knex.destroy(function () {
+      t.pass('Knex client destroyed');
+      t.end();
+    });
+  });
+});

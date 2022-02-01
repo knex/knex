@@ -1,0 +1,8 @@
+{
+  "name": "knexfile-esm-package",
+  "private": true,
+  "version": "0.1.0-1",
+  "main": "knexfile.js",
+  "module": "knexfile.js",
+  "license": "MIT"
+}

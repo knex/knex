@@ -1,5 +1,5 @@
 'use strict';
 
-exports.seed = function() {
+exports.seed = function () {
   return 'seed 1';
 };

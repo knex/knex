@@ -1,119 +1,212 @@
 {
   "name": "knex",
-  "version": "0.14.0",
-  "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
-  "main": "knex.js",
+  "version": "1.0.1",
+  "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
+  "main": "knex",
+  "types": "types/index.d.ts",
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
+    "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
+    "debug:tape": "node --inspect-brk test/tape/index.js",
+    "coveralls": "nyc report --reporter=lcov",
+    "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\"",
+    "lint:types": "tsd && dtslint types",
+    "lint:everything": "npm run lint:types && npm run lint",
+    "test:unit": "npm run test:unit-only && npm run test:cli",
+    "test:unit-only": "mocha --exit -t 10000 --config test/mocha-unit-config-test.js",
+    "test:db": "mocha --exit -t 10000 --config test/mocha-integration-config-test.js",
+    "test:db:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
+    "test:db:no-oracle": "cross-env DB=\"mssql mysql mysql2 postgres sqlite3\" mocha --exit -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
+    "test": "mocha --exit -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
+    "test:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
+    "test:everything": "npm run lint:everything && npm run test:coverage",
+    "test:mssql": "cross-env DB=mssql npm run test:db",
+    "test:mysql": "cross-env DB=mysql npm run test:db",
+    "test:mysql2": "cross-env DB=mysql2 npm run test:db",
+    "test:oracledb": "cross-env DB=oracledb npm run test:db",
+    "test:sqlite": "cross-env DB=sqlite3 npm run test:db",
+    "test:better-sqlite3": "cross-env DB=better-sqlite3 npm run test:db",
+    "test:postgres": "cross-env DB=postgres npm run test:db",
+    "test:cockroachdb": "cross-env DB=cockroachdb npm run test:db",
+    "test:pgnative": "cross-env DB=pgnative npm run test:db",
+    "test:tape": "node test/tape/index.js | tap-spec",
+    "test:cli": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
+    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledb postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledb",
+    "db:start:no-oracle": "docker-compose -f scripts/docker-compose.yml up --build -d mysql postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres",
+    "db:stop": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:postgres": "docker-compose -f scripts/docker-compose.yml up --build -d postgres && docker-compose -f scripts/docker-compose.yml up waitpostgres",
+    "db:stop:postgres": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:pgnative": "docker-compose -f scripts/docker-compose.yml up --build -d pgnative && docker-compose -f scripts/docker-compose.yml up waitpgnative",
+    "db:stop:pgnative": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:mysql": "docker-compose -f scripts/docker-compose.yml up --build -d mysql && docker-compose -f scripts/docker-compose.yml up waitmysql",
+    "db:stop:mysql": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:mssql": "docker-compose -f scripts/docker-compose.yml up --build -d mssql && docker-compose -f scripts/docker-compose.yml up waitmssql",
+    "db:stop:mssql": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:cockroachdb": "docker-compose -f scripts/docker-compose.yml up --build -d cockroachdb && docker-compose -f scripts/docker-compose.yml up waitcockroachdb",
+    "db:stop:cockroachdb": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:oracle": "docker-compose -f scripts/docker-compose.yml up --build -d oracledb && docker-compose -f scripts/docker-compose.yml up waitoracledb",
+    "db:stop:oracle": "docker-compose -f scripts/docker-compose.yml down",
+    "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
+    "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
+    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
+  },
   "dependencies": {
-    "babel-runtime": "^6.23.0",
-    "bluebird": "^3.4.6",
-    "chalk": "2.3.0",
-    "commander": "^2.2.0",
-    "debug": "3.1.0",
-    "generic-pool": "^3.1.7",
-    "inherits": "~2.0.1",
-    "interpret": "^1.0.4",
-    "liftoff": "2.3.0",
-    "lodash": "^4.6.0",
-    "minimist": "1.2.0",
-    "mkdirp": "^0.5.0",
-    "pg-connection-string": "2.0.0",
-    "readable-stream": "2.3.3",
-    "safe-buffer": "^5.0.1",
-    "tildify": "1.2.0",
-    "uuid": "^3.0.0",
-    "v8flags": "^3.0.0"
+    "colorette": "2.0.16",
+    "commander": "^8.3.0",
+    "debug": "4.3.3",
+    "escalade": "^3.1.1",
+    "esm": "^3.2.25",
+    "getopts": "2.3.0",
+    "interpret": "^2.2.0",
+    "lodash": "^4.17.21",
+    "pg-connection-string": "2.5.0",
+    "rechoir": "^0.8.0",
+    "resolve-from": "^5.0.0",
+    "tarn": "^3.0.2",
+    "tildify": "2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "tedious": {
+      "optional": true
+    },
+    "mysql": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "pg": {
+      "optional": true
+    },
+    "pg-native": {
+      "optional": true
+    },
+    "sqlite3": {
+      "optional": true
+    },
+    "@vscode/sqlite3": {
+      "optional": true
+    },
+    "better-sqlite3": {
+      "optional": true
+    }
+  },
+  "lint-staged": {
+    "*.{js,json}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "devDependencies": {
-    "JSONStream": "^1.0.3",
-    "async": "^0.9.0",
-    "babel-cli": "^6.11.4",
-    "babel-eslint": "^5.0.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-lodash": "3.2.9",
-    "babel-plugin-transform-runtime": "^6.12.0",
-    "babel-preset-es2015": "^6.13.2",
-    "chai": "^3.5.0",
-    "coveralls": "~2.11.1",
-    "dockerode": "^2.4.3",
-    "eslint": "2.2.0",
-    "eslint-plugin-import": "^1.8.0",
-    "istanbul": "^0.4.5",
-    "json-loader": "^0.5.4",
-    "mariasql": "^0.2.3",
-    "mocha": "^3.1.2",
-    "mock-fs": "^4.4.1",
-    "mssql": "^4.0.0",
-    "mysql": "^2.6.2",
-    "mysql2": "^1.1.1",
-    "pg": "^6.1.0",
-    "pg-query-stream": "^1.0.0",
-    "rimraf": "2.x",
-    "sinon": "^1.10.0",
-    "sinon-chai": "^2.5.0",
-    "source-map-support": "^0.4.0",
-    "sqlite3": "^3.0.5",
-    "tap-spec": "^4.0.0",
-    "tape": "^4.0.0",
-    "through": "^2.3.4"
+    "@types/node": "^16.11.19",
+    "@vscode/sqlite3": "^5.0.7",
+    "better-sqlite3": "^7.4.6",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "chai-subset-in-order": "^3.1.0",
+    "cli-testlab": "^2.2.0",
+    "coveralls": "^3.1.1",
+    "cross-env": "^7.0.3",
+    "dtslint": "4.2.1",
+    "eslint": "^8.1.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.2",
+    "husky": "^4.3.8",
+    "jake": "^8.1.1",
+    "JSONStream": "^1.3.5",
+    "lint-staged": "^11.1.2",
+    "mocha": "^9.1.4",
+    "mock-fs": "^5.1.2",
+    "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
+    "nyc": "^15.1.0",
+    "oracledb": "^5.3.0",
+    "pg": "^8.7.1",
+    "pg-query-stream": "^4.2.1",
+    "prettier": "2.4.1",
+    "rimraf": "^3.0.2",
+    "sinon": "^12.0.1",
+    "sinon-chai": "^3.7.0",
+    "source-map-support": "^0.5.21",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.4.0",
+    "tedious": "^12.2.0",
+    "toxiproxy-node-client": "^2.0.6",
+    "ts-node": "^10.4.0",
+    "tsd": "^0.19.1",
+    "typescript": "4.5.4"
   },
   "buildDependencies": [
-    "babel-cli",
-    "babel-plugin-add-module-exports",
-    "babel-plugin-lodash",
-    "babel-plugin-transform-runtime",
-    "babel-preset-es2015",
-    "babel-preset-es2015-loose",
     "rimraf"
   ],
-  "scripts": {
-    "build": "npm run babel",
-    "debug_test": "node-debug _mocha -t 0 test/index.js",
-    "babel": "rimraf ./lib && babel src --out-dir lib --copy-files",
-    "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "dev": "rm -rf ./lib && babel -w src --out-dir lib --copy-files",
-    "lint": "eslint src/**",
-    "plaintest": "mocha --check-leaks -b -R spec test/index.js && npm run tape",
-    "prepublish": "npm run babel",
-    "docker_test": "bash ./scripts/docker-for-test.sh",
-    "pre_test": "npm run lint && npm run docker_test",
-    "tape": "node test/tape/index.js | tap-spec",
-    "debug_tape": "node-debug test/tape/index.js",
-    "test": "npm run pre_test && istanbul --config=test/.istanbul.yml cover node_modules/mocha/bin/_mocha -- --check-leaks -t 10000 -b -R spec test/index.js && npm run tape"
-  },
   "bin": {
     "knex": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/tgriesser/knex.git"
+    "url": "git://github.com/knex/knex.git"
   },
+  "homepage": "https://knexjs.org",
   "keywords": [
     "sql",
     "query",
     "postgresql",
+    "postgres",
     "mysql",
-    "mariadb",
+    "cockroachdb",
     "sqlite3",
     "oracle",
-    "mssql"
+    "mssql",
+    "builder",
+    "querybuilder",
+    "build",
+    "db",
+    "database"
   ],
   "author": {
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
   },
+  "contributors": [
+    {
+      "name": "Mikael Lepisto"
+    },
+    {
+      "name": "Igor Savin",
+      "web": "https://www.codeflashbacks.com"
+    },
+    {
+      "name": "Simon Liden"
+    },
+    {
+      "name": "Paul Gaurab",
+      "web": "https://lorefnon.tech"
+    },
+    {
+      "name": "Brian Lauber",
+      "web": "https://briandamaged.org"
+    },
+    {
+      "name": "Olivier Cavadenti"
+    }
+  ],
   "browser": {
-    "./lib/migrate/index.js": "./lib/util/noop.js",
+    "./lib/migrate/Migrator.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
-    "./lib/seed/index.js": "./lib/util/noop.js",
-    "mssql": false,
+    "./lib/seed/Seeder.js": "./lib/util/noop.js",
+    "tedious": false,
     "mysql": false,
     "mysql2": false,
-    "mariasql": false,
     "pg": false,
+    "pg-native": false,
     "pg-query-stream": false,
     "oracle": false,
-    "strong-oracle": false,
     "sqlite3": false,
+    "@vscode/sqlite3": false,
+    "better-sqlite3": false,
     "oracledb": false
   },
   "react-native": {
@@ -121,15 +214,46 @@
     "./lib/seed": "./lib/util/noop.js"
   },
   "files": [
-    "CONTRIBUTING.md",
-    "README.md",
     "bin/*",
-    "src/*",
     "lib/*",
+    "scripts/*",
+    "types/index.d.ts",
+    "types/result.d.ts",
+    "types/tables.d.ts",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
     "knex.js",
     "LICENSE",
-    "CHANGELOG.md",
-    "scripts/*"
+    "README.md",
+    "UPGRADING.md"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "tonicExampleFilename": "scripts/runkit-example.js",
+  "nyc": {
+    "check-coverage": true,
+    "lines": 84,
+    "statements": 82,
+    "functions": 83,
+    "branches": 69,
+    "extension": [
+      ".js"
+    ],
+    "exclude": [
+      "lib/dialects/oracle",
+      "lib/dialects/oracledb"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "tsd": {
+    "directory": "test-tsd",
+    "compilerOptions": {
+      "esModuleInterop": false,
+      "module": "commonjs",
+      "target": "ES2017"
+    }
+  }
 }

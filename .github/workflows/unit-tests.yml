@@ -1,0 +1,41 @@
+---
+
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+
+    strategy:
+      matrix:
+        node-version: [17.x, 16.x, 14.x, 12.x]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v2.5.1
+        with:
+          always-auth: false
+          node-version: ${{ matrix.node-version }}
+
+      - name: Run npm install
+        run: npm install
+
+      - name: Run Tests
+        run: npm run test:unit
+        env:
+          CI: true
+          KNEX_TEST_TIMEOUT: 60000
