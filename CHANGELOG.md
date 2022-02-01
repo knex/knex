@@ -1,5 +1,29 @@
 # Master (Unreleased)
 
+# 1.0.2 - 02 February, 2022
+
+### New features:
+
+- Support of MATERIALIZED and NOT MATERIALIZED with WITH/CTE #4940
+- Add raw support in onConflict clause #4960
+- Alter nullable constraint when alterNullable is set to true #4730
+- Add alterType parameter for alter function #4967
+- Support string json in json values #4988
+- MySQL: add with clause #4508
+
+### Bug fixes:
+
+- Fix error message for missing migration files #4937
+- Move deferrable to after on update/on delete #4976
+- Do not use sys.tables to find if a table exists #2328
+- PostgreSQL: Fix Order nulls #4989
+- MySQL: Fix collation when renaming column #2666
+- SQLite: Same boolean handling in better-sqlite3 as in sqlite3 #4982
+
+### Typings:
+
+- WhereILike - fix typo #4941
+
 # 1.0.1 - 16 January, 2022
 
 ### Bug fixes:
