@@ -532,7 +532,7 @@ describe('Additional', function () {
           });
         }
 
-        it('should allow renaming a column', function () {
+        it('should allow renaming a column', async function () {
           let countColumn;
           if (isOracle(knex)) {
             countColumn = 'COUNT(*)';
@@ -542,7 +542,10 @@ describe('Additional', function () {
             countColumn = 'count(*)';
           }
 
-          let count;
+          await dropTables(knex);
+          await createAccounts(knex, false, false);
+          await createTestTableTwo(knex);
+
           const inserts = [];
           _.times(40, function (i) {
             inserts.push({
@@ -551,59 +554,68 @@ describe('Additional', function () {
               last_name: 'Data',
             });
           });
-          return knex('accounts')
-            .insert(inserts)
-            .then(function () {
-              return knex.count('*').from('accounts');
+          await knex('accounts').insert(inserts);
+
+          let aboutCol;
+          if (isMysql(knex)) {
+            const metadata = await knex.raw('SHOW FULL COLUMNS FROM accounts');
+            // Store the column metadata
+            aboutCol = metadata[0].filter((t) => t.Field === 'about')[0];
+            delete aboutCol.Field;
+          }
+
+          const count = (await knex.count('*').from('accounts'))[0][
+            countColumn
+          ];
+
+          await knex.schema
+            .table('accounts', function (t) {
+              t.renameColumn('about', 'about_col');
             })
-            .then(function (resp) {
-              count = resp[0][countColumn];
-              return knex.schema
-                .table('accounts', function (t) {
-                  t.renameColumn('about', 'about_col');
-                })
-                .testSql(function (tester) {
-                  tester('mysql', [
-                    'show fields from `accounts` where field = ?',
-                  ]);
-                  tester('pg', [
-                    'alter table "accounts" rename "about" to "about_col"',
-                  ]);
-                  tester('pgnative', [
-                    'alter table "accounts" rename "about" to "about_col"',
-                  ]);
-                  tester('pg-redshift', [
-                    'alter table "accounts" rename "about" to "about_col"',
-                  ]);
-                  tester('sqlite3', [
-                    'alter table `accounts` rename `about` to `about_col`',
-                  ]);
-                  tester('oracledb', [
-                    'DECLARE PK_NAME VARCHAR(200); IS_AUTOINC NUMBER := 0; BEGIN  EXECUTE IMMEDIATE (\'ALTER TABLE "accounts" RENAME COLUMN "about" TO "about_col"\');  SELECT COUNT(*) INTO IS_AUTOINC from "USER_TRIGGERS" where trigger_name = \'accounts_autoinc_trg\';  IF (IS_AUTOINC > 0) THEN    SELECT cols.column_name INTO PK_NAME    FROM all_constraints cons, all_cons_columns cols    WHERE cons.constraint_type = \'P\'    AND cons.constraint_name = cols.constraint_name    AND cons.owner = cols.owner    AND cols.table_name = \'accounts\';    IF (\'about_col\' = PK_NAME) THEN      EXECUTE IMMEDIATE (\'DROP TRIGGER "accounts_autoinc_trg"\');      EXECUTE IMMEDIATE (\'create or replace trigger "accounts_autoinc_trg"      BEFORE INSERT on "accounts" for each row        declare        checking number := 1;        begin          if (:new."about_col" is null) then            while checking >= 1 loop              select "accounts_seq".nextval into :new."about_col" from dual;              select count("about_col") into checking from "accounts"              where "about_col" = :new."about_col";            end loop;          end if;        end;\');    end if;  end if;END;',
-                  ]);
-                  tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
-                });
-            })
-            .then(function () {
-              return knex.count('*').from('accounts');
-            })
-            .then(function (resp) {
-              expect(resp[0][countColumn]).to.equal(count);
-            })
-            .then(function () {
-              return knex('accounts').select('about_col');
-            })
-            .then(function () {
-              return knex.schema.table('accounts', function (t) {
-                t.renameColumn('about_col', 'about');
-              });
-            })
-            .then(function () {
-              return knex.count('*').from('accounts');
-            })
-            .then(function (resp) {
-              expect(resp[0][countColumn]).to.equal(count);
+            .testSql(function (tester) {
+              tester('mysql', [
+                'show full fields from `accounts` where field = ?',
+              ]);
+              tester('pg', [
+                'alter table "accounts" rename "about" to "about_col"',
+              ]);
+              tester('pgnative', [
+                'alter table "accounts" rename "about" to "about_col"',
+              ]);
+              tester('pg-redshift', [
+                'alter table "accounts" rename "about" to "about_col"',
+              ]);
+              tester('sqlite3', [
+                'alter table `accounts` rename `about` to `about_col`',
+              ]);
+              tester('oracledb', [
+                'DECLARE PK_NAME VARCHAR(200); IS_AUTOINC NUMBER := 0; BEGIN  EXECUTE IMMEDIATE (\'ALTER TABLE "accounts" RENAME COLUMN "about" TO "about_col"\');  SELECT COUNT(*) INTO IS_AUTOINC from "USER_TRIGGERS" where trigger_name = \'accounts_autoinc_trg\';  IF (IS_AUTOINC > 0) THEN    SELECT cols.column_name INTO PK_NAME    FROM all_constraints cons, all_cons_columns cols    WHERE cons.constraint_type = \'P\'    AND cons.constraint_name = cols.constraint_name    AND cons.owner = cols.owner    AND cols.table_name = \'accounts\';    IF (\'about_col\' = PK_NAME) THEN      EXECUTE IMMEDIATE (\'DROP TRIGGER "accounts_autoinc_trg"\');      EXECUTE IMMEDIATE (\'create or replace trigger "accounts_autoinc_trg"      BEFORE INSERT on "accounts" for each row        declare        checking number := 1;        begin          if (:new."about_col" is null) then            while checking >= 1 loop              select "accounts_seq".nextval into :new."about_col" from dual;              select count("about_col") into checking from "accounts"              where "about_col" = :new."about_col";            end loop;          end if;        end;\');    end if;  end if;END;',
+              ]);
+              tester('mssql', ["exec sp_rename ?, ?, 'COLUMN'"]);
             });
+
+          if (isMysql(knex)) {
+            const values = await knex.raw('SHOW FULL COLUMNS FROM accounts');
+            const newAboutCol = values[0].filter(
+              (t) => t.Field === 'about_col'
+            )[0];
+            // Check if all metadata excepted the Field name (DEFAULT, COLLATION, EXTRA, etc.) are preserved after rename.
+            delete newAboutCol.Field;
+            expect(aboutCol).to.eql(newAboutCol);
+          }
+
+          const countAfterRename = (await knex.count('*').from('accounts'))[0][
+            countColumn
+          ];
+          expect(countAfterRename).to.equal(count);
+
+          await knex.schema.table('accounts', function (t) {
+            t.renameColumn('about_col', 'about');
+          });
+          const countOrigin = (await knex.count('*').from('accounts'))[0][
+            countColumn
+          ];
+          expect(countOrigin).to.equal(count);
         });
 
         it('should allow dropping a column', async function () {
