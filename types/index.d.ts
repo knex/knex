@@ -2662,7 +2662,7 @@ export declare namespace Knex {
   interface MigrationSource<TMigrationSpec> {
     getMigrations(loadExtensions: readonly string[]): Promise<TMigrationSpec[]>;
     getMigrationName(migration: TMigrationSpec): string;
-    getMigration(migration: TMigrationSpec): Migration;
+    getMigration(migration: TMigrationSpec): Promise<Migration>;
   }
 
   interface MigratorConfig {
