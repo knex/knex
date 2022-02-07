@@ -58,9 +58,10 @@ function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
   // if specified through cmd line arguments
   result.connection = opts.connection || result.connection;
   result.client = opts.client || result.client;
-  result.migrations.tableName =
-    opts.migrationsTableName || result.migrations.tableName;
-
+  if (result.migrations) {
+    result.migrations.tableName =
+      opts.migrationsTableName || result.migrations.tableName;
+  }
   return result;
 }
 
