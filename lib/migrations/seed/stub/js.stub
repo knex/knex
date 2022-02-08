@@ -10,5 +10,4 @@ exports.seed = async function(knex) {
     {id: 2, colName: 'rowValue2'},
     {id: 3, colName: 'rowValue3'}
   ]);
-  return knex
 };
