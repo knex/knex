@@ -690,6 +690,20 @@ describe('Where', function () {
           });
         });
 
+        it('where json path equal string starting with number', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath(
+              'statistics',
+              '$.statisticId',
+              '=',
+              '6qITEHRUNJ4bdAmA0lk82'
+            );
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
         it('where multiple json path', async () => {
           const result = await knex('cities')
             .select('name')
