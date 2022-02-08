@@ -54,14 +54,6 @@ function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
     result.ext = result.ext || path.extname(configFilePath).replace('.', '');
   }
 
-  // override connection, client and migrationsTableName
-  // if specified through cmd line arguments
-  result.connection = opts.connection || result.connection;
-  result.client = opts.client || result.client;
-  if (result.migrations) {
-    result.migrations.tableName =
-      opts.migrationsTableName || result.migrations.tableName;
-  }
   return result;
 }
 
