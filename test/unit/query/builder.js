@@ -10446,6 +10446,73 @@ describe('QueryBuilder', () => {
       );
     });
 
+    it('should include joins without where clause when deleting #5015', () => {
+      testsql(
+        qb().del().from('users').join('photos', 'photos.id', 'users.id'),
+        {
+          mysql: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id`',
+          },
+          mssql: {
+            sql: 'delete [users] from [users] inner join [photos] on [photos].[id] = [users].[id];select @@rowcount',
+          },
+          oracledb: {
+            sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id"',
+          },
+          pg: {
+            sql: 'delete from "users" using "photos" where "photos"."id" = "users"."id"',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id"',
+          },
+          sqlite3: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id`',
+          },
+        }
+      );
+    });
+
+    it('should include joins clauses with multiple joins with where clause when deleting #5015', () => {
+      testsql(
+        qb()
+          .where('activated', false)
+          .join('accounts', function (jb) {
+            jb.on('accounts.id', 'users.account_id').andOn(
+              'accounts.user_id',
+              'users.id'
+            );
+          })
+          .del(),
+        {
+          mysql: {
+            sql: 'delete  from  inner join `accounts` on `accounts`.`id` = `users`.`account_id` and `accounts`.`user_id` = `users`.`id` where `activated` = ?',
+            bindings: [false],
+          },
+          mssql: {
+            sql: 'delete  from  inner join [accounts] on [accounts].[id] = [users].[account_id] and [accounts].[user_id] = [users].[id] where [activated] = ?;select @@rowcount',
+            bindings: [false],
+          },
+          oracledb: {
+            sql: 'delete  from  inner join "accounts" on "accounts"."id" = "users"."account_id" and "accounts"."user_id" = "users"."id" where "activated" = ?',
+            bindings: [false],
+          },
+          pg: {
+            sql: 'delete from  using "accounts" where "activated" = ? and "accounts"."id" = "users"."account_id" and "accounts"."user_id" = "users"."id"',
+            bindings: [false],
+          },
+          'pg-redshift': {
+            sql: 'delete  from  inner join "accounts" on "accounts"."id" = "users"."account_id" and "accounts"."user_id" = "users"."id" where "activated" = ?',
+            bindings: [false],
+          },
+          sqlite3: {
+            sql: 'delete  from  inner join `accounts` on `accounts`.`id` = `users`.`account_id` and `accounts`.`user_id` = `users`.`id` where `activated` = ?',
+            bindings: [false],
+          },
+        }
+      );
+    });
+
     it('should include join when deleting with mssql triggers', () => {
       const triggerOptions = { includeTriggerModifications: true };
       testsql(
