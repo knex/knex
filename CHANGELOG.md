@@ -1,5 +1,29 @@
 # Master (Unreleased)
 
+# 1.0.3 - 11 February, 2022
+
+### Bug fixes:
+
+- Fix error message for missing migration files #4937
+- Add withMaterialized and withNotMaterialized to method-constants #5009
+- PostgreSQL: Fix whereJsonPath queries #5011
+- PostgreSQL: Fix delete joins #5016
+- CockroachDB: Fix whereJsonPath queries #5011
+- MySQL: Create primary keys in same statement #5017
+
+### Typings:
+
+- Fix type definition for getMigration in MigrationSource #4998
+- Fix argument type of alter method #4996
+
+### Improvements:
+
+- Use async / await syntax in seeds as default #5005
+
+### Documentation:
+
+- Add Firebird dialect to ECOSYSTEM.md #5003
+
 # 1.0.2 - 02 February, 2022
 
 ### New features:
