@@ -820,8 +820,7 @@ describe('Schema (misc)', () => {
             })
             .testSql((tester) => {
               tester('mysql', [
-                'create table `test_table_three` (`main` int not null, `paragraph` text, `metadata` json default (\'{"a":10}\')) default character set utf8 engine = InnoDB',
-                'alter table `test_table_three` add primary key `test_table_three_pkey`(`main`)',
+                'create table `test_table_three` (`main` int not null, `paragraph` text, `metadata` json default (\'{"a":10}\'), primary key (`main`)) default character set utf8 engine = InnoDB',
               ]);
               tester(
                 ['pg', 'cockroachdb'],
