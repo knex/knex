@@ -79,6 +79,25 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test basic create table with composite key on incrementing column + other', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.primary(['userId', 'name']);
+          table.increments('userId');
+          table.string('name');
+        })
+        .toSQL();
+
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`userId` int unsigned not null, `name` varchar(255), primary key (`userId`, `name`))'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table `users` modify column `userId` int unsigned not null auto_increment'
+      );
+    });
+
     it('test basic create table with inline primary key creation', function () {
       tableSql = client
         .schemaBuilder()
