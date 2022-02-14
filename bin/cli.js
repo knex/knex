@@ -63,7 +63,10 @@ async function initKnex(env, opts) {
   // if specified through cmd line arguments
   resolvedConfig.connection = opts.connection || resolvedConfig.connection;
   resolvedConfig.client = opts.client || resolvedConfig.client;
-  if (resolvedConfig.migrations) {
+  if (
+    resolvedConfig.migrations &&
+    (opts.migrationsTableName || resolvedConfig.migrations.tableName)
+  ) {
     resolvedConfig.migrations.tableName =
       opts.migrationsTableName || resolvedConfig.migrations.tableName;
   }
