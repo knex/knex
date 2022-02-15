@@ -98,7 +98,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^16.11.22",
+    "@types/node": "^17.0.18",
     "@vscode/sqlite3": "^5.0.7",
     "better-sqlite3": "^7.5.0",
     "chai": "^4.3.6",
