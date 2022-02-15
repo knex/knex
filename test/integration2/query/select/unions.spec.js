@@ -162,6 +162,27 @@ describe('unions', function () {
           );
       });
 
+      it('handles nested unions with group by and limit', async function () {
+        const results = await knex('accounts')
+          .count('logins')
+          .select('last_name')
+          .limit(1)
+          .groupBy('last_name')
+          .unionAll(function () {
+            this.count('logins')
+              .select('last_name')
+              .from('accounts')
+              .limit(1)
+              .groupBy('last_name')
+              .orderBy('last_name')
+              .where('logins', '>', '1');
+          });
+        expect(results).to.eql([
+          { count: '2', last_name: 'User2' },
+          { count: '4', last_name: 'User' },
+        ]);
+      });
+
       describe('intersects', function () {
         before(async function () {
           await knex.schema.createTable('intersect_test', function (t) {

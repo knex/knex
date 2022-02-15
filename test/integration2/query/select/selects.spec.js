@@ -82,43 +82,43 @@ describe('Selects', function () {
               'mysql',
               'select `id` from `accounts` order by `id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'pg',
               'select "id" from "accounts" order by "id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pgnative',
               'select "id" from "accounts" order by "id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pg-redshift',
               'select "id" from "accounts" order by "id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'sqlite3',
               'select `id` from `accounts` order by `id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'oracledb',
               'select "id" from "accounts" order by "id" asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'mssql',
               'select [id] from [accounts] order by [id] asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
           });
       });
@@ -133,43 +133,43 @@ describe('Selects', function () {
               'mysql',
               'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'pg',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pgnative',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pg-redshift',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'sqlite3',
               'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'oracledb',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'mssql',
               'select [accounts].[id] from [accounts] order by [accounts].[id] asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
           });
       });
@@ -185,43 +185,43 @@ describe('Selects', function () {
               'mysql',
               'select `id` from `accounts` order by `id` asc limit 18446744073709551615 offset ?',
               [2],
-              [3, 4, 5, 6]
+              [3, 4, 5, 6, 7, 8]
             );
             tester(
               'pg',
               'select "id" from "accounts" order by "id" asc offset ?',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
             tester(
               'pgnative',
               'select "id" from "accounts" order by "id" asc offset ?',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
             tester(
               'pg-redshift',
               'select "id" from "accounts" order by "id" asc offset ?',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
             tester(
               'sqlite3',
               'select `id` from `accounts` order by `id` asc limit ? offset ?',
               [-1, 2],
-              [3, 4, 5, 6]
+              [3, 4, 5, 6, 7, 8]
             );
             tester(
               'oracledb',
               'select * from (select row_.*, ROWNUM rownum_ from (select "id" from "accounts" order by "id" asc) row_ where rownum <= ?) where rownum_ > ?',
               [10000000000002, 2],
-              [3, 4, 5, 6]
+              [3, 4, 5, 6, 7, 8]
             );
             tester(
               'mssql',
               'select [id] from [accounts] order by [id] asc offset ? rows',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
           });
       });
@@ -283,7 +283,16 @@ describe('Selects', function () {
               'mysql',
               'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
               [],
-              [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
+              [
+                { id: 1 },
+                { id: 2 },
+                { id: 3 },
+                { id: 4 },
+                { id: 5 },
+                { id: 6 },
+                { id: 7 },
+                { id: 8 },
+              ]
             );
             tester(
               'pg',
@@ -296,6 +305,8 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
             tester(
@@ -309,6 +320,8 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
             tester(
@@ -322,19 +335,39 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
             tester(
               'sqlite3',
               'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
               [],
-              [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
+              [
+                { id: 1 },
+                { id: 2 },
+                { id: 3 },
+                { id: 4 },
+                { id: 5 },
+                { id: 6 },
+                { id: 7 },
+                { id: 8 },
+              ]
             );
             tester(
               'oracledb',
               'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
               [],
-              [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
+              [
+                { id: 1 },
+                { id: 2 },
+                { id: 3 },
+                { id: 4 },
+                { id: 5 },
+                { id: 6 },
+                { id: 7 },
+                { id: 8 },
+              ]
             );
             tester(
               'mssql',
@@ -347,6 +380,8 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
           });
@@ -415,7 +450,7 @@ describe('Selects', function () {
             });
           })
           .then(function () {
-            assert(count === 6, 'Six rows should have been streamed');
+            assert(count === 8, 'Eight rows should have been streamed');
           });
       });
 
@@ -789,6 +824,14 @@ describe('Selects', function () {
                 email: 'test6@example.com',
                 logins: 2,
               },
+              {
+                email: 'test7@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test8@example.com',
+                logins: 3,
+              },
             ]
           );
           tester(
@@ -819,6 +862,14 @@ describe('Selects', function () {
               {
                 email: 'test6@example.com',
                 logins: 2,
+              },
+              {
+                email: 'test7@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test8@example.com',
+                logins: 3,
               },
             ]
           );

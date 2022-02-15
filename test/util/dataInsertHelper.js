@@ -99,6 +99,32 @@ async function insertAccounts(knex) {
     },
     'id'
   );
+
+  await knex('accounts').insert(
+    {
+      first_name: 'Test2',
+      last_name: 'User2',
+      email: 'test7@example.com',
+      about: 'Lorem ipsum Dolore labore incididunt enim.',
+      logins: 2,
+      created_at: TEST_TIMESTAMP,
+      updated_at: TEST_TIMESTAMP,
+    },
+    'id'
+  );
+
+  await knex('accounts').insert(
+    {
+      first_name: 'Test2',
+      last_name: 'User2',
+      email: 'test8@example.com',
+      about: 'Lorem ipsum Dolore labore incididunt enim.',
+      logins: 3,
+      created_at: TEST_TIMESTAMP,
+      updated_at: TEST_TIMESTAMP,
+    },
+    'id'
+  );
 }
 
 function insertAccount(knex, overrides) {
