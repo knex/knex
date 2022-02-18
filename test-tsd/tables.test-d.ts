@@ -66,6 +66,29 @@ const main = async () => {
     await knexInstance.first('id').from('users_composite')
   );
 
+  expectType<Record<keyof User, Knex.ColumnInfo>>(
+    await knexInstance<User>('users').columnInfo()
+  );
+  expectType<Record<string | number | symbol, Knex.ColumnInfo>>(
+    await knexInstance('users').columnInfo()
+  );
+  expectType<Record<keyof User, Knex.ColumnInfo>>(
+    await knexInstance('users_inferred').columnInfo()
+  );
+  expectType<Record<keyof User, Knex.ColumnInfo>>(
+    await knexInstance('users_composite').columnInfo()
+  );
+  expectType<Knex.ColumnInfo>(
+    await knexInstance('users_inferred').columnInfo('id')
+  );
+  expectType<Knex.ColumnInfo>(
+    await knexInstance('users_composite').columnInfo('id')
+  );
+  expectType<Knex.ColumnInfo>(await knexInstance('users').columnInfo('id'));
+  expectType<Knex.ColumnInfo>(
+    await knexInstance<User>('users').columnInfo('id')
+  );
+
   //These tests simply check if type work by showing that it does not throw syntax error
 
   knexInstance.schema.createTable('testTable',(table) => {
@@ -78,7 +101,12 @@ const main = async () => {
     table.integer('num').references('id').withKeyName('non_for7').deferrable('deferred').inTable('non_exist').onDelete('CASCADE');
     table.integer('num').references('id').inTable('non_exist').onDelete('CASCADE').withKeyName('non_for6').deferrable('deferred');
     table.integer('num').references('id').withKeyName('non_for7').onDelete('CASCADE').deferrable('deferred').inTable('non_exist');
-    table.integer('num').references('id').withKeyName('non_for7').onDelete('CASCADE').deferrable('deferred').inTable('non_exist');
+
+    expectType<Knex.ReferencingColumnBuilder>(
+      table.integer('num').references('id').withKeyName('non_for7').onDelete('CASCADE')
+        .index('idx') // this shouldn't break type in chain
+        .deferrable('deferred').inTable('non_exist')
+    )
   })
 };
 

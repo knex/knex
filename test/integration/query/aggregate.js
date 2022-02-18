@@ -1,9 +1,18 @@
 'use strict';
 
-const { isMysql, isPostgreSQL } = require("../../util/db-helpers");
+const { isMysql, isPostgreSQL } = require('../../util/db-helpers');
+const { dropTables, createAccounts } = require('../../util/tableCreatorHelper');
+const { insertAccounts } = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Aggregate', function () {
+    before(async () => {
+      await dropTables(knex);
+      await createAccounts(knex);
+
+      await insertAccounts(knex);
+    });
+
     it('has a sum', function () {
       return knex('accounts')
         .sum('logins')

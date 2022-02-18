@@ -10,7 +10,7 @@
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (MSSQL, MySQL, PostgreSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
+A batteries-included, multi-dialect (PostgreSQL, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
 Node.js, featuring:
 
 - [transactions](https://knexjs.org/#Transactions)
@@ -19,7 +19,7 @@ Node.js, featuring:
 - both a [promise](https://knexjs.org/#Interfaces-Promises) and [callback](https://knexjs.org/#Interfaces-Callbacks) API
 - a [thorough test suite](https://github.com/knex/knex/actions)
 
-Node.js versions 10+ are supported.
+Node.js versions 12+ are supported.
 
 * Take a look at the [full documentation](https://knexjs.org) to get started!
 * Browse the [list of plugins and tools](https://github.com/knex/knex/blob/master/ECOSYSTEM.md) built for knex

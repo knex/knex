@@ -1,5 +1,5 @@
 import Knex from '../types';
-import { clientConfig, User } from './common';
+import { clientConfig, User, Department } from './common';
 import { expectType } from 'tsd';
 
 const knex = Knex(clientConfig);
@@ -65,6 +65,17 @@ const main = async () => {
 
   expectType<Pick<User, 'id' | 'age'>[]>(
     await knex<User>('users').select('id', 'age')
+  );
+
+  expectType<User[]>(
+    await knex<User>('users').joinRaw(
+      `JOIN (
+        SELECT id 
+        FROM departments
+        WHERE departments.departmentName = ANY(?)
+      ) AS d ON d.id = users.id`, 
+      [['Name 1, Name 2']]
+    )
   );
 
   knex.transaction(async trx => {

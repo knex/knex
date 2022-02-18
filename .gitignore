@@ -28,3 +28,5 @@ test/coverage/*
 #VsCode workspace
 .vscode
 /coverage/
+
+test/integration/migrate/migration/

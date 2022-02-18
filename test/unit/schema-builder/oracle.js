@@ -41,6 +41,17 @@ describe('Oracle SchemaBuilder', function () {
     );
   });
 
+  it('create table like another', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users')
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" as (select * from "users" where 0=1)'
+    );
+  });
+
   it('test basic create table if not exists', function () {
     tableSql = client
       .schemaBuilder()
@@ -65,7 +76,7 @@ describe('Oracle SchemaBuilder', function () {
         table.increments('id', { primaryKey: false });
       });
 
-    equal(2, tableSql.toSQL().length);
+    expect(tableSql.toSQL().length).to.equal(2);
     expect(tableSql.toSQL()[0].sql).to.equal(
       'begin execute immediate \'create table "users" ("id" integer not null)\'; exception when others then if sqlcode != -955 then raise; end if; end;'
     );

@@ -1,15 +1,12 @@
 const { expect } = require('chai');
-const {
-  Db,
-  getAllDbs,
-  getKnexForDb,
-} = require('../util/knex-instance-provider');
+const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const { isPgDriverName } = require('../../util/db-helpers');
 
 describe('Schema', () => {
   describe('native enum columns', () => {
     getAllDbs()
       // enum useNative is only supported by Postgres
-      .filter((db) => db === Db.PostgresSQL)
+      .filter((db) => isPgDriverName(db))
       .forEach((db) => {
         describe(db, () => {
           let knex;
