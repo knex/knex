@@ -525,7 +525,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                '': [8, 6, 1],
+                '': [8, 6, 2],
               },
             ]
           );
@@ -762,7 +762,7 @@ module.exports = function (knex) {
                 [],
                 [
                   {
-                    'COUNT("ID")': 8,
+                    'COUNT("ID")': 6,
                   },
                   {
                     'COUNT("ID")': 2,
@@ -775,7 +775,7 @@ module.exports = function (knex) {
                 [],
                 [
                   {
-                    '': 8,
+                    '': 6,
                   },
                   {
                     '': 2,

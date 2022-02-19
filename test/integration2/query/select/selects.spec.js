@@ -489,7 +489,7 @@ describe('Selects', function () {
             });
           })
           .then(function () {
-            expect(rows).to.have.lengthOf(6);
+            expect(rows).to.have.lengthOf(8);
             rows.forEach((row) => {
               ['first_name', 'last_name', 'email'].forEach((field) =>
                 expect(row[field]).to.equal(row[field].toUpperCase())
@@ -591,13 +591,13 @@ describe('Selects', function () {
               'oracledb',
               'select "id" from "accounts" order by "id" desc',
               [],
-              [6, 5, 4, 3, 2, 1]
+              [8, 7, 6, 5, 4, 3, 2, 1]
             );
             tester(
               'mssql',
               'select [id] from [accounts] order by [id] desc',
               [],
-              ['6', '5', '4', '3', '2', '1']
+              ['8', '7', '6', '5', '4', '3', '2', '1']
             );
           });
       });
