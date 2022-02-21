@@ -176,7 +176,7 @@ describe('unions', function () {
               .groupBy('last_name')
               .orderBy('last_name')
               .where('logins', '>', '1');
-          });
+          }, true);
         expect(results).to.eql([
           { count: '2', last_name: 'User2' },
           { count: '4', last_name: 'User' },
