@@ -1228,8 +1228,11 @@ module.exports = function (knex) {
           .insert(
             [
               {
+                first_name: 'TestUser',
                 last_name: 'First Item',
+                phone: '01',
                 email: 'single-test1@example.com',
+                balance: 1.23,
                 about: 'Lorem ipsum Dolore labore incididunt enim.',
                 created_at: new Date(),
                 updated_at: new Date(),
