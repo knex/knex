@@ -1574,7 +1574,7 @@ describe('Selects', function () {
         });
       });
 
-      describe.only('cast tests', () => {
+      describe('cast tests', () => {
         it('should cast values', async () => {
           await knex
             .select([
