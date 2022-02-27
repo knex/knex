@@ -1575,7 +1575,7 @@ describe('Selects', function () {
       });
 
       describe('cast tests', () => {
-        it('should cast values', async () => {
+        it.only('should cast values', async () => {
           await knex
             .select([
               knex.castDouble(knex.ref('logins'), 'aliasDouble'),
