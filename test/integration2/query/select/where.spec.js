@@ -690,6 +690,30 @@ describe('Where', function () {
           });
         });
 
+        it('where and or where json path equal numeric', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '=', 1455)
+            .orWhereJsonPath('statistics', '$.roads.min', '=', 1655);
+          expect(result[0]).to.eql({
+            name: 'Milan',
+          });
+        });
+
+        it('where json path equal string starting with number', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath(
+              'statistics',
+              '$.statisticId',
+              '=',
+              '6qITEHRUNJ4bdAmA0lk82'
+            );
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
         it('where multiple json path', async () => {
           const result = await knex('cities')
             .select('name')

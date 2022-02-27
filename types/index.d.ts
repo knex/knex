@@ -284,27 +284,6 @@ type AggregationQueryResult<TResult, TIntersectProps2> = ArrayIfAlready<
   : TIntersectProps2
 >;
 
-// Convenience alias and associated companion namespace for working
-// with DeferredSelection having TSingle=true.
-//
-// When TSingle=true in DeferredSelection, then we are effectively
-// deferring an index access operation (TBase[TKey]) over a potentially
-// unknown initial type of TBase and potentially never initial type of TKey
-
-type DeferredIndex<TBase, TKey extends string> = DeferredKeySelection<TBase, TKey, false, {}, true>;
-
-declare namespace DeferredIndex {
-  type Augment<
-    T,
-    TBase,
-    TKey extends string,
-    TAliasMapping = {}
-    > = DeferredKeySelection.SetSingle<
-      DeferredKeySelection.AddKey<DeferredKeySelection.SetBase<T, TBase>, TKey>,
-      true
-    >;
-}
-
 // If we have more categories of deferred selection in future,
 // this will combine all of them
 type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
@@ -694,7 +673,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     insert<
       TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
@@ -722,7 +701,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     insert<
       TKey extends string,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         TKey
@@ -736,7 +715,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     insert<
       TKey extends string,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         TKey
@@ -763,7 +742,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     upsert<
       TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
@@ -791,7 +770,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     upsert<
       TKey extends string,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         TKey
@@ -805,7 +784,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     upsert<
       TKey extends string,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         TKey
@@ -830,7 +809,7 @@ export declare namespace Knex {
     update<
       K1 extends StrKey<ResolveTableType<TRecord, 'update'>>,
       K2 extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         K2
@@ -872,7 +851,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     update<
       TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
@@ -927,7 +906,7 @@ export declare namespace Knex {
     returning(column: '*', options?: DMLOptions): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
@@ -952,24 +931,15 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
 
     onConflict<
-      TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
-        UnwrapArrayMember<TResult>,
-        TRecord,
-        TKey
-      >[]
+      TKey extends StrKey<ResolveTableType<TRecord>>
     >(
       column: TKey
-    ): OnConflictQueryBuilder<TRecord, TResult2>;
+    ): OnConflictQueryBuilder<TRecord, TResult>;
     onConflict<
-      TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredKeySelection.SetSingle<
-        DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, TRecord, TKey>,
-        false
-      >[]
+      TKey extends StrKey<ResolveTableType<TRecord>>
     >(
       columns: readonly TKey[]
-    ): OnConflictQueryBuilder<TRecord, TResult2>;
+    ): OnConflictQueryBuilder<TRecord, TResult>;
 
     onConflict(
       columns: string
@@ -991,7 +961,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     del<
       TKey extends StrKey<TRecord>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         TRecord,
         TKey
@@ -1023,7 +993,7 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     delete<
       TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
@@ -1833,7 +1803,7 @@ export declare namespace Knex {
     returning(column: '*'): BatchInsertBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
-      TResult2 = DeferredIndex.Augment<
+      TResult2 = DeferredKeySelection.Augment<
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
@@ -2665,7 +2635,7 @@ export declare namespace Knex {
   interface MigrationSource<TMigrationSpec> {
     getMigrations(loadExtensions: readonly string[]): Promise<TMigrationSpec[]>;
     getMigrationName(migration: TMigrationSpec): string;
-    getMigration(migration: TMigrationSpec): Migration;
+    getMigration(migration: TMigrationSpec): Promise<Migration>;
   }
 
   interface MigratorConfig {
