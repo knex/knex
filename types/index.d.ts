@@ -379,6 +379,43 @@ export declare namespace knex {
     ): void;
   }
 
+  class TableBuilder {
+    static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex.TableBuilder<TRecord, TResult>,
+        ...args: any[]
+      ) => Knex.TableBuilder<TRecord, TResult>
+    ): void;
+  }
+  class ViewBuilder {
+    static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex.ViewBuilder<TRecord, TResult>,
+        ...args: any[]
+      ) => Knex.ViewBuilder<TRecord, TResult>
+    ): void;
+  }
+  class SchemaBuilder {
+    static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex.SchemaBuilder<TRecord, TResult>,
+        ...args: any[]
+      ) => Knex.SchemaBuilder<TRecord, TResult>
+    ): void;
+  }
+  class ColumnBuilder {
+    static extend(
+      methodName: string,
+      fn: <TRecord extends {} = any, TResult = unknown[]>(
+        this: Knex.ColumnBuilder<TRecord, TResult>,
+        ...args: any[]
+      ) => Knex.ColumnBuilder<TRecord, TResult>
+    ): void;
+  }
+
   export class KnexTimeoutError extends Error {}
 
   export const Client: typeof Knex.Client;
