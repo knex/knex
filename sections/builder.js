@@ -920,7 +920,7 @@ export default [
   {
     type: "method",
     method: "whereLike",
-    example: ".whereLike(column, string|builder|raw)",
+    example: ".whereLike(column, string|builder|raw) / .orWhereLike",
     description: "Adds a where clause with case-sensitive substring comparison on a given column with a given value.",
     children: [
       {
@@ -928,19 +928,37 @@ export default [
         content: `
           knex('users').whereLike('email', '%mail%')
         `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users')
+          .whereLike('email', '%mail%')
+          .andWhereLike('email', '%.com')
+          .orWhereLike('email', '%name%')
+        `
       }
     ]
   },
   {
     type: "method",
     method: "whereILike",
-    example: ".whereILike(column, string|builder|raw)",
+    example: ".whereILike(column, string|builder|raw) / .orWhereILike",
     description: "Adds a where clause with case-insensitive substring comparison on a given column with a given value.",
     children: [
       {
         type: "runnable",
         content: `
           knex('users').whereILike('email', '%mail%')
+        `
+      },
+      {
+        type: "runnable",
+        content: `
+          knex('users')
+          .whereILike('email', '%MAIL%')
+          .andWhereILike('email', '%.COM')
+          .orWhereILike('email', '%NAME%')
         `
       }
     ]
