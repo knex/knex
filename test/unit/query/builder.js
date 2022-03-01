@@ -882,6 +882,56 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('uses andWhereLike, orWhereLike #2265', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .whereLike('name', 'luk1%')
+        .andWhereLike('name', 'luk2%')
+        .orWhereLike('name', 'luk3%'),
+      {
+        mysql: {
+          sql: 'select * from `users` where `name` like ? COLLATE utf8_bin and `name` like ? COLLATE utf8_bin or `name` like ? COLLATE utf8_bin',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        pg: {
+          sql: 'select * from "users" where "name" like ? and "name" like ? or "name" like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        mssql: {
+          sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CS_AS like ? and [name] collate SQL_Latin1_General_CP1_CS_AS like ? or [name] collate SQL_Latin1_General_CP1_CS_AS like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+      }
+    );
+  });
+
+  it('uses andWhereILike, orWhereILike #2265', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .whereILike('name', 'luk1%')
+        .andWhereILike('name', 'luk2%')
+        .orWhereILike('name', 'luk3%'),
+      {
+        mysql: {
+          sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        pg: {
+          sql: 'select * from "users" where "name" ilike ? and "name" ilike ? or "name" ilike ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        mssql: {
+          sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS like ? and [name] collate SQL_Latin1_General_CP1_CI_AS like ? or [name] collate SQL_Latin1_General_CP1_CI_AS like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+      }
+    );
+  });
+
   it('whereColumn', () => {
     testsql(
       qb()
