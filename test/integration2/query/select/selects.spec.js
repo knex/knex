@@ -503,6 +503,20 @@ describe('Selects', function () {
         });
       });
 
+      it('rejects the Promise if the query fails', async function () {
+        let caughtError;
+        try {
+          await knex('accounts')
+            .select('invalid_field')
+            .stream((_stream) => {
+              // do nothing with the stream
+            });
+        } catch (err) {
+          caughtError = err;
+        }
+        assert(caughtError instanceof Error);
+      });
+
       it('emits error if not passed a function and the query has wrong bindings', function (done) {
         const stream = knex('accounts')
           .whereRaw('id = ? and first_name = ?', ['2'])
