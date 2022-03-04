@@ -69,9 +69,10 @@ async function initKnex(env, opts) {
     optsToMerge.client = opts.client;
   }
   if (opts.migrationsTableName) {
-    optsToMerge.migrations = {
-      tableName: opts.migrationsTableName,
-    };
+    if (!optsToMerge.migrations) {
+      optsToMerge.migrations = {};
+    }
+    optsToMerge.migrations.tableName = opts.migrationsTableName;
   }
   Object.assign(resolvedConfig, optsToMerge);
   const knex = require(env.modulePath);
