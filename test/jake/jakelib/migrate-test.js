@@ -85,7 +85,7 @@ test('Create a migration file without client passed', (temp) =>
 test('run migrations without knexfile and with --migrations-table-name', (temp) =>
   assertExec(`${KNEX} migrate:latest \
               --client=sqlite3  --connection=${temp}/db \
-              --migrations-directory=test/jake-util/knexfile_migrations \
+              --migrations-directory=${temp}/migrations \
               --migrations-table-name=custom_migrations_table`)
     .then(() => new sqlite3.Database(temp + '/db'))
     .then(
@@ -706,7 +706,7 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
 test('override connection, client and migrations-table-name if specified through cmd line arguments', async (temp) => {
   const { stdout } = await assertExec(`${KNEX} migrate:latest \
               --client=sqlite3  --connection=${temp}/db2 \
-              --migrations-directory=test/jake-util/knexfile_migrations \
+              --migrations-directory=${temp}/migrations \
               --migrations-table-name=custom_migrations_table`);
   assert.include(
     stdout,
