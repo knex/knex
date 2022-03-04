@@ -79,6 +79,39 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test basic create table with composite key on incrementing column + other', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.primary(['userId', 'name']);
+          table.increments('userId');
+          table.string('name');
+        })
+        .toSQL();
+
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`userId` int unsigned not null, `name` varchar(255), primary key (`userId`, `name`))'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table `users` modify column `userId` int unsigned not null auto_increment'
+      );
+    });
+
+    it('test basic create table with inline primary key creation', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.string('id', 24).primary();
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`id` varchar(24), primary key (`id`))'
+      );
+    });
+
     it('test basic create table with charset and collate', function () {
       tableSql = client.schemaBuilder().createTable('users', function (table) {
         table.increments('id');
@@ -1356,17 +1389,6 @@ module.exports = function (dialect) {
         .toSQL();
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add primary key `testconstraintname`(`test1`, `test2`)'
-      );
-
-      tableSql = client
-        .schemaBuilder()
-        .createTable('users', function (t) {
-          t.string('test').primary('testconstraintname');
-        })
-        .toSQL();
-
-      expect(tableSql[1].sql).to.equal(
-        'alter table `users` add primary key `testconstraintname`(`test`)'
       );
     });
 

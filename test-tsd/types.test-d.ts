@@ -94,12 +94,7 @@ expectAssignable<QueryBuilder>(
     .debug(true)
 );
 
-expectType<
-  QueryBuilder<
-    User,
-    DeferredKeySelection<User, 'id', true, {}, true, {}, never>[]
-  >
->(
+expectAssignable<QueryBuilder>(
   knexInstance
     .table<User>('users')
     .insert({ id: 10, active: true })

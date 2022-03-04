@@ -143,6 +143,7 @@ async function insertCities(knex) {
         min: 1234,
         max: 1333,
       },
+      statisticId: '6qITEHRUNJ4bdAmA0lk82',
     },
     temperature: {
       desc: 'cold',
@@ -172,6 +173,7 @@ async function insertCities(knex) {
         max: 1655,
       },
       hotYears: [2012, 2015, 2021],
+      statisticId: '-4mZkPL-ZzRyEed00RQTQ',
     },
     temperature: {
       desc: 'warm',
@@ -201,6 +203,7 @@ async function insertCities(knex) {
         max: 156,
       },
       hotYears: [2016],
+      statisticId: '6bBGzpyL3sTRrxWs5gXTa',
     },
     temperature: {
       desc: 'verycold',

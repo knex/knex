@@ -584,6 +584,52 @@ describe('Where', function () {
           expect(result[0].email).to.equal('test1@example.com');
         });
 
+        it('finds data using orWhereLike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereLike('email', 'test1%')
+            .orWhereLike('email', 'test2%');
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+        });
+
+        it('finds data using andWhereLike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereLike('first_name', 'Te%')
+            .andWhereLike('email', '%example.com');
+          expect(result.length).to.equal(6);
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+          expect(result[2].email).to.equal('test3@example.com');
+          expect(result[3].email).to.equal('test4@example.com');
+          expect(result[4].email).to.equal('test5@example.com');
+          expect(result[5].email).to.equal('test6@example.com');
+        });
+
+        it('finds data using orWhereILike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereILike('email', 'TEST1%')
+            .orWhereILike('email', 'TeSt2%');
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+        });
+
+        it('finds data using andWhereILike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereILike('first_name', 'te%')
+            .andWhereILike('email', '%examPle.COm');
+          expect(result.length).to.equal(6);
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+          expect(result[2].email).to.equal('test3@example.com');
+          expect(result[3].email).to.equal('test4@example.com');
+          expect(result[4].email).to.equal('test5@example.com');
+          expect(result[5].email).to.equal('test6@example.com');
+        });
+
         it("doesn't find data using whereLike when different case sensitivity", async () => {
           const result = await knex('accounts').whereLike('email', 'Test1%');
           expect(result).to.deep.equal([]);
@@ -687,6 +733,30 @@ describe('Where', function () {
             .whereJsonPath('statistics', '$.roads.min', '=', 1455);
           expect(result[0]).to.eql({
             name: 'Milan',
+          });
+        });
+
+        it('where and or where json path equal numeric', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '=', 1455)
+            .orWhereJsonPath('statistics', '$.roads.min', '=', 1655);
+          expect(result[0]).to.eql({
+            name: 'Milan',
+          });
+        });
+
+        it('where json path equal string starting with number', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath(
+              'statistics',
+              '$.statisticId',
+              '=',
+              '6qITEHRUNJ4bdAmA0lk82'
+            );
+          expect(result[0]).to.eql({
+            name: 'Paris',
           });
         });
 
