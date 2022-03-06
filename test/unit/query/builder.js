@@ -2215,19 +2215,50 @@ describe('QueryBuilder', () => {
         .first();
       testsql(firstUnionAll, {
         mysql: {
-          sql: '(select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?) limit ?',
+          sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? limit ?',
           bindings: [1, 2, 1],
         },
         mssql: {
-          sql: '(select * from [users] where [id] = ?) union all (select * from [users] where [id] = ?)',
+          sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
           bindings: [1, 2],
         },
         pg: {
-          sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) limit ?',
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
           bindings: [1, 2, 1],
         },
         'pg-redshift': {
-          sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) limit ?',
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
+          bindings: [1, 2, 1],
+        },
+      });
+    });
+
+    it('with array of callbacks Issue #5030', () => {
+      // Issue #4364
+      const firstUnionAll = qb()
+        .select('*')
+        .from('users')
+        .where('id', '=', 1)
+        .groupBy('id')
+        .unionAll(function () {
+          this.select('*').from('users').where('id', '=', 2);
+        }, true)
+        .first();
+      testsql(firstUnionAll, {
+        mysql: {
+          sql: '(select * from `users` where `id` = ? group by `id` limit ?) union all (select * from `users` where `id` = ?)',
+          bindings: [1, 2, 1],
+        },
+        mssql: {
+          sql: 'select top (?) * from [users] where [id] = ? union all (select * from [users] where [id] = ?) group by [id]',
+          bindings: [1, 1, 2],
+        },
+        pg: {
+          sql: '(select * from "users" where "id" = ? group by "id" limit ?) union all (select * from "users" where "id" = ?)',
+          bindings: [1, 2, 1],
+        },
+        'pg-redshift': {
+          sql: '(select * from "users" where "id" = ? group by "id" limit ?) union all (select * from "users" where "id" = ?)',
           bindings: [1, 2, 1],
         },
       });
