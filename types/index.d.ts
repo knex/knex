@@ -527,7 +527,11 @@ export declare namespace Knex {
     whereNotIn: WhereIn<TRecord, TResult>;
     orWhereNotIn: WhereIn<TRecord, TResult>;
     whereLike: Where<TRecord, TResult>;
+    andWhereLike: Where<TRecord, TResult>;
+    orWhereLike: Where<TRecord, TResult>;
     whereILike: Where<TRecord, TResult>;
+    andWhereILike: Where<TRecord, TResult>;
+    orWhereILike: Where<TRecord, TResult>;
     whereNull: WhereNull<TRecord, TResult>;
     orWhereNull: WhereNull<TRecord, TResult>;
     whereNotNull: WhereNull<TRecord, TResult>;
