@@ -2130,7 +2130,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -2138,7 +2138,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -2146,7 +2146,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -2154,7 +2154,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select * from (select "id" from "test_table_two") where rownum <= ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -2162,7 +2162,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -2170,7 +2170,7 @@ describe('Joins', function () {
               'select [account_id] from [accounts] left join [test_table_two] on [accounts].[id] = (select top (?) [id] from [test_table_two])',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
           });

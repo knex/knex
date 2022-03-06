@@ -598,13 +598,15 @@ describe('Where', function () {
             .select('*')
             .whereLike('first_name', 'Te%')
             .andWhereLike('email', '%example.com');
-          expect(result.length).to.equal(6);
+          expect(result.length).to.equal(8);
           expect(result[0].email).to.equal('test1@example.com');
           expect(result[1].email).to.equal('test2@example.com');
           expect(result[2].email).to.equal('test3@example.com');
           expect(result[3].email).to.equal('test4@example.com');
           expect(result[4].email).to.equal('test5@example.com');
           expect(result[5].email).to.equal('test6@example.com');
+          expect(result[6].email).to.equal('test7@example.com');
+          expect(result[7].email).to.equal('test8@example.com');
         });
 
         it('finds data using orWhereILike', async () => {
@@ -621,13 +623,15 @@ describe('Where', function () {
             .select('*')
             .whereILike('first_name', 'te%')
             .andWhereILike('email', '%examPle.COm');
-          expect(result.length).to.equal(6);
+          expect(result.length).to.equal(8);
           expect(result[0].email).to.equal('test1@example.com');
           expect(result[1].email).to.equal('test2@example.com');
           expect(result[2].email).to.equal('test3@example.com');
           expect(result[3].email).to.equal('test4@example.com');
           expect(result[4].email).to.equal('test5@example.com');
           expect(result[5].email).to.equal('test6@example.com');
+          expect(result[6].email).to.equal('test7@example.com');
+          expect(result[7].email).to.equal('test8@example.com');
         });
 
         it("doesn't find data using whereLike when different case sensitivity", async () => {
