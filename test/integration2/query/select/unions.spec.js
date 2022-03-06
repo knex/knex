@@ -6,6 +6,7 @@ const {
   isOracle,
   isPgBased,
   isSQLite,
+  isPostgreSQL,
 } = require('../../../util/db-helpers');
 const { assertNumberArray } = require('../../../util/assertHelper');
 const {
@@ -163,6 +164,9 @@ describe('unions', function () {
       });
 
       it('handles nested unions with group by and limit', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
         const results = await knex('accounts')
           .count('logins')
           .select('last_name')
