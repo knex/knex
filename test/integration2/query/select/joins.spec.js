@@ -2113,6 +2113,69 @@ describe('Joins', function () {
           });
       });
 
+      it('left join with subquery in on clause, #', function () {
+        return knex
+          .select('account_id')
+          .from('accounts')
+          .leftJoin('test_table_two', (j) =>
+            j.on(
+              'accounts.id',
+              '=',
+              knex('test_table_two').select('id').limit(1)
+            )
+          )
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
+              [1],
+              function (res) {
+                return res.length === 8;
+              }
+            );
+            tester(
+              'pg',
+              'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
+              [1],
+              function (res) {
+                return res.length === 8;
+              }
+            );
+            tester(
+              'pg-redshift',
+              'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
+              [1],
+              function (res) {
+                return res.length === 8;
+              }
+            );
+            tester(
+              'oracledb',
+              'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select * from (select "id" from "test_table_two") where rownum <= ?)',
+              [1],
+              function (res) {
+                return res.length === 8;
+              }
+            );
+            tester(
+              'sqlite3',
+              'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
+              [1],
+              function (res) {
+                return res.length === 8;
+              }
+            );
+            tester(
+              'mssql',
+              'select [account_id] from [accounts] left join [test_table_two] on [accounts].[id] = (select top (?) [id] from [test_table_two])',
+              [1],
+              function (res) {
+                return res.length === 8;
+              }
+            );
+          });
+      });
+
       it('supports joins with overlapping column names', function () {
         if (isOracle(knex)) {
           return this.skip();
