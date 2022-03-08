@@ -1576,7 +1576,7 @@ describe('Selects', function () {
 
       describe.only('cast tests', () => {
         it('should cast values', async () => {
-          let casts = [
+          const casts = [
             knex.castDouble(knex.ref('logins'), 'aliasDouble'),
             knex.castChar('S', 1, 'aliasChar'),
             knex.castJson('{"test": 12}', 'aliasJson'),
