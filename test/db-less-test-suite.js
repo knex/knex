@@ -20,6 +20,7 @@ describe('Query Building Tests', function () {
   require('./unit/query/string');
   require('./unit/schema-builder/mysql')('mysql');
   require('./unit/schema-builder/mysql')('mysql2');
+  require('./unit/schema-builder/extensions');
   require('./unit/schema-builder/postgres');
   require('./unit/schema-builder/redshift');
   require('./unit/schema-builder/sqlite3');
