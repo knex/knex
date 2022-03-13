@@ -1,5 +1,27 @@
 # Master (Unreleased)
 
+# 1.0.4 - 13 March, 2022
+
+### New features:
+
+- Add whereLike functions #5044
+
+### Bug fixes:
+
+- Fix orWhereJsonPath clause #5022
+- Subquery in on clause missing parenthesis #5049
+- Rework Union Wrapping #5030
+- Oracle: Fix batch inserts with DEFAULT values with OracleDB #2592 #5037
+
+### Typings:
+
+- Fix types for "returning" methods #5031
+- createTableLike callback should be optional #5055
+
+### Documentation:
+
+- Website URL changed to https://knex.github.io/documentation/
+
 # 1.0.3 - 11 February, 2022
 
 ### Bug fixes:
