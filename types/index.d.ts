@@ -2005,7 +2005,7 @@ export declare namespace Knex {
     createTableLike(
       tableName: string,
       tableNameLike: string,
-      callback: (tableBuilder: CreateTableBuilder) => any
+      callback?: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
     alterTable(
       tableName: string,

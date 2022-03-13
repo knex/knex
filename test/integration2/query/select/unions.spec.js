@@ -6,6 +6,7 @@ const {
   isOracle,
   isPgBased,
   isSQLite,
+  isPostgreSQL,
 } = require('../../../util/db-helpers');
 const { assertNumberArray } = require('../../../util/assertHelper');
 const {
@@ -160,6 +161,30 @@ describe('unions', function () {
               3,
             ])
           );
+      });
+
+      it('handles nested unions with group by and limit', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+        const results = await knex('accounts')
+          .count('logins')
+          .select('last_name')
+          .limit(1)
+          .groupBy('last_name')
+          .unionAll(function () {
+            this.count('logins')
+              .select('last_name')
+              .from('accounts')
+              .limit(1)
+              .groupBy('last_name')
+              .orderBy('last_name')
+              .where('logins', '>', '1');
+          }, true);
+        expect(results).to.eql([
+          { count: '2', last_name: 'User2' },
+          { count: '4', last_name: 'User' },
+        ]);
       });
 
       describe('intersects', function () {

@@ -446,6 +446,32 @@ describe('Joins', function () {
                   phone: null,
                   details: null,
                 },
+                {
+                  id: 7,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 8,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
               ]
             );
             tester(
@@ -526,6 +552,32 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '7',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '8',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -620,6 +672,32 @@ describe('Joins', function () {
                   phone: null,
                   details: null,
                 },
+                {
+                  id: '7',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '8',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
               ]
             );
             tester(
@@ -700,6 +778,32 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 7,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 8,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -794,6 +898,32 @@ describe('Joins', function () {
                   phone: null,
                   details: null,
                 },
+                {
+                  id: 7,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 8,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
               ]
             );
             tester(
@@ -874,6 +1004,32 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '7',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '8',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -992,6 +1148,36 @@ describe('Joins', function () {
                   details: null,
                   status: null,
                 },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
               ]
             );
             tester(
@@ -1082,6 +1268,36 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -1190,6 +1406,36 @@ describe('Joins', function () {
                   details: null,
                   status: null,
                 },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
               ]
             );
             tester(
@@ -1289,6 +1535,36 @@ describe('Joins', function () {
                   details: null,
                   status: null,
                 },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
               ]
             );
             tester(
@@ -1379,6 +1655,36 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: ['7', null],
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: ['8', null],
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -1760,7 +2066,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1768,7 +2074,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1777,7 +2083,7 @@ describe('Joins', function () {
               [],
               function (res) {
                 // redshift, not supporting insert...returning, had to fake 6 of these in previous tests
-                return res.length === 12;
+                return res.length === 24;
               }
             );
             tester(
@@ -1785,7 +2091,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1793,7 +2099,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1801,7 +2107,7 @@ describe('Joins', function () {
               'select [account_id] from [accounts] cross join [test_table_two] order by [account_id] asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
           });
@@ -1824,7 +2130,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -1832,7 +2138,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -1840,7 +2146,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -1848,7 +2154,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select * from (select "id" from "test_table_two") where rownum <= ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -1856,7 +2162,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
             tester(
@@ -1864,7 +2170,7 @@ describe('Joins', function () {
               'select [account_id] from [accounts] left join [test_table_two] on [accounts].[id] = (select top (?) [id] from [test_table_two])',
               [1],
               function (res) {
-                return res.length === 8;
+                return res.length === 10;
               }
             );
           });
