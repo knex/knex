@@ -7,7 +7,7 @@ export default [
   },
   {
     type: "text",
-    content: "The `knex.schema` is a **getter function**, which returns a stateful object containing the query. Therefore be sure to obtain a new instance of the `knex.schema` for every query. These methods return [promises](https://knexjs.org/#Interfaces-Promises)."
+    content: "The `knex.schema` is a **getter function**, which returns a stateful object containing the query. Therefore be sure to obtain a new instance of the `knex.schema` for every query. These methods return [promises](#Interfaces-Promises)."
   },
   {
     type: "method",
