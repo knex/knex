@@ -146,7 +146,7 @@
     "type": "git",
     "url": "git://github.com/knex/knex.git"
   },
-  "homepage": "https://knexjs.org",
+  "homepage": "https://knex.github.io/documentation/",
   "keywords": [
     "sql",
     "query",
@@ -176,6 +176,9 @@
       "web": "https://www.codeflashbacks.com"
     },
     {
+      "name": "Olivier Cavadenti"
+    },
+    {
       "name": "Simon Liden"
     },
     {
@@ -185,9 +188,6 @@
     {
       "name": "Brian Lauber",
       "web": "https://briandamaged.org"
-    },
-    {
-      "name": "Olivier Cavadenti"
     }
   ],
   "browser": {
