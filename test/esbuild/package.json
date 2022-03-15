@@ -2,5 +2,8 @@
   "name": "esbuild",
   "devDependencies": {
     "esbuild": "^0.14.27"
+  },
+  "dependencies": {
+    "knex": "^1.0.4"
   }
 }
