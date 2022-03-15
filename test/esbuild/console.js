@@ -7,4 +7,7 @@ const knex = Knex({
   connection: {
     filename: './data.db',
   },
+  useNullAsDefault: true,
 });
+
+knex('books').insert({title: 'Slaughterhouse Five'});
