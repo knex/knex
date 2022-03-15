@@ -423,6 +423,47 @@ describe('Updates', function () {
           .where('email', '=', 'test1@example.com');
         expect(results[0].last_name).to.equal('olivier');
       });
+
+      it('should escaped json objects when update value #5059', async function () {
+        await knex.schema.dropTableIfExists('testing');
+        await knex.schema.createTable('testing', (t) => {
+          t.increments('id');
+          t.string('one');
+          t.integer('two');
+        });
+        await knex('testing')
+          .update('one', { one: 123, two: 456 })
+          .where('id', 1)
+          .testSql(function (tester) {
+            tester('mysql', 'update `testing` set `one` = ? where `id` = ?', [
+              '{"one":123,"two":456}',
+              1,
+            ]);
+            tester('pg', 'update "testing" set "one" = ? where "id" = ?', [
+              '{"one":123,"two":456}',
+              1,
+            ]);
+            tester(
+              'pg-redshift',
+              'update "testing" set "one" = ? where "id" = ?',
+              ['{"one":123,"two":456}', 1]
+            );
+            tester('sqlite3', 'update `testing` set `one` = ? where `id` = ?', [
+              '{"one":123,"two":456}',
+              1,
+            ]);
+            tester('mysql', 'update `testing` set `one` = ? where `id` = ?', [
+              '{"one":123,"two":456}',
+              1,
+            ]);
+            tester(
+              'mssql',
+              'update [testing] set [one] = ? where [id] = ?;select @@rowcount',
+              ['{"one":123,"two":456}', 1]
+            );
+          });
+        await knex.schema.dropTable('testing');
+      });
     });
   });
 });
