@@ -10,4 +10,11 @@ const knex = Knex({
   useNullAsDefault: true,
 });
 
-knex('books').insert({title: 'Slaughterhouse Five'});
+const main = async () => {
+  knex('books').insert({title: 'Slaughterhouse Five'});
+
+  const rows = await knex.select('title', 'author', 'year').from('books');
+  console.log(rows);
+};
+
+main();
