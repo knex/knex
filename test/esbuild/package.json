@@ -4,6 +4,7 @@
     "esbuild": "^0.14.27"
   },
   "dependencies": {
-    "knex": "^1.0.4"
+    "knex": "^1.0.4",
+    "sqlite3": "^5.0.2"
   }
 }
