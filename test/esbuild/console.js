@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-const knex = require('knex')({
+import Knex from 'knex';
+
+const knex = Knex({
   client: 'sqlite3',
   connection: {
     filename: './data.db',
