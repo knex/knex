@@ -10,6 +10,6 @@
     "sqlite3": "^5.0.2"
   },
   "scripts": {
-    "esbuild": "esbuild console.js --outfile=console.bundle.js"
+    "esbuild": "esbuild console.js --outfile=console.bundle.js --bundle --platform=node"
   }
 }
