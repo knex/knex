@@ -11,6 +11,6 @@
     "sqlite3": "^5.0.2"
   },
   "scripts": {
-    "esbuild": "esbuild console.js --outfile=console.bundle.cjs --bundle --platform=node"
+    "esbuild": "esbuild console.js --outfile=console.bundle.cjs --bundle --platform=node --external:./node_modules/@vscode/sqlite3/build/Release/vscode-sqlite3.node"
   }
 }
