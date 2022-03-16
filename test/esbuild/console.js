@@ -15,6 +15,8 @@ const main = async () => {
 
   const rows = await knex.select('title', 'author', 'year').from('books');
   console.log(rows);
+
+  await knex.migrate.latest();
 };
 
 main();
