@@ -2,7 +2,8 @@
   "name": "esbuild",
   "type": "module",
   "devDependencies": {
-    "esbuild": "^0.14.27"
+    "esbuild": "^0.14.27",
+    "mysql": "^2.18.1"
   },
   "dependencies": {
     "@vscode/sqlite3": "^5.0.7",
