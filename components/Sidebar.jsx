@@ -245,7 +245,7 @@ export default class Sidebar extends Component {
           <li>– <a href="#Schema-collate">collate</a></li>
           <li>– <a href="#Schema-inherits">inherits</a></li>
           <li>– <a href="#Schema-specificType">specificType</a></li>
-          <li>– <a href="#Schema-index">index</a></li>
+          <li>– <a href="#Schema-table-index">index</a></li>
           <li>– <a href="#Schema-dropIndex">dropIndex</a></li>
           <li>– <a href="#Schema-setNullable">setNullable</a></li>
           <li>– <a href="#Schema-dropNullable">dropNullable</a></li>
