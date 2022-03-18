@@ -28,7 +28,7 @@ const fixture = [
   {
     title: 'migrates esm modules from a module',
     testCase: 'knexfile-esm-module',
-    knexArgs: ['migrate:latest', '--esm'],
+    knexArgs: ['migrate:latest'],
     expectedOutput: 'Batch 1 run: 1 migrations',
     dropDb: true,
     expectedSchema: [
@@ -39,14 +39,16 @@ const fixture = [
     ],
   },
   {
-    title: 'migrate esm module without --esm flag from a module, throws error',
+    title: 'migrate esm module without --esm flag from a module',
     testCase: 'knexfile-esm-module',
     knexArgs: ['migrate:latest'],
     dropDb: true,
-    expectedErrorMessage: isNode10
-      ? 'Unexpected token export'
-      : 'Must use import to load ES Module',
-    expectedSchema: [],
+    expectedSchema: [
+      'knex_migrations',
+      'sqlite_sequence',
+      'knex_migrations_lock',
+      'xyz',
+    ],
   },
   {
     title: 'migrates mjs modules',
@@ -83,7 +85,7 @@ const fixture = [
     title: 'seeds esm files from module',
     testCase: 'knexfile-esm-module',
     expectedOutput: 'Ran 1 seed files',
-    knexArgs: ['seed:run', '--esm'],
+    knexArgs: ['seed:run'],
 
     before: async ({ dbPath }) => {
       const db = new sqlite3.Database(dbPath);
@@ -92,13 +94,16 @@ const fixture = [
     dropDb: true,
   },
   {
-    title: 'seed throws when runs "esm" files from "module" without --esm flag',
+    title: 'seeds esm files from module without --esm flag',
     testCase: 'knexfile-esm-module',
+    expectedOutput: 'Ran 1 seed files',
     knexArgs: ['seed:run'],
-    expectedErrorMessage: isNode10
-      ? 'Unexpected token export'
-      : 'Must use import to load ES Module',
-    dropDb: false,
+
+    before: async ({ dbPath }) => {
+      const db = new sqlite3.Database(dbPath);
+      await createTable(db, `xyz (name TEXT)`);
+    },
+    dropDb: true,
   },
   {
     title: 'seeds mjs files',
@@ -169,7 +174,7 @@ const fixture = [
   },
   {
     title: isNode10
-      ? "NODE10 can't static impor js from .mjs"
+      ? "NODE10 can't static import js from .mjs"
       : 'static importing js file from NON module package is not supported',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile2.mjs',
