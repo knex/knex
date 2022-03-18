@@ -6,8 +6,6 @@ const { execCommand } = require('cli-testlab');
 const sqlite3 = require('@vscode/sqlite3');
 const semver = require('semver');
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
-const NODE_VERSION = Number((/v(\d+)/i.exec(process.version) || [])[1]);
-const isNode10 = NODE_VERSION === 10;
 const TEST_BASE = '../test/jake-util';
 
 const fixture = [
@@ -54,11 +52,7 @@ const fixture = [
     title: 'migrates mjs modules',
     testCase: 'knexfile-mjs',
     knexfile: 'knexfile.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && `--esm`],
+    knexArgs: ['migrate:latest'],
     dropDb: true,
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -109,11 +103,7 @@ const fixture = [
     title: 'seeds mjs files',
     testCase: 'knexfile-mjs',
     knexfile: 'knexfile.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['seed:run', isNode10 && `--esm`],
+    knexArgs: ['seed:run'],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
 
@@ -127,11 +117,7 @@ const fixture = [
     title: 'mjs files with mjs top level imports',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && `--esm`],
+    knexArgs: ['migrate:latest'],
     dropDb: true,
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -146,46 +132,26 @@ const fixture = [
       'Directory import is not supported, resolving ES modules imported from knexfile.mjs',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile1.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage: isNode10
-      ? 'Error: Cannot find module'
-      : `Error [ERR_UNSUPPORTED_DIR_IMPORT]`,
+    knexArgs: ['migrate:latest'],
+    expectedErrorMessage: `Error [ERR_UNSUPPORTED_DIR_IMPORT]`,
   },
   {
     title: 'dynamic importing js file from NON module package is not supported',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile2.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage: isNode10
-      ? 'Error: Cannot load module from .mjs'
-      : semver.eq(process.version, 'v14.13.0')
+    knexArgs: ['migrate:latest'],
+    expectedErrorMessage: semver.eq(process.version, 'v14.13.0')
       ? 'Unexpected export statement in CJS module'
       : semver.gte(process.version, 'v14.14.0')
       ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
       : "Unexpected token 'export'",
   },
   {
-    title: isNode10
-      ? "NODE10 can't static import js from .mjs"
-      : 'static importing js file from NON module package is not supported',
+    title: 'static importing js file from NON module package is not supported',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile2.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage: isNode10
-      ? 'Error: Cannot load module from .mjs'
-      : semver.eq(process.version, 'v14.13.0')
+    knexArgs: ['migrate:latest'],
+    expectedErrorMessage: semver.eq(process.version, 'v14.13.0')
       ? 'Unexpected export statement in CJS module'
       : semver.gte(process.version, 'v14.14.0')
       ? 'Warning: To load an ES module, set "type": "module" in the package.json or use the .mjs extension.'
@@ -193,19 +159,12 @@ const fixture = [
   },
   {
     //Example:  external module.type='module' by url 'packane-name/index.js'
-    title: isNode10
-      ? "NODE10 can't dynamically import external ESM module package by URL"
-      : 'can dynamically import external ESM module package by URL',
+    title: 'can dynamically import external ESM module package by URL',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile4.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage: isNode10 && 'Error: Cannot load module from .mjs',
-    expectedOutput: !isNode10 && 'Batch 1 run: 1 migrations',
-    expectedSchema: !isNode10 && [
+    knexArgs: ['migrate:latest'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
       'knex_migrations',
       'sqlite_sequence',
       'knex_migrations_lock',
@@ -214,20 +173,12 @@ const fixture = [
     dropDb: true,
   },
   {
-    title: isNode10
-      ? "NODE10 can't create require"
-      : 'Importing commonjs from a mjs module',
+    title: 'Importing commonjs from a mjs module',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile5.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && `--esm`],
-    expectedErrorMessage:
-      isNode10 && 'TypeError: module.createRequire is not a function',
-    expectedOutput: !isNode10 && 'Batch 1 run: 1 migrations',
-    expectedSchema: !isNode10 && [
+    knexArgs: ['migrate:latest'],
+    expectedOutput: 'Batch 1 run: 1 migrations',
+    expectedSchema: [
       'knex_migrations',
       'sqlite_sequence',
       'knex_migrations_lock',
@@ -239,10 +190,6 @@ const fixture = [
     title: 'Importing commonjs from a js ESM module and --esm interop',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile6.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -257,10 +204,6 @@ const fixture = [
     title: 'Importing js ESM from js ESM with --esm interop',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile7.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -275,10 +218,6 @@ const fixture = [
     title: 'Dynamic importing js ESM from js ESM with --esm interop',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile8.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -293,10 +232,6 @@ const fixture = [
     title: 'Static top level cjs import from js ESM with --esm interop',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile9.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -311,10 +246,6 @@ const fixture = [
     title: 'Dynamic ESM js import from commonjs/js with esm migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile10.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -329,10 +260,6 @@ const fixture = [
     title: 'Imports commonjs/cjs provides js/esm migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile11.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -347,10 +274,6 @@ const fixture = [
     title: 'Imports commonjs/cjs provides cjs migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile11.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -365,10 +288,6 @@ const fixture = [
     title: 'cjs knexfile Imports commonjs/cjs provides cjs migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile12.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -383,10 +302,6 @@ const fixture = [
     title: 'cjs knexfile Imports commonjs/js provides js migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile13.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -401,10 +316,6 @@ const fixture = [
     title: 'cjs knexfile provides esm migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile14.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', `--esm`],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -419,10 +330,6 @@ const fixture = [
     title: 'cjs knexfile provides mjs migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile15.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', '--esm'],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -437,11 +344,7 @@ const fixture = [
     title: 'mjs knexfile provides cjs migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile16.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && '--esm'],
+    knexArgs: ['migrate:latest'],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
       'knex_migrations',
@@ -458,14 +361,7 @@ const fixture = [
     title: 'mjs knexfile provides ESM/js migrations #1',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile17.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: [
-      'migrate:latest',
-      // isNode10 && '--esm'
-    ],
+    knexArgs: ['migrate:latest'],
     /**
      * Migration DOESN'T RUN?, files aren't found
      * config.migrations.loadExtensions defaults to ['.mjs']
@@ -488,11 +384,7 @@ const fixture = [
     title: 'mjs knexfile provides ESM/js migrations #2',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile17.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['migrate:latest', isNode10 && '--esm'],
+    knexArgs: ['migrate:latest'],
     /**
      * Migration DOESN'T RUN, files aren't found
      * config.migrations.loadExtensions defaults to ['.mjs']
@@ -511,19 +403,7 @@ const fixture = [
     title: 'mjs knexfile provides ESM/js migrations if .js in loadExtensions',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile18.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', '--esm'],
-    // Doesn't error on NODE10
-    expectedOutput: isNode10 && 'Batch 1 run: 1 migrations',
-    expectedSchema: isNode10 && [
-      'knex_migrations',
-      'sqlite_sequence',
-      'knex_migrations_lock',
-      'xyz',
-    ],
     dropDb: true,
   },
   {
@@ -531,24 +411,15 @@ const fixture = [
       "mjs knexfile CAN'T provide ESM/js migrations if .js in loadExtensions without --esm",
     testCase: 'knexfile-imports',
     knexfile: 'knexfile18.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest'],
     // Fails on NODE 12 & 14
-    expectedErrorMessage:
-      (!isNode10 && "Unexpected token 'export'") || 'Unexpected token export',
+    expectedErrorMessage: "Unexpected token 'export'",
     dropDb: true,
   },
   {
     title: 'ESM/js knexfile provides cjs migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile19.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', '--esm'],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -563,10 +434,6 @@ const fixture = [
     title: 'ESM/js knexfile provides mjs migrations',
     testCase: 'knexfile-imports',
     knexfile: 'knexfile20.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['migrate:latest', '--esm'],
     expectedOutput: 'Batch 1 run: 1 migrations',
     expectedSchema: [
@@ -584,10 +451,6 @@ const fixture = [
     title: `Seeds knexfile20.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile20.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -600,10 +463,6 @@ const fixture = [
     title: `Seeds knexfile19.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile19.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -616,10 +475,6 @@ const fixture = [
     title: `Seeds knexfile18.mjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile18.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -632,10 +487,6 @@ const fixture = [
     title: `Seeds knexfile17.mjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile17.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -649,10 +500,6 @@ const fixture = [
     title: `Seeds knexfile16.mjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile16.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -666,10 +513,6 @@ const fixture = [
     title: `Seeds knexfile15.cjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile15.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -683,10 +526,6 @@ const fixture = [
     title: `Seeds knexfile14.cjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile14.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -700,10 +539,6 @@ const fixture = [
     title: `Seeds knexfile13.cjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile13.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -716,10 +551,6 @@ const fixture = [
     title: `Seeds knexfile12.cjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile12.cjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -732,10 +563,6 @@ const fixture = [
     title: `Seeds knexfile11.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile11.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -748,10 +575,6 @@ const fixture = [
     title: `Seeds knexfile10.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile10.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -764,10 +587,6 @@ const fixture = [
     title: `Seeds knexfile9.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile9.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -781,10 +600,6 @@ const fixture = [
     title: `Seeds knexfile8.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile8.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -797,10 +612,6 @@ const fixture = [
     title: `Seeds knexfile7.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile7.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -813,10 +624,6 @@ const fixture = [
     title: `Seeds knexfile6.js`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile6.js',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -825,15 +632,11 @@ const fixture = [
       await createTable(db, `xyz (name TEXT)`);
     },
   },
-  !isNode10 && {
+  {
     // This case failure on Node10 is already documented
     title: `Seeds knexfile5.mjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile5.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
     knexArgs: ['seed:run', `--esm`],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
@@ -842,16 +645,12 @@ const fixture = [
       await createTable(db, `xyz (name TEXT)`);
     },
   },
-  !isNode10 && {
+  {
     // This case failure on Node10 is already documented
     title: `Seeds knexfile4.mjs`,
     testCase: 'knexfile-imports',
     knexfile: 'knexfile4.mjs',
-    nodeArgs: [
-      isNode10 && '--experimental-modules',
-      isNode10 && '--no-warnings',
-    ],
-    knexArgs: ['seed:run', isNode10 && `--esm`],
+    knexArgs: ['seed:run'],
     expectedOutput: 'Ran 1 seed files',
     dropDb: true,
     before: async ({ dbPath }) => {
@@ -861,7 +660,7 @@ const fixture = [
   },
 ].filter(Boolean);
 
-describe('esm interop and mjs support', () => {
+describe.only('esm interop and mjs support', () => {
   before(() => {
     process.env.KNEX_PATH = '../knex.js';
   });
