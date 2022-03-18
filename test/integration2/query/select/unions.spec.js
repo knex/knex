@@ -180,7 +180,7 @@ describe('unions', function () {
         });
       });
 
-      describe.only('unions with wrapped queries', () => {
+      describe('unions with wrapped queries', () => {
         it('nested unions with group by in subqueries and limit and orderby', async function () {
           if (!isPostgreSQL(knex) && !isMysql(knex)) {
             return this.skip();
