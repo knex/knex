@@ -57,8 +57,8 @@ describe('unions', function () {
         await knex.destroy();
       });
 
-      it('handles unions with a callback', function () {
-        return knex('accounts')
+      it('handles unions with a callback', async () => {
+        await knex('accounts')
           .select(unionCols)
           .where('id', '=', 1)
           .union(function () {
@@ -66,8 +66,8 @@ describe('unions', function () {
           });
       });
 
-      it('handles unions with an array of callbacks', function () {
-        return knex('accounts')
+      it('handles unions with an array of callbacks', async () => {
+        await knex('accounts')
           .select(unionCols)
           .where('id', '=', 1)
           .union([
@@ -80,8 +80,8 @@ describe('unions', function () {
           ]);
       });
 
-      it('handles unions with a list of callbacks', function () {
-        return knex('accounts')
+      it('handles unions with a list of callbacks', async () => {
+        await knex('accounts')
           .select(unionCols)
           .where('id', '=', 1)
           .union(
@@ -94,8 +94,8 @@ describe('unions', function () {
           );
       });
 
-      it('handles unions with an array of builders', function () {
-        return knex('accounts')
+      it('handles unions with an array of builders', async () => {
+        await knex('accounts')
           .select(unionCols)
           .where('id', '=', 1)
           .union([
@@ -104,8 +104,8 @@ describe('unions', function () {
           ]);
       });
 
-      it('handles unions with a list of builders', function () {
-        return knex('accounts')
+      it('handles unions with a list of builders', async () => {
+        await knex('accounts')
           .select(unionCols)
           .where('id', '=', 1)
           .union(
@@ -114,8 +114,8 @@ describe('unions', function () {
           );
       });
 
-      it('handles unions with a raw query', function () {
-        return knex('union_raw_test')
+      it('handles unions with a raw query', async () => {
+        await knex('union_raw_test')
           .select('*')
           .where('id', '=', 1)
           .union(
@@ -127,8 +127,8 @@ describe('unions', function () {
           );
       });
 
-      it('handles unions with an array raw queries', function () {
-        return knex('union_raw_test')
+      it('handles unions with an array raw queries', async () => {
+        await knex('union_raw_test')
           .select('*')
           .where('id', '=', 1)
           .union([
@@ -145,8 +145,8 @@ describe('unions', function () {
           ]);
       });
 
-      it('handles unions with a list of raw queries', function () {
-        return knex('union_raw_test')
+      it('handles unions with a list of raw queries', async () => {
+        await knex('union_raw_test')
           .select('*')
           .where('id', '=', 1)
           .union(
@@ -197,8 +197,8 @@ describe('unions', function () {
           });
         });
 
-        beforeEach(function () {
-          return knex('intersect_test').insert([
+        beforeEach(async function () {
+          await knex('intersect_test').insert([
             {
               id: 1,
               test_col_1: 1,
@@ -232,8 +232,8 @@ describe('unions', function () {
           ]);
         });
 
-        after(function () {
-          return knex.schema.dropTable('intersect_test');
+        after(async function () {
+          await knex.schema.dropTable('intersect_test');
         });
 
         it('handles intersects with a callback', async function () {

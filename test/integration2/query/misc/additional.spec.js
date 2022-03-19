@@ -73,67 +73,53 @@ describe('Additional', function () {
           knex.client.config.postProcessResponse = null;
         });
 
-        it('should process normal response', () => {
-          return knex('accounts')
-            .limit(1)
-            .then((res) => {
-              expect(res.callCount).to.equal(1);
-            });
+        it('should process normal response', async () => {
+          const res = await knex('accounts').limit(1);
+          expect(res.callCount).to.equal(1);
         });
 
-        it('should pass query context to the custom handler', () => {
-          return knex('accounts')
+        it('should pass query context to the custom handler', async () => {
+          const res = await knex('accounts')
             .queryContext('the context')
-            .limit(1)
-            .then((res) => {
-              expect(res.queryContext).to.equal('the context');
-            });
+            .limit(1);
+          expect(res.queryContext).to.equal('the context');
         });
 
-        it('should process raw response', () => {
-          return knex.raw('select * from ??', ['accounts']).then((res) => {
-            expect(res.callCount).to.equal(1);
-          });
+        it('should process raw response', async () => {
+          const res = await knex.raw('select * from ??', ['accounts']);
+          expect(res.callCount).to.equal(1);
         });
 
-        it('should pass query context for raw responses', () => {
-          return knex
+        it('should pass query context for raw responses', async () => {
+          const res = await knex
             .raw('select * from ??', ['accounts'])
-            .queryContext('the context')
-            .then((res) => {
-              expect(res.queryContext).to.equal('the context');
-            });
+            .queryContext('the context');
+          expect(res.queryContext).to.equal('the context');
         });
 
-        it('should process response done in transaction', () => {
-          return knex
-            .transaction((trx) => {
-              return trx('accounts')
-                .limit(1)
-                .then((res) => {
-                  expect(res.callCount).to.equal(1);
-                  return res;
-                });
-            })
-            .then((res) => {
-              expect(res.callCount).to.equal(1);
-            });
+        it('should process response done in transaction', async () => {
+          const res = await knex.transaction((trx) => {
+            return trx('accounts')
+              .limit(1)
+              .then((res) => {
+                expect(res.callCount).to.equal(1);
+                return res;
+              });
+          });
+          expect(res.callCount).to.equal(1);
         });
 
-        it('should pass query context for responses from transactions', () => {
-          return knex
-            .transaction((trx) => {
-              return trx('accounts')
-                .queryContext('the context')
-                .limit(1)
-                .then((res) => {
-                  expect(res.queryContext).to.equal('the context');
-                  return res;
-                });
-            })
-            .then((res) => {
-              expect(res.queryContext).to.equal('the context');
-            });
+        it('should pass query context for responses from transactions', async () => {
+          const res = await knex.transaction((trx) => {
+            return trx('accounts')
+              .queryContext('the context')
+              .limit(1)
+              .then((res) => {
+                expect(res.queryContext).to.equal('the context');
+                return res;
+              });
+          });
+          expect(res.queryContext).to.equal('the context');
         });
 
         it('should handle error correctly in a stream', (done) => {
@@ -143,24 +129,19 @@ describe('Additional', function () {
           });
         });
 
-        it('should process response done through a stream', (done) => {
-          knex('accounts')
-            .truncate()
-            .then(() => {
-              return insertAccounts(knex, 'accounts');
-            })
-            .then(() => {
-              let response;
-              const stream = knex('accounts').limit(1).stream();
+        it('should process response done through a stream', async (done) => {
+          await knex('accounts').truncate();
+          await insertAccounts(knex, 'accounts');
+          let response;
+          const stream = knex('accounts').limit(1).stream();
 
-              stream.on('data', (res) => {
-                response = res;
-              });
-              stream.on('finish', () => {
-                expect(response.callCount).to.equal(1);
-                done();
-              });
-            });
+          stream.on('data', (res) => {
+            response = res;
+          });
+          stream.on('finish', () => {
+            expect(response.callCount).to.equal(1);
+            done();
+          });
         });
 
         it('should pass query context for responses through a stream', (done) => {
@@ -208,30 +189,24 @@ describe('Additional', function () {
           knex.client.config.wrapIdentifier = null;
         });
 
-        it('should work using camelCased table name', () => {
-          return knex('testTableTwo')
-            .columnInfo()
-            .then((res) => {
-              expect(Object.keys(res)).to.have.all.members([
-                'id',
-                'accountId',
-                'details',
-                'status',
-              ]);
-            });
+        it('should work using camelCased table name', async () => {
+          const res = await knex('testTableTwo').columnInfo();
+          expect(Object.keys(res)).to.have.all.members([
+            'id',
+            'accountId',
+            'details',
+            'status',
+          ]);
         });
 
-        it('should work using snake_cased table name', () => {
-          return knex('test_table_two')
-            .columnInfo()
-            .then((res) => {
-              expect(Object.keys(res)).to.have.all.members([
-                'id',
-                'accountId',
-                'details',
-                'status',
-              ]);
-            });
+        it('should work using snake_cased table name', async () => {
+          const res = await knex('test_table_two').columnInfo();
+          expect(Object.keys(res)).to.have.all.members([
+            'id',
+            'accountId',
+            'details',
+            'status',
+          ]);
         });
       });
 
@@ -272,42 +247,37 @@ describe('Additional', function () {
           knex.client.config.wrapIdentifier = origHooks.wrapIdentifier;
         });
 
-        it('should return the correct column when a single property is given to returning', () => {
+        it('should return the correct column when a single property is given to returning', async function () {
           if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
-            return;
+            return this.skip();
           }
 
-          return knex('accounts_foo')
+          const res = await knex('accounts_foo')
             .insert({ balance_foo: 123 })
-            .returning('balance_foo')
-            .then((res) => {
-              expect(res).to.eql([
-                {
-                  balance_foo: 123,
-                },
-              ]);
-            });
+            .returning('balance_foo');
+          expect(res).to.eql([
+            {
+              balance_foo: 123,
+            },
+          ]);
         });
 
-        it('should return the correct columns when multiple properties are given to returning', () => {
+        it('should return the correct columns when multiple properties are given to returning', async function () {
           if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
-            return;
+            return this.skip();
           }
 
-          return knex('accounts_foo')
+          const res = await knex('accounts_foo')
             .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
-            .returning(['balance_foo', 'email_foo'])
-            .then((res) => {
-              expect(res).to.eql([
-                { balance_foo: 123, email_foo: 'foo@bar.com' },
-              ]);
-            });
+            .returning(['balance_foo', 'email_foo']);
+
+          expect(res).to.eql([{ balance_foo: 123, email_foo: 'foo@bar.com' }]);
         });
       });
 
       describe('other operations', () => {
-        it('should truncate a table with truncate', function () {
-          return knex('test_table_two')
+        it('should truncate a table with truncate', async function () {
+          await knex('test_table_two')
             .truncate()
             .testSql(function (tester) {
               tester('mysql', 'truncate `test_table_two`');
@@ -317,40 +287,28 @@ describe('Additional', function () {
               tester('sqlite3', 'delete from `test_table_two`');
               tester('oracledb', 'truncate table "test_table_two"');
               tester('mssql', 'truncate table [test_table_two]');
-            })
-            .then(() => {
-              return knex('test_table_two')
-                .select('*')
-                .then((resp) => {
-                  expect(resp).to.have.length(0);
-                });
-            })
-            .then(() => {
-              // Insert new data after truncate and make sure ids restart at 1.
-              // This doesn't currently work on oracle, where the created sequence
-              // needs to be manually reset.
-              // On redshift, one would need to create an entirely new table and do
-              //  `insert into ... (select ...); alter table rename...`
-              if (isOracle(knex) || isRedshift(knex)) {
-                return;
-              }
-              return knex('test_table_two')
-                .insert({ status: 1 })
-                .then((res) => {
-                  return knex('test_table_two')
-                    .select('id')
-                    .first()
-                    .then((res) => {
-                      expect(res).to.be.an('object');
-                      if (!isCockroachDB(knex)) {
-                        expect(res.id).to.equal(1);
-                      }
-                    });
-                });
             });
+
+          const resp = await knex('test_table_two').select('*');
+          expect(resp).to.have.length(0);
+
+          // Insert new data after truncate and make sure ids restart at 1.
+          // This doesn't currently work on oracle, where the created sequence
+          // needs to be manually reset.
+          // On redshift, one would need to create an entirely new table and do
+          //  `insert into ... (select ...); alter table rename...`
+          if (isOracle(knex) || isRedshift(knex)) {
+            return;
+          }
+          await knex('test_table_two').insert({ status: 1 });
+          const res = await knex('test_table_two').select('id').first();
+          expect(res).to.be.an('object');
+          if (!isCockroachDB(knex)) {
+            expect(res.id).to.equal(1);
+          }
         });
 
-        it('should allow raw queries directly with `knex.raw`', function () {
+        it('should allow raw queries directly with `knex.raw`', async function () {
           const tables = {
             [drivers.MySQL]: 'SHOW TABLES',
             [drivers.MySQL2]: 'SHOW TABLES',
@@ -370,7 +328,7 @@ describe('Additional', function () {
             [drivers.MsSQL]:
               "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='dbo'",
           };
-          return knex
+          await knex
             .raw(tables[knex.client.driverName])
             .testSql(function (tester) {
               tester(knex.client.driverName, tables[knex.client.driverName]);
@@ -459,52 +417,43 @@ describe('Additional', function () {
           expect(expectedUuid).to.equal(originalUuid);
         });
 
-        it('#2184 - should properly escape table name for SQLite columnInfo', function () {
+        it('#2184 - should properly escape table name for SQLite columnInfo', async function () {
           if (!isSQLite(knex)) {
             return this.skip();
           }
 
-          return knex.schema
-            .dropTableIfExists('group')
-            .then(function () {
-              return knex.schema.createTable('group', function (table) {
-                table.integer('foo');
-              });
-            })
-            .then(function () {
-              return knex('group').columnInfo();
-            })
-            .then(function (columnInfo) {
-              expect(columnInfo).to.deep.equal({
-                foo: {
-                  type: 'integer',
-                  maxLength: null,
-                  nullable: true,
-                  defaultValue: null,
-                },
-              });
-            });
+          await knex.schema.dropTableIfExists('group');
+          await knex.schema.createTable('group', function (table) {
+            table.integer('foo');
+          });
+          const columnInfo = await knex('group').columnInfo();
+
+          expect(columnInfo).to.deep.equal({
+            foo: {
+              type: 'integer',
+              maxLength: null,
+              nullable: true,
+              defaultValue: null,
+            },
+          });
         });
 
         if (isOracle(knex)) {
           const oracledb = require('oracledb');
           describe('test oracle stored procedures', function () {
-            it('create stored procedure', function () {
-              return knex
-                .raw(
-                  `
+            it('create stored procedure', async function () {
+              const result = await knex.raw(
+                `
             CREATE OR REPLACE PROCEDURE SYSTEM.multiply (X IN NUMBER, Y IN NUMBER, OUTPUT OUT NUMBER)
               IS
               BEGIN
                 OUTPUT := X * Y;
               END;`
-                )
-                .then(function (result) {
-                  expect(result).to.be.an('array');
-                });
+              );
+              expect(result).to.be.an('array');
             });
 
-            it('get outbound values from stored procedure', function () {
+            it('get outbound values from stored procedure', async function () {
               const bindVars = {
                 x: 6,
                 y: 7,
@@ -512,22 +461,23 @@ describe('Additional', function () {
                   dir: oracledb.BIND_OUT,
                 },
               };
-              return knex
-                .raw('BEGIN SYSTEM.MULTIPLY(:x, :y, :output); END;', bindVars)
-                .then(function (result) {
-                  expect(result[0]).to.be.ok;
-                  expect(result[0]).to.equal('42');
-                });
+              const result = knex.raw(
+                'BEGIN SYSTEM.MULTIPLY(:x, :y, :output); END;',
+                bindVars
+              );
+
+              expect(result[0]).to.be.ok;
+              expect(result[0]).to.equal('42');
             });
 
-            it('drop stored procedure', function () {
+            it('drop stored procedure', async function () {
               const bindVars = { x: 6, y: 7 };
-              return knex
-                .raw('drop procedure SYSTEM.MULTIPLY', bindVars)
-                .then(function (result) {
-                  expect(result).to.be.ok;
-                  expect(result).to.be.an('array');
-                });
+              const result = await knex.raw(
+                'drop procedure SYSTEM.MULTIPLY',
+                bindVars
+              );
+              expect(result).to.be.ok;
+              expect(result).to.be.an('array');
             });
           });
         }
@@ -732,21 +682,18 @@ describe('Additional', function () {
 
           const query = testQueries[driverName]();
 
-          await query
-            .timeout(200)
-            .then(function () {
-              expect(true).to.equal(false);
-            })
-            .catch(function (error) {
-              expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal(
-                {
-                  timeout: 200,
-                  name: 'KnexTimeoutError',
-                  message:
-                    'Defined query timeout of 200ms exceeded when running query.',
-                }
-              );
+          try {
+            await query.timeout(200);
+          } catch (error) {
+            expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+              timeout: 200,
+              name: 'KnexTimeoutError',
+              message:
+                'Defined query timeout of 200ms exceeded when running query.',
             });
+            return;
+          }
+          expect(true).to.equal(false);
         });
 
         it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', async function () {
@@ -802,7 +749,7 @@ describe('Additional', function () {
             expect(addTimeout).to.throw(
               'Query cancelling not supported for this dialect'
             );
-            return; // TODO: Use `this.skip()` here?
+            this.skip();
           }
 
           const getProcessesQueries = {
@@ -953,41 +900,37 @@ describe('Additional', function () {
 
           const getProcessesQuery = getProcessesQueries[driverName]();
 
-          await knex
-            .transaction((trx) => addTimeout().transacting(trx))
-            .then(function () {
-              expect(true).to.equal(false);
-            })
-            .catch(async function (error) {
-              expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal(
-                {
-                  timeout: 200,
-                  name: 'KnexTimeoutError',
-                  message:
-                    'Defined query timeout of 200ms exceeded when running query.',
-                }
-              );
-
-              // Ensure sleep command is removed.
-              // This query will hang if a connection gets released back to the pool
-              // too early.
-              // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
-              await delay(50);
-              const results = await getProcessesQuery;
-              let processes;
-              let sleepProcess;
-
-              if (_.startsWith(driverName, 'pg')) {
-                processes = results.rows;
-                sleepProcess = _.find(processes, { query: query.toString() });
-              } else {
-                processes = results[0];
-                sleepProcess = _.find(processes, {
-                  Info: 'SELECT SLEEP(10)',
-                });
-              }
-              expect(sleepProcess).to.equal(undefined);
+          try {
+            await knex.transaction((trx) => addTimeout().transacting(trx));
+            expect(true).to.equal(false);
+          } catch (error) {
+            expect(_.pick(error, 'timeout', 'name', 'message')).to.deep.equal({
+              timeout: 200,
+              name: 'KnexTimeoutError',
+              message:
+                'Defined query timeout of 200ms exceeded when running query.',
             });
+
+            // Ensure sleep command is removed.
+            // This query will hang if a connection gets released back to the pool
+            // too early.
+            // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
+            await delay(50);
+            const results = await getProcessesQuery;
+            let processes;
+            let sleepProcess;
+
+            if (_.startsWith(driverName, 'pg')) {
+              processes = results.rows;
+              sleepProcess = _.find(processes, { query: query.toString() });
+            } else {
+              processes = results[0];
+              sleepProcess = _.find(processes, {
+                Info: 'SELECT SLEEP(10)',
+              });
+            }
+            expect(sleepProcess).to.equal(undefined);
+          }
         });
 
         it('.timeout(ms, {cancel: true}) should cancel slow query even if connection pool is exhausted', async function () {
@@ -1200,7 +1143,7 @@ describe('Additional', function () {
       });
 
       describe('Events', () => {
-        it('Event: query-response', function () {
+        it('Event: query-response', async function () {
           let queryCount = 0;
 
           const onQueryResponse = function (response, obj, builder) {
@@ -1213,23 +1156,17 @@ describe('Additional', function () {
           };
           knex.on('query-response', onQueryResponse);
 
-          return knex('accounts')
-            .select()
-            .on('query-response', onQueryResponse)
-            .then(function () {
-              return knex.transaction(function (tr) {
-                return tr('accounts')
-                  .select()
-                  .on('query-response', onQueryResponse); //Transactions should emit the event as well
-              });
-            })
-            .then(function () {
-              knex.removeListener('query-response', onQueryResponse);
-              expect(queryCount).to.equal(4);
-            });
+          await knex('accounts').select().on('query-response', onQueryResponse);
+          await knex.transaction(function (tr) {
+            return tr('accounts')
+              .select()
+              .on('query-response', onQueryResponse); //Transactions should emit the event as well
+          });
+          knex.removeListener('query-response', onQueryResponse);
+          expect(queryCount).to.equal(4);
         });
 
-        it('Event: preserves listeners on a copy with user params', function () {
+        it('Event: preserves listeners on a copy with user params', async function () {
           let queryCount = 0;
 
           const onQueryResponse = function (response, obj, builder) {
@@ -1243,26 +1180,22 @@ describe('Additional', function () {
           knex.on('query-response', onQueryResponse);
           const knexCopy = knex.withUserParams({});
 
-          return knexCopy('accounts')
+          await knexCopy('accounts')
             .select()
-            .on('query-response', onQueryResponse)
-            .then(function () {
-              return knexCopy.transaction(function (tr) {
-                return tr('accounts')
-                  .select()
-                  .on('query-response', onQueryResponse); //Transactions should emit the event as well
-              });
-            })
-            .then(function () {
-              expect(Object.keys(knex._events).length).to.equal(1);
-              expect(Object.keys(knexCopy._events).length).to.equal(1);
-              knex.removeListener('query-response', onQueryResponse);
-              expect(Object.keys(knex._events).length).to.equal(0);
-              expect(queryCount).to.equal(4);
-            });
+            .on('query-response', onQueryResponse);
+          await knexCopy.transaction(function (tr) {
+            return tr('accounts')
+              .select()
+              .on('query-response', onQueryResponse); //Transactions should emit the event as well
+          });
+          expect(Object.keys(knex._events).length).to.equal(1);
+          expect(Object.keys(knexCopy._events).length).to.equal(1);
+          knex.removeListener('query-response', onQueryResponse);
+          expect(Object.keys(knex._events).length).to.equal(0);
+          expect(queryCount).to.equal(4);
         });
 
-        it('Event: query-error', function () {
+        it('Event: query-error', async function () {
           let queryCountKnex = 0;
           let queryCountBuilder = 0;
           const onQueryErrorKnex = function (error, obj) {
@@ -1282,39 +1215,31 @@ describe('Additional', function () {
           };
 
           knex.on('query-error', onQueryErrorKnex);
-
-          return knex
-            .raw('Broken query')
-            .on('query-error', onQueryErrorBuilder)
-            .then(function () {
-              expect(true).to.equal(false); //Should not be resolved
-            })
-            .catch(function () {
-              knex.removeListener('query-error', onQueryErrorKnex);
-              knex.removeListener('query-error', onQueryErrorBuilder);
-              expect(queryCountBuilder).to.equal(1);
-              expect(queryCountKnex).to.equal(1);
-            });
+          try {
+            await knex
+              .raw('Broken query')
+              .on('query-error', onQueryErrorBuilder);
+            expect(true).to.equal(false); //Should not be resolved
+          } catch (err) {
+            knex.removeListener('query-error', onQueryErrorKnex);
+            knex.removeListener('query-error', onQueryErrorBuilder);
+            expect(queryCountBuilder).to.equal(1);
+            expect(queryCountKnex).to.equal(1);
+          }
         });
 
-        it('Event: start', function () {
-          return knex('accounts')
-            .insert({ last_name: 'Start event test' })
-            .then(function () {
-              const queryBuilder = knex('accounts').select();
+        it('Event: start', async function () {
+          await knex('accounts').insert({ last_name: 'Start event test' });
+          const queryBuilder = knex('accounts').select();
 
-              queryBuilder.on('start', function (builder) {
-                //Alter builder prior to compilation
-                //Select only one row
-                builder.where('last_name', 'Start event test').first();
-              });
-
-              return queryBuilder;
-            })
-            .then(function (row) {
-              expect(row).to.exist;
-              expect(row.last_name).to.equal('Start event test');
-            });
+          queryBuilder.on('start', function (builder) {
+            //Alter builder prior to compilation
+            //Select only one row
+            builder.where('last_name', 'Start event test').first();
+          });
+          const row = await queryBuilder;
+          expect(row).to.exist;
+          expect(row.last_name).to.equal('Start event test');
         });
 
         it("Event 'query' should not emit native sql string", function () {
@@ -1343,24 +1268,22 @@ describe('Additional', function () {
         after(() => {
           delete knex.client.config.asyncStackTraces;
         });
-        it('should capture stack trace on raw query', () => {
-          return knex
-            .raw('select * from some_nonexisten_table')
-            .catch((err) => {
-              expect(err.stack.split('\n')[2]).to.match(/at Object\.raw \(/); // the index 2 might need adjustment if the code is refactored
-              expect(typeof err.originalStack).to.equal('string');
-            });
+        it('should capture stack trace on raw query', async () => {
+          try {
+            await knex.raw('select * from some_nonexisten_table');
+          } catch (err) {
+            expect(err.stack.split('\n')[2]).to.match(/at Object\.raw \(/); // the index 2 might need adjustment if the code is refactored
+            expect(typeof err.originalStack).to.equal('string');
+          }
         });
 
-        it('should capture stack trace on schema builder', () => {
-          return knex.schema
-            .renameTable('some_nonexisten_table', 'whatever')
-            .catch((err) => {
-              expect(err.stack.split('\n')[1]).to.match(
-                /client\.schemaBuilder/
-              ); // the index 1 might need adjustment if the code is refactored
-              expect(typeof err.originalStack).to.equal('string');
-            });
+        it('should capture stack trace on schema builder', async () => {
+          try {
+            await knex.schema.renameTable('some_nonexisten_table', 'whatever');
+          } catch (err) {
+            expect(err.stack.split('\n')[1]).to.match(/client\.schemaBuilder/); // the index 1 might need adjustment if the code is refactored
+            expect(typeof err.originalStack).to.equal('string');
+          }
         });
       });
 

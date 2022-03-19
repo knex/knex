@@ -61,8 +61,8 @@ describe('Where', function () {
       });
 
       describe('simple "where" cases', function () {
-        it('allows key, value', function () {
-          return knex('accounts')
+        it('allows key, value', async function () {
+          await knex('accounts')
             .where('id', 1)
             .select('first_name', 'last_name')
             .testSql(function (tester) {
@@ -102,8 +102,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows key, operator, value', function () {
-          return knex('accounts')
+        it('allows key, operator, value', async function () {
+          await knex('accounts')
             .where('id', 1)
             .select('first_name', 'last_name')
             .testSql(function (tester) {
@@ -143,8 +143,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows selecting columns with an array', function () {
-          return knex('accounts')
+        it('allows selecting columns with an array', async function () {
+          await knex('accounts')
             .where('id', '>', 1)
             .select(['email', 'logins'])
             .testSql(function (tester) {
@@ -166,8 +166,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows a hash of where attrs', function () {
-          return knex('accounts')
+        it('allows a hash of where attrs', async function () {
+          await knex('accounts')
             .where({ id: 1 })
             .select('*')
             .testSql(function (tester) {
@@ -231,8 +231,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows where id: undefined or id: null as a where null clause', function () {
-          return knex('accounts')
+        it('allows where id: undefined or id: null as a where null clause', async function () {
+          await knex('accounts')
             .where({ id: null })
             .select('first_name', 'email')
             .testSql(function (tester) {
@@ -257,8 +257,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows where id = 0', function () {
-          return knex('accounts')
+        it('allows where id = 0', async function () {
+          await knex('accounts')
             .where({ id: 0 })
             .select()
             .testSql(function (tester) {
@@ -284,39 +284,35 @@ describe('Where', function () {
         });
       });
 
-      it('does "orWhere" cases', function () {
-        return knex('accounts')
+      it('does "orWhere" cases', async function () {
+        await knex('accounts')
           .where('id', 1)
           .orWhere('id', '>', 2)
           .select('first_name', 'last_name');
       });
 
-      it('does "andWhere" cases', function () {
-        return knex('accounts')
+      it('does "andWhere" cases', async function () {
+        await knex('accounts')
           .select('first_name', 'last_name', 'about')
           .where('id', 1)
           .andWhere('email', 'test1@example.com');
       });
 
-      it('takes a function to wrap nested where statements', function () {
-        return Promise.all([
-          knex('accounts')
-            .where(function () {
-              this.where('id', 2);
-              this.orWhere('id', 3);
-            })
-            .select('*'),
-        ]);
+      it('takes a function to wrap nested where statements', async () => {
+        await knex('accounts')
+          .where(function () {
+            this.where('id', 2);
+            this.orWhere('id', 3);
+          })
+          .select('*');
       });
 
-      it('handles "where in" cases', function () {
-        return Promise.all([
-          knex('accounts').whereIn('id', [1, 2, 3]).select(),
-        ]);
+      it('handles "where in" cases', async () => {
+        await knex('accounts').whereIn('id', [1, 2, 3]).select();
       });
 
-      it('handles "or where in" cases', function () {
-        return knex('accounts')
+      it('handles "or where in" cases', async () => {
+        await knex('accounts')
           .where('email', 'test1@example.com')
           .orWhereIn('id', [2, 3, 4])
           .select();
@@ -436,9 +432,9 @@ describe('Where', function () {
         }
       });
 
-      it('handles multi-column "where in" cases with where', function () {
+      it('handles multi-column "where in" cases with where', async function () {
         if (!isSQLite(knex) && !isMssql(knex)) {
-          return knex('composite_key_test')
+          await knex('composite_key_test')
             .where('status', 1)
             .whereIn(
               ['column_a', 'column_b'],
@@ -492,29 +488,29 @@ describe('Where', function () {
         }
       });
 
-      it('handles "where exists"', function () {
-        return knex('accounts')
+      it('handles "where exists"', async () => {
+        await knex('accounts')
           .whereExists(function () {
             this.select('id').from('test_table_two').where({ id: 1 });
           })
           .select();
       });
 
-      it('handles "where between"', function () {
-        return knex('accounts').whereBetween('id', [1, 100]).select();
+      it('handles "where between"', async () => {
+        await knex('accounts').whereBetween('id', [1, 100]).select();
       });
 
-      it('handles "or where between"', function () {
-        return knex('accounts')
+      it('handles "or where between"', async () => {
+        await knex('accounts')
           .whereBetween('id', [1, 100])
           .orWhereBetween('id', [200, 300])
           .select();
       });
 
-      it('does where(raw)', function () {
+      it('does where(raw)', async function () {
         if (isOracle(knex)) {
           // special case for oracle
-          return knex('accounts')
+          await knex('accounts')
             .whereExists(function () {
               this.select(knex.raw(1))
                 .from('test_table_two')
@@ -524,7 +520,7 @@ describe('Where', function () {
             })
             .select();
         } else {
-          return knex('accounts')
+          await knex('accounts')
             .whereExists(function () {
               this.select(knex.raw(1))
                 .from('test_table_two')
@@ -534,31 +530,31 @@ describe('Where', function () {
         }
       });
 
-      it('does sub-selects', function () {
-        return knex('accounts')
+      it('does sub-selects', async () => {
+        await knex('accounts')
           .whereIn('id', function () {
             this.select('account_id').from('test_table_two').where('status', 1);
           })
           .select('first_name', 'last_name');
       });
 
-      it('supports the <> operator', function () {
-        return knex('accounts').where('id', '<>', 2).select('email', 'logins');
+      it('supports the <> operator', async () => {
+        await knex('accounts').where('id', '<>', 2).select('email', 'logins');
       });
 
-      it('Allows for knex.Raw passed to the `where` clause', function () {
+      it('Allows for knex.Raw passed to the `where` clause', async () => {
         if (isOracle(knex)) {
-          return knex('accounts')
+          await knex('accounts')
             .where(knex.raw('"id" = 2'))
             .select('email', 'logins');
         } else {
-          return knex('accounts')
+          await knex('accounts')
             .where(knex.raw('id = 2'))
             .select('email', 'logins');
         }
       });
 
-      describe('where like', function () {
+      describe('where like', async function () {
         beforeEach(function () {
           if (!(isPostgreSQL(knex) || isMssql(knex) || isMysql(knex))) {
             return this.skip();
