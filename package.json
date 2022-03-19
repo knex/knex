@@ -114,7 +114,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.4",
     "husky": "^4.3.8",
-    "jake": "^8.1.1",
+    "jake": "^10.8.2",
     "lint-staged": "^12.3.4",
     "mocha": "^9.2.0",
     "mock-fs": "^5.1.2",
