@@ -134,30 +134,9 @@ describe('Updates', function () {
         }
 
         // run few times to try to catch the problem
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
-        await runTest();
+        for (let i = 0; i <= 20; i++) {
+          await runTest();
+        }
       });
 
       it('should increment a value', async function () {

@@ -135,13 +135,15 @@ describe('Additional', function () {
           let response;
           const stream = knex('accounts').limit(1).stream();
 
+          let count = 0;
           stream.on('data', (res) => {
+            count++;
             response = res;
           });
           stream.on('finish', () => {
-            return expect(response.callCount).to.equal(1);
+            expect(count).to.equal(1);
+            expect(response.callCount).to.equal(1);
           });
-          await stream;
         });
 
         it('should pass query context for responses through a stream', (done) => {
