@@ -139,8 +139,7 @@ describe('Additional', function () {
             response = res;
           });
           stream.on('finish', () => {
-            expect(response.callCount).to.equal(1);
-            done();
+            return expect(response.callCount).to.equal(1);
           });
         });
 
