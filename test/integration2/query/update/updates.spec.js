@@ -112,24 +112,26 @@ describe('Updates', function () {
 
         async function runTest() {
           return res.map(async (origRow) => {
-            await knex.transaction((trx) =>
-              trx('accounts').where('id', origRow.id).update({ balance: 654 })
+            await knex.transaction(
+              async (trx) =>
+                await trx('accounts')
+                  .where('id', origRow.id)
+                  .update({ balance: 654 })
             );
 
-            let updatedRow = (
-              await knex('accounts').where('id', origRow.id)
-            )[0];
+            const updatedRow = await knex('accounts').where('id', origRow.id);
 
-            expect(updatedRow.balance).to.equal(654);
+            expect(updatedRow[0].balance).to.equal(654);
 
-            await knex.transaction((trx) =>
-              trx('accounts')
-                .where('id', origRow.id)
-                .update({ balance: origRow.balance })
+            await knex.transaction(
+              async (trx) =>
+                await trx('accounts')
+                  .where('id', origRow.id)
+                  .update({ balance: origRow.balance })
             );
-            updatedRow = (await knex('accounts').where('id', origRow.id))[0];
+            const updatedRow2 = await knex('accounts').where('id', origRow.id);
 
-            expect(updatedRow.balance).to.equal(origRow.balance);
+            expect(updatedRow2[0].balance).to.equal(origRow.balance);
           });
         }
 
