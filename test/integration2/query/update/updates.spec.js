@@ -107,7 +107,7 @@ describe('Updates', function () {
           });
       });
 
-      it.only('should immediately return updated value for other connections when updating row to DB returns', async function () {
+      it('should immediately return updated value for other connections when updating row to DB returns', async function () {
         const res = await knex('accounts');
 
         async function runTest() {
