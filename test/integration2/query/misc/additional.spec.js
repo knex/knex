@@ -129,7 +129,7 @@ describe('Additional', function () {
           });
         });
 
-        it('should process response done through a stream', async (done) => {
+        it('should process response done through a stream', async () => {
           await knex('accounts').truncate();
           await insertAccounts(knex, 'accounts');
           let response;
@@ -141,6 +141,7 @@ describe('Additional', function () {
           stream.on('finish', () => {
             return expect(response.callCount).to.equal(1);
           });
+          await stream;
         });
 
         it('should pass query context for responses through a stream', (done) => {
