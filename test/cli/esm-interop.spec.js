@@ -660,7 +660,7 @@ const fixture = [
   },
 ].filter(Boolean);
 
-describe.only('esm interop and mjs support', () => {
+describe('esm interop and mjs support', () => {
   before(() => {
     process.env.KNEX_PATH = '../knex.js';
   });
