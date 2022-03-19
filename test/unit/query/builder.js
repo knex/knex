@@ -2296,7 +2296,7 @@ describe('QueryBuilder', () => {
         .first();
       testsql(firstUnionAll, {
         mysql: {
-          sql: '(select * from `users` where `id` = ? group by `id` limit ?) union all (select * from `users` where `id` = ?)',
+          sql: '(select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?) group by `id` limit ?',
           bindings: [1, 2, 1],
         },
         mssql: {
@@ -2304,11 +2304,11 @@ describe('QueryBuilder', () => {
           bindings: [1, 1, 2],
         },
         pg: {
-          sql: '(select * from "users" where "id" = ? group by "id" limit ?) union all (select * from "users" where "id" = ?)',
+          sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) group by "id" limit ?',
           bindings: [1, 2, 1],
         },
         'pg-redshift': {
-          sql: '(select * from "users" where "id" = ? group by "id" limit ?) union all (select * from "users" where "id" = ?)',
+          sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) group by "id" limit ?',
           bindings: [1, 2, 1],
         },
       });

@@ -7,6 +7,7 @@ const {
   isPgBased,
   isSQLite,
   isPostgreSQL,
+  isMysql,
 } = require('../../../util/db-helpers');
 const { assertNumberArray } = require('../../../util/assertHelper');
 const {
@@ -22,6 +23,7 @@ const {
   getAllDbs,
   getKnexForDb,
 } = require('../../util/knex-instance-provider');
+const logger = require('../../../integration/logger');
 
 describe('unions', function () {
   getAllDbs().forEach((db) => {
@@ -30,7 +32,7 @@ describe('unions', function () {
       const unionCols = ['last_name', 'phone'];
 
       before(async () => {
-        knex = getKnexForDb(db);
+        knex = logger(getKnexForDb(db));
 
         await dropTables(knex);
         await createUsers(knex);
@@ -163,28 +165,344 @@ describe('unions', function () {
           );
       });
 
-      it('handles nested unions with group by and limit', async function () {
+      it('handles nested unions with limit', async function () {
         if (!isPostgreSQL(knex)) {
           return this.skip();
         }
         const results = await knex('accounts')
-          .count('logins')
           .select('last_name')
-          .limit(1)
-          .groupBy('last_name')
           .unionAll(function () {
-            this.count('logins')
-              .select('last_name')
-              .from('accounts')
-              .limit(1)
-              .groupBy('last_name')
-              .orderBy('last_name')
-              .where('logins', '>', '1');
-          }, true);
-        expect(results).to.eql([
-          { count: '2', last_name: 'User2' },
-          { count: '4', last_name: 'User' },
-        ]);
+            this.select('last_name').from('accounts');
+          })
+          .first();
+        expect(results).to.eql({
+          last_name: 'User',
+        });
+      });
+
+      describe('unions with wrapped queries', () => {
+        it('nested unions with group by in subqueries and limit and orderby', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex
+            .select('last_name')
+            .unionAll(
+              [
+                knex.select('last_name').from('accounts').groupBy('last_name'),
+                knex.select('last_name').from('accounts').groupBy('last_name'),
+              ],
+              true
+            )
+            .limit(5)
+            .orderBy('last_name')
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                '(select "last_name" from "accounts" group by "last_name") union all (select "last_name" from "accounts" group by "last_name") order by "last_name" asc limit ?',
+                [5],
+                [
+                  { last_name: 'User' },
+                  { last_name: 'User' },
+                  { last_name: 'User2' },
+                  { last_name: 'User2' },
+                ]
+              );
+              tester(
+                'mysql',
+                '(select `last_name` from `accounts` group by `last_name`) union all (select `last_name` from `accounts` group by `last_name`) order by `last_name` asc limit ?',
+                [5],
+                [
+                  { last_name: 'User' },
+                  { last_name: 'User' },
+                  { last_name: 'User2' },
+                  { last_name: 'User2' },
+                ]
+              );
+              tester(
+                'mysql2',
+                '(select `last_name` from `accounts` group by `last_name`) union all (select `last_name` from `accounts` group by `last_name`) order by `last_name` asc limit ?',
+                [5],
+                [
+                  { last_name: 'User' },
+                  { last_name: 'User' },
+                  { last_name: 'User2' },
+                  { last_name: 'User2' },
+                ]
+              );
+            });
+        });
+
+        it('nested unions with first', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex
+            .unionAll(
+              function () {
+                this.select('last_name').from('accounts');
+              },
+              function () {
+                this.select('last_name').from('accounts');
+              },
+              true
+            )
+            .first()
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                '(select "last_name" from "accounts") union all (select "last_name" from "accounts") limit ?',
+                [1],
+                {
+                  last_name: 'User',
+                }
+              );
+              tester(
+                'mysql',
+                '(select `last_name` from `accounts`) union all (select `last_name` from `accounts`) limit ?',
+                [1],
+                {
+                  last_name: 'User',
+                }
+              );
+              tester(
+                'mysql2',
+                '(select `last_name` from `accounts`) union all (select `last_name` from `accounts`) limit ?',
+                [1],
+                {
+                  last_name: 'User',
+                }
+              );
+            });
+        });
+
+        it('nested unions with order by and limit', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex
+            .unionAll(
+              function () {
+                this.select('last_name').from('accounts');
+              },
+              function () {
+                this.select('last_name').from('accounts');
+              },
+              true
+            )
+            .orderBy('last_name')
+            .limit(2)
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                '(select "last_name" from "accounts") union all (select "last_name" from "accounts") order by "last_name" asc limit ?',
+                [2],
+                [
+                  {
+                    last_name: 'User',
+                  },
+                  {
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'mysql',
+                '(select `last_name` from `accounts`) union all (select `last_name` from `accounts`) order by `last_name` asc limit ?',
+                [2],
+                [
+                  {
+                    last_name: 'User',
+                  },
+                  {
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'mysql2',
+                '(select `last_name` from `accounts`) union all (select `last_name` from `accounts`) order by `last_name` asc limit ?',
+                [2],
+                [
+                  {
+                    last_name: 'User',
+                  },
+                  {
+                    last_name: 'User',
+                  },
+                ]
+              );
+            });
+        });
+
+        it('nested unions with having and groupby in subqueries', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex
+            .unionAll(
+              function () {
+                this.select('last_name')
+                  .from('accounts')
+                  .having('last_name', '!=', 'User')
+                  .groupBy('last_name');
+              },
+              function () {
+                this.select('last_name')
+                  .from('accounts')
+                  .having('last_name', '!=', 'User')
+                  .groupBy('last_name');
+              },
+              true
+            )
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                '(select "last_name" from "accounts" group by "last_name" having "last_name" != ?) union all (select "last_name" from "accounts" group by "last_name" having "last_name" != ?)',
+                ['User', 'User'],
+                [{ last_name: 'User2' }, { last_name: 'User2' }]
+              );
+              tester(
+                'mysql',
+                '(select `last_name` from `accounts` group by `last_name` having `last_name` != ?) union all (select `last_name` from `accounts` group by `last_name` having `last_name` != ?)',
+                ['User', 'User'],
+                [{ last_name: 'User2' }, { last_name: 'User2' }]
+              );
+              tester(
+                'mysql2',
+                '(select `last_name` from `accounts` group by `last_name` having `last_name` != ?) union all (select `last_name` from `accounts` group by `last_name` having `last_name` != ?)',
+                ['User', 'User'],
+                [{ last_name: 'User2' }, { last_name: 'User2' }]
+              );
+            });
+        });
+
+        it('nested unions all with order by in subqueries and limit', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex
+            .unionAll(
+              function () {
+                this.select('last_name').from('accounts').orderBy('last_name');
+              },
+              function () {
+                this.select('last_name').from('accounts').orderBy('last_name');
+              },
+              true
+            )
+            .limit(2)
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                '(select "last_name" from "accounts" order by "last_name" asc) union all (select "last_name" from "accounts" order by "last_name" asc) limit ?',
+                [2],
+                [{ last_name: 'User' }, { last_name: 'User' }]
+              );
+              tester(
+                'mysql',
+                '(select `last_name` from `accounts` order by `last_name` asc) union all (select `last_name` from `accounts` order by `last_name` asc) limit ?',
+                [2],
+                [{ last_name: 'User' }, { last_name: 'User' }]
+              );
+              tester(
+                'mysql2',
+                '(select `last_name` from `accounts` order by `last_name` asc) union all (select `last_name` from `accounts` order by `last_name` asc) limit ?',
+                [2],
+                [{ last_name: 'User' }, { last_name: 'User' }]
+              );
+            });
+        });
+
+        it('nested unions all with limit in each subqueries', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex
+            .unionAll(
+              [
+                knex.select('last_name').from('accounts').limit(1),
+                knex.select('last_name').from('accounts').limit(1),
+              ],
+              true
+            )
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                '(select "last_name" from "accounts" limit ?) union all (select "last_name" from "accounts" limit ?)',
+                [1, 1],
+                [
+                  {
+                    last_name: 'User',
+                  },
+                  {
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'mysql',
+                '(select `last_name` from `accounts` limit ?) union all (select `last_name` from `accounts` limit ?)',
+                [1, 1],
+                [
+                  {
+                    last_name: 'User',
+                  },
+                  {
+                    last_name: 'User',
+                  },
+                ]
+              );
+              tester(
+                'mysql2',
+                '(select `last_name` from `accounts` limit ?) union all (select `last_name` from `accounts` limit ?)',
+                [1, 1],
+                [
+                  {
+                    last_name: 'User',
+                  },
+                  {
+                    last_name: 'User',
+                  },
+                ]
+              );
+            });
+        });
+
+        it('nested unions with group by and where in subqueries and limit', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('accounts')
+            .count('logins')
+            .limit(1)
+            .unionAll(function () {
+              this.count('logins')
+                .from('accounts')
+                .groupBy('last_name')
+                .where('logins', '>', '1');
+            }, true)
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                '(select count("logins") from "accounts") union all (select count("logins") from "accounts" where "logins" > ? group by "last_name") limit ?',
+                ['1', 1],
+                [{ count: '8' }]
+              );
+              tester(
+                'mysql',
+                '(select count(`logins`) from `accounts`) union all (select count(`logins`) from `accounts` where `logins` > ? group by `last_name`) limit ?',
+                ['1', 1],
+                [{ 'count(`logins`)': 8 }]
+              );
+              tester(
+                'mysql2',
+                '(select count(`logins`) from `accounts`) union all (select count(`logins`) from `accounts` where `logins` > ? group by `last_name`) limit ?',
+                ['1', 1],
+                [{ 'count(`logins`)': 8 }]
+              );
+            });
+        });
       });
 
       describe('intersects', function () {
