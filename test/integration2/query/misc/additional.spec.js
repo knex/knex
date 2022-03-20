@@ -35,6 +35,7 @@ const {
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const sinon = require('sinon');
+const JSONStream = require('JSONStream');
 
 describe('Additional', function () {
   getAllDbs().forEach((db) => {
@@ -133,17 +134,21 @@ describe('Additional', function () {
           await knex('accounts').truncate();
           await insertAccounts(knex, 'accounts');
           let response;
-          const stream = knex('accounts').limit(1).stream();
-
           let count = 0;
-          stream.on('data', (res) => {
-            count++;
-            response = res;
+          const stream = knex('accounts').limit(1).stream();
+          // Need to promise the stream to await it
+          await new Promise((done) => {
+            stream.on('data', (res) => {
+              count++;
+              response = res;
+            });
+            stream.on('finish', () => {
+              count++;
+              expect(response.callCount).to.equal(1);
+              done();
+            });
           });
-          stream.on('finish', () => {
-            expect(count).to.equal(1);
-            expect(response.callCount).to.equal(1);
-          });
+          expect(count).to.equal(2);
         });
 
         it('should pass query context for responses through a stream', (done) => {
