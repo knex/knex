@@ -108,9 +108,11 @@ describe('Updates', function () {
       });
 
       it('should immediately return updated value for other connections when updating row to DB returns', async function () {
-        const res = await knex('accounts');
-
         async function runTest() {
+          await knex('accounts').truncate();
+          await insertAccounts(knex);
+          const res = await knex('accounts');
+
           return res.map(async (origRow) => {
             await knex.transaction(
               async (trx) =>
