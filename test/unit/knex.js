@@ -357,7 +357,8 @@ describe('knex', () => {
     ClientFoobar.prototype._driver = () => {
       throw new Error('Cannot require...');
     };
-    ClientFoobar.prototype.driverName = 'foo-bar';
+    ClientFoobar.prototype.driverName = ClientFoobar.prototype.aliasDriverName =
+      'foo-bar';
 
     expect(() => {
       Knex({ client: ClientFoobar, connection: {} });
