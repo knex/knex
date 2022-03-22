@@ -84,7 +84,7 @@ describe('Inserts', function () {
                 1,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 1]
             );
             tester(
               'pg',
@@ -207,7 +207,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 2]
             );
             tester(
               'pg',
@@ -425,7 +425,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 2]
             );
             tester(
               'pg',
@@ -682,7 +682,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [1, 1]
             );
             tester(
               'pg',
@@ -877,7 +877,7 @@ describe('Inserts', function () {
                   'mysql',
                   'insert into `test_default_table` () values ()',
                   [],
-                  [1]
+                  [1, 1]
                 );
                 tester(
                   'pg',
@@ -933,7 +933,7 @@ describe('Inserts', function () {
                   'mysql',
                   'insert into `test_default_table2` () values ()',
                   [],
-                  [1]
+                  [1, 1]
                 );
                 tester(
                   'pg',
@@ -991,7 +991,7 @@ describe('Inserts', function () {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [1]
+              [1, 1]
             );
             tester(
               'pg',
@@ -1072,7 +1072,11 @@ describe('Inserts', function () {
             if (isRedshift(knex)) {
               return expect(rows).to.equal(1);
             }
-            expect(rows.length).to.equal(1);
+            if (isMysql(knex)) {
+              expect(rows.length).to.equal(2);
+            } else {
+              expect(rows.length).to.equal(1);
+            }
             if (isPostgreSQL(knex)) {
               expect(_.keys(rows[0]).length).to.equal(2);
               expect(rows[0].account_id).to.equal(insertData.account_id);
@@ -1155,7 +1159,11 @@ describe('Inserts', function () {
             );
           })
           .then(function (rows) {
-            expect(rows.length).to.equal(1);
+            if (isMysql(knex)) {
+              expect(rows.length).to.equal(2);
+            } else {
+              expect(rows.length).to.equal(1);
+            }
             if (isPgBased(knex)) {
               expect(_.keys(rows[0]).length).to.equal(4);
               assertNumber(knex, rows[0].account_id, insertData.account_id);
