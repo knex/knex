@@ -1,29 +1,44 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
 const { resolveClientNameWithAliases } = require('../../lib/util/helpers');
-const fs = require('fs');
 const path = require('path');
 const escalade = require('escalade/sync');
 const tildify = require('tildify');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 
+function findCaseInsensitiveProperty(propertyName, object) {
+  return Object.keys(object).find(
+    (key) => key.toLowerCase() === propertyName.toLowerCase()
+  );
+}
+
 function parseConfigObj(opts) {
   const config = { migrations: {} };
 
-  if (opts.client) {
-    config.client = opts.client;
+  const clientProperty = findCaseInsensitiveProperty('client', config);
+  if (clientProperty) {
+    config.client = opts[clientProperty];
   }
 
-  if (opts.connection) {
-    config.connection = opts.connection;
+  const connectionProperty = findCaseInsensitiveProperty('connection', config);
+  if (connectionProperty) {
+    config.connection = opts[connectionProperty];
   }
 
-  if (opts.migrationsDirectory) {
-    config.migrations.directory = opts.migrationsDirectory;
+  const migrationsDirectoryProperty = findCaseInsensitiveProperty(
+    'migrationsDirectory',
+    config
+  );
+  if (migrationsDirectoryProperty) {
+    config.migrations.directory = opts[migrationsDirectoryProperty];
   }
 
-  if (opts.migrationsTableName) {
-    config.migrations.tableName = opts.migrationsTableName;
+  const migrationsTableNameProperty = findCaseInsensitiveProperty(
+    'migrationsTableName',
+    config
+  );
+  if (migrationsTableNameProperty) {
+    config.migrations.tableName = opts[migrationsTableNameProperty];
   }
 
   return config;
