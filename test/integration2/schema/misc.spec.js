@@ -820,8 +820,7 @@ describe('Schema (misc)', () => {
             })
             .testSql((tester) => {
               tester('mysql', [
-                'create table `test_table_three` (`main` int not null, `paragraph` text, `metadata` json default (\'{"a":10}\')) default character set utf8 engine = InnoDB',
-                'alter table `test_table_three` add primary key `test_table_three_pkey`(`main`)',
+                'create table `test_table_three` (`main` int not null, `paragraph` text, `metadata` json default (\'{"a":10}\'), primary key (`main`)) default character set utf8 engine = InnoDB',
               ]);
               tester(
                 ['pg', 'cockroachdb'],
@@ -1412,6 +1411,22 @@ describe('Schema (misc)', () => {
                 'create index "10_test_table_logins_index" on "10_test_table" ("logins")',
               ]);
             }));
+
+        it('test boolean type with sqlite3 and better sqlite3 #4955', async function () {
+          if (!isSQLite(knex)) {
+            this.skip();
+          }
+          await knex.schema
+            .dropTableIfExists('test')
+            .createTable('test', (table) => {
+              table.boolean('value').notNullable();
+            });
+
+          await knex('test').insert([{ value: true }, { value: false }]);
+          const data = await knex('test').select();
+          expect(data[0].value).to.eq(1);
+          expect(data[1].value).to.eq(0);
+        });
       });
 
       describe('table', () => {
@@ -1694,6 +1709,7 @@ describe('Schema (misc)', () => {
           before(() => {
             if (isMysql(knex)) {
               return knex.schema
+                .dropTableIfExists('add_column_test_mysql')
                 .createTable('add_column_test_mysql', (tbl) => {
                   tbl.integer('field_foo');
                   tbl.integer('field_bar');

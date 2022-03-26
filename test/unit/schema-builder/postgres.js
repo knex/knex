@@ -230,6 +230,26 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('should not alter type when alterType is false', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').default('foo').alter({ alterType: false });
+      })
+      .toSQL();
+
+    equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" alter column "foo" drop default'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" alter column "foo" drop not null'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'alter table "users" alter column "foo" set default \'foo\''
+    );
+  });
+
   it('alter table with schema', function () {
     tableSql = client
       .schemaBuilder()

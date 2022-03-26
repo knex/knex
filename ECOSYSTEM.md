@@ -2,6 +2,9 @@
 
 Plugins and tools maintained by the knex team are listed under [Core](#core) while plugins and tools maintained by the community are listed in the [Community](#community) section.
 
+#### [Dialects](#dialects)
+- [`knex-firebird-dialect`](https://github.com/Tomas2D/knex-firebird-dialect) Dialect for a Firebird database.
+
 #### [Core](#core)
 - [`casbin-knex-adapter`](https://github.com/knex/casbin-knex-adapter) Knex adapter for [Node-Casbin](https://github.com/casbin/node-casbin).
 - [`knex-schema-inspector`](https://github.com/knex/knex-schema-inspector) Utility for extracting information about the existing DB schema.

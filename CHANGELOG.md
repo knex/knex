@@ -1,5 +1,75 @@
 # Master (Unreleased)
 
+# 1.0.4 - 13 March, 2022
+
+### New features:
+
+- Add whereLike functions #5044
+
+### Bug fixes:
+
+- Fix orWhereJsonPath clause #5022
+- Subquery in on clause missing parenthesis #5049
+- Rework Union Wrapping #5030
+- Oracle: Fix batch inserts with DEFAULT values with OracleDB #2592 #5037
+
+### Typings:
+
+- Fix types for "returning" methods #5031
+- createTableLike callback should be optional #5055
+
+### Documentation:
+
+- Website URL changed to https://knex.github.io/documentation/
+
+# 1.0.3 - 11 February, 2022
+
+### Bug fixes:
+
+- Fix error message for missing migration files #4937
+- Add withMaterialized and withNotMaterialized to method-constants #5009
+- PostgreSQL: Fix whereJsonPath queries #5011
+- PostgreSQL: Fix delete joins #5016
+- CockroachDB: Fix whereJsonPath queries #5011
+- MySQL: Create primary keys in same statement #5017
+
+### Typings:
+
+- Fix type definition for getMigration in MigrationSource #4998
+- Fix argument type of alter method #4996
+
+### Improvements:
+
+- Use async / await syntax in seeds as default #5005
+
+### Documentation:
+
+- Add Firebird dialect to ECOSYSTEM.md #5003
+
+# 1.0.2 - 02 February, 2022
+
+### New features:
+
+- Support of MATERIALIZED and NOT MATERIALIZED with WITH/CTE #4940
+- Add raw support in onConflict clause #4960
+- Alter nullable constraint when alterNullable is set to true #4730
+- Add alterType parameter for alter function #4967
+- Support string json in json values #4988
+- MySQL: add with clause #4508
+
+### Bug fixes:
+
+- Fix error message for missing migration files #4937
+- Move deferrable to after on update/on delete #4976
+- Do not use sys.tables to find if a table exists #2328
+- PostgreSQL: Fix Order nulls #4989
+- MySQL: Fix collation when renaming column #2666
+- SQLite: Same boolean handling in better-sqlite3 as in sqlite3 #4982
+
+### Typings:
+
+- WhereILike - fix typo #4941
+
 # 1.0.1 - 16 January, 2022
 
 ### Bug fixes:

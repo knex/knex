@@ -882,6 +882,56 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('uses andWhereLike, orWhereLike #2265', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .whereLike('name', 'luk1%')
+        .andWhereLike('name', 'luk2%')
+        .orWhereLike('name', 'luk3%'),
+      {
+        mysql: {
+          sql: 'select * from `users` where `name` like ? COLLATE utf8_bin and `name` like ? COLLATE utf8_bin or `name` like ? COLLATE utf8_bin',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        pg: {
+          sql: 'select * from "users" where "name" like ? and "name" like ? or "name" like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        mssql: {
+          sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CS_AS like ? and [name] collate SQL_Latin1_General_CP1_CS_AS like ? or [name] collate SQL_Latin1_General_CP1_CS_AS like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+      }
+    );
+  });
+
+  it('uses andWhereILike, orWhereILike #2265', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .whereILike('name', 'luk1%')
+        .andWhereILike('name', 'luk2%')
+        .orWhereILike('name', 'luk3%'),
+      {
+        mysql: {
+          sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        pg: {
+          sql: 'select * from "users" where "name" ilike ? and "name" ilike ? or "name" ilike ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        mssql: {
+          sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS like ? and [name] collate SQL_Latin1_General_CP1_CI_AS like ? or [name] collate SQL_Latin1_General_CP1_CI_AS like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+      }
+    );
+  });
+
   it('whereColumn', () => {
     testsql(
       qb()
@@ -1927,7 +1977,7 @@ describe('QueryBuilder', () => {
       });
     testsql(wrappedChain, {
       mysql: {
-        sql: 'select * from `users` where `id` in (select max(`id`) from `users` union (select min(`id`) from `users`))',
+        sql: 'select * from `users` where `id` in ((select max(`id`) from `users`) union (select min(`id`) from `users`))',
         bindings: [],
       },
       mssql: {
@@ -1935,11 +1985,11 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       pg: {
-        sql: 'select * from "users" where "id" in (select max("id") from "users" union (select min("id") from "users"))',
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") union (select min("id") from "users"))',
         bindings: [],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" in (select max("id") from "users" union (select min("id") from "users"))',
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") union (select min("id") from "users"))',
         bindings: [],
       },
     });
@@ -1960,7 +2010,7 @@ describe('QueryBuilder', () => {
       );
     testsql(multipleArgumentsWrappedChain, {
       mysql: {
-        sql: 'select * from `users` where `id` = ? union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
+        sql: '(select * from `users` where `id` = ?) union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
         bindings: [1, 2, 3],
       },
       mssql: {
@@ -1968,11 +2018,11 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       pg: {
-        sql: 'select * from "users" where "id" = ? union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
     });
@@ -1994,7 +2044,7 @@ describe('QueryBuilder', () => {
       );
     testsql(arrayWrappedChain, {
       mysql: {
-        sql: 'select * from `users` where `id` = ? union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
+        sql: '(select * from `users` where `id` = ?) union (select * from `users` where `id` = ?) union (select * from `users` where `id` = ?)',
         bindings: [1, 2, 3],
       },
       mssql: {
@@ -2002,11 +2052,11 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       pg: {
-        sql: 'select * from "users" where "id" = ? union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union (select * from "users" where "id" = ?) union (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
     });
@@ -2025,7 +2075,7 @@ describe('QueryBuilder', () => {
       });
     testsql(wrappedChain, {
       mysql: {
-        sql: 'select * from `users` where `id` in (select max(`id`) from `users` union all (select min(`id`) from `users`))',
+        sql: 'select * from `users` where `id` in ((select max(`id`) from `users`) union all (select min(`id`) from `users`))',
         bindings: [],
       },
       mssql: {
@@ -2033,11 +2083,11 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       pg: {
-        sql: 'select * from "users" where "id" in (select max("id") from "users" union all (select min("id") from "users"))',
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") union all (select min("id") from "users"))',
         bindings: [],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" in (select max("id") from "users" union all (select min("id") from "users"))',
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") union all (select min("id") from "users"))',
         bindings: [],
       },
     });
@@ -2058,7 +2108,7 @@ describe('QueryBuilder', () => {
       );
     testsql(multipleArgumentsWrappedChain, {
       mysql: {
-        sql: 'select * from `users` where `id` = ? union all (select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?)',
+        sql: '(select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?)',
         bindings: [1, 2, 3],
       },
       mssql: {
@@ -2066,11 +2116,11 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       pg: {
-        sql: 'select * from "users" where "id" = ? union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
     });
@@ -2092,7 +2142,7 @@ describe('QueryBuilder', () => {
       );
     testsql(arrayWrappedChain, {
       mysql: {
-        sql: 'select * from `users` where `id` = ? union all (select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?)',
+        sql: '(select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?)',
         bindings: [1, 2, 3],
       },
       mssql: {
@@ -2100,133 +2150,168 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       pg: {
-        sql: 'select * from "users" where "id" = ? union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
     });
   });
 
-  it('union alls', () => {
-    const chain = qb()
-      .select('*')
-      .from('users')
-      .where('id', '=', 1)
-      .unionAll(function () {
-        this.select('*').from('users').where('id', '=', 2);
+  describe('union alls', () => {
+    it('union alls', () => {
+      const chain = qb()
+        .select('*')
+        .from('users')
+        .where('id', '=', 1)
+        .unionAll(function () {
+          this.select('*').from('users').where('id', '=', 2);
+        });
+      testsql(chain, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
+          bindings: [1, 2],
+        },
+        mssql: {
+          sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
+          bindings: [1, 2],
+        },
+        pg: {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
+          bindings: [1, 2],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
+          bindings: [1, 2],
+        },
       });
-    testsql(chain, {
-      mysql: {
-        sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
-        bindings: [1, 2],
-      },
-      mssql: {
-        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
-        bindings: [1, 2],
-      },
-      pg: {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
-        bindings: [1, 2],
-      },
-      'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
-        bindings: [1, 2],
-      },
+
+      const multipleArgumentsChain = qb()
+        .select('*')
+        .from('users')
+        .where({ id: 1 })
+        .unionAll(
+          function () {
+            this.select('*').from('users').where({ id: 2 });
+          },
+          function () {
+            this.select('*').from('users').where({ id: 3 });
+          }
+        );
+      testsql(multipleArgumentsChain, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
+          bindings: [1, 2, 3],
+        },
+        mssql: {
+          sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
+          bindings: [1, 2, 3],
+        },
+        pg: {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
+          bindings: [1, 2, 3],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
+          bindings: [1, 2, 3],
+        },
+      });
+
+      const arrayChain = qb()
+        .select('*')
+        .from('users')
+        .where({ id: 1 })
+        .unionAll([
+          function () {
+            this.select('*').from('users').where({ id: 2 });
+          },
+          function () {
+            this.select('*').from('users').where({ id: 3 });
+          },
+        ]);
+      testsql(arrayChain, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
+          bindings: [1, 2, 3],
+        },
+        mssql: {
+          sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
+          bindings: [1, 2, 3],
+        },
+        pg: {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
+          bindings: [1, 2, 3],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
+          bindings: [1, 2, 3],
+        },
+      });
     });
 
-    const multipleArgumentsChain = qb()
-      .select('*')
-      .from('users')
-      .where({ id: 1 })
-      .unionAll(
-        function () {
-          this.select('*').from('users').where({ id: 2 });
+    it('with array of callbacks Issue #4364', () => {
+      // Issue #4364
+      const firstUnionAll = qb()
+        .unionAll([
+          function () {
+            this.select().from('users').where({ id: 1 });
+          },
+          function () {
+            this.select().from('users').where({ id: 2 });
+          },
+        ])
+        .first();
+      testsql(firstUnionAll, {
+        mysql: {
+          sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? limit ?',
+          bindings: [1, 2, 1],
         },
-        function () {
-          this.select('*').from('users').where({ id: 3 });
-        }
-      );
-    testsql(multipleArgumentsChain, {
-      mysql: {
-        sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
-        bindings: [1, 2, 3],
-      },
-      mssql: {
-        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
-        bindings: [1, 2, 3],
-      },
-      pg: {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
-        bindings: [1, 2, 3],
-      },
-      'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
-        bindings: [1, 2, 3],
-      },
+        mssql: {
+          sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
+          bindings: [1, 2],
+        },
+        pg: {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
+          bindings: [1, 2, 1],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
+          bindings: [1, 2, 1],
+        },
+      });
     });
 
-    const arrayChain = qb()
-      .select('*')
-      .from('users')
-      .where({ id: 1 })
-      .unionAll([
-        function () {
-          this.select('*').from('users').where({ id: 2 });
+    it('with array of callbacks Issue #5030', () => {
+      // Issue #4364
+      const firstUnionAll = qb()
+        .select('*')
+        .from('users')
+        .where('id', '=', 1)
+        .groupBy('id')
+        .unionAll(function () {
+          this.select('*').from('users').where('id', '=', 2);
+        }, true)
+        .first();
+      testsql(firstUnionAll, {
+        mysql: {
+          sql: '(select * from `users` where `id` = ?) union all (select * from `users` where `id` = ?) group by `id` limit ?',
+          bindings: [1, 2, 1],
         },
-        function () {
-          this.select('*').from('users').where({ id: 3 });
+        mssql: {
+          sql: 'select top (?) * from [users] where [id] = ? union all (select * from [users] where [id] = ?) group by [id]',
+          bindings: [1, 1, 2],
         },
-      ]);
-    testsql(arrayChain, {
-      mysql: {
-        sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? union all select * from `users` where `id` = ?',
-        bindings: [1, 2, 3],
-      },
-      mssql: {
-        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
-        bindings: [1, 2, 3],
-      },
-      pg: {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
-        bindings: [1, 2, 3],
-      },
-      'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? union all select * from "users" where "id" = ?',
-        bindings: [1, 2, 3],
-      },
-    });
-
-    // Issue #4364
-    const firstUnionAll = qb()
-      .unionAll([
-        function () {
-          this.select().from('users').where({ id: 1 });
+        pg: {
+          sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) group by "id" limit ?',
+          bindings: [1, 2, 1],
         },
-        function () {
-          this.select().from('users').where({ id: 2 });
+        'pg-redshift': {
+          sql: '(select * from "users" where "id" = ?) union all (select * from "users" where "id" = ?) group by "id" limit ?',
+          bindings: [1, 2, 1],
         },
-      ])
-      .first();
-    testsql(firstUnionAll, {
-      mysql: {
-        sql: 'select * from `users` where `id` = ? union all select * from `users` where `id` = ? limit ?',
-        bindings: [1, 2, 1],
-      },
-      mssql: {
-        sql: 'select * from [users] where [id] = ? union all select * from [users] where [id] = ?',
-        bindings: [1, 2],
-      },
-      pg: {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
-        bindings: [1, 2, 1],
-      },
-      'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? union all select * from "users" where "id" = ? limit ?',
-        bindings: [1, 2, 1],
-      },
+      });
     });
   });
 
@@ -2515,11 +2600,11 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       pg: {
-        sql: 'select * from "users" where "id" in (select max("id") from "users" intersect (select min("id") from "users"))',
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") intersect (select min("id") from "users"))',
         bindings: [],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" in (select max("id") from "users" intersect (select min("id") from "users"))',
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") intersect (select min("id") from "users"))',
         bindings: [],
       },
     });
@@ -2544,11 +2629,11 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       pg: {
-        sql: 'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
     });
@@ -2574,11 +2659,11 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       pg: {
-        sql: 'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
       'pg-redshift': {
-        sql: 'select * from "users" where "id" = ? intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
+        sql: '(select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?) intersect (select * from "users" where "id" = ?)',
         bindings: [1, 2, 3],
       },
     });
@@ -5800,10 +5885,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
       },
       pg: {
-        sql: 'select * from "users" order by ("foo" is not null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls first',
       },
       'pg-redshift': {
-        sql: 'select * from "users" order by ("foo" is not null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls first',
       },
     });
   });
@@ -5821,10 +5906,10 @@ describe('QueryBuilder', () => {
           sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
         },
         pg: {
-          sql: 'select * from "users" order by ("foo" is not null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls first',
         },
         'pg-redshift': {
-          sql: 'select * from "users" order by ("foo" is not null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls first',
         },
       }
     );
@@ -5839,10 +5924,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
       },
       pg: {
-        sql: 'select * from "users" order by ("foo" is null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls last',
       },
       'pg-redshift': {
-        sql: 'select * from "users" order by ("foo" is null) desc',
+        sql: 'select * from "users" order by "foo" desc nulls last',
       },
     });
   });
@@ -5860,10 +5945,10 @@ describe('QueryBuilder', () => {
           sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
         },
         pg: {
-          sql: 'select * from "users" order by ("foo" is null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls last',
         },
         'pg-redshift': {
-          sql: 'select * from "users" order by ("foo" is null) desc',
+          sql: 'select * from "users" order by "foo" desc nulls last',
         },
       }
     );
@@ -9486,7 +9571,6 @@ describe('QueryBuilder', () => {
       }
     );
   });
-
   it("wrapped 'with' clause update", () => {
     testsql(
       qb()
@@ -9497,6 +9581,8 @@ describe('QueryBuilder', () => {
         .where('email', '=', 'foo')
         .from('users'),
       {
+        mysql:
+          'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
         mssql:
           'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
         sqlite3:
@@ -10445,6 +10531,73 @@ describe('QueryBuilder', () => {
       );
     });
 
+    it('should include joins without where clause when deleting #5015', () => {
+      testsql(
+        qb().del().from('users').join('photos', 'photos.id', 'users.id'),
+        {
+          mysql: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id`',
+          },
+          mssql: {
+            sql: 'delete [users] from [users] inner join [photos] on [photos].[id] = [users].[id];select @@rowcount',
+          },
+          oracledb: {
+            sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id"',
+          },
+          pg: {
+            sql: 'delete from "users" using "photos" where "photos"."id" = "users"."id"',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id"',
+          },
+          sqlite3: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id`',
+          },
+        }
+      );
+    });
+
+    it('should include joins clauses with multiple joins with where clause when deleting #5015', () => {
+      testsql(
+        qb()
+          .where('activated', false)
+          .join('accounts', function (jb) {
+            jb.on('accounts.id', 'users.account_id').andOn(
+              'accounts.user_id',
+              'users.id'
+            );
+          })
+          .del(),
+        {
+          mysql: {
+            sql: 'delete  from  inner join `accounts` on `accounts`.`id` = `users`.`account_id` and `accounts`.`user_id` = `users`.`id` where `activated` = ?',
+            bindings: [false],
+          },
+          mssql: {
+            sql: 'delete  from  inner join [accounts] on [accounts].[id] = [users].[account_id] and [accounts].[user_id] = [users].[id] where [activated] = ?;select @@rowcount',
+            bindings: [false],
+          },
+          oracledb: {
+            sql: 'delete  from  inner join "accounts" on "accounts"."id" = "users"."account_id" and "accounts"."user_id" = "users"."id" where "activated" = ?',
+            bindings: [false],
+          },
+          pg: {
+            sql: 'delete from  using "accounts" where "activated" = ? and "accounts"."id" = "users"."account_id" and "accounts"."user_id" = "users"."id"',
+            bindings: [false],
+          },
+          'pg-redshift': {
+            sql: 'delete  from  inner join "accounts" on "accounts"."id" = "users"."account_id" and "accounts"."user_id" = "users"."id" where "activated" = ?',
+            bindings: [false],
+          },
+          sqlite3: {
+            sql: 'delete  from  inner join `accounts` on `accounts`.`id` = `users`.`account_id` and `accounts`.`user_id` = `users`.`id` where `activated` = ?',
+            bindings: [false],
+          },
+        }
+      );
+    });
+
     it('should include join when deleting with mssql triggers', () => {
       const triggerOptions = { includeTriggerModifications: true };
       testsql(
@@ -10918,6 +11071,26 @@ describe('QueryBuilder', () => {
             cockroachdb: {
               sql: 'select * from "users" where "address" @> ?',
               bindings: ['{"test":"value"}'],
+            },
+          }
+        );
+      });
+
+      it('where a json column is a superset of value', async function () {
+        testsql(
+          qb().select().from('users').whereJsonSupersetOf('address', 'test'),
+          {
+            pg: {
+              sql: 'select * from "users" where "address" @> ?',
+              bindings: ['test'],
+            },
+            mysql: {
+              sql: 'select * from `users` where json_contains(`address`,?)',
+              bindings: ['test'],
+            },
+            cockroachdb: {
+              sql: 'select * from "users" where "address" @> ?',
+              bindings: ['test'],
             },
           }
         );
