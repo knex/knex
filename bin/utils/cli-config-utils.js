@@ -15,19 +15,19 @@ function findCaseInsensitiveProperty(propertyName, object) {
 function parseConfigObj(opts) {
   const config = { migrations: {} };
 
-  const clientProperty = findCaseInsensitiveProperty('client', config);
+  const clientProperty = findCaseInsensitiveProperty('client', opts);
   if (clientProperty) {
     config.client = opts[clientProperty];
   }
 
-  const connectionProperty = findCaseInsensitiveProperty('connection', config);
+  const connectionProperty = findCaseInsensitiveProperty('connection', opts);
   if (connectionProperty) {
     config.connection = opts[connectionProperty];
   }
 
   const migrationsDirectoryProperty = findCaseInsensitiveProperty(
     'migrationsDirectory',
-    config
+    opts
   );
   if (migrationsDirectoryProperty) {
     config.migrations.directory = opts[migrationsDirectoryProperty];
@@ -35,7 +35,7 @@ function parseConfigObj(opts) {
 
   const migrationsTableNameProperty = findCaseInsensitiveProperty(
     'migrationsTableName',
-    config
+    opts
   );
   if (migrationsTableNameProperty) {
     config.migrations.tableName = opts[migrationsTableNameProperty];
