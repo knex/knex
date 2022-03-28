@@ -1209,7 +1209,7 @@ describe('Inserts', function () {
           await knex.schema.createTable(
             'batchInsertDuplicateKey',
             function (table) {
-              table.string('col');
+              table.string('col').notNullable();
               table.primary('col');
             }
           );
