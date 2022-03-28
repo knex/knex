@@ -111,29 +111,34 @@ describe('Updates', function () {
         const res = await knex('accounts');
 
         async function runTest() {
-          return res.map(async (origRow) => {
-            await knex.transaction(
-              async (trx) =>
-                await trx('accounts')
-                  .where('id', origRow.id)
-                  .update({ balance: 654 })
-            );
+          return Promise.all(
+            res.map(async (origRow) => {
+              await knex.transaction(
+                async (trx) =>
+                  await trx('accounts')
+                    .where('id', origRow.id)
+                    .update({ balance: 654 })
+              );
 
-            const updatedRow = await knex('accounts').where('id', origRow.id);
+              const updatedRow = await knex('accounts').where('id', origRow.id);
 
-            expect(updatedRow[0].balance).to.equal(654);
+              expect(updatedRow[0].balance).to.equal(654);
 
-            await knex.transaction(
-              async (trx) =>
-                await trx('accounts')
-                  .where('id', origRow.id)
-                  .update({ balance: origRow.balance })
-            );
+              await knex.transaction(
+                async (trx) =>
+                  await trx('accounts')
+                    .where('id', origRow.id)
+                    .update({ balance: origRow.balance })
+              );
 
-            const updatedRow2 = await knex('accounts').where('id', origRow.id);
+              const updatedRow2 = await knex('accounts').where(
+                'id',
+                origRow.id
+              );
 
-            expect(updatedRow2[0].balance).to.equal(origRow.balance);
-          });
+              expect(updatedRow2[0].balance).to.equal(origRow.balance);
+            })
+          );
         }
 
         // run few times to try to catch the problem
