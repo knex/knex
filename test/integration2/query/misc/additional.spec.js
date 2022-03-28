@@ -35,7 +35,6 @@ const {
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const sinon = require('sinon');
-const JSONStream = require('JSONStream');
 
 describe('Additional', function () {
   getAllDbs().forEach((db) => {
