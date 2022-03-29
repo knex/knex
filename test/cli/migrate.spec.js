@@ -4,7 +4,11 @@ const path = require('path');
 const sqlite3 = require('@vscode/sqlite3');
 const { expect } = require('chai');
 const { execCommand } = require('cli-testlab');
-const { getRootDir, setupFileHelper } = require('./cli-test-utils');
+const {
+  getRootDir,
+  setupFileHelper,
+  createTable,
+} = require('./cli-test-utils');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -88,15 +92,17 @@ module.exports = {
 
     expect(fileHelper.fileExists(dbPath)).to.equal(false);
 
+    const db = await new sqlite3.Database(dbPath);
+    await createTable(db, `migration-table`);
+
     await execCommand(`node ${KNEX} migrate:latest \
                  --knexpath=../knexfile.js \
                  --migrations-directory=${rootDir}/migrations/subdirectory/ \
                  --migrations-table-name=migration-table \
                  create_rule_table`);
     expect(fileHelper.fileExists(dbPath)).to.equal(true);
-    const db = await new sqlite3.Database(dbPath);
 
-    const getPromise = new Promise((resolve, reject) => {
+    const row = await new Promise((resolve, reject) => {
       db.get('SELECT name FROM knex_migrations', {}, (err, row) => {
         if (err) {
           reject(err);
@@ -104,7 +110,6 @@ module.exports = {
         resolve(row);
       });
     });
-    const row = await getPromise;
     expect(row.name).to.equal('000_create_rule_table.js');
     db.close();
   });

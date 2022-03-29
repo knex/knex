@@ -52,11 +52,9 @@ async function initKnex(env, opts) {
     );
   }
 
-  const knexFileConfig = env.configPath
+  env.configuration = env.configPath
     ? await openKnexfile(env.configPath)
     : mkConfigObj(opts);
-
-  env.configuration = knexFileConfig;
 
   const resolvedConfig = resolveEnvironmentConfig(
     opts,
