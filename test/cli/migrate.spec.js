@@ -92,16 +92,14 @@ module.exports = {
 
     expect(fileHelper.fileExists(dbPath)).to.equal(false);
 
-    const db = await new sqlite3.Database(dbPath);
-    await createTable(db, `migration-table`);
-
     await execCommand(`node ${KNEX} migrate:latest \
                  --knexpath=../knexfile.js \
                  --migrations-directory=${rootDir}/migrations/subdirectory/ \
-                 --migrations-table-name=migration-table \
+                 --migrations-table-name=migration_table \
                  create_rule_table`);
     expect(fileHelper.fileExists(dbPath)).to.equal(true);
 
+    const db = await new sqlite3.Database(dbPath);
     const row = await new Promise((resolve, reject) => {
       db.get('SELECT name FROM knex_migrations', {}, (err, row) => {
         if (err) {
