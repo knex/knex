@@ -91,6 +91,7 @@ module.exports = {
     await execCommand(`node ${KNEX} migrate:latest \
                  --knexpath=../knexfile.js \
                  --migrations-directory=${rootDir}/migrations/subdirectory/ \
+                 --migrations-table-name=migration-table \
                  create_rule_table`);
     expect(fileHelper.fileExists(dbPath)).to.equal(true);
     const db = await new sqlite3.Database(dbPath);
