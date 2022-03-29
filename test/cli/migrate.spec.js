@@ -4,11 +4,7 @@ const path = require('path');
 const sqlite3 = require('@vscode/sqlite3');
 const { expect } = require('chai');
 const { execCommand } = require('cli-testlab');
-const {
-  getRootDir,
-  setupFileHelper,
-  createTable,
-} = require('./cli-test-utils');
+const { getRootDir, setupFileHelper } = require('./cli-test-utils');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -101,7 +97,7 @@ module.exports = {
 
     const db = await new sqlite3.Database(dbPath);
     const row = await new Promise((resolve, reject) => {
-      db.get('SELECT name FROM knex_migrations', {}, (err, row) => {
+      db.get('SELECT name FROM migration_table', {}, (err, row) => {
         if (err) {
           reject(err);
         }
