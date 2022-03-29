@@ -2027,15 +2027,23 @@ export declare namespace Knex {
     dropSchemaIfExists(schemaName: string, cascade?: boolean): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
 
+    // Cast
+    castText(value: Value, alias: string): SchemaBuilder;
+    castDouble(value: Value, alias: string): SchemaBuilder;
+    castChar(value: Value, length: number, alias: string): SchemaBuilder;
+    castJson(value: Value, alias: string): SchemaBuilder;
+    castJsonb(value: Value, alias: string): SchemaBuilder;
+    castReal(value: Value, alias: string): SchemaBuilder;
+    castInt(value: Value, alias: string): SchemaBuilder;
+    castBigint(value: Value, alias: string): SchemaBuilder;
+    castBinary(value: Value, alias: string): SchemaBuilder;
+
     // Others
     hasColumn(tableName: string, columnName: string): Promise<boolean>;
     raw(statement: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
     toString(): string;
     toSQL(): Sql;
-
-    // Cast
-    castText(value: string, alias: string): SchemaBuilder;
   }
 
   interface TableBuilder {
