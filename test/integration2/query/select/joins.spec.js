@@ -48,8 +48,8 @@ describe('Joins', function () {
         await knex.destroy();
       });
 
-      it('uses inner join by default', function () {
-        return knex('accounts')
+      it('uses inner join by default', async function () {
+        await knex('accounts')
           .join(
             'test_table_two',
             'accounts.id',
@@ -350,8 +350,8 @@ describe('Joins', function () {
           });
       });
 
-      it('has a leftJoin method parameter to specify the join type', function () {
-        return knex('accounts')
+      it('has a leftJoin method parameter to specify the join type', async function () {
+        await knex('accounts')
           .leftJoin(
             'test_table_two',
             'accounts.id',
@@ -1042,8 +1042,8 @@ describe('Joins', function () {
           });
       });
 
-      it('accepts a callback as the second argument for advanced joins', function () {
-        return knex('accounts')
+      it('accepts a callback as the second argument for advanced joins', async function () {
+        await knex('accounts')
           .leftJoin('test_table_two', function (join) {
             join.on('accounts.id', '=', 'test_table_two.account_id');
             join.orOn('accounts.email', '=', 'test_table_two.details');
@@ -1699,9 +1699,9 @@ describe('Joins', function () {
           });
       });
 
-      it('supports join aliases', function () {
+      it('supports join aliases', async function () {
         //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
-        return knex('accounts')
+        await knex('accounts')
           .join('accounts as a2', 'a2.email', '<>', 'accounts.email')
           .select(['accounts.email as e1', 'a2.email as e2'])
           .where('a2.email', 'test2@example.com')
@@ -1873,10 +1873,10 @@ describe('Joins', function () {
           });
       });
 
-      it('supports join aliases with advanced joins', function () {
+      it('supports join aliases with advanced joins', async function () {
         //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
         //But also include the case where the emails are the same, for account 2.
-        return knex('accounts')
+        await knex('accounts')
           .join('accounts as a2', function () {
             this.on('accounts.email', '<>', 'a2.email').orOn(
               'accounts.id',
@@ -2054,8 +2054,8 @@ describe('Joins', function () {
           });
       });
 
-      it('supports cross join without arguments', function () {
-        return knex
+      it('supports cross join without arguments', async function () {
+        await knex
           .select('account_id')
           .from('accounts')
           .crossJoin('test_table_two')
@@ -2113,8 +2113,8 @@ describe('Joins', function () {
           });
       });
 
-      it('left join with subquery in on clause, #', function () {
-        return knex
+      it('left join with subquery in on clause, #', async function () {
+        await knex
           .select('account_id')
           .from('accounts')
           .leftJoin('test_table_two', (j) =>
@@ -2176,12 +2176,12 @@ describe('Joins', function () {
           });
       });
 
-      it('supports joins with overlapping column names', function () {
+      it('supports joins with overlapping column names', async function () {
         if (isOracle(knex)) {
           return this.skip();
         }
 
-        return knex('accounts as a1')
+        await knex('accounts as a1')
           .leftJoin('accounts as a2', function () {
             this.on('a1.email', '<>', 'a2.email');
           })
