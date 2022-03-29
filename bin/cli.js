@@ -149,16 +149,10 @@ function invoke() {
     .option('--knexfile [path]', 'Specify the knexfile path.')
     .option('--knexpath [path]', 'Specify the path to knex instance.')
     .option('--cwd [path]', 'Specify the working directory.')
-    .option('--client [name]', 'Set DB client without a knexfile.')
-    .option('--connection [address]', 'Set DB connection without a knexfile.')
-    .option(
-      '--migrations-directory [path]',
-      'Set migrations directory without a knexfile.'
-    )
-    .option(
-      '--migrations-table-name [path]',
-      'Set migrations table name without a knexfile.'
-    )
+    .option('--client [name]', 'Set DB client.')
+    .option('--connection [address]', 'Set DB connection.')
+    .option('--migrations-directory [path]', 'Set migrations directory.')
+    .option('--migrations-table-name [path]', 'Set migrations table name.')
     .option(
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
