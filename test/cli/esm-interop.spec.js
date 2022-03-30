@@ -5,6 +5,7 @@ const fs = require('fs');
 const { execCommand } = require('cli-testlab');
 const sqlite3 = require('@vscode/sqlite3');
 const semver = require('semver');
+const { createTable } = require('./cli-test-utils');
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 const TEST_BASE = '../test/jake-util';
 
@@ -733,15 +734,6 @@ describe('esm interop and mjs support', () => {
     });
   }
 });
-
-function createTable(db, ddl) {
-  return new Promise((resolve, reject) =>
-    db.exec(`create TABLE if not exists ${ddl};`, (err) => {
-      if (err) reject(err);
-      else resolve();
-    })
-  );
-}
 
 function getSchema(db) {
   return new Promise((resolve, reject) => {
