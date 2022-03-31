@@ -30,6 +30,11 @@ type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
 type UnknownToAny<T> = unknown extends T ? any : T;
+type CurlyCurlyToAny<T> = T extends unknown ? // distribute
+  (<U>() => U extends T ? 0 : 1) extends
+  (<U>() => U extends {} ? 0 : 1) ? any : T
+  : never;
+type UnknownOrCurlyCurlyToAny<T> = [UnknownToAny<T> | CurlyCurlyToAny<T>][0];
 type AnyToUnknown<T> = unknown extends T ? unknown : T;
 type AnyOrUnknownToOther<T1, T2> = unknown extends T1 ? T2 : T1;
 
@@ -234,7 +239,7 @@ declare namespace DeferredKeySelection {
     infer TIntersectProps,
     infer TUnionProps
   >
-    ? UnknownToAny<
+    ? UnknownOrCurlyCurlyToAny<
       // ^ We convert final result to any if it is unknown for backward compatibility.
       //   Historically knex typings have been liberal with returning any and changing
       //   default return type to unknown would be a major breaking change for users.
@@ -263,8 +268,8 @@ declare namespace DeferredKeySelection {
     : TSelection extends DeferredKeySelection.Any[]
     ? Knex.ResolveTableType<ResolveOne<TSelection[0]>>[]
     : TSelection extends (infer I)[]
-    ? UnknownToAny<Knex.ResolveTableType<I>>[]
-    : UnknownToAny<Knex.ResolveTableType<TSelection>>;
+    ? UnknownOrCurlyCurlyToAny<Knex.ResolveTableType<I>>[]
+    : UnknownOrCurlyCurlyToAny<Knex.ResolveTableType<TSelection>>;
 }
 
 type AggregationQueryResult<TResult, TIntersectProps2 extends {}> = ArrayIfAlready<

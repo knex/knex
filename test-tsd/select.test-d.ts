@@ -11,7 +11,7 @@ const main = async () => {
 
   expectType<any>(await knex('users').first('id'));
 
-  expectType<{}>(
+  expectType<any>(
     await knex.first('*').from('table').where({
       whatever: 'whatever',
     })
