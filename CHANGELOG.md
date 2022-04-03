@@ -1,5 +1,307 @@
 # Master (Unreleased)
 
+# 1.0.4 - 13 March, 2022
+
+### New features:
+
+- Add whereLike functions #5044
+
+### Bug fixes:
+
+- Fix orWhereJsonPath clause #5022
+- Subquery in on clause missing parenthesis #5049
+- Rework Union Wrapping #5030
+- Oracle: Fix batch inserts with DEFAULT values with OracleDB #2592 #5037
+
+### Typings:
+
+- Fix types for "returning" methods #5031
+- createTableLike callback should be optional #5055
+
+### Documentation:
+
+- Website URL changed to https://knex.github.io/documentation/
+
+# 1.0.3 - 11 February, 2022
+
+### Bug fixes:
+
+- Fix error message for missing migration files #4937
+- Add withMaterialized and withNotMaterialized to method-constants #5009
+- PostgreSQL: Fix whereJsonPath queries #5011
+- PostgreSQL: Fix delete joins #5016
+- CockroachDB: Fix whereJsonPath queries #5011
+- MySQL: Create primary keys in same statement #5017
+
+### Typings:
+
+- Fix type definition for getMigration in MigrationSource #4998
+- Fix argument type of alter method #4996
+
+### Improvements:
+
+- Use async / await syntax in seeds as default #5005
+
+### Documentation:
+
+- Add Firebird dialect to ECOSYSTEM.md #5003
+
+# 1.0.2 - 02 February, 2022
+
+### New features:
+
+- Support of MATERIALIZED and NOT MATERIALIZED with WITH/CTE #4940
+- Add raw support in onConflict clause #4960
+- Alter nullable constraint when alterNullable is set to true #4730
+- Add alterType parameter for alter function #4967
+- Support string json in json values #4988
+- MySQL: add with clause #4508
+
+### Bug fixes:
+
+- Fix error message for missing migration files #4937
+- Move deferrable to after on update/on delete #4976
+- Do not use sys.tables to find if a table exists #2328
+- PostgreSQL: Fix Order nulls #4989
+- MySQL: Fix collation when renaming column #2666
+- SQLite: Same boolean handling in better-sqlite3 as in sqlite3 #4982
+
+### Typings:
+
+- WhereILike - fix typo #4941
+
+# 1.0.1 - 16 January, 2022
+
+### Bug fixes:
+
+- Fix package.json metadata
+
+# 1.0.0 - 16 January, 2022
+
+### Breaking changes
+
+- Dropped support for Node 10;
+- Replaced unsupported `sqlite3` driver with `@vscode/sqlite3`;
+- Changed data structure from `RETURNING` operation to be consistent with `SELECT`;
+- Changed Migrator to return list of migrations as objects consistently.
+
+### New features:
+
+- Support fromRaw #4781
+- Support zero precision in timestamp/datetime #4784
+- Support whereLike and whereILike #4779
+- Add JSDoc (TS flavor) to stub files #4809
+- Allow skip binding in limit and offset #4811
+- Support creating a new table in the database based on another table #4821
+- Accept Raw on onIn joins #4830
+- Implement support for custom seed sources #4842
+- Add binary uuid option #4836
+- ForUpdate array parameter #4882
+- Add camel case to timestamps method #4803
+- Advanced JSON support #4859
+- Add type to TypeScript knexfile #4909
+- Checks Constraints Support #4874
+- Support creating multiple PKs with increments #4903
+- Enable wrapIdentifier for SQLite .hasTable #4915
+- MSSQL: Add support for unique constraint #4887
+- SQLite: New dialect, using better-sqlite3 driver #4871
+- SQLite: Switch to @vscode/sqlite3 #4866
+- SQLite: Support createViewOrReplace #4856
+- SQLite: Support RETURNING statements for better-sqlite3 driver #4934
+- PostgreSQL: Support JOIN and USING syntax for Delete Statement #4800
+
+### Bug fixes:
+
+- Fix overzealous warning on use of whereNot with "in" or "between" #4780
+- Fix Union all + first syntax error #4799
+- Make view columns optional in create view like #4829
+- Insert lock row fix during migration #4865
+- Fix for createViewOrReplace #4856
+- SQLite: Fix foreign key constraints when altering a table #4189
+- MySQL: Validate connection fix #4794
+- MySQL: Set comment size warning limit to 1024 #4867
+
+### Typings:
+
+- Allow string indexType in index creation #4791
+- Add missing ints typings #4832
+- Returning method types #4881
+- Improve columnInfo type #4868
+
+# 0.95.15 - 22 December, 2021
+
+### Bug fixes:
+
+- Oracle:
+- MariaDB: lock row fix during migration in MariaDB and Oracle #4865
+
+# 0.95.14 - 09 November, 2021
+
+### Bug fixes:
+
+- MySQL: mysql2 dialect validate connection fix #4794
+
+# 0.95.13 - 02 November, 2021
+
+### Bug fixes:
+
+- PostgreSQL: Support zero precision in timestamp/datetime #4784
+
+### Typings:
+
+- Allow string indexType in index creation #4791
+
+# 0.95.12 - 28 October, 2021
+
+### New features:
+
+- New dialect: CockroachDB #4742
+- New dialect: pg-native #4327
+- CockroachDB: add support for upsert #4767
+- PostgreSQL: Support SELECT .. FOR NO KEY UPDATE / KEY SHARE row level locking clauses #4755
+- PostgreSQL: Add support for 'CASCADE' in PostgreSQL 'DROP SCHEMA' queries #4713
+- MySQL: Add storage engine index Type support to index() and unique() schema #4756
+- MSSQL: Support table.primary, table.unique variant with options object #4710
+- SQLite: Add setNullable support to SQLite #4684
+- Add geometry column building #4776
+- Add support for creating table copies #1373
+- Implement support for views and materialized views #1626
+- Implement partial index support #4768
+- Support for 'is null' in 'order by' #3667
+
+### Bug fixes:
+
+- Fix support for Oracle connections passed via knex.connection() #4757
+- Avoid inserting multiple locks if a migration lock already exists #4694
+
+### Typings:
+
+- Some TableBuilder methods return wrong types #4764
+- Update JoinRaw bindings type to accept arrays #4752
+- fix onDelete/onUpdate for ColumnBuilder #4656
+
+# 0.95.11 - 03 September, 2021
+
+### New features:
+
+- Add support for nullability modification via schema builder (table.setNullable() and table.dropNullable()) #4657
+- MySQL: Add support for mysql/mariadb-client JSON parameters in connectionURIs #4629
+- MSSQL: Support comments as MS_Description properties #4632
+
+### Bug fixes:
+
+- Fix Analytic orderBy and partitionBy to follow the SQL documentation #4602
+- CLI: fix migrate:up for migrations disabling transactions #4550
+- SQLite: Fix adding a column with a foreign key constraint in SQLite #4649
+- MSSQL: columnInfo() support case-sensitive database collations #4633
+- MSSQL: Generate valid SQL for withRecursive() #4514
+- Oracle: withRecursive: omit invalid RECURSIVE keyword, include column list #4514
+
+### Improvements:
+
+- Add .mjs migration and seed stubs #4631
+- SQLite: Clean up DDL handling and move all operations to the parser-based approach #4648
+
+# 0.95.10 - 20 August, 2021
+
+### Improvements:
+
+- Use sys info function instead of connection db name #4623
+
+### Typings:
+
+- Deferrable and withkeyName should not be in ColumnBuilder #4600
+
+# 0.95.9 - 31 July, 2021
+
+### New features:
+
+- Oracle: support specifying schema for dropTable and dropSequence #4596
+- Oracle: support specifying schema for autoincrement #4594
+
+### Typings:
+
+- Add TypeScript support for deferrable, new Primary/Unique syntax #4589
+
+# 0.95.8 - 25 July, 2021
+
+### New features:
+
+- Add deferrable support for constraint #4584
+- Implement delete with join #4568
+- Add DPI error codes for Oracle #4536
+
+### Bug fixes:
+
+- Fixing PostgreSQL datetime and timestamp column created with wrong format #4578
+
+### Typings:
+
+- Improve analytic types #4576
+- MSSQL: Add trustServerCertificate option #4500
+
+# 0.95.7 - 10 July, 2021
+
+### New features:
+
+- Add ability to omit columns on an onConflict().ignore() #4557
+- CLI: Log error message #4534
+
+### Typings:
+
+- Export Knex.TransactionConfig #4498
+- Include options object in count(Distinct) typings #4491
+- Add types for analytic functions #4544
+
+# 0.95.6 - 17 May, 2021
+
+### Typings:
+
+- Export TransactionProvider type #4489
+
+# 0.95.5 - 11 May, 2021
+
+### New features:
+
+- SQLite: Add support for file open flags #4446
+- Add .cjs extension to Seeder.js to support Node ESM #4381 #4382
+
+### Bug fixes:
+
+- Remove peerDependencies to avoid auto-install on npm 7 #4480
+
+### Typings:
+
+- Fix typing for increments and bigIncrements #4406
+- Add typings for on JoinClause for onVal #4436
+- Adding Type Definition for isTransaction #4418
+- Export client class from knex namespace #4479
+
+# 0.95.4 - 26 March, 2021
+
+### Typings:
+
+- Fix mistyping of stream #4400
+
+# 0.95.3 - 25 March, 2021
+
+### New features:
+
+- PostgreSQL: Add "same" as operator #4372
+- MSSQL: Improve an estimate of the max comment length #4362
+- Throw an error if negative offset is provided #4361
+
+### Bug fixes:
+
+- Fix timeout method #4324
+- SQLite: prevent dropForeign from being silently ignored #4376
+
+### Typings:
+
+- Allow config.client to be non-client instance #4367
+- Add dropForeign arg type for single column #4363
+- Update typings for TypePreservingAggregation and stream #4377
+
 # 0.95.2 - 11 March, 2021
 
 ### New features:
@@ -90,6 +392,30 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Documentation cleanup
 - SQLite: Use SQLite "rename column" instead of a DDL helper #4200
 - SQLite: Simplify reinsert logic when altering a table #4272
+
+# 0.21.19 - 02 March, 2021
+
+- SQLite: Made the constraint detection case-insensitive #4332
+
+# 0.21.18 - 22 February, 2021
+
+- CLI: Fix an issue with npm@7 and ESM when type was set to 'module' in package.json #4295
+
+# 0.21.17 - 30 January, 2021
+
+### Bug fixes:
+
+- SQLite: Fix SQLite foreign on delete when altering a table #4261
+
+### New features:
+
+- Add support for optimizer hints (see https://github.com/knex/documentation/pull/306 for documentation) #4243
+
+# 0.21.16 - 17 January, 2021
+
+### Bug fixes:
+
+- MSSQL: Avoid passing unsupported pool param. Fixes node-mssql 7+ support #4236
 
 # 0.21.15 - 26 December, 2020
 

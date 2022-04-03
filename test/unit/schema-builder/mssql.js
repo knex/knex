@@ -3,6 +3,7 @@
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
+const knex = require('../../../knex');
 const client = new MSSQL_Client({ client: 'mssql' });
 
 describe('MSSQL SchemaBuilder', function () {
@@ -36,6 +37,173 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'ALTER TABLE [users] ADD [id] int identity(1,1) not null primary key, [email] nvarchar(255)'
     );
+  });
+
+  it('create table like another', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users')
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'SELECT * INTO [users_like] FROM [users] WHERE 0=1'
+    );
+  });
+
+  it('create table like another with additionnal columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('numeric_col');
+      })
+      .toSQL();
+    expect(tableSql.length).to.equal(2);
+    expect(tableSql[0].sql).to.equal(
+      'SELECT * INTO [users_like] FROM [users] WHERE 0=1'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'ALTER TABLE [users_like] ADD [add_col] nvarchar(max), [numeric_col] int'
+    );
+  });
+
+  describe('views', function () {
+    let knexMssql;
+
+    before(function () {
+      knexMssql = knex({
+        client: 'mssql',
+        connection: {},
+      });
+    });
+
+    it('basic create view', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexMssql('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "CREATE VIEW [adults] ([name]) AS select [name] from [users] where [age] > '18'"
+      );
+    });
+
+    it('basic create view without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.as(knexMssql('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "CREATE VIEW [adults] AS select [name] from [users] where [age] > '18'"
+      );
+    });
+
+    it('create view or replace', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexMssql('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "CREATE OR ALTER VIEW [adults] ([name]) AS select [name] from [users] where [age] > '18'"
+      );
+    });
+
+    it('create view or replace without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.as(knexMssql('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "CREATE OR ALTER VIEW [adults] AS select [name] from [users] where [age] > '18'"
+      );
+    });
+
+    it('create view with check options', async function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMssql('users').select('name').where('age', '>', '18'));
+            view.localCheckOption();
+          })
+          .toSQL();
+      }).to.throw('check option definition is not supported by this dialect.');
+    });
+
+    it('drop view', function () {
+      tableSql = client.schemaBuilder().dropView('users').toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view [users]');
+    });
+
+    it('drop view with schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .dropView('users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('drop view [myschema].[users]');
+    });
+
+    it('rename column of view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .view('users', function (view) {
+          view.column('oldName').rename('newName');
+        })
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal("exec sp_rename ?, ?, 'COLUMN'");
+      expect(tableSql[0].bindings[0]).to.equal('[users].oldName');
+      expect(tableSql[0].bindings[1]).to.equal('newName');
+    });
+
+    it('rename view', function () {
+      tableSql = client
+        .schemaBuilder()
+        .renameView('old_view', 'new_view')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal('exec sp_rename ?, ?');
+      expect(tableSql[0].bindings[0]).to.equal('old_view');
+      expect(tableSql[0].bindings[1]).to.equal('new_view');
+    });
+
+    it('create materialized view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .createMaterializedView('mat_view', function (view) {
+            view.columns(['name']);
+            view.as(knexMssql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+      }).to.throw('materialized views are not supported by this dialect.');
+    });
+
+    it('refresh view', function () {
+      expect(() => {
+        tableSql = client
+          .schemaBuilder()
+          .refreshMaterializedView('view_to_refresh')
+          .toSQL();
+      }).to.throw('materialized views are not supported by this dialect.');
+    });
   });
 
   it('test basic create table with incrementing without primary key', function () {
@@ -329,9 +497,9 @@ describe('MSSQL SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'select object_id from sys.tables where object_id = object_id(?)'
+      'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?'
     );
-    expect(tableSql[0].bindings[0]).to.equal('[users]');
+    expect(tableSql[0].bindings[0]).to.equal('users');
   });
 
   it('test has table with schema', function () {
@@ -343,9 +511,9 @@ describe('MSSQL SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'select object_id from sys.tables where object_id = object_id(?)'
+      'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?'
     );
-    expect(tableSql[0].bindings[0]).to.equal('[schema].[users]');
+    expect(tableSql[0].bindings[0]).to.equal('schema.users');
   });
 
   it('test rename table with schema', function () {
@@ -415,6 +583,20 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('test adding unique constraint', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.unique('foo', { indexName: 'bar', useConstraint: true });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD CONSTRAINT [bar] UNIQUE ([foo])'
+    );
+  });
+
   it('test adding index', function () {
     tableSql = client
       .schemaBuilder()
@@ -426,6 +608,36 @@ describe('MSSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'CREATE INDEX [baz] ON [users] ([foo], [bar])'
+    );
+  });
+
+  it('test adding index with a predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'CREATE INDEX [baz] ON [users] ([foo], [bar]) where email = "foo@bar"'
+    );
+  });
+
+  it('test adding index with a where not null predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().whereNotNull('email'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'CREATE INDEX [baz] ON [users] ([foo], [bar]) where [email] is not null'
     );
   });
 
@@ -484,6 +696,22 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[1].sql).to.equal(
       'ALTER TABLE [users] ADD CONSTRAINT [fk_foo] FOREIGN KEY ([foo_id]) REFERENCES [orders] ([id])'
     );
+  });
+
+  it('adds foreign key with deferred throw error ', function () {
+    const addDeferredConstraint = () => {
+      client
+        .schemaBuilder()
+        .createTable('person', function (table) {
+          table
+            .integer('user_id')
+            .notNull()
+            .references('users.id')
+            .deferrable('immediate');
+        })
+        .toSQL();
+    };
+    expect(addDeferredConstraint).to.throw('mssql does not support deferrable');
   });
 
   it('adds foreign key with onUpdate and onDelete', function () {
@@ -966,6 +1194,32 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo');
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD [foo] uniqueidentifier'
+    );
+  });
+
+  it('adding binary uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo', { useBinaryUuid: true });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'ALTER TABLE [users] ADD [foo] binary(16)');
+  });
+
   it('is possible to set raw statements in defaultTo, #146', function () {
     tableSql = client
       .schemaBuilder()
@@ -1115,6 +1369,132 @@ describe('MSSQL SchemaBuilder', function () {
       expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
       expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
       expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+    });
+
+    describe('Checks tests', function () {
+      it('allows adding checks positive', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkPositive();
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'ALTER TABLE [user] ADD [price] int check ([price] > 0)'
+        );
+      });
+
+      it('allows adding checks negative', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkNegative();
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'ALTER TABLE [user] ADD [price] int check ([price] < 0)'
+        );
+      });
+
+      it('allows adding checks in', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.string('animal').checkIn(['cat', 'dog']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "ALTER TABLE [user] ADD [animal] nvarchar(255) check ([animal] in ('cat','dog'))"
+        );
+      });
+
+      it('allows adding checks not in', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.string('animal').checkNotIn(['cat', 'dog']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "ALTER TABLE [user] ADD [animal] nvarchar(255) check ([animal] not in ('cat','dog'))"
+        );
+      });
+
+      it('allows adding checks between', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween([10, 15]);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'ALTER TABLE [user] ADD [price] int check ([price] between 10 and 15)'
+        );
+      });
+
+      it('allows adding checks between with multiple intervals', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween([
+              [10, 15],
+              [20, 25],
+            ]);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'ALTER TABLE [user] ADD [price] int check ([price] between 10 and 15 or [price] between 20 and 25)'
+        );
+      });
+
+      it('allows adding checks between strings', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween(['banana', 'orange']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "ALTER TABLE [user] ADD [price] int check ([price] between 'banana' and 'orange')"
+        );
+      });
+
+      it('allows length equals', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.varchar('phone').checkLength('=', 8);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'ALTER TABLE [user] ADD [phone] nvarchar(255) check (LEN([phone]) = 8)'
+        );
+      });
+
+      it('check regexp', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            // MSSQL only support simple pattern matching but not regex syntax.
+            t.varchar('phone').checkRegex('[0-9][0-9][0-9]');
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "ALTER TABLE [user] ADD [phone] nvarchar(255) check ([phone] LIKE '%[0-9][0-9][0-9]%')"
+        );
+      });
+
+      it('drop checks', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.dropChecks(['check_constraint1', 'check_constraint2']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table [user] drop constraint check_constraint1, drop constraint check_constraint2'
+        );
+      });
     });
   });
 });

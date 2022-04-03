@@ -147,7 +147,7 @@ async function main() {
     console.log('----- Recreating proxies -> cutting connections completely');
     await recreateProxy('postgresql', 25432, 5432);
     await recreateProxy('mysql', 23306, 3306);
-    await recreateProxy('oracledbxe', 21521, 1521);
+    await recreateProxy('oracledb', 21521, 1521);
   }
   setInterval(() => recreateProxies(), 2000);
 

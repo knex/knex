@@ -3,6 +3,15 @@
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 const { isMssql } = require('../../util/db-helpers');
+const {
+  dropTables,
+  createAccounts,
+  createTestTableTwo,
+} = require('../../util/tableCreatorHelper');
+const {
+  insertAccounts,
+  insertTestTableTwoData,
+} = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Deletes with Triggers', function () {
@@ -13,6 +22,14 @@ module.exports = function (knex) {
       if (!isMssql(knex)) {
         this.skip('This test is MSSQL only');
       }
+    });
+
+    before(async () => {
+      await dropTables(knex);
+      await createAccounts(knex);
+      await createTestTableTwo(knex);
+      await insertAccounts(knex);
+      await insertTestTableTwoData(knex);
     });
 
     describe('Trigger Specific Tests', function () {
@@ -113,7 +130,7 @@ module.exports = function (knex) {
               ['id'],
               triggerOptions
             );
-            insertSecondary[secondaryLink] = primaryId[0];
+            insertSecondary[secondaryLink] = primaryId[0].id;
 
             // Insert to table with trigger to test delete
             insertedId = (
@@ -122,7 +139,7 @@ module.exports = function (knex) {
                 ['id'],
                 triggerOptions
               )
-            )[0];
+            )[0].id;
           }
 
           async function deleteTriggerTable() {
@@ -131,7 +148,7 @@ module.exports = function (knex) {
               await knex(secondaryTable)
                 .whereRaw(`id = ${insertedId}`)
                 .delete(['id'], triggerOptions)
-            )[0];
+            )[0].id;
           }
 
           await insertWithReturn();
@@ -167,7 +184,7 @@ module.exports = function (knex) {
               ['id'],
               triggerOptions
             );
-            insertSecondary[secondaryLink] = primaryId[0];
+            insertSecondary[secondaryLink] = primaryId[0].id;
 
             // Insert to table with trigger to test delete
             insertedId = (
@@ -176,7 +193,7 @@ module.exports = function (knex) {
                 ['id'],
                 triggerOptions
               )
-            )[0];
+            )[0].id;
           }
 
           async function deleteTriggerTable() {
@@ -186,7 +203,7 @@ module.exports = function (knex) {
                 .whereRaw(`id = ${insertedId}`)
                 .returning(['id'], triggerOptions)
                 .delete()
-            )[0];
+            )[0].id;
           }
 
           await insertWithReturn();
@@ -264,6 +281,20 @@ module.exports = function (knex) {
             );
           });
       });
+    });
+    it('should handle delete with join and trigger options', function () {
+      return knex('test_table_two')
+        .join('accounts', 'accounts.id', 'test_table_two.account_id')
+        .where({ 'accounts.email': 'test3@example.com' })
+        .del('*', triggerOptions)
+        .testSql(function (tester) {
+          tester(
+            'mssql',
+            'select top(0) [t].* into #out from [test_table_two] as t left join [test_table_two] on 0=1;delete [test_table_two] output deleted.* into #out from [test_table_two] inner join [accounts] on [accounts].[id] = [test_table_two].[account_id] where [accounts].[email] = ?; select * from #out; drop table #out;',
+            ['test3@example.com'],
+            [{ id: 3, account_id: 3, details: '', status: 1 }]
+          );
+        });
     });
   });
 };

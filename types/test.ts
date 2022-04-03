@@ -1,4 +1,5 @@
 import { knex, Knex } from 'knex';
+import { PassThrough } from 'stream';
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                    //
@@ -81,6 +82,9 @@ type _T8 = ExtendsWitness<Knex.QueryBuilder<User, number[]>, Knex.QueryBuilder>;
 type _T9 = ExtendsWitness<Knex.QueryBuilder<any, any[]>, Knex.QueryBuilder>;
 type _T10 = ExtendsWitness<Knex.QueryBuilder<User, number>, Knex.QueryBuilder>;
 
+// Ensure the return type of knex() is compatible with Knex with default parameters
+type _T2_1 = ExtendsWitness<typeof knexInstance, Knex>;
+
 declare module './tables' {
   interface Tables {
     users_inferred: User;
@@ -131,6 +135,12 @@ const main = async () => {
       'select * from articles where authorId = ?',
       [ null ]
   );
+
+  // $ExpectType PassThrough & AsyncIterable<User>
+  knexInstance<User>('users').select('*').stream();
+
+  // $ExpectType PassThrough
+  knexInstance<User>('users').select('*').stream().pipe(new PassThrough());
 
   // $ExpectType User[]
   await knexInstance<User>('user').where('name', ['a', 'b', 'c']);
@@ -1022,6 +1032,12 @@ const main = async () => {
   // $ExpectType Dict<string | number>[]
   await knexInstance('users').count('age');
 
+  // $ExpectType { c: string | number; }[]
+  await knexInstance<User>('users').count('id', { as: 'c' });
+
+  // $ExpectType (Pick<User, "departmentId"> & { c: string | number; })[]
+  await knexInstance<User>('users').select('departmentId').count('id', { as: 'c' });
+
   // $ExpectType { count: number; }
   await knexInstance('foo').first().count<{count: number}>({count: '*'});
 
@@ -1181,6 +1197,18 @@ const main = async () => {
   // $ExpectType Dict<any>
   await knexInstance.first().min('age').from<User>('users');
 
+  // $ExpectType ({ a: string | Date; } & { b: string | Date; })[]
+  await knexInstance<Ticket>('tickets')
+    .min('at', {as: 'a'})
+    .max('at', {as: 'b'});
+
+  // $ExpectType ({ dep: any; } & { a: any; } & { b: any; })[]
+  await knexInstance
+    .select({dep: 'departmentId'})
+    .min('age', {as: 'a'})
+    .max('age', {as: 'b'})
+    .from<User>('users');
+
   // $ExpectType ({ dep: any; } & { a?: any; } & { b?: any; })[]
   await knexInstance
     .select({dep: 'departmentId'})
@@ -1255,6 +1283,39 @@ const main = async () => {
     .select({dep: 'departmentId'})
     .count({a: 'age'})
     .from('users_composite');
+
+  // Analytic
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age');
+
+  await knexInstance<User>('users')
+    .select('age')
+    // $ExpectError
+    .rowNumber('rowNum', 'non_existing_field');
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', ['age']);
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', (builder) => {
+    builder.orderBy('age');
+  });
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age', 'departmentId');
+
+  await knexInstance<User>('users')
+    .select('age')
+    // $ExpectError
+    .rowNumber('rowNum', 'age', 'non_existing_field');
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', 'age', ['departmentId', 'active']);
+
+  // $ExpectType (Pick<User, "age"> & { rowNum: number; })[]
+  await knexInstance<User>('users').select('age').rowNumber('rowNum', (builder) => {
+    builder.orderBy('age').partitionBy('departmentId');
+  });
 
   // ## With inner query:
 
@@ -1900,17 +1961,17 @@ const main = async () => {
     .insert({ id: 10 })
     .returning<string[]>('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance<User>('users')
     .insert({ id: 10 })
     .returning('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_inferred')
     .insert({ id: 10 })
     .returning('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_composite')
     .insert({ insert: 'insert' })
     .returning('id');
@@ -1941,17 +2002,17 @@ const main = async () => {
     .insert([{ id: 10 }])
     .returning<string[]>('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance<User>('users')
     .insert([{ id: 10 }])
     .returning('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_inferred')
     .insert([{ id: 10 }])
     .returning('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_composite')
     .insert([{ insert: 'insert' }])
     .returning('id');
@@ -1972,7 +2033,7 @@ const main = async () => {
     .insert({ id: 10 })
     .returning(['id', 'age']);
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance<User>('users').insert({ id: 10 }, 'id');
 
   // $ExpectType User[]
@@ -2005,13 +2066,13 @@ const main = async () => {
   // $ExpectType User[]
   await knexInstance('users_composite').insert([{ insert: 'insert' }], '*');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance.insert({ id: 10 }, 'id').into<User>('users');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance.insert({ id: 10 }, 'id').into('users_inferred');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance.insert({ insert: 'insert' }, 'id').into('users_composite');
 
   // $ExpectType Pick<User, "id" | "age">[]
@@ -2322,17 +2383,17 @@ const main = async () => {
     .update({})
     .returning(['id', 'age']);
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance<User>('users')
     .where('id', 10)
     .update({ active: true }, 'id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_inferred')
     .where('id', 10)
     .update({ active: true }, 'id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_composite')
     .where('id', 10)
     .update({ update: 'update' }, 'id');
@@ -2347,17 +2408,17 @@ const main = async () => {
     // $ExpectError
     .update({}, 'id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance<User>('users')
     .where('id', 10)
     .update('active', true, 'id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_inferred')
     .where('id', 10)
     .update('active', true, 'id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_composite')
     .where('id', 10)
     .update('update', 'update', 'id');
@@ -2495,17 +2556,17 @@ const main = async () => {
     .where('id', 10)
     .del();
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance<User>('users')
     .where('id', 10)
     .delete('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_inferred')
     .where('id', 10)
     .delete('id');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance('users_composite')
     .where('id', 10)
     .delete('id');
@@ -2600,19 +2661,19 @@ const main = async () => {
     .returning('*')
     .from('users_composite');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance
     .where('id', 10)
     .delete('id')
     .from<User>('users');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance
     .where('id', 10)
     .delete('id')
     .from('users_inferred');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance
     .where('id', 10)
     .delete('id')
@@ -2633,16 +2694,16 @@ const main = async () => {
   // # Column Info:
 
   // $ExpectType ColumnInfo
-  await knexInstance('users').columnInfo();
+  await knexInstance('users').columnInfo('id');
 
   // $ExpectType ColumnInfo
-  await knexInstance<User>('users').columnInfo();
+  await knexInstance<User>('users').columnInfo('id');
 
   // $ExpectType ColumnInfo
-  await knexInstance('users_inferred').columnInfo();
+  await knexInstance('users_inferred').columnInfo('id');
 
   // $ExpectType ColumnInfo
-  await knexInstance('users_composite').columnInfo();
+  await knexInstance('users_composite').columnInfo('id');
 
   // # Modify:
 
@@ -2831,13 +2892,13 @@ const main = async () => {
       id: knexInstance.raw<number>('a')
     }], '*');
 
-  // $ExpectType number[]
+  // $ExpectType Pick<User, "id">[]
   await knexInstance<User>('users')
     .update({
       id: knexInstance.raw<number>('a')
     }, 'id');
 
-  // $ExpectType string[]
+  // $ExpectType Pick<User, "name">[]
   await knexInstance<User>('users')
     .update<'active', 'name'>('active', knexInstance.raw<boolean>('true'), 'name');
 
@@ -2845,3 +2906,5 @@ const main = async () => {
   await knexInstance<User>('users')
     .update<'active', 'name'>('active', knexInstance.raw<boolean>('true'), ['name']);
 };
+
+class ExcelClient extends knex.Client { }

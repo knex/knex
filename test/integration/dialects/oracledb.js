@@ -50,11 +50,26 @@ describe('Oracle', () => {
       const compiler = knexInstance.client.queryCompiler(qb);
       const sql = compiler.insert();
       expect(sql).to.eql({
-        sql:
-          'insert into "fakeTable" ("id") values (default) returning "id" into ?',
+        sql: 'insert into "fakeTable" ("id") values (default) returning "id" into ?',
         outBinding: [['id']],
         returning: ['id'],
       });
+    });
+
+    it('correctly handles default values in batch inserts', async () => {
+      const qb = knexInstance.client.queryBuilder();
+      qb.insert([
+        { value1: 1, value2: 2, value3: 3, value4: 4 },
+        { value1: 1 },
+      ]).into('fakeTable');
+      const compiler = knexInstance.client.queryCompiler(qb);
+      const sql = compiler.insert();
+      expect(sql.sql).to.eql(
+        'begin execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
+          "(:1, :2, :3, :4)' using ?, ?, ?, ?; " +
+          'execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
+          "(:1, DEFAULT, DEFAULT, DEFAULT)' using ?;end;"
+      );
     });
   });
 
