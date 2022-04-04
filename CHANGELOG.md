@@ -1,5 +1,24 @@
 # Master (Unreleased)
 
+# 1.0.5 - 05 March, 2022
+
+### New features:
+
+- Override knexfile options with CLI options #4047
+
+### Bug fixes:
+
+- Stringify json value in update #5063
+- Fix isModuleType() for yarn #4447
+- Wrapped Unions Fixes #5072
+- SQLite: Fix @vscode-sqlite3 error message #5081
+- CLI: Fix completed migration listing #5060
+
+### Typings:
+
+- Make default generic parameters of `Knex` match the generic parameter types of `knex` #5021
+- Update knex types for TS 4.7 #5095
+
 # 1.0.4 - 13 March, 2022
 
 ### New features:
