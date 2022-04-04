@@ -307,7 +307,7 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
-export interface Knex<TRecord extends {} = any, TResult = Record<string, any>[]>
+export interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TTable extends Knex.TableNames>(
     tableName: TTable,
@@ -564,7 +564,11 @@ export declare namespace Knex {
     whereNotIn: WhereIn<TRecord, TResult>;
     orWhereNotIn: WhereIn<TRecord, TResult>;
     whereLike: Where<TRecord, TResult>;
+    andWhereLike: Where<TRecord, TResult>;
+    orWhereLike: Where<TRecord, TResult>;
     whereILike: Where<TRecord, TResult>;
+    andWhereILike: Where<TRecord, TResult>;
+    orWhereILike: Where<TRecord, TResult>;
     whereNull: WhereNull<TRecord, TResult>;
     orWhereNull: WhereNull<TRecord, TResult>;
     whereNotNull: WhereNull<TRecord, TResult>;
@@ -2038,7 +2042,7 @@ export declare namespace Knex {
     createTableLike(
       tableName: string,
       tableNameLike: string,
-      callback: (tableBuilder: CreateTableBuilder) => any
+      callback?: (tableBuilder: CreateTableBuilder) => any
     ): SchemaBuilder;
     alterTable(
       tableName: string,

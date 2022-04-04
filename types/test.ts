@@ -82,6 +82,9 @@ type _T8 = ExtendsWitness<Knex.QueryBuilder<User, number[]>, Knex.QueryBuilder>;
 type _T9 = ExtendsWitness<Knex.QueryBuilder<any, any[]>, Knex.QueryBuilder>;
 type _T10 = ExtendsWitness<Knex.QueryBuilder<User, number>, Knex.QueryBuilder>;
 
+// Ensure the return type of knex() is compatible with Knex with default parameters
+type _T2_1 = ExtendsWitness<typeof knexInstance, Knex>;
+
 declare module './tables' {
   interface Tables {
     users_inferred: User;

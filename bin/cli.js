@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const rechoir = require('rechoir');
+const merge = require('lodash/merge');
 const interpret = require('interpret');
 const resolveFrom = require('resolve-from');
 const path = require('path');
@@ -9,6 +10,7 @@ const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 const cliPkg = require('../package');
 const {
+  parseConfigObj,
   mkConfigObj,
   resolveEnvironmentConfig,
   exit,
@@ -59,8 +61,17 @@ async function initKnex(env, opts) {
     env.configuration,
     env.configPath
   );
+
+  const optionsConfig = parseConfigObj(opts);
+  const config = merge(resolvedConfig, optionsConfig);
+
+  // Migrations directory gets defaulted if it is undefined.
+  if (!env.configPath && !config.migrations.directory) {
+    config.migrations.directory = null;
+  }
+
   const knex = require(env.modulePath);
-  return knex(resolvedConfig);
+  return knex(config);
 }
 
 function invoke() {
@@ -138,16 +149,10 @@ function invoke() {
     .option('--knexfile [path]', 'Specify the knexfile path.')
     .option('--knexpath [path]', 'Specify the path to knex instance.')
     .option('--cwd [path]', 'Specify the working directory.')
-    .option('--client [name]', 'Set DB client without a knexfile.')
-    .option('--connection [address]', 'Set DB connection without a knexfile.')
-    .option(
-      '--migrations-directory [path]',
-      'Set migrations directory without a knexfile.'
-    )
-    .option(
-      '--migrations-table-name [path]',
-      'Set migrations table name without a knexfile.'
-    )
+    .option('--client [name]', 'Set DB client.')
+    .option('--connection [address]', 'Set DB connection.')
+    .option('--migrations-directory [path]', 'Set migrations directory.')
+    .option('--migrations-table-name [path]', 'Set migrations table name.')
     .option(
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'

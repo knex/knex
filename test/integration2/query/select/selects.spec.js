@@ -68,12 +68,12 @@ describe('Selects', function () {
         // await dropTables(knex);
       });
 
-      it('runs with no conditions', function () {
-        return knex('accounts').select();
+      it('runs with no conditions', async () => {
+        await knex('accounts').select();
       });
 
       it('returns an array of a single column with `pluck`', async () => {
-        return knex
+        await knex
           .pluck('id')
           .orderBy('id')
           .from('accounts')
@@ -82,49 +82,49 @@ describe('Selects', function () {
               'mysql',
               'select `id` from `accounts` order by `id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'pg',
               'select "id" from "accounts" order by "id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pgnative',
               'select "id" from "accounts" order by "id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pg-redshift',
               'select "id" from "accounts" order by "id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'sqlite3',
               'select `id` from `accounts` order by `id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'oracledb',
               'select "id" from "accounts" order by "id" asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'mssql',
               'select [id] from [accounts] order by [id] asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
           });
       });
 
-      it('can pluck a qualified column name, #1619', function () {
-        return knex
+      it('can pluck a qualified column name, #1619', async () => {
+        await knex
           .pluck('accounts.id')
           .from('accounts')
           .orderBy('accounts.id')
@@ -133,49 +133,49 @@ describe('Selects', function () {
               'mysql',
               'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'pg',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pgnative',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'pg-redshift',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
             tester(
               'sqlite3',
               'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'oracledb',
               'select "accounts"."id" from "accounts" order by "accounts"."id" asc',
               [],
-              [1, 2, 3, 4, 5, 6]
+              [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
               'mssql',
               'select [accounts].[id] from [accounts] order by [accounts].[id] asc',
               [],
-              ['1', '2', '3', '4', '5', '6']
+              ['1', '2', '3', '4', '5', '6', '7', '8']
             );
           });
       });
 
-      it('starts selecting at offset', function () {
-        return knex
+      it('starts selecting at offset', async () => {
+        await knex
           .pluck('id')
           .orderBy('id')
           .from('accounts')
@@ -185,43 +185,43 @@ describe('Selects', function () {
               'mysql',
               'select `id` from `accounts` order by `id` asc limit 18446744073709551615 offset ?',
               [2],
-              [3, 4, 5, 6]
+              [3, 4, 5, 6, 7, 8]
             );
             tester(
               'pg',
               'select "id" from "accounts" order by "id" asc offset ?',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
             tester(
               'pgnative',
               'select "id" from "accounts" order by "id" asc offset ?',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
             tester(
               'pg-redshift',
               'select "id" from "accounts" order by "id" asc offset ?',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
             tester(
               'sqlite3',
               'select `id` from `accounts` order by `id` asc limit ? offset ?',
               [-1, 2],
-              [3, 4, 5, 6]
+              [3, 4, 5, 6, 7, 8]
             );
             tester(
               'oracledb',
               'select * from (select row_.*, ROWNUM rownum_ from (select "id" from "accounts" order by "id" asc) row_ where rownum <= ?) where rownum_ > ?',
               [10000000000002, 2],
-              [3, 4, 5, 6]
+              [3, 4, 5, 6, 7, 8]
             );
             tester(
               'mssql',
               'select [id] from [accounts] order by [id] asc offset ? rows',
               [2],
-              ['3', '4', '5', '6']
+              ['3', '4', '5', '6', '7', '8']
             );
           });
       });
@@ -273,7 +273,7 @@ describe('Selects', function () {
       });
 
       it('#4199 - ignores invalid hint comments', async function () {
-        return knex
+        await knex
           .select('id')
           .orderBy('id')
           .from('accounts')
@@ -283,7 +283,16 @@ describe('Selects', function () {
               'mysql',
               'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
               [],
-              [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
+              [
+                { id: 1 },
+                { id: 2 },
+                { id: 3 },
+                { id: 4 },
+                { id: 5 },
+                { id: 6 },
+                { id: 7 },
+                { id: 8 },
+              ]
             );
             tester(
               'pg',
@@ -296,6 +305,8 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
             tester(
@@ -309,6 +320,8 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
             tester(
@@ -322,19 +335,39 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
             tester(
               'sqlite3',
               'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
               [],
-              [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
+              [
+                { id: 1 },
+                { id: 2 },
+                { id: 3 },
+                { id: 4 },
+                { id: 5 },
+                { id: 6 },
+                { id: 7 },
+                { id: 8 },
+              ]
             );
             tester(
               'oracledb',
               'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
               [],
-              [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }]
+              [
+                { id: 1 },
+                { id: 2 },
+                { id: 3 },
+                { id: 4 },
+                { id: 5 },
+                { id: 6 },
+                { id: 7 },
+                { id: 8 },
+              ]
             );
             tester(
               'mssql',
@@ -347,13 +380,15 @@ describe('Selects', function () {
                 { id: '4' },
                 { id: '5' },
                 { id: '6' },
+                { id: '7' },
+                { id: '8' },
               ]
             );
           });
       });
 
-      it('returns a single entry with first', function () {
-        return knex
+      it('returns a single entry with first', async () => {
+        await knex
           .first('id', 'first_name')
           .orderBy('id')
           .from('accounts')
@@ -403,20 +438,17 @@ describe('Selects', function () {
           });
       });
 
-      it('allows you to stream', function () {
+      it('allows you to stream', async function () {
         if (isPgNative(knex)) {
           return this.skip();
         }
         let count = 0;
-        return knex('accounts')
-          .stream(function (rowStream) {
-            rowStream.on('data', function () {
-              count++;
-            });
-          })
-          .then(function () {
-            assert(count === 6, 'Six rows should have been streamed');
+        await knex('accounts').stream(function (rowStream) {
+          rowStream.on('data', function () {
+            count++;
           });
+        });
+        assert(count === 8, 'Eight rows should have been streamed');
       });
 
       it('returns a stream if not passed a function', function (done) {
@@ -432,12 +464,12 @@ describe('Selects', function () {
         });
       });
 
-      it('allows you to stream with mysql dialect options', function () {
+      it('allows you to stream with mysql dialect options', async function () {
         if (!isMysql(knex)) {
           return this.skip();
         }
         const rows = [];
-        return knex('accounts')
+        await knex('accounts')
           .options({
             typeCast(field, next) {
               let val;
@@ -452,15 +484,13 @@ describe('Selects', function () {
             rowStream.on('data', function (row) {
               rows.push(row);
             });
-          })
-          .then(function () {
-            expect(rows).to.have.lengthOf(6);
-            rows.forEach((row) => {
-              ['first_name', 'last_name', 'email'].forEach((field) =>
-                expect(row[field]).to.equal(row[field].toUpperCase())
-              );
-            });
           });
+        expect(rows).to.have.lengthOf(8);
+        rows.forEach((row) => {
+          ['first_name', 'last_name', 'email'].forEach((field) =>
+            expect(row[field]).to.equal(row[field].toUpperCase())
+          );
+        });
       });
 
       it('emits error on the stream, if not passed a function, and connecting fails', function () {
@@ -547,8 +577,8 @@ describe('Selects', function () {
           });
       });
 
-      it('uses "orderBy"', function () {
-        return knex('accounts')
+      it('uses "orderBy"', async function () {
+        await knex('accounts')
           .pluck('id')
           .orderBy('id', 'desc')
           .testSql(function (tester) {
@@ -556,13 +586,13 @@ describe('Selects', function () {
               'oracledb',
               'select "id" from "accounts" order by "id" desc',
               [],
-              [6, 5, 4, 3, 2, 1]
+              [8, 7, 6, 5, 4, 3, 2, 1]
             );
             tester(
               'mssql',
               'select [id] from [accounts] order by [id] desc',
               [],
-              ['6', '5', '4', '3', '2', '1']
+              ['8', '7', '6', '5', '4', '3', '2', '1']
             );
           });
       });
@@ -700,8 +730,8 @@ describe('Selects', function () {
         await knex.schema.dropTable('OrderByNullTest');
       });
 
-      it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', function () {
-        return knex.schema
+      it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', async function () {
+        await knex.schema
           .dropTableIfExists('DatesTest')
           .createTable('DatesTest', function (table) {
             table.increments('id').primary();
@@ -709,37 +739,29 @@ describe('Selects', function () {
             table.timestamp('timeStampCol').nullable().defaultTo(null); // MySQL defaults TIMESTAMP columns to current timestamp
             table.date('dateCol');
             table.time('timeCol');
-          })
-          .then(function () {
-            return knex('DatesTest').insert([
-              {
-                dateTimeCol: null,
-                timeStampCol: null,
-                dateCol: null,
-                timeCol: null,
-              },
-            ]);
-          })
-          .then(function () {
-            return knex('DatesTest').select();
-          })
-          .then(function (rows) {
-            expect(rows[0].dateTimeCol).to.equal(null);
-            expect(rows[0].timeStampCol).to.equal(null);
-            expect(rows[0].dateCol).to.equal(null);
-            expect(rows[0].timeCol).to.equal(null);
           });
+        await knex('DatesTest').insert([
+          {
+            dateTimeCol: null,
+            timeStampCol: null,
+            dateCol: null,
+            timeCol: null,
+          },
+        ]);
+        const rows = await knex('DatesTest').select();
+        expect(rows[0].dateTimeCol).to.equal(null);
+        expect(rows[0].timeStampCol).to.equal(null);
+        expect(rows[0].dateCol).to.equal(null);
+        expect(rows[0].timeCol).to.equal(null);
       });
 
-      it('has a "distinct" clause', function () {
-        return Promise.all([
-          knex('accounts')
-            .select()
-            .distinct('email')
-            .where('logins', 2)
-            .orderBy('email'),
-          knex('accounts').distinct('email').select().orderBy('email'),
-        ]);
+      it('has a "distinct" clause', async function () {
+        await knex('accounts')
+          .select()
+          .distinct('email')
+          .where('logins', 2)
+          .orderBy('email');
+        await knex('accounts').distinct('email').select().orderBy('email');
       });
 
       it('supports "distinct on"', async function () {
@@ -789,6 +811,14 @@ describe('Selects', function () {
                 email: 'test6@example.com',
                 logins: 2,
               },
+              {
+                email: 'test7@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test8@example.com',
+                logins: 3,
+              },
             ]
           );
           tester(
@@ -819,6 +849,14 @@ describe('Selects', function () {
               {
                 email: 'test6@example.com',
                 logins: 2,
+              },
+              {
+                email: 'test7@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test8@example.com',
+                logins: 3,
               },
             ]
           );
@@ -873,11 +911,10 @@ describe('Selects', function () {
         });
       });
 
-      it('always returns the response object from raw', function () {
+      it('always returns the response object from raw', async function () {
         if (isPostgreSQL(knex)) {
-          return knex.raw('select id from accounts').then(function (resp) {
-            assert(Array.isArray(resp.rows) === true);
-          });
+          const resp = await knex.raw('select id from accounts');
+          assert(Array.isArray(resp.rows) === true);
         }
       });
 
@@ -903,82 +940,72 @@ describe('Selects', function () {
         return knex('accounts').where('id', 1).forUpdate().first();
       });
 
-      it('select for update locks selected row', function () {
+      it('select for update locks selected row', async function () {
         if (isSQLite(knex)) {
           return this.skip();
         }
 
-        return knex('test_default_table')
-          .insert({ string: 'making sure there is a row to lock' })
-          .then(() => {
-            return knex
-              .transaction((trx) => {
-                // select all from test table and lock
-                return trx('test_default_table')
-                  .forUpdate()
-                  .then((res) => {
-                    // try to select stuff from table in other connection should just hang...
-                    return knex('test_default_table').forUpdate().timeout(100);
-                  });
-              })
+        await knex('test_default_table').insert({
+          string: 'making sure there is a row to lock',
+        });
+        try {
+          await knex.transaction((trx) => {
+            // select all from test table and lock
+            return trx('test_default_table')
+              .forUpdate()
               .then((res) => {
-                expect('Second query should have timed out').to.be.false;
-              })
-              .catch((err) => {
-                expect(err.message).to.be.contain(
-                  'Defined query timeout of 100ms exceeded when running query'
-                );
+                // try to select stuff from table in other connection should just hang...
+                return knex('test_default_table').forUpdate().timeout(100);
               });
           });
+        } catch (err) {
+          expect(err.message).to.be.contain(
+            'Defined query timeout of 100ms exceeded when running query'
+          );
+          return;
+        }
+        expect('Second query should have timed out').to.be.false;
       });
 
-      it('select for update locks only some tables, #2834', function () {
+      it('select for update locks only some tables, #2834', async function () {
         if (!isPostgreSQL(knex)) {
           return this.skip();
         }
 
-        return knex('test_default_table')
-          .insert({ string: 'making sure there is a row to lock', tinyint: 1 })
-          .then(() => {
-            return knex('test_default_table2')
-              .insert({
-                string: 'making sure there is a row to lock',
-                tinyint: 1,
+        await knex('test_default_table').insert({
+          string: 'making sure there is a row to lock',
+          tinyint: 1,
+        });
+        await knex('test_default_table2').insert({
+          string: 'making sure there is a row to lock',
+          tinyint: 1,
+        });
+        try {
+          await knex.transaction((trx) => {
+            // select all from two test tables and lock only one table
+            return trx('test_default_table')
+              .innerJoin(
+                'test_default_table2',
+                'test_default_table.tinyint',
+                'test_default_table2.tinyint'
+              )
+              .forUpdate('test_default_table')
+              .then((res) => {
+                // try to select stuff from unlocked table should not hang...
+                return knex('test_default_table2').forUpdate().timeout(150);
               })
-              .then(() => {
-                return knex
-                  .transaction((trx) => {
-                    // select all from two test tables and lock only one table
-                    return trx('test_default_table')
-                      .innerJoin(
-                        'test_default_table2',
-                        'test_default_table.tinyint',
-                        'test_default_table2.tinyint'
-                      )
-                      .forUpdate('test_default_table')
-                      .then((res) => {
-                        // try to select stuff from unlocked table should not hang...
-                        return knex('test_default_table2')
-                          .forUpdate()
-                          .timeout(150);
-                      })
-                      .then((res) => {
-                        // try to select stuff from table in other connection should just hang...
-                        return knex('test_default_table')
-                          .forUpdate()
-                          .timeout(100);
-                      });
-                  })
-                  .then((res) => {
-                    expect('Second query should have timed out').to.be.false;
-                  })
-                  .catch((err) => {
-                    expect(err.message).to.be.contain(
-                      'Defined query timeout of 100ms exceeded when running query'
-                    );
-                  });
+              .then((res) => {
+                // try to select stuff from table in other connection should just hang...
+                return knex('test_default_table').forUpdate().timeout(100);
               });
           });
+        } catch (err) {
+          expect(err.message).to.be.contain(
+            'Defined query timeout of 100ms exceeded when running query'
+          );
+          return;
+        }
+        expect('Second query should have timed out').to.be.false;
       });
 
       it('select for no key update doesnt stop other transactions from inserting into tables that have a foreign key relationship', async function () {
@@ -987,34 +1014,27 @@ describe('Selects', function () {
         }
 
         await createParentAndChildTables(knex);
-
-        return knex('parent')
-          .insert({
-            id: 1,
-          })
-          .then(() => {
-            return knex('child')
-              .insert({
-                id: 1,
-                parent_id: 1,
-              })
-              .then(() => {
-                return knex.transaction((trx) => {
-                  // select all from the parent table in the for no key update mode
-                  return trx('parent')
-                    .forNoKeyUpdate()
-                    .then((res) => {
-                      // Insert should into the child table not hang
-                      return knex('child')
-                        .insert({
-                          id: 2,
-                          parent_id: 1,
-                        })
-                        .timeout(150);
-                    });
-                });
-              });
-          });
+        await knex('parent').insert({
+          id: 1,
+        });
+        await knex('child').insert({
+          id: 1,
+          parent_id: 1,
+        });
+        await knex.transaction((trx) => {
+          // select all from the parent table in the for no key update mode
+          return trx('parent')
+            .forNoKeyUpdate()
+            .then((res) => {
+              // Insert should into the child table not hang
+              return knex('child')
+                .insert({
+                  id: 2,
+                  parent_id: 1,
+                })
+                .timeout(150);
+            });
+        });
       });
 
       it('select for key share blocks select for update but not select for no key update', async function () {
@@ -1022,76 +1042,69 @@ describe('Selects', function () {
           return this.skip();
         }
 
-        return knex('test_default_table')
-          .insert({ string: 'making sure there is a row to lock' })
-          .then(() => {
-            return knex
-              .transaction((trx) => {
-                // select all from test table and lock
-                return trx('test_default_table')
-                  .forKeyShare()
-                  .then((res) => {
-                    // trying to select stuff from table in other connection should succeed with for no key update
-                    return knex('test_default_table')
-                      .forNoKeyUpdate()
-                      .timeout(200);
-                  })
-                  .then((res) => {
-                    // trying to select stuff from table in other connection should hang with for update
-                    return knex('test_default_table').forUpdate().timeout(100);
-                  });
+        await knex('test_default_table').insert({
+          string: 'making sure there is a row to lock',
+        });
+        try {
+          await knex.transaction((trx) => {
+            // select all from test table and lock
+            return trx('test_default_table')
+              .forKeyShare()
+              .then((res) => {
+                // trying to select stuff from table in other connection should succeed with for no key update
+                return knex('test_default_table').forNoKeyUpdate().timeout(200);
               })
               .then((res) => {
-                expect('Second query should have timed out').to.be.false;
-              })
-              .catch((err) => {
-                expect(err.message).to.be.contain(
-                  'Defined query timeout of 100ms exceeded when running query'
-                );
+                // trying to select stuff from table in other connection should hang with for update
+                return knex('test_default_table').forUpdate().timeout(100);
               });
           });
+        } catch (err) {
+          expect(err.message).to.be.contain(
+            'Defined query timeout of 100ms exceeded when running query'
+          );
+          return;
+        }
+        expect('Second query should have timed out').to.be.false;
       });
 
-      it('select for share prevents updating in other transaction', function () {
+      it('select for share prevents updating in other transaction', async function () {
         // Query cancellation is not yet implemented for CockroachDB
         if (isSQLite(knex) || isOracle(knex) || isCockroachDB(knex)) {
           return this.skip();
         }
-
-        return knex('test_default_table')
-          .insert({ string: 'making sure there is a row to lock' })
-          .then(() => {
-            return knex
-              .transaction((trx) => {
-                // select all from test table and lock
-                return trx('test_default_table')
-                  .forShare()
-                  .then((res) => {
-                    // try to update row that was selected for share should just hang...
-                    return knex.transaction((trx2) => {
-                      return trx2('test_default_table')
-                        .update({ string: 'foo' })
-                        .timeout(100);
-                    });
-                  });
-              })
+        await knex('test_default_table').insert({
+          string: 'making sure there is a row to lock',
+        });
+        try {
+          await knex.transaction((trx) => {
+            // select all from test table and lock
+            return trx('test_default_table')
+              .forShare()
               .then((res) => {
-                expect('Second query should have timed out').to.be.false;
-              })
-              .catch((err) => {
-                // mssql fails because it tries to rollback at the same time when update query is running
-                // hopefully for share really works though...
-                if (isMssql(knex)) {
-                  expect(err.message).to.be.contain(
-                    "Can't rollback transaction. There is a request in progress"
-                  );
-                } else {
-                  expect(err.message).to.be.contain(
-                    'Defined query timeout of 100ms exceeded when running query'
-                  );
-                }
+                // try to update row that was selected for share should just hang...
+                return knex.transaction((trx2) => {
+                  return trx2('test_default_table')
+                    .update({ string: 'foo' })
+                    .timeout(100);
+                });
               });
           });
+        } catch (err) {
+          // mssql fails because it tries to rollback at the same time when update query is running
+          // hopefully for share really works though...
+          if (isMssql(knex)) {
+            expect(err.message).to.be.contain(
+              "Can't rollback transaction. There is a request in progress"
+            );
+          } else {
+            expect(err.message).to.be.contain(
+              'Defined query timeout of 100ms exceeded when running query'
+            );
+          }
+          return;
+        }
+        expect('Second query should have timed out').to.be.false;
       });
 
       it('forUpdate().skipLocked() with order by should return the first non-locked row', async function () {
@@ -1217,43 +1230,39 @@ describe('Selects', function () {
         const subquery = knex
           .from('accounts')
           .whereBetween('id', [result[0].id, result[2].id]);
-        return knex
-          .pluck('id')
-          .orderBy('id')
-          .from(subquery)
-          .then(
-            (rows) => {
-              expect(knex.client.driverName).to.oneOf([
-                'sqlite3',
-                'oracledb',
-                'cockroachdb',
-                'better-sqlite3',
-              ]);
 
-              if (knex.client.driverName !== 'cockroachdb') {
-                assertNumberArrayStrict(knex, rows, [
-                  result[0].id,
-                  result[1].id,
-                  result[2].id,
-                ]);
-              } else {
-                expect(rows.length).to.equal(3);
-              }
-            },
-            (e) => {
-              if (isMysql(knex)) {
-                expect(e.errno).to.equal(1248);
-              } else if (isPostgreSQL(knex)) {
-                expect(e.message).to.contain('must have an alias');
-              } else if (isMssql(knex)) {
-                expect(e.message).to.contain(
-                  "Incorrect syntax near the keyword 'order'"
-                );
-              } else {
-                throw e;
-              }
-            }
-          );
+        try {
+          const rows = await knex.pluck('id').orderBy('id').from(subquery);
+
+          expect(knex.client.driverName).to.oneOf([
+            'sqlite3',
+            'oracledb',
+            'cockroachdb',
+            'better-sqlite3',
+          ]);
+
+          if (knex.client.driverName !== 'cockroachdb') {
+            assertNumberArrayStrict(knex, rows, [
+              result[0].id,
+              result[1].id,
+              result[2].id,
+            ]);
+          } else {
+            expect(rows.length).to.equal(3);
+          }
+        } catch (err) {
+          if (isMysql(knex)) {
+            expect(err.errno).to.equal(1248);
+          } else if (isPostgreSQL(knex)) {
+            expect(err.message).to.contain('must have an alias');
+          } else if (isMssql(knex)) {
+            expect(err.message).to.contain(
+              "Incorrect syntax near the keyword 'order'"
+            );
+          } else {
+            throw err;
+          }
+        }
       });
 
       describe('"with" tests', () => {
