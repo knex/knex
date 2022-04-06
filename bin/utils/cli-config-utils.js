@@ -6,10 +6,10 @@ const tildify = require('tildify');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 
-function parseConfigObj(opts, noClientOverride) {
+function parseConfigObj(opts) {
   const config = { migrations: {} };
 
-  if (opts.client && (!noClientOverride || !config.client)) {
+  if (opts.client) {
     config.client = opts.client;
   }
 
@@ -28,17 +28,11 @@ function parseConfigObj(opts, noClientOverride) {
   return config;
 }
 
-function mkConfigObj(opts, noClientOverride) {
-  if (!opts.client) {
-    throw new Error(
-      `No configuration file found and no commandline connection parameters passed`
-    );
-  }
-
+function mkConfigObj(opts) {
   const envName = opts.env || process.env.NODE_ENV || 'development';
   const resolvedClientName = resolveClientNameWithAliases(opts.client);
   const useNullAsDefault = resolvedClientName === 'sqlite3';
-  const parsedConfig = parseConfigObj(opts, noClientOverride);
+  const parsedConfig = parseConfigObj(opts);
 
   return {
     ext: DEFAULT_EXT,
@@ -102,6 +96,14 @@ function checkLocalModule(env) {
       color.magenta(tildify(env.cwd))
     );
     exit('Try running: npm install knex');
+  }
+}
+
+function checkConfigurationOptions(env, opts) {
+  if (!env.configPath && !opts.client) {
+    throw new Error(
+      `No configuration file found and no commandline connection parameters passed`
+    );
   }
 }
 
@@ -199,6 +201,7 @@ module.exports = {
   exit,
   success,
   checkLocalModule,
+  checkConfigurationOptions,
   getSeedExtension,
   getMigrationExtension,
   getStubPath,
