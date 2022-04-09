@@ -4,7 +4,7 @@ const { isPostgreSQL, isMysql, isMssql } = require('../util/db-helpers');
 
 describe('knex', () => {
   getAllDbs().forEach((db) => {
-    describe.only(db, () => {
+    describe(db, () => {
       let knex;
       beforeEach(() => {
         knex = getKnexForDb(db);
