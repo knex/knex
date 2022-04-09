@@ -1,13 +1,6 @@
 const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('./util/knex-instance-provider');
-const {
-  isPostgreSQL,
-  isMysql,
-  isMssql,
-  isCockroachDB,
-  isSQLite,
-  isPgBasedDriverName,
-} = require('../util/db-helpers');
+const { isPostgreSQL, isMysql, isMssql } = require('../util/db-helpers');
 
 describe('knex', () => {
   getAllDbs().forEach((db) => {
