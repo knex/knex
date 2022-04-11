@@ -69,11 +69,7 @@ async function initKnex(env, opts, noClientOverride) {
   }
 
   // Migrations directory gets defaulted if it is undefined.
-  if (
-    !env.configPath &&
-    resolvedConfig.migrations &&
-    !resolvedConfig.migrations.directory
-  ) {
+  if (!env.configPath && !resolvedConfig.migrations.directory) {
     resolvedConfig.migrations.directory = null;
   }
 

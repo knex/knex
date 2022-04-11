@@ -7,7 +7,7 @@ const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 
 function parseConfigObj(opts, noClientOverride) {
-  const config = {};
+  const config = { migrations: {} };
 
   if (opts.client && (!noClientOverride || !config.client)) {
     config.client = opts.client;
@@ -17,15 +17,12 @@ function parseConfigObj(opts, noClientOverride) {
     config.connection = opts.connection;
   }
 
-  if (opts.migrationsDirectory || opts.migrationsTableName) {
-    config.migrations = {};
-    if (opts.migrationsDirectory) {
-      config.migrations.directory = opts.migrationsDirectory;
-    }
+  if (opts.migrationsDirectory) {
+    config.migrations.directory = opts.migrationsDirectory;
+  }
 
-    if (opts.migrationsTableName) {
-      config.migrations.tableName = opts.migrationsTableName;
-    }
+  if (opts.migrationsTableName) {
+    config.migrations.tableName = opts.migrationsTableName;
   }
 
   return config;
