@@ -6,16 +6,10 @@ const tildify = require('tildify');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 
-function findCaseInsensitiveProperty(propertyName, object) {
-  return Object.keys(object).find(
-    (key) => key.toLowerCase() === propertyName.toLowerCase()
-  );
-}
-
-function parseConfigObj(opts) {
+function parseConfigObj(opts, noClientOverride) {
   const config = { migrations: {} };
 
-  if (opts.client) {
+  if (opts.client && (!noClientOverride || !config.client)) {
     config.client = opts.client;
   }
 
@@ -34,7 +28,7 @@ function parseConfigObj(opts) {
   return config;
 }
 
-function mkConfigObj(opts) {
+function mkConfigObj(opts, noClientOverride) {
   if (!opts.client) {
     throw new Error(
       `No configuration file found and no commandline connection parameters passed`
@@ -44,7 +38,7 @@ function mkConfigObj(opts) {
   const envName = opts.env || process.env.NODE_ENV || 'development';
   const resolvedClientName = resolveClientNameWithAliases(opts.client);
   const useNullAsDefault = resolvedClientName === 'sqlite3';
-  const parsedConfig = parseConfigObj(opts);
+  const parsedConfig = parseConfigObj(opts, noClientOverride);
 
   return {
     ext: DEFAULT_EXT,
