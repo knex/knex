@@ -42,7 +42,7 @@ async function openKnexfile(configPath) {
   return config;
 }
 
-async function initKnex(env, opts) {
+async function initKnex(env, opts, noClientOverride) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -54,24 +54,27 @@ async function initKnex(env, opts) {
 
   env.configuration = env.configPath
     ? await openKnexfile(env.configPath)
-    : mkConfigObj(opts);
+    : mkConfigObj(opts, noClientOverride);
 
-  const resolvedConfig = resolveEnvironmentConfig(
+  let resolvedConfig = resolveEnvironmentConfig(
     opts,
     env.configuration,
     env.configPath
   );
 
-  const optionsConfig = parseConfigObj(opts);
-  const config = merge(resolvedConfig, optionsConfig);
+  // In the other case, config is already override in mkConfigObj.
+  if (env.configPath) {
+    const optionsConfig = parseConfigObj(opts, noClientOverride);
+    resolvedConfig = merge(resolvedConfig, optionsConfig);
+  }
 
   // Migrations directory gets defaulted if it is undefined.
-  if (!env.configPath && !config.migrations.directory) {
-    config.migrations.directory = null;
+  if (!env.configPath && !resolvedConfig.migrations.directory) {
+    resolvedConfig.migrations.directory = null;
   }
 
   const knex = require(env.modulePath);
-  return knex(config);
+  return knex(resolvedConfig);
 }
 
 function invoke() {
@@ -122,8 +125,6 @@ function invoke() {
     configPath,
     configuration: null,
   };
-
-  // rechoir.prepare(interpret.jsVariants, configPath, cwd);
 
   let modulePackage = {};
   try {
@@ -210,7 +211,7 @@ function invoke() {
     .action(async (name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
-      const instance = await initKnex(env, opts);
+      const instance = await initKnex(env, opts, true);
       const ext = getMigrationExtension(env, opts);
       const configOverrides = { extension: ext };
 

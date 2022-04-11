@@ -136,6 +136,33 @@ module.exports = {
       );
     });
 
+    it('Create new migration with default knexfile with pg client', () => {
+      fileHelper.registerGlobForCleanup(
+        'test/jake-util/knexfile_migrations/*_somename.js'
+      );
+      fileHelper.createFile(
+        process.cwd() + '/knexfile.js',
+        `
+module.exports = {
+  client: 'pg',
+  connection: {
+    filename: __dirname + '/test/jake-util/test.sqlite3',
+  },
+  migrations: {
+    directory: __dirname + '/test/jake-util/knexfile_migrations',
+  },
+};
+    `,
+        { isPathAbsolute: true }
+      );
+      return execCommand(
+        `node ${KNEX} migrate:make somename --knexpath=../knex.js`,
+        {
+          expectedOutput: 'Created Migration',
+        }
+      );
+    });
+
     it('Create new migration with default ts knexfile', async () => {
       fileHelper.registerGlobForCleanup(
         'test/jake-util/knexfile_migrations/*_somename1.ts'
