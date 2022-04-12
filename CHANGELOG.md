@@ -1,5 +1,12 @@
 # Master (Unreleased)
 
+# 1.0.6 - 12 March, 2022
+
+### Bug fixes:
+
+- PostgreSQL: Wait for search path to be set before returning connection #5107
+- CLI: No client override during migrate:make #5109
+
 # 1.0.5 - 05 March, 2022
 
 ### New features:
