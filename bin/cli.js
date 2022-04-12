@@ -216,22 +216,26 @@ function invoke() {
       'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      const instance = await initKnex(env, opts, true);  // Skip config check, we don't really care about client when creating migrations
-      const ext = getMigrationExtension(env, opts);
-      const configOverrides = { extension: ext };
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true);  // Skip config check, we don't really care about client when creating migrations
+        const ext = getMigrationExtension(env, opts);
+        const configOverrides = { extension: ext };
 
-      const stub = getStubPath('migrations', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
+        const stub = getStubPath('migrations', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
+
+        instance.migrate
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created Migration: ${name}`));
+          })
+          .catch(exit);
+      } catch(err) {
+        exit(err);
       }
-
-      instance.migrate
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created Migration: ${name}`));
-        })
-        .catch(exit);
     });
 
   commander
@@ -382,25 +386,29 @@ function invoke() {
       false
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating seeds
-      const ext = getSeedExtension(env, opts);
-      const configOverrides = { extension: ext };
-      const stub = getStubPath('seeds', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
-      }
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating seeds
+        const ext = getSeedExtension(env, opts);
+        const configOverrides = { extension: ext };
+        const stub = getStubPath('seeds', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
 
-      if (opts.timestampFilenamePrefix) {
-        configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
-      }
+        if (opts.timestampFilenamePrefix) {
+          configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
+        }
 
-      instance.seed
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created seed file: ${name}`));
-        })
-        .catch(exit);
+        instance.seed
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created seed file: ${name}`));
+          })
+          .catch(exit);
+      } catch(err) {
+        exit(err);
+      }   
     });
 
   commander
