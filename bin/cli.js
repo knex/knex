@@ -210,7 +210,6 @@ function invoke() {
     )
     .action(async (name) => {
       const opts = commander.opts();
-      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
       const instance = await initKnex(env, opts, true);
       const ext = getMigrationExtension(env, opts);
       const configOverrides = { extension: ext };
