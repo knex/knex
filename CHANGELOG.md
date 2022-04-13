@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 1.0.7 - 13 March, 2022
+
+### Bug fixes:
+
+- CLI: Fix cli migrate:make SQLite dependency #5106
+
 # 1.0.6 - 12 March, 2022
 
 ### Bug fixes:
