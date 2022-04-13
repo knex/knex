@@ -16,6 +16,7 @@ const {
   exit,
   success,
   checkLocalModule,
+  checkConfigurationOptions,
   getMigrationExtension,
   getSeedExtension,
   getStubPath,
@@ -42,7 +43,7 @@ async function openKnexfile(configPath) {
   return config;
 }
 
-async function initKnex(env, opts, noClientOverride) {
+async function initKnex(env, opts, useDefaultClientIfNotSpecified) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -52,29 +53,35 @@ async function initKnex(env, opts, noClientOverride) {
     );
   }
 
+  if (!useDefaultClientIfNotSpecified) {
+    checkConfigurationOptions(env, opts);
+  }
+
   env.configuration = env.configPath
     ? await openKnexfile(env.configPath)
-    : mkConfigObj(opts, noClientOverride);
+    : mkConfigObj(opts);
 
-  let resolvedConfig = resolveEnvironmentConfig(
+  const resolvedConfig = resolveEnvironmentConfig(
     opts,
     env.configuration,
     env.configPath
   );
 
-  // In the other case, config is already override in mkConfigObj.
-  if (env.configPath) {
-    const optionsConfig = parseConfigObj(opts, noClientOverride);
-    resolvedConfig = merge(resolvedConfig, optionsConfig);
-  }
+  const optionsConfig = parseConfigObj(opts);
+  const config = merge(resolvedConfig, optionsConfig);
 
   // Migrations directory gets defaulted if it is undefined.
-  if (!env.configPath && !resolvedConfig.migrations.directory) {
-    resolvedConfig.migrations.directory = null;
+  if (!env.configPath && !config.migrations.directory) {
+    config.migrations.directory = null;
+  }
+
+  // Client gets defaulted if undefined and it's allowed
+  if (useDefaultClientIfNotSpecified && config.client === undefined) {
+    config.client = 'sqlite3';
   }
 
   const knex = require(env.modulePath);
-  return knex(resolvedConfig);
+  return knex(config);
 }
 
 function invoke() {
@@ -209,23 +216,26 @@ function invoke() {
       'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
-      const instance = await initKnex(env, opts, true);
-      const ext = getMigrationExtension(env, opts);
-      const configOverrides = { extension: ext };
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true);  // Skip config check, we don't really care about client when creating migrations
+        const ext = getMigrationExtension(env, opts);
+        const configOverrides = { extension: ext };
 
-      const stub = getStubPath('migrations', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
+        const stub = getStubPath('migrations', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
+
+        instance.migrate
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created Migration: ${name}`));
+          })
+          .catch(exit);
+      } catch(err) {
+        exit(err);
       }
-
-      instance.migrate
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created Migration: ${name}`));
-        })
-        .catch(exit);
     });
 
   commander
@@ -376,26 +386,29 @@ function invoke() {
       false
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
-      const instance = await initKnex(env, opts);
-      const ext = getSeedExtension(env, opts);
-      const configOverrides = { extension: ext };
-      const stub = getStubPath('seeds', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
-      }
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating seeds
+        const ext = getSeedExtension(env, opts);
+        const configOverrides = { extension: ext };
+        const stub = getStubPath('seeds', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
 
-      if (opts.timestampFilenamePrefix) {
-        configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
-      }
+        if (opts.timestampFilenamePrefix) {
+          configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
+        }
 
-      instance.seed
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created seed file: ${name}`));
-        })
-        .catch(exit);
+        instance.seed
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created seed file: ${name}`));
+          })
+          .catch(exit);
+      } catch(err) {
+        exit(err);
+      }   
     });
 
   commander

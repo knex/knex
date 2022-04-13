@@ -163,6 +163,30 @@ module.exports = {
       );
     });
 
+    it('Does not create new migration with default knexfile with invalid client', () => {
+      fileHelper.registerGlobForCleanup(
+        'test/jake-util/knexfile_migrations/*_somename.js'
+      );
+      fileHelper.createFile(
+        process.cwd() + '/knexfile.js',
+        `
+module.exports = {
+  client: 'invalidclient',
+  migrations: {
+    directory: __dirname + '/test/jake-util/knexfile_migrations',
+  },
+};
+    `,
+        { isPathAbsolute: true }
+      );
+      return execCommand(
+        `node ${KNEX} migrate:make somename --knexpath=../knex.js`,
+        {
+          expectedErrorMessage: `Unknown configuration option 'client' value invalidclient.`,
+        }
+      );
+    });
+
     it('Create new migration with default ts knexfile', async () => {
       fileHelper.registerGlobForCleanup(
         'test/jake-util/knexfile_migrations/*_somename1.ts'
