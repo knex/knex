@@ -31,7 +31,8 @@ knex.transaction(function(trx) {
   console.log(inserts.length + ' new books saved.');
 })
 .catch(function(error) {
-  // If we get here, that means that neither the 'Old Books' catalogues insert,
+  // If we get here, that means that 
+  // neither the 'Old Books' catalogues insert,
   // nor any of the books inserts will have taken place.
   console.error(error);
 });
@@ -63,7 +64,8 @@ knex.transaction(function(trx) {
   console.log(inserts.length + ' new books saved.');
 })
 .catch(function(error) {
-  // If we get here, that means that neither the 'Old Books' catalogues insert,
+  // If we get here, that means that 
+  // neither the 'Old Books' catalogues insert,
   // nor any of the books inserts will have taken place.
   console.error(error);
 });

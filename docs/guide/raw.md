@@ -24,12 +24,15 @@ knex('users').where(knex.raw('?? = ?', ['user.name', 1]))
 Named bindings such as `:name` are interpreted as values and `:name:` interpreted as identifiers. Named bindings are processed so long as the value is anything other than `undefined`.
 
 ```js
+const raw = ':name: = :thisGuy or :name: = :otherGuy or :name: = :undefinedBinding'
+
 knex('users')
-  .where(knex.raw(':name: = :thisGuy or :name: = :otherGuy or :name: = :undefinedBinding', {
-    name: 'users.name',
-    thisGuy: 'Bob',
-    otherGuy: 'Jay',
-    undefinedBinding: undefined
+  .where(
+    knex.raw(raw, {
+      name: 'users.name',
+      thisGuy: 'Bob',
+      otherGuy: 'Jay',
+      undefinedBinding: undefined
   }))
 ```
 
@@ -53,7 +56,12 @@ Since there is no unified syntax for array bindings, instead you need to treat t
 ```js
 const myArray = [1,2,3]
 knex.raw('select * from users where id in (' + myArray.map(_ => '?').join(',') + ')', [...myArray]);
-// query will become: select * from users where id in (?, ?, ?) with bindings [1,2,3]
+
+```
+query will become:
+
+```sql
+select * from users where id in (?, ?, ?) /* with bindings [1,2,3] */
 ```
 
 To prevent replacement of `?` one can use the escape sequence `\\?`.
@@ -103,7 +111,9 @@ Note that the response will be whatever the underlying sql library would typical
 The raw query builder also comes with a `wrap` method, which allows wrapping the query in a value:
 
 ```js
-const subcolumn = knex.raw('select avg(salary) from employee where dept_no = e.dept_no')
+const subcolumn = knex.raw(
+    'select avg(salary) from employee where dept_no = e.dept_no'
+  )
   .wrap('(', ') avg_sal_dept');
 
 knex.select('e.lastname', 'e.salary', subcolumn)

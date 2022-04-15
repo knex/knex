@@ -27,6 +27,7 @@ module.exports = {
         'no-undef': 'off',
         'no-unused-expressions': 'off',
         'no-unused-vars': 'off',
+        'max-len': ['error', { code: 60, ignoreStrings: true }],
       },
     },
   ],

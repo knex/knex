@@ -40,7 +40,8 @@ Creates a new table on the database based on another table. Copy only the struct
 ```js
 knex.schema.createTableLike('new_users', 'users')
 
-// "new_users" table contains columns of users and two new columns 'age' and 'last_name'.
+// "new_users" table contains columns 
+// of users and two new columns 'age' and 'last_name'.
 knex.schema.createTableLike('new_users', 'users', (table) => {
   table.integer('age');
   table.string('last_name');
@@ -346,13 +347,15 @@ Renames a column from one name to another.
 Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). This will be used as the primary key for the table if the column isn't in another primary key. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial). Note that a primary key is created by default if the column isn't in primary key (with primary function), but you can override this behaviour by passing the `primaryKey` option. If you use this function with primary function, the column is added to the composite primary key. With SQLite, autoincrement column need to be a primary key, so if primary function is used, primary keys are transformed in unique index. MySQL don't support autoincrement column without primary key, so multiple queries are generated to create int column, add increments column to composite primary key then modify the column to autoincrement column.
 
 ```js
-// create table 'users' with a primary key using 'increments()'
+// create table 'users' 
+// with a primary key using 'increments()'
 knex.schema.createTable('users', function (table) {
   table.increments('userId');
   table.string('name');
 });
 
-// create table 'users' with a composite primary key ('userId', 'name'). 
+// create table 'users' 
+// with a composite primary key ('userId', 'name'). 
 // increments doesn't generate primary key.
 knex.schema.createTable('users', function (table) {
   table.primary(['userId', 'name']);
@@ -373,8 +376,10 @@ knex.schema.createTable('posts', function (table) {
 A primaryKey option may be passed, to disable to automatic primary key creation:
 
 ```js
-// create table 'users' with a primary key using 'increments()'
-//  but also increments field 'other_id' that does not need primary key
+// create table 'users' 
+// with a primary key using 'increments()'
+// but also increments field 'other_id' 
+// that does not need primary key
 knex.schema.createTable('users', function (table) {
   table.increments('id');
   table.increments('other_id', { primaryKey: false });
@@ -830,7 +835,8 @@ This only works in .alterTable() and is not supported by SQlite or Amazon Redshi
 ```js
 knex.schema.alterTable('user', function(t) {
   t.increments().primary(); // add
-  // drops previous default value from column, change type to string and add not nullable constraint
+  // drops previous default value from column,
+  // change type to string and add not nullable constraint
   t.string('username', 35).notNullable().alter();
   // drops both not null constraint and the default value
   t.integer('age').alter();
@@ -1112,7 +1118,8 @@ Specify a check on column that test if the value match the specified regular exp
 ```js
 knex.schema.createTable('product', function (table) {
   table.string('phone').checkRegex('[0-9]{8}');
-  // In MSSQL, {8} syntax don't work, you need to duplicate [0-9].
+  // In MSSQL, {8} syntax don't work, y
+  // ou need to duplicate [0-9].
   table.string('phone').checkRegex('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
 })
 ```

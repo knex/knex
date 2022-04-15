@@ -72,7 +72,8 @@ It is also possible to take advantage of auto-completion support (in TypeScript-
  */
 const Users = () => knex('Users')
 
-Users().where('id', 1) // 'id' property can be autocompleted by editor
+// 'id' property can be autocompleted by editor
+Users().where('id', 1) 
 ```
 
 ##### Caveat with type inference and mutable fluent APIs
@@ -137,7 +138,9 @@ knex.select()
 
 knex.select()
   .from('books')
-  .timeout(1000, {cancel: true}) // MySQL and PostgreSQL only
+  .timeout(1000, { 
+    cancel: true // MySQL and PostgreSQL only
+  }) 
 ```
 
 ### select
@@ -262,7 +265,10 @@ Add a "with" clause to the query. "With" clauses are supported by PostgreSQL, Or
 knex
   .with(
     'with_alias', 
-    knex.raw('select * from "books" where "author" = ?', 'Test')
+    knex.raw(
+      'select * from "books" where "author" = ?', 
+      'Test'
+    )
   )
   .select('*')
   .from('with_alias')
@@ -271,7 +277,10 @@ knex
   .with(
     'with_alias', 
     ["title"], 
-    knex.raw('select "title" from "books" where "author" = ?', 'Test')
+    knex.raw(
+      'select "title" from "books" where "author" = ?', 
+      'Test'
+    )
   )
   .select('*')
   .from('with_alias')
@@ -301,7 +310,11 @@ knex
       .union((qb) => {
         qb.select('*')
           .from('people')
-          .join('ancestors', 'ancestors.parentId', 'people.id')
+          .join(
+            'ancestors', 
+            'ancestors.parentId', 
+            'people.id'
+          )
       })
   })
   .select('*')
@@ -337,7 +350,10 @@ Add a "with" materialized clause to the query. "With" materialized clauses are s
 knex
   .withMaterialized(
     'with_alias', 
-    knex.raw('select * from "books" where "author" = ?', 'Test')
+    knex.raw(
+      'select * from "books" where "author" = ?', 
+      'Test'
+    )
   )
   .select('*')
   .from('with_alias')
@@ -346,7 +362,10 @@ knex
   .withMaterialized(
     'with_alias', 
     ["title"], 
-    knex.raw('select "title" from "books" where "author" = ?', 'Test')
+    knex.raw(
+      'select "title" from "books" where "author" = ?', 
+      'Test'
+    )
   )
   .select('*')
   .from('with_alias')
@@ -371,7 +390,10 @@ Add a "with" not materialized clause to the query. "With" not materialized claus
 knex
   .withNotMaterialized(
     'with_alias', 
-    knex.raw('select * from "books" where "author" = ?', 'Test')
+    knex.raw(
+      'select * from "books" where "author" = ?', 
+      'Test'
+    )
   )
   .select('*')
   .from('with_alias')
@@ -380,7 +402,10 @@ knex
   .withNotMaterialized(
     'with_alias', 
     ["title"], 
-    knex.raw('select "title" from "books" where "author" = ?', 'Test')
+    knex.raw(
+      'select "title" from "books" where "author" = ?', 
+      'Test'
+    )
   )
   .select('*')
   .from('with_alias')
@@ -435,8 +460,16 @@ All json\*() functions can be used directly from knex object and can be nested.
 ```js
 knex('cities')
   .jsonExtract([
-    [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
-    [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
+    [
+      knex.jsonRemove('population', '$.min'), 
+      '$', 
+      'withoutMin'
+    ],
+    [
+      knex.jsonRemove('population', '$.max'), 
+      '$', 
+      'withoutMax'
+    ],
     [
       knex.jsonSet('population', '$.current', '1234'),
       '$',
@@ -456,7 +489,12 @@ knex('accounts')
   .jsonSet('json_col', '$.name', 'newName', 'newNameCol')
 
 knex('accounts')
-  .jsonSet('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+  .jsonSet(
+    'json_col', 
+    '$.name', 
+    { "name": "newName" }, 
+    'newNameCol'
+  )
 ```
 
 ### jsonInsert
@@ -470,7 +508,12 @@ knex('accounts')
   .jsonInsert('json_col', '$.name', 'newName', 'newNameCol')
 
 knex('accounts')
-  .jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+  .jsonInsert(
+    'json_col', 
+    '$.name', 
+    { "name": "newName" }, 
+    'newNameCol'
+  )
 
 knex('accounts')
   .jsonInsert(
@@ -492,7 +535,12 @@ knex('accounts')
   .jsonRemove('json_col', '$.name', 'colWithRemove')
 
 knex('accounts')
-  .jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+  .jsonInsert(
+    'json_col', 
+    '$.name', 
+    { "name": "newName" }, 
+    'newNameCol'
+  )
 ```
 
 
@@ -578,8 +626,12 @@ knex.select('*')
   .from('users')
   .whereNull('last_name')
   .union(
-    knex.raw('select * from users where first_name is null'),
-    knex.raw('select * from users where email is null')
+    knex.raw(
+      'select * from users where first_name is null'
+    ),
+    knex.raw(
+      'select * from users where email is null'
+    )
   )
 ```
 
@@ -590,18 +642,31 @@ knex.select('*')
 Creates a union all query, with the same method signature as the union method. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses.
 
 ```js
-knex.select('*').from('users').whereNull('last_name').unionAll(function() {
-  this.select('*').from('users').whereNull('first_name');
-})
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .unionAll(function() {
+    this.select('*').from('users').whereNull('first_name');
+  })
 
-knex.select('*').from('users').whereNull('last_name').unionAll([
-  knex.select('*').from('users').whereNull('first_name')
-])
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .unionAll([
+    knex.select('*').from('users').whereNull('first_name')
+  ])
 
-knex.select('*').from('users').whereNull('last_name').unionAll(
-  knex.raw('select * from users where first_name is null'),
-  knex.raw('select * from users where email is null')
-)
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .unionAll(
+    knex.raw(
+      'select * from users where first_name is null'
+    ),
+    knex.raw(
+      'select * from users where email is null'
+    )
+  )
 ```
 
 ### intersect
@@ -611,18 +676,31 @@ knex.select('*').from('users').whereNull('last_name').unionAll(
 Creates an intersect query, taking an array or a list of callbacks, builders, or raw statements to build the intersect statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses. The intersect method is unsupported on MySQL.
 
 ```js
-knex.select('*').from('users').whereNull('last_name').intersect(function() {
-  this.select('*').from('users').whereNull('first_name')
-})
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .intersect(function() {
+    this.select('*').from('users').whereNull('first_name')
+  })
 
-knex.select('*').from('users').whereNull('last_name').intersect([
-  knex.select('*').from('users').whereNull('first_name')
-])
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .intersect([
+    knex.select('*').from('users').whereNull('first_name')
+  ])
 
-knex.select('*').from('users').whereNull('last_name').intersect(
-  knex.raw('select * from users where first_name is null'),
-  knex.raw('select * from users where email is null')
-)
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .intersect(
+    knex.raw(
+      'select * from users where first_name is null'
+    ),
+    knex.raw(
+      'select * from users where email is null'
+    )
+  )
 ```
 
 ### insert
@@ -632,23 +710,38 @@ knex.select('*').from('users').whereNull('last_name').intersect(
 Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#Builder-returning)
 
 ```js
-// Returns [1] in "mysql", "sqlite", "oracle"; [] in "postgresql" unless the 'returning' parameter is set.
+// Returns [1] in "mysql", "sqlite", "oracle"; 
+// [] in "postgresql" 
+// unless the 'returning' parameter is set.
 knex('books').insert({title: 'Slaughterhouse Five'})
 
 // Normalizes for empty keys on multi-row insert:
 knex('coords').insert([{x: 20}, {y: 30},  {x: 10, y: 20}])
 
 // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
-knex.insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], ['id']).into('books')
+knex
+  .insert(
+    [
+      { title: 'Great Gatsby' }, 
+      { title: 'Fahrenheit 451' }
+    ], 
+    ['id']
+  )
+  .into('books')
 ```
 
 For MSSQL, triggers on tables can interrupt returning a valid value from the standard insert statements. You can add the `includeTriggerModifications` option to get around this issue. This modifies the SQL so the proper values can be returned. This only modifies the statement if you are using MSSQL, a returning value is specified, and the `includeTriggerModifications` option is set.
 
 ```js
-// Adding the option includeTriggerModifications allows you to
-// run statements on tables that contain triggers. Only affects MSSQL.
+// Adding the option includeTriggerModifications 
+// allows you to run statements on tables 
+// that contain triggers. Only affects MSSQL.
 knex('books')
-  .insert({title: 'Alice in Wonderland'}, ['id'], { includeTriggerModifications: true })
+  .insert(
+    {title: 'Alice in Wonderland'}, 
+    ['id'], 
+    { includeTriggerModifications: true }
+  )
 ```
 
 If one prefers that undefined keys are replaced with `NULL` instead of `DEFAULT` one may give `useNullAsDefault` configuration parameter in knex config.
@@ -667,7 +760,10 @@ const knex = require('knex')({
 });
 
 knex('coords').insert([{x: 20}, {y: 30}, {x: 10, y: 20}])
-// insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)"
+```
+
+```sql
+insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)"
 ```
 
 ### onConflict
@@ -805,10 +901,16 @@ Implemented for the CockroachDB. Creates an upsert query, taking either a hash o
 // insert new row with unique index on title column
 knex('books').upsert({title: 'Great Gatsby'})
 
-// update row by unique title 'Great Gatsby' and insert row with title 'Fahrenheit 451'
-knex('books').upsert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}], ['id'])
+// update row by unique title 'Great Gatsby' 
+// and insert row with title 'Fahrenheit 451'
+knex('books').upsert([
+  {title: 'Great Gatsby'}, 
+  {title: 'Fahrenheit 451'}
+], ['id'])
 
-// Normalizes for empty keys on multi-row upsert, result sql: ("x", "y") values (20, default), (default, 30), (10, 20):
+// Normalizes for empty keys on multi-row upsert, 
+// result sql: 
+// ("x", "y") values (20, default), (default, 30), (10, 20):
 knex('coords').upsert([{x: 20}, {y: 30}, {x: 10, y: 20}])
 ```
 
@@ -827,22 +929,35 @@ knex('books')
     thisKeyIsSkipped: undefined
   })
 
-// Returns [1] in "mysql", "sqlite", "oracle"; [] in "postgresql" unless the 'returning' parameter is set.
+// Returns [1] in "mysql", "sqlite", "oracle"; 
+// [] in "postgresql" 
+// unless the 'returning' parameter is set.
 knex('books').update('title', 'Slaughterhouse Five')
 
-// Returns [ { id: 42, title: "The Hitchhiker's Guide to the Galaxy" } ]
+/** Returns  
+ * [{ 
+ *   id: 42, 
+ *   title: "The Hitchhiker's Guide to the Galaxy" 
+ * }] **/
 knex('books')
   .where({ id: 42 })
-  .update({ title: "The Hitchhiker's Guide to the Galaxy" }, ['id', 'title'])
+  .update({ 
+    title: "The Hitchhiker's Guide to the Galaxy" 
+  }, ['id', 'title'])
 ```
 
 For MSSQL, triggers on tables can interrupt returning a valid value from the standard update statements. You can add the `includeTriggerModifications` option to get around this issue. This modifies the SQL so the proper values can be returned. This only modifies the statement if you are using MSSQL, a returning value is specified, and the `includeTriggerModifications` option is set.
 
 ```js
 // Adding the option includeTriggerModifications allows you
-// to run statements on tables that contain triggers. Only affects MSSQL.
+// to run statements on tables that contain triggers.
+// Only affects MSSQL.
 knex('books')
-  .update({title: 'Alice in Wonderland'}, ['id', 'title'], { includeTriggerModifications: true })
+  .update(
+    {title: 'Alice in Wonderland'}, 
+    ['id', 'title'], 
+    { includeTriggerModifications: true }
+  )
 ```
 
 ### del / delete
@@ -861,10 +976,14 @@ For MSSQL, triggers on tables can interrupt returning a valid value from the sta
 
 ```js
 // Adding the option includeTriggerModifications allows you
-// to run statements on tables that contain triggers. Only affects MSSQL.
+// to run statements on tables that contain triggers. 
+// Only affects MSSQL.
 knex('books')
   .where('title', 'Alice in Wonderland')
-  .del(['id', 'title'], { includeTriggerModifications: true })
+  .del(
+    ['id', 'title'], 
+    { includeTriggerModifications: true }
+  )
 ```
 
 For PostgreSQL, Delete statement with joins is both supported with classic 'join' syntax and 'using' syntax.
@@ -903,10 +1022,14 @@ knex('books')
   .returning('id')
   .insert({title: 'Slaughterhouse Five'})
 
-// Returns [ { id: 2 } ] in "mysql", "sqlite"; [ { id: 2 }, { id: 3 } ] in "postgresql"
+// Returns [{ id: 2 } ] in "mysql", "sqlite"; 
+// [ { id: 2 }, { id: 3 } ] in "postgresql"
 knex('books')
   .returning('id')
-  .insert([{title: 'Great Gatsby'}, {title: 'Fahrenheit 451'}])
+  .insert([
+    {title: 'Great Gatsby'}, 
+    {title: 'Fahrenheit 451'}
+  ])
 
 // Returns [ { id: 1, title: 'Slaughterhouse Five' } ]
 knex('books')
@@ -918,9 +1041,13 @@ For MSSQL, triggers on tables can interrupt returning a valid value from the sta
 
 ```js
 // Adding the option includeTriggerModifications allows you
-// to run statements on tables that contain triggers. Only affects MSSQL.
+// to run statements on tables that contain triggers. 
+// Only affects MSSQL.
 knex('books')
-  .returning(['id','title'], { includeTriggerModifications: true })
+  .returning(
+    ['id','title'], 
+    { includeTriggerModifications: true }
+  )
   .insert({title: 'Slaughterhouse Five'})
 ```
 
@@ -1208,7 +1335,9 @@ knex('accounts')
 Decrements a column value by the specified amount. Object syntax is supported for `column`.
 
 ```js
-knex('accounts').where('userid', '=', 1).decrement('balance', 5)
+knex('accounts')
+  .where('userid', '=', 1)
+  .decrement('balance', 5)
 
 knex('accounts')
   .where('id', '=', 1)
@@ -1234,7 +1363,9 @@ knex('accounts').truncate()
 This will pluck the specified column from each row in your results, yielding a promise which resolves to the array of values selected.
 
 ```js
-knex.table('users').pluck('id').then(function(ids) { console.log(ids); });
+knex.table('users')
+  .pluck('id')
+  .then(function(ids) { console.log(ids); });
 ```
 
 ### first
@@ -1244,7 +1375,9 @@ knex.table('users').pluck('id').then(function(ids) { console.log(ids); });
 Similar to select, but only retrieves & resolves with the first record from the query.
 
 ```js
-knex.table('users').first('id', 'name').then(function(row) { console.log(row); });
+knex.table('users')
+  .first('id', 'name')
+  .then(function(row) { console.log(row); });
 ```
 
 ### hintComment
@@ -1254,7 +1387,9 @@ knex.table('users').first('id', 'name').then(function(row) { console.log(row); }
 Add hints to the query using comment-like syntax `/*+ ... */`. MySQL and Oracle use this syntax for optimizer hints. Also various DB proxies and routers use this syntax to pass hints to alter their behavior. In other dialects the hints are ignored as simple comments.
 
 ```js
-knex('accounts').where('userid', '=', 1).hintComment('NO_ICP(accounts)')
+knex('accounts')
+  .where('userid', '=', 1)
+  .hintComment('NO_ICP(accounts)')
 ```
 
 ### clone
@@ -1272,19 +1407,31 @@ Add a dense\_rank() call to your query. For all the following queries, alias can
 String Syntax — .denseRank(alias, orderByClause, \[partitionByClause\]) :
 
 ```js
-knex('users').select('*').denseRank('alias_name', 'email', 'firstName')
+knex('users')
+  .select('*')
+  .denseRank('alias_name', 'email', 'firstName')
 ```
 
 It also accepts arrays of strings as argument :
 
 ```js
-knex('users').select('*').denseRank('alias_name', ['email', 'address'], ['firstName', 'lastName'])
+knex('users')
+  .select('*')
+  .denseRank(
+    'alias_name', 
+    ['email', 'address'], 
+    ['firstName', 'lastName']
+  )
 ```
 
 Raw Syntax — .denseRank(alias, rawQuery) :
 
 ```js
-knex('users').select('*').denseRank('alias_name', knex.raw('order by ??', ['email']))
+knex('users').select('*')
+  .denseRank(
+    'alias_name', 
+    knex.raw('order by ??', ['email']
+  ))
 ```
 
 Function Syntax — .denseRank(alias, function) :
@@ -1292,9 +1439,11 @@ Function Syntax — .denseRank(alias, function) :
 Use orderBy() and partitionBy() (both chainable) to build your query :
 
 ```js
-knex('users').select('*').denseRank('alias_name', function() {
-  this.orderBy('email').partitionBy('firstName')
-})
+knex('users')
+  .select('*')
+  .denseRank('alias_name', function() {
+    this.orderBy('email').partitionBy('firstName')
+  })
 ```
 
 ### rank
@@ -1306,19 +1455,29 @@ Add a rank() call to your query. For all the following queries, alias can be set
 String Syntax — .rank(alias, orderByClause, \[partitionByClause\]) :
 
 ```js
-knex('users').select('*').rank('alias_name', 'email', 'firstName')
+knex('users')
+  .select('*')
+  .rank('alias_name', 'email', 'firstName')
 ```
 
 It also accepts arrays of strings as argument :
 
 ```js
-knex('users').select('*').rank('alias_name', ['email', 'address'], ['firstName', 'lastName'])
+knex('users')
+  .select('*')
+  .rank(
+    'alias_name', 
+    ['email', 'address'], 
+    ['firstName', 'lastName']
+  )
 ```
 
 Raw Syntax — .rank(alias, rawQuery) :
 
 ```js
-knex('users').select('*').rank('alias_name', knex.raw('order by ??', ['email']))
+knex('users')
+  .select('*')
+  .rank('alias_name', knex.raw('order by ??', ['email']))
 ```
 
 Function Syntax — .rank(alias, function) :
@@ -1340,19 +1499,32 @@ Add a row\_number() call to your query. For all the following queries, alias can
 String Syntax — .rowNumber(alias, orderByClause, \[partitionByClause\]) :
 
 ```js
-knex('users').select('*').rowNumber('alias_name', 'email', 'firstName')
+knex('users')
+  .select('*')
+  .rowNumber('alias_name', 'email', 'firstName')
 ```
 
 It also accepts arrays of strings as argument :
 
 ```js
-knex('users').select('*').rowNumber('alias_name', ['email', 'address'], ['firstName', 'lastName'])
+knex('users')
+  .select('*')
+  .rowNumber(
+    'alias_name', 
+    ['email', 'address'], 
+    ['firstName', 'lastName']
+  )
 ```
 
 Raw Syntax — .rowNumber(alias, rawQuery) :
 
 ```js
-knex('users').select('*').rowNumber('alias_name', knex.raw('order by ??', ['email']))
+knex('users')
+  .select('*')
+  .rowNumber(
+    'alias_name', 
+    knex.raw('order by ??', ['email'])
+  )
 ```
 
 Function Syntax — .rowNumber(alias, function) :
@@ -1360,9 +1532,11 @@ Function Syntax — .rowNumber(alias, function) :
 Use orderBy() and partitionBy() (both chainable) to build your query :
 
 ```js
-knex('users').select('*').rowNumber('alias_name', function() {
-  this.orderBy('email').partitionBy('firstName')
-})
+knex('users')
+  .select('*')
+  .rowNumber('alias_name', function() {
+    this.orderBy('email').partitionBy('firstName')
+  })
 ```
 
 ### partitionBy
@@ -1374,25 +1548,34 @@ Partitions rowNumber, denseRank, rank after a specific column or columns. If dir
 No direction sort :
 
 ```js
-knex('users').select('*').rowNumber('alias_name', function() {
-  this.partitionBy('firstName');
-});
+knex('users')
+  .select('*')
+  .rowNumber('alias_name', function() {
+    this.partitionBy('firstName');
+  });
 ```
 
 With direction sort :
 
 ```js
-knex('users').select('*').rowNumber('alias_name', function() {
-  this.partitionBy('firstName', 'desc');
-});
+knex('users')
+  .select('*')
+  .rowNumber('alias_name', function() {
+    this.partitionBy('firstName', 'desc');
+  });
 ```
 
 With multiobject :
 
 ```js
-knex('users').select('*').rowNumber('alias_name', function() {
-  this.partitionBy([{ column: 'firstName', order: 'asc' }, { column: 'lastName', order: 'desc' }]);
-});
+knex('users')
+  .select('*')
+  .rowNumber('alias_name', function() {
+    this.partitionBy([
+      { column: 'firstName', order: 'asc' }, 
+      { column: 'lastName', order: 'desc' }
+    ]);
+  });
 ```
 
 ### modify
@@ -1403,11 +1586,18 @@ Allows encapsulating and re-using query snippets and common behaviors as functio
 
 ```js
 const withUserName = function(queryBuilder, foreignKey) {
-  queryBuilder.leftJoin('users', foreignKey, 'users.id').select('users.user_name');
+  queryBuilder.leftJoin(
+    'users', 
+    foreignKey, 
+    'users.id'
+  ).select('users.user_name');
 };
-knex.table('articles').select('title', 'body').modify(withUserName, 'articles_user.id').then(function(article) {
-  console.log(article.user_name);
-});
+knex.table('articles')
+  .select('title', 'body')
+  .modify(withUserName, 'articles_user.id')
+  .then(function(article) {
+    console.log(article.user_name);
+  });
 ```
 
 ### columnInfo
@@ -1574,7 +1764,9 @@ Functions:
 ```js
 knex('users')
   .where((builder) =>
-    builder.whereIn('id', [1, 11, 15]).whereNotIn('id', [17, 19])
+    builder
+      .whereIn('id', [1, 11, 15])
+      .whereNotIn('id', [17, 19])
   )
   .andWhere(function() {
     this.where('id', '>', 10)
@@ -1600,7 +1792,11 @@ The above query demonstrates the common use case of returning all users for whic
 ```js
 knex('users').where('votes', '>', 100)
 
-const subquery = knex('users').where('votes', '>', 100).andWhere('status', 'active').orWhere('name', 'John').select('id');
+const subquery = knex('users')
+  .where('votes', '>', 100)
+  .andWhere('status', 'active')
+  .orWhere('name', 'John')
+  .select('id');
 
 knex('accounts').where('id', 'in', subquery)
 ```
@@ -1608,7 +1804,9 @@ knex('accounts').where('id', 'in', subquery)
 .orWhere with an object automatically wraps the statement and creates an `or (and - and - and)` clause
 
 ```js
-knex('users').where('id', 1).orWhere({votes: 100, user: 'knex'})
+knex('users')
+  .where('id', 1)
+  .orWhere({votes: 100, user: 'knex'})
 ```
 
 ### whereNot
@@ -1682,10 +1880,20 @@ knex.select('name').from('users')
   .whereIn('account_id', subquery)
 
 knex.select('name').from('users')
-  .whereIn(['account_id', 'email'], [[3, 'test3@example.com'], [4, 'test4@example.com']])
+  .whereIn(
+    ['account_id', 'email'], 
+    [
+      [3, 'test3@example.com'], 
+      [4, 'test4@example.com']
+    ]
+  )
 
 knex.select('name').from('users')
-  .whereIn(['account_id', 'email'], knex.select('id', 'email').from('accounts'))
+  .whereIn(
+    ['account_id', 'email'], 
+    knex.select('id', 'email')
+      .from('accounts')
+  )
 ```
 
 ### whereNotIn
@@ -1696,7 +1904,9 @@ knex.select('name').from('users')
 ```js
 knex('users').whereNotIn('id', [1, 2, 3])
 
-knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3])
+knex('users')
+  .where('name', 'like', '%Test%')
+  .orWhereNotIn('id', [1, 2, 3])
 ```
 
 ### whereNull
@@ -1724,10 +1934,17 @@ knex('users').whereNotNull('created_at')
 
 ```js
 knex('users').whereExists(function() {
-  this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+  this.select('*')
+    .from('accounts')
+    .whereRaw('users.account_id = accounts.id');
 })
 
-knex('users').whereExists(knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id'))
+knex('users')
+  .whereExists(
+    knex.select('*')
+      .from('accounts')
+      .whereRaw('users.account_id = accounts.id')
+  )
 ```
 
 ### whereNotExists
@@ -1737,10 +1954,17 @@ knex('users').whereExists(knex.select('*').from('accounts').whereRaw('users.acco
 
 ```js
 knex('users').whereNotExists(function() {
-  this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+  this.select('*')
+    .from('accounts')
+    .whereRaw('users.account_id = accounts.id');
 })
 
-knex('users').whereNotExists(knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id'))
+knex('users')
+  .whereNotExists(
+    knex.select('*')
+      .from('accounts')
+      .whereRaw('users.account_id = accounts.id')
+  )
 ```
 
 ### whereBetween
@@ -1810,7 +2034,8 @@ knex('users')
 Adds a where clause with json object comparison on given json column.
 
 ```js
-knex('users').whereJsonObject('json_col', { "name" : "user_name"})
+knex('users')
+  .whereJsonObject('json_col', { "name" : "user_name"})
 ```
 
 ### whereJsonPath
@@ -1820,9 +2045,11 @@ knex('users').whereJsonObject('json_col', { "name" : "user_name"})
 Adds a where clause with comparison of a value returned by a JsonPath given an operator and a value.
 
 ```js
-knex('users').whereJsonPath('json_col', '$.age', '>', 18)
+knex('users')
+  .whereJsonPath('json_col', '$.age', '>', 18)
 
-knex('users').whereJsonPath('json_col', '$.name', '=', 'username')
+knex('users')
+  .whereJsonPath('json_col', '$.name', '=', 'username')
 ```
 
 ### whereJsonSupersetOf
@@ -1832,7 +2059,8 @@ knex('users').whereJsonPath('json_col', '$.name', '=', 'username')
 Adds a where clause where the comparison is true if a json given by the column include a given value. Only on MySQL, PostgreSQL and CockroachDB.
 
 ```js
-knex('users').whereJsonSupersetOf('hobbies', { "sport" : "foot" })
+knex('users')
+  .whereJsonSupersetOf('hobbies', { "sport" : "foot" })
 ```
 
 ### whereJsonSubsetOf
@@ -1842,8 +2070,13 @@ knex('users').whereJsonSupersetOf('hobbies', { "sport" : "foot" })
 Adds a where clause where the comparison is true if a json given by the column is included in a given value. Only on MySQL, PostgreSQL and CockroachDB.
 
 ```js
-// given a hobby column with { "sport" : "tennis" }, the where clause is true
-knex('users').whereJsonSubsetOf('hobby', { "sport" : "tennis", "book" : "fantasy" })
+// given a hobby column with { "sport" : "tennis" }, 
+// the where clause is true
+knex('users')
+  .whereJsonSubsetOf(
+    'hobby', 
+    { "sport" : "tennis", "book" : "fantasy" }
+  )
 ```
 
 ## Join Methods
@@ -1870,7 +2103,9 @@ For grouped joins, specify a function as the second argument for the join query,
 
 ```js
 knex.select('*').from('users').join('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
+  this
+    .on('accounts.id', '=', 'users.account_id')
+    .orOn('accounts.owner_id', '=', 'users.id')
 })
 ```
 
@@ -1888,13 +2123,21 @@ knex.select('*').from('users').join('accounts', function() {
 It is also possible to use an object to represent the join syntax.
 
 ```js
-knex.select('*').from('users').join('accounts', {'accounts.id': 'users.account_id'})
+knex.select('*')
+  .from('users')
+  .join('accounts', {'accounts.id': 'users.account_id'})
 ```
 
 If you need to use a literal value (string, number, or boolean) in a join instead of a column, use `knex.raw`.
 
 ```js
-knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', ['admin']))
+knex.select('*')
+  .from('users')
+  .join(
+    'accounts', 
+    'accounts.type',
+    knex.raw('?', ['admin'])
+  )
 ```
 
 ### innerJoin
@@ -1902,13 +2145,25 @@ knex.select('*').from('users').join('accounts', 'accounts.type', knex.raw('?', [
 **.innerJoin(table, ~mixed~)**
 
 ```js
-knex.from('users').innerJoin('accounts', 'users.id', 'accounts.user_id')
+knex
+  .from('users')
+  .innerJoin('accounts', 'users.id', 'accounts.user_id')
 
-knex.table('users').innerJoin('accounts', 'users.id', '=', 'accounts.user_id')
+knex
+  .table('users')
+  .innerJoin(
+    'accounts', 
+    'users.id', 
+    '=', 
+    'accounts.user_id'
+  )
 
-knex('users').innerJoin('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
-})
+knex('users')
+  .innerJoin('accounts', function() {
+    this
+      .on('accounts.id', '=', 'users.account_id')
+      .orOn('accounts.owner_id', '=', 'users.id')
+  })
 ```
 
 ### leftJoin
@@ -1916,11 +2171,17 @@ knex('users').innerJoin('accounts', function() {
 **.leftJoin(table, ~mixed~)**
 
 ```js
-knex.select('*').from('users').leftJoin('accounts', 'users.id', 'accounts.user_id')
+knex.select('*')
+  .from('users')
+  .leftJoin('accounts', 'users.id', 'accounts.user_id')
 
-knex.select('*').from('users').leftJoin('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
-})
+knex.select('*')
+  .from('users')
+  .leftJoin('accounts', function() {
+    this
+      .on('accounts.id', '=', 'users.account_id')
+      .orOn('accounts.owner_id', '=', 'users.id')
+  })
 ```
 
 ### leftOuterJoin
@@ -1928,11 +2189,17 @@ knex.select('*').from('users').leftJoin('accounts', function() {
 **.leftOuterJoin(table, ~mixed~)**
 
 ```js
-knex.select('*').from('users').leftOuterJoin('accounts', 'users.id', 'accounts.user_id')
+knex.select('*')
+  .from('users')
+  .leftOuterJoin('accounts', 'users.id', 'accounts.user_id')
 
-knex.select('*').from('users').leftOuterJoin('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
-})
+knex.select('*')
+  .from('users')
+  .leftOuterJoin('accounts', function() {
+    this
+      .on('accounts.id', '=', 'users.account_id')
+      .orOn('accounts.owner_id', '=', 'users.id')
+  })
 ```
 
 ### rightJoin
@@ -1940,11 +2207,17 @@ knex.select('*').from('users').leftOuterJoin('accounts', function() {
 **.rightJoin(table, ~mixed~)**
 
 ```js
-knex.select('*').from('users').rightJoin('accounts', 'users.id', 'accounts.user_id')
+knex.select('*')
+  .from('users')
+  .rightJoin('accounts', 'users.id', 'accounts.user_id')
 
-knex.select('*').from('users').rightJoin('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
-})
+knex.select('*')
+  .from('users')
+  .rightJoin('accounts', function() {
+    this
+      .on('accounts.id', '=', 'users.account_id')
+      .orOn('accounts.owner_id', '=', 'users.id')
+  })
 ```
 
 ### rightOuterJoin
@@ -1952,11 +2225,21 @@ knex.select('*').from('users').rightJoin('accounts', function() {
 **.rightOuterJoin(table, ~mixed~)**
 
 ```js
-knex.select('*').from('users').rightOuterJoin('accounts', 'users.id', 'accounts.user_id')
+knex.select('*')
+  .from('users')
+  .rightOuterJoin(
+    'accounts', 
+    'users.id', 
+    'accounts.user_id'
+  )
 
-knex.select('*').from('users').rightOuterJoin('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
-})
+knex.select('*')
+  .from('users')
+  .rightOuterJoin('accounts', function() {
+    this
+      .on('accounts.id', '=', 'users.account_id')
+      .orOn('accounts.owner_id', '=', 'users.id')
+  })
 ```
 
 ### fullOuterJoin
@@ -1964,11 +2247,17 @@ knex.select('*').from('users').rightOuterJoin('accounts', function() {
 **.fullOuterJoin(table, ~mixed~)**
 
 ```js
-knex.select('*').from('users').fullOuterJoin('accounts', 'users.id', 'accounts.user_id')
+knex.select('*')
+  .from('users')
+  .fullOuterJoin('accounts', 'users.id', 'accounts.user_id')
 
-knex.select('*').from('users').fullOuterJoin('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
-})
+knex.select('*')
+  .from('users')
+  .fullOuterJoin('accounts', function() {
+    this
+      .on('accounts.id', '=', 'users.account_id')
+      .orOn('accounts.owner_id', '=', 'users.id')
+  })
 ```
 
 ### crossJoin
@@ -1978,13 +2267,21 @@ knex.select('*').from('users').fullOuterJoin('accounts', function() {
 Cross join conditions are only supported in MySQL and SQLite3. For join conditions rather use innerJoin.
 
 ```js
-knex.select('*').from('users').crossJoin('accounts')
+knex.select('*')
+  .from('users')
+  .crossJoin('accounts')
 
-knex.select('*').from('users').crossJoin('accounts', 'users.id', 'accounts.user_id')
+knex.select('*')
+  .from('users')
+  .crossJoin('accounts', 'users.id', 'accounts.user_id')
 
-knex.select('*').from('users').crossJoin('accounts', function() {
-  this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
-})
+knex.select('*')
+  .from('users')
+  .crossJoin('accounts', function() {
+    this
+      .on('accounts.id', '=', 'users.account_id')
+      .orOn('accounts.owner_id', '=', 'users.id')
+  })
 ```
 
 ### joinRaw
@@ -1992,9 +2289,13 @@ knex.select('*').from('users').crossJoin('accounts', function() {
 **.joinRaw(sql, [bindings])**
 
 ```js
-knex.select('*').from('accounts').joinRaw('natural full join table1').where('id', 1)
+knex.select('*')
+  .from('accounts')
+  .joinRaw('natural full join table1').where('id', 1)
 
-knex.select('*').from('accounts').join(knex.raw('natural full join table1')).where('id', 1)
+knex.select('*')
+  .from('accounts')
+  .join(knex.raw('natural full join table1')).where('id', 1)
 ```
 
 ## OnClauses
@@ -2006,9 +2307,13 @@ knex.select('*').from('accounts').join(knex.raw('natural full join table1')).whe
 Adds a onIn clause to the query.
 
 ```js
-knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onIn('contacts.id', [7, 15, 23, 41])
-})
+knex.select('*')
+  .from('users')
+  .join('contacts', function() {
+    this
+      .on('users.id', '=', 'contacts.id')
+      .onIn('contacts.id', [7, 15, 23, 41])
+  })
 ```
 
 ### onNotIn
@@ -2018,9 +2323,13 @@ knex.select('*').from('users').join('contacts', function() {
 Adds a onNotIn clause to the query.
 
 ```js
-knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onNotIn('contacts.id', [7, 15, 23, 41])
-})
+knex.select('*')
+  .from('users')
+  .join('contacts', function() {
+    this
+      .on('users.id', '=', 'contacts.id')
+      .onNotIn('contacts.id', [7, 15, 23, 41])
+  })
 ```
 
 ### onNull
@@ -2031,7 +2340,9 @@ Adds a onNull clause to the query.
 
 ```js
 knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onNull('contacts.email')
+  this
+    .on('users.id', '=', 'contacts.id')
+    .onNull('contacts.email')
 })
 ```
 
@@ -2043,7 +2354,9 @@ Adds a onNotNull clause to the query.
 
 ```js
 knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onNotNull('contacts.email')
+  this
+    .on('users.id', '=', 'contacts.id')
+    .onNotNull('contacts.email')
 })
 ```
 
@@ -2055,9 +2368,13 @@ Adds a onExists clause to the query.
 
 ```js
 knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onExists(function() {
-    this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
-  })
+  this
+    .on('users.id', '=', 'contacts.id')
+    .onExists(function() {
+      this.select('*')
+        .from('accounts')
+        .whereRaw('users.account_id = accounts.id');
+    })
 })
 ```
 
@@ -2069,9 +2386,13 @@ Adds a onNotExists clause to the query.
 
 ```js
 knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onNotExists(function() {
-    this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
-  })
+  this
+    .on('users.id', '=', 'contacts.id')
+    .onNotExists(function() {
+      this.select('*')
+        .from('accounts')
+        .whereRaw('users.account_id = accounts.id');
+    })
 })
 ```
 
@@ -2083,7 +2404,9 @@ Adds a onBetween clause to the query.
 
 ```js
 knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onBetween('contacts.id', [5, 30])
+  this
+    .on('users.id', '=', 'contacts.id')
+    .onBetween('contacts.id', [5, 30])
 })
 ```
 
@@ -2095,7 +2418,9 @@ Adds a onNotBetween clause to the query.
 
 ```js
 knex.select('*').from('users').join('contacts', function() {
-  this.on('users.id', '=', 'contacts.id').onNotBetween('contacts.id', [5, 30])
+  this
+    .on('users.id', '=', 'contacts.id')
+    .onNotBetween('contacts.id', [5, 30])
 })
 ```
 
@@ -2107,13 +2432,20 @@ Adds a onJsonPathEquals clause to the query. The clause performs a join on value
 
 ```js
 knex('cities')
-  .select('cities.name as cityName', 'country.name as countryName')
+  .select(
+    'cities.name as cityName', 
+    'country.name as countryName'
+  )
   .join('country', function () {
     this.onJsonPathEquals(
-      'country_name', // json column in cities
-      '$.country.name', // json path to country name in 'country_name' column
-      'description', // json column in country
-      '$.name' // json field in 'description' column
+      // json column in cities
+      'country_name', 
+      // json path to country name in 'country_name' column
+      '$.country.name', 
+      // json column in country
+      'description', 
+       // json field in 'description' column
+      '$.name'
     );
   })
 ```
@@ -2127,7 +2459,11 @@ knex('cities')
 Clears the specified operator from the query. Available operators: 'select' alias 'columns', 'with', 'select', 'columns', 'where', 'union', 'join', 'group', 'order', 'having', 'limit', 'offset', 'counter', 'counters'. Counter(s) alias for method .clearCounter()
 
 ```js
-knex.select('email', 'name').from('users').where('id', '<', 10).clear('select').clear('where')
+knex.select('email', 'name')
+  .from('users')
+  .where('id', '<', 10)
+  .clear('select')
+  .clear('where')
 ```
 
 ### clearSelect
@@ -2147,7 +2483,10 @@ Deprecated, use clear('select'). Clears all select clauses from the query, exclu
 Deprecated, use clear('where'). Clears all where clauses from the query, excluding subqueries.
 
 ```js
-knex.select('email', 'name').from('users').where('id', 1).clearWhere()
+knex.select('email', 'name')
+  .from('users')
+  .where('id', 1)
+  .clearWhere()
 ```
 
 ### clearGroup
@@ -2167,7 +2506,10 @@ knex.select().from('users').groupBy('id').clearGroup()
 Deprecated, use clear('order'). Clears all order clauses from the query, excluding subqueries.
 
 ```js
-knex.select().from('users').orderBy('name', 'desc').clearOrder()
+knex.select()
+  .from('users')
+  .orderBy('name', 'desc')
+  .clearOrder()
 ```
 
 ### clearHaving
@@ -2177,7 +2519,10 @@ knex.select().from('users').orderBy('name', 'desc').clearOrder()
 Deprecated, use clear('having'). Clears all having clauses from the query, excluding subqueries.
 
 ```js
-knex.select().from('users').having('id', '>', 5).clearHaving()
+knex.select()
+  .from('users')
+  .having('id', '>', 5)
+  .clearHaving()
 ```
 
 ### clearCounters
@@ -2239,7 +2584,9 @@ knex('users').groupBy('count')
 Adds a raw group by clause to the query.
 
 ```js
-knex.select('year', knex.raw('SUM(profit)')).from('sales').groupByRaw('year WITH ROLLUP')
+knex.select('year', knex.raw('SUM(profit)'))
+  .from('sales')
+  .groupByRaw('year WITH ROLLUP')
 ```
 
 ### orderBy
@@ -2261,11 +2608,19 @@ knex('users').orderBy('name', 'desc', 'first')
 Multiple Columns:
 
 ```js
-knex('users').orderBy(['email', { column: 'age', order: 'desc' }])
+knex('users').orderBy([
+  'email', { column: 'age', order: 'desc' }
+])
 
-knex('users').orderBy([{ column: 'email' }, { column: 'age', order: 'desc' }])
+knex('users').orderBy([
+  { column: 'email' }, 
+  { column: 'age', order: 'desc' }
+])
 
-knex('users').orderBy([{ column: 'email' }, { column: 'age', order: 'desc', nulls: 'last' }])
+knex('users').orderBy([
+  { column: 'email' }, 
+  { column: 'age', order: 'desc', nulls: 'last' }
+])
 ```
 
 ### orderByRaw
@@ -2275,7 +2630,9 @@ knex('users').orderBy([{ column: 'email' }, { column: 'age', order: 'desc', null
 Adds an order by raw clause to the query.
 
 ```js
-knex.select('*').from('table').orderByRaw('col DESC NULLS LAST')
+knex.select('*')
+  .from('table')
+  .orderByRaw('col DESC NULLS LAST')
 ```
 
 ## Having Clauses
@@ -2300,7 +2657,9 @@ knex('users')
 Adds a havingIn clause to the query.
 
 ```js
-knex.select('*').from('users').havingIn('id', [5, 3, 10, 17])
+knex.select('*')
+  .from('users')
+  .havingIn('id', [5, 3, 10, 17])
 ```
 
 ### havingNotIn
@@ -2310,7 +2669,9 @@ knex.select('*').from('users').havingIn('id', [5, 3, 10, 17])
 Adds a havingNotIn clause to the query.
 
 ```js
-knex.select('*').from('users').havingNotIn('id', [5, 3, 10, 17])
+knex.select('*')
+  .from('users')
+  .havingNotIn('id', [5, 3, 10, 17])
 ```
 
 ### havingNull
@@ -2341,7 +2702,9 @@ Adds a havingExists clause to the query.
 
 ```js
 knex.select('*').from('users').havingExists(function() {
-  this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+  this.select('*')
+    .from('accounts')
+    .whereRaw('users.account_id = accounts.id');
 })
 ```
 
@@ -2353,7 +2716,9 @@ Adds a havingNotExists clause to the query.
 
 ```js
 knex.select('*').from('users').havingNotExists(function() {
-  this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+  this.select('*')
+    .from('accounts')
+    .whereRaw('users.account_id = accounts.id');
 })
 ```
 
@@ -2364,7 +2729,9 @@ knex.select('*').from('users').havingNotExists(function() {
 Adds a havingBetween clause to the query.
 
 ```js
-knex.select('*').from('users').havingBetween('id', [5, 10])
+knex.select('*')
+  .from('users')
+  .havingBetween('id', [5, 10])
 ```
 
 ### havingNotBetween
@@ -2374,7 +2741,9 @@ knex.select('*').from('users').havingBetween('id', [5, 10])
 Adds a havingNotBetween clause to the query.
 
 ```js
-knex.select('*').from('users').havingNotBetween('id', [5, 10])
+knex.select('*')
+  .from('users')
+  .havingNotBetween('id', [5, 10])
 ```
 
 ### havingRaw

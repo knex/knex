@@ -94,7 +94,12 @@ return knex.raw("PRAGMA KEY = 'secret'")
   .then(() => knex('some_table')
     .select()
     .on('query-error', function(ex, obj) {
-      console.log("KNEX select from some_table ERR ex:", ex, "obj:", obj);
+      console.log(
+        "KNEX select from some_table ERR ex:", 
+        ex, 
+        "obj:", 
+        obj
+      );
     })
   );
 ```

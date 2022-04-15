@@ -17,7 +17,9 @@ knex.select('name')
     return _.pluck(rows, 'name');
   })
   .then(function(names) {
-    return knex.select('id').from('nicknames').whereIn('nickname', names);
+    return knex.select('id')
+      .from('nicknames')
+      .whereIn('nickname', names);
   })
   .then(function(rows) {
     console.log(rows);
@@ -38,7 +40,9 @@ knex.select('*')
   .from('users')
   .where({name: 'Tim'})
   .then(function(rows) {
-    return knex.insert({user_id: rows[0].id, name: 'Test'}, 'id').into('accounts');
+    return knex
+      .insert({user_id: rows[0].id, name: 'Test'}, 'id')
+      .into('accounts');
   })
   .then(function(id) {
     console.log('Inserted Account ' + id);

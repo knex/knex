@@ -147,7 +147,11 @@ By default, the configuration object received via a function is cached and reuse
 const knex = require('knex')({
   client: 'postgres',
   connection: async () => {
-    const { token, tokenExpiration } = await someCallToGetTheToken();
+    const { 
+      token, 
+      tokenExpiration 
+    } = await someCallToGetTheToken();
+
     return {
       host : 'your_host',
       port : 3306,
@@ -223,8 +227,12 @@ const knex = require('knex')({
   // Params
 });
 
-const knexWithParams = knex.withUserParams({customUserParam: 'table1'});
-const customUserParam = knexWithParams.userParams.customUserParam;
+const knexWithParams = knex.withUserParams({ 
+  customUserParam: 'table1'
+});
+const customUserParam = knexWithParams
+  .userParams
+  .customUserParam;
 ```
 
 ### debug
@@ -270,15 +278,20 @@ const knex = require('knex')({
       // in this example we use pg driver's connection API
       conn.query('SET timezone="UTC";', function (err) {
         if (err) {
-          // first query failed, return error and don't try to make next query
+          // first query failed, 
+          // return error and don't try to make next query
           done(err, conn);
         } else {
           // do the second query...
-          conn.query('SELECT set_limit(0.01);', function (err) {
-            // if err is not falsy, connection is discarded from pool
-            // if connection aquire was triggered by a query the error is passed to query promise
-            done(err, conn);
-          });
+          conn.query(
+            'SELECT set_limit(0.01);', 
+            function (err) {
+              // if err is not falsy, 
+              //  connection is discarded from pool
+              // if connection aquire was triggered by a 
+              // query the error is passed to query promise
+              done(err, conn);
+            });
         }
       });
     }
@@ -340,7 +353,8 @@ const knex = require('knex')({
   client: 'mysql',
   // overly simplified snake_case -> camelCase converter
   postProcessResponse: (result, queryContext) => {
-    // TODO: add special case for raw results (depends on dialect)
+    // TODO: add special case for raw results 
+    // (depends on dialect)
     if (Array.isArray(result)) {
       return result.map(row => convertToCamel(row));
     } else {
@@ -362,7 +376,11 @@ Conversion function `wrapIdentifier(value, dialectImpl, context): string` gets e
 const knex = require('knex')({
   client: 'mysql',
   // overly simplified camelCase -> snake_case converter
-  wrapIdentifier: (value, origImpl, queryContext) => origImpl(convertToSnakeCase(value))
+  wrapIdentifier: (
+    value, 
+    origImpl, 
+    queryContext
+  ) => origImpl(convertToSnakeCase(value))
 });
 ```
 

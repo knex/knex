@@ -169,7 +169,10 @@ A knexfile.js generally contains all of the configuration for your database. It 
 ```js
 module.exports = {
   client: 'pg',
-  connection: process.env.DATABASE_URL || { user: 'me', database: 'my_app' }
+  connection: process.env.DATABASE_URL || { 
+    user: 'me', 
+    database: 'my_app' 
+  }
 };
 ```
 
@@ -201,7 +204,10 @@ module.exports = {
     client: 'pg',
     connection: { user: 'me', database: 'my_app' }
   },
-  production: { client: 'pg', connection: process.env.DATABASE_URL }
+  production: { 
+    client: 'pg', 
+    connection: process.env.DATABASE_URL 
+  }
 };
 ```
 
@@ -363,8 +369,9 @@ Knex supports custom migration sources, allowing you full control of where your 
 // Create a custom migration source class
 class MyMigrationSource {
   // Must return a Promise containing a list of migrations. 
-  // Migrations can be whatever you want, they will be passed as
-  // arguments to getMigrationName and getMigration
+  // Migrations can be whatever you want, 
+  // they will be passed as arguments to getMigrationName 
+  // and getMigration
   getMigrations() {
     // In this example we are just returning migration names
     return Promise.resolve(['migration1'])
@@ -386,7 +393,9 @@ class MyMigrationSource {
 }
 
 // pass an instance of your migration source as knex config
-knex.migrate.latest({ migrationSource: new MyMigrationSource() })
+knex.migrate.latest({ 
+  migrationSource: new MyMigrationSource() 
+})
 ```
 
 ### Webpack migration source example
@@ -402,7 +411,9 @@ class WebpackMigrationSource {
   }
 
   getMigrations() {
-    return Promise.resolve(this.migrationContext.keys().sort())
+    return Promise.resolve(
+      this.migrationContext.keys().sort()
+    )
   }
 
   getMigrationName(migration) {
@@ -416,14 +427,21 @@ class WebpackMigrationSource {
 
 // pass an instance of your migration source as knex config
 knex.migrate.latest({
-  migrationSource: new WebpackMigrationSource(require.context('./migrations', false, /.js$/))
+  migrationSource: new WebpackMigrationSource(
+    require.context('./migrations', false, /.js$/)
+  )
 })
 
-// with webpack >=5, require.context will add both the relative and absolute paths to the context
-// to avoid duplicate migration errors, you'll need to filter out one or the other
-// this example filters out absolute paths, leaving only the relative ones(./migrations/*.js):
+// with webpack >=5, require.context will add 
+// both the relative and absolute paths to the context
+// to avoid duplicate migration errors, you'll need 
+// to filter out one or the other this example filters 
+// out absolute paths, leaving only the relative 
+// ones(./migrations/*.js):
 knex.migrate.latest({
-  migrationSource: new WebpackMigrationSource(require.context('./migrations', false, /^\.\/.*\.js$/))
+  migrationSource: new WebpackMigrationSource(
+    require.context('./migrations', false, /^\.\/.*\.js$/)
+  )
 })
 ```
 
