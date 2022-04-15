@@ -2,25 +2,41 @@
 
 :root {
   --c-brand: #d26b38;
+  --c-white-dark: #f5f5f5;
   --c-brand-light: #ff8144;
   --font-family-base: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   --font-family-mono: 'Source Code Pro', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 
   --code-font-size: 14px;
   --code-line-height: 22px;
+  /* --c-text-light-1: #c5bab5; */
+  --c-text-light-2: #dfa486;
+  --c-text-light-3: #d26a38;
+  --code-bg-color: #44342f;
+  --code-inline-bg-color: rgb(68 52 47 / 5%);
 }
 html {
   font-size: 14px;
 }
-a.header-anchor {
-  float: left;
-  margin-top: 0.125em;
-  margin-left: -1.1em;
-  padding-right: 0.23em;
-  font-size: 0.85em;
-  opacity: 0;
+.dark {
+  --c-white: #2a2420;
+  --c-white-dark: #342c27;
+  --c-black: #ffffff;
+  --c-text-light-1: #c5bab5;
+  --c-text-light-2: #dfa486;
+  --c-text-light-3: #d26a38;
+  --code-bg-color: #201d1c;
+  --code-inline-bg-color: #201d1c;
+
+  color-scheme: dark;
 }
-.container {}
+
+.nav-bar .item {
+  font-size: 1rem;
+}
+.nav-bar .nav-bar-title {
+  font-size: 1.4rem;
+}
 .sidebar > .sidebar-links > .sidebar-link + .sidebar-link {
   padding-top: .3rem;
 }
@@ -31,23 +47,41 @@ a.header-anchor {
   padding: 0.35rem 1.5rem 0.35rem 1.25rem;
 }
 
+a.header-anchor {
+  float: left;
+  margin-top: 0.125em;
+  margin-left: -1.1em;
+  padding-right: 0.23em;
+  font-size: 0.85em;
+  opacity: 0;
+}
 .custom-block.warning {
   border-color: var(--c-brand);
   color: #914926;
   background-color: rgb(210 106 56 / 15%);
 }
 .custom-block.warning .custom-block-title {
-  color: #e7682a;
+  color: #d66026;
+}
+.custom-block.info {
+  background-color: #fbf6f4;
+}
+.dark .custom-block.info {
+  background-color: #3a3532;
+}
+.dark .custom-block.warning {
+  color: var(--c-text-light-1);
+  background-color: #462414;
+}
+.dark .custom-block.warning .custom-block-title {
+  color: #d66026;
 }
 
-.container-home {
+.home-hero {
   max-width: 42rem;
-  margin: 0 auto;
-  background: #f5f5f5;
-  padding: .5rem 2rem;
-  border-radius: 6px;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
-
 .home-hero .image {
   animation: spin 5s linear infinite;
   animation-play-state: paused;
@@ -55,7 +89,13 @@ a.header-anchor {
 .home-hero:hover .image {
   animation-play-state: running;
 }
-
+.container-home {
+  max-width: 42rem;
+  margin: 0 auto;
+  background: var(--c-white-dark);
+  padding: .5rem 2rem;
+  border-radius: 6px;
+}
 @keyframes spin {
   from {
     transform: rotate(0deg);

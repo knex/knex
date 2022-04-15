@@ -10,6 +10,7 @@ export default defineConfig({
 
   themeConfig: {
     logo: '/knex-logo.png',
+    repo: 'knex/knex',  
     docsRepo: 'knex/knex',  
     docsDir: 'docs',
     docsBranch: 'master',
