@@ -93,7 +93,7 @@ The `knex.raw` may also be used to build a full query and execute it, as a stand
 
 ```js
 knex.raw('select * from users where id = ?', [1])
-  .then(function(resp) { ... });
+  .then(function(resp) { /*...*/ });
 ```
 
 Note that the response will be whatever the underlying sql library would typically return on a normal query, so you may need to look at the documentation for the base library the queries are executing against to determine how to handle the response.

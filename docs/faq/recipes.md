@@ -53,8 +53,8 @@ exports.up = (knex) => {
     table.increments('id');
     table.specificType('fulltext', 'tsvector');
     table.index('fulltext', null, 'gin');
-  );
-);
+  })
+};
 ```
 
 ## DB access using SQLite and SQLCipher
@@ -91,18 +91,19 @@ If you don't use the "afterCreate" configuration, then you will need to run a kn
 
 ```js
 return knex.raw("PRAGMA KEY = 'secret'")
-  .then(() => knex('some_table').select()
+  .then(() => knex('some_table')
+    .select()
     .on('query-error', function(ex, obj) {
       console.log("KNEX select from some_table ERR ex:", ex, "obj:", obj);
     })
-  });
+  );
 ```
 
 ## Maintaining changelog for seeds (version >= 0.16.0-next1)
 
 In case you would like to use Knex.js changelog functionality to ensure your environments are only seeded once, but don't want to mix seed files with migration files, you can specify multiple directories as a source for your migrations:
 
-```js
+```mjs
 await knex.migrate.latest({
     directory: [
       'src/services/orders/database/migrations',
@@ -116,7 +117,7 @@ await knex.migrate.latest({
 
 ## Using explicit transaction management together with async code
 
-```js
+```mjs
 await knex.transaction(trx => {
   async function stuff() {
     trx.rollback(new Error('Foo'));
@@ -130,7 +131,7 @@ await knex.transaction(trx => {
 
 Or alternatively:
 
-```js
+```mjs
 try {
   await knex.transaction(trx => {
     async function stuff() {
@@ -171,7 +172,7 @@ queryBuilder
 
 How to call and retrieve output from an oracle stored procedure
 
-```js
+```mjs
 const oracle = require('oracledb');
 const bindVars = {
   input_var1: 6,
@@ -203,7 +204,9 @@ async function migrate() {
   } finally {
     try {
       knex.destroy()
-    } catch (e) {}
+    } catch (e) {
+      // ignore
+    }
   }
 }
 
@@ -225,7 +228,7 @@ When this happens while you are streaming a query to a client, you need to manua
 
 ```js
 server.on('request', function (request, response) {
-  var stream = knex.select('*').from('items').stream();
+  const stream = knex.select('*').from('items').stream();
   request.on('close', stream.end.bind(stream));
 });
 ```

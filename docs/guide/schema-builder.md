@@ -1125,8 +1125,8 @@ Drop checks constraint given an array of constraint names.
 
 ```js
 knex.schema.createTable('product', function (table) {
-  table.integer('price').checkPositive('price_check'):
-  table.integer('price_proportion').checkBetween([0, 100],'price_proportion_check'):
+  table.integer('price').checkPositive('price_check')
+  table.integer('price_proportion').checkBetween([0, 100],'price_proportion_check')
   table.dropChecks(['price_check', 'price_proportion_check']);
 })
 ```

@@ -84,5 +84,9 @@ function getFaqSidebar() {
       text: 'Recipes',
       link: '/faq/recipes'
     },
+    {
+      text: 'Support',
+      link: '/faq/support'
+    },
   ]
 }

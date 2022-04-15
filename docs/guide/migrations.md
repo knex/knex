@@ -131,13 +131,17 @@ $ knex seed:make seed_name
 Seed files are created in the directory specified in your knexfile.js for the current environment. A sample seed configuration looks like:
 
 ```js
-development: {
-  client: ...,
-  connection: { ... },
-  seeds: {
-      directory: './seeds/dev'
+module.exports = {
+  // ...
+  development: {
+    client: {/* ... */},
+    connection: {/* ... */},
+    seeds: {
+        directory: './seeds/dev'
+    }
   }
-}
+  // ...
+  }
 ```
 
 If no `seeds.directory` is defined, files are created in `./seeds`. Note that the seed directory needs to be a relative path. Absolute paths are not supported (nor is it good practice).
@@ -153,7 +157,7 @@ Seed files are executed in alphabetical order. Unlike migrations, _every_ seed f
 To run specific seed files, execute:
 
 ```bash
-    $ knex seed:run --specific=seed-filename.js --specific=another-seed-filename.js
+$ knex seed:run --specific=seed-filename.js --specific=another-seed-filename.js
 ```
 
 ## knexfile.js
@@ -243,15 +247,15 @@ If you don't specify the extension explicitly, the extension of generated migrat
 
 Each method takes an optional `config` object, which may specify the following properties:
 
--   `directory`: a relative path to the directory containing the migration files. Can be an array of paths (default `./migrations`)
--   `extension`: the file extension used for the generated migration files (default `js`)
--   `tableName`: the table name used for storing the migration state (default `knex_migrations`)
--   `schemaName`: the schema name used for storing the table with migration state (optional parameter, only works on DBs that support multiple schemas in a single DB, such as PostgreSQL)
--   `disableTransactions`: don't run migrations inside transactions (default `false`)
--   `disableMigrationsListValidation`: do not validate that all the already executed migrations are still present in migration directories (default `false`)
--   `sortDirsSeparately`: if true and multiple directories are specified, all migrations from a single directory will be executed before executing migrations in the next folder (default `false`)
--   `loadExtensions`: array of file extensions which knex will treat as migrations. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript migrations. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)
--   `migrationSource`: specify a custom migration source, see [Custom Migration Source](#custom-migration-sources) for more info (default filesystem)
+- `directory`: a relative path to the directory containing the migration files. Can be an array of paths (default `./migrations`)
+- `extension`: the file extension used for the generated migration files (default `js`)
+- `tableName`: the table name used for storing the migration state (default `knex_migrations`)
+- `schemaName`: the schema name used for storing the table with migration state (optional parameter, only works on DBs that support multiple schemas in a single DB, such as PostgreSQL)
+- `disableTransactions`: don't run migrations inside transactions (default `false`)
+- `disableMigrationsListValidation`: do not validate that all the already executed migrations are still present in migration directories (default `false`)
+- `sortDirsSeparately`: if true and multiple directories are specified, all migrations from a single directory will be executed before executing migrations in the next folder (default `false`)
+- `loadExtensions`: array of file extensions which knex will treat as migrations. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript migrations. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)
+- `migrationSource`: specify a custom migration source, see [Custom Migration Source](#custom-migration-sources) for more info (default filesystem)
 
 ### Transactions in migrations
 
@@ -374,8 +378,8 @@ class MyMigrationSource {
     switch(migration) {
       case 'migration1':
         return {
-          up(knex)   { /* ... */ }
-          down(knex) { /* ... */ }
+          up(knex)   { /* ... */ },
+          down(knex) { /* ... */ },
         }
     }
   }
@@ -450,7 +454,7 @@ node --experimental-modules ./node_modules/.bin/knex $@
 
 When using migration and seed files with '.cjs' or '.mjs' extensions, you will need to specify that explicitly:
 
-```js
+```mjs
 /** 
  * knexfile.mjs
  */
@@ -465,7 +469,7 @@ export default {
 
 When using '.mjs' extensions for your knexfile and '.js' for the seeds/migrations, you will need to specify that explicitly.
 
-```js
+```mjs
 /** 
  * knexfile.mjs
  */
@@ -481,7 +485,7 @@ export default {
 For the knexfile you can use a default export,  
 it will take precedence over named export.
 
-```js
+```mjs
 /**
  * filename: knexfile.js
  * For the knexfile you can use a default export
@@ -524,7 +528,7 @@ export const { client, connection, migrations, seeds } = config;
 
 Seed and migration files need to follow Knex conventions
 
-```js
+```mjs
 // file: seed.js
 /** 
  * Same as with the CommonJS modules
@@ -553,14 +557,14 @@ export function down(knex) {
 
 Each method takes an optional `config` object, which may specify the following properties:
 
--   `directory`: a relative path to the directory containing the seed files. Can be an array of paths (default `./seeds`)
--   `loadExtensions`: array of file extensions which knex will treat as seeds. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript seeds. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)
--   `recursive`: if true, will find seed files recursively in the directory / directories specified
--   `specific`: a specific seed file or an array of seed files to run from the seeds directory, if its value is `undefined` it will run all the seeds (default `undefined`). If an array is specified, seed files will be run in the same order as the array
--   `sortDirsSeparately`: if true and multiple directories are specified, all seeds from a single directory will be executed before executing seeds in the next folder (default `false`)
--   `seedSource`: specify a custom seed source, see [Custom Seed Source](#custom-seed-sources) for more info (default filesystem)
--   `extension`: extension to be used for newly generated seeds (default `js`)
--   `timestampFilenamePrefix`: whether timestamp should be added as a prefix for newly generated seeds (default `false`)
+- `directory`: a relative path to the directory containing the seed files. Can be an array of paths (default `./seeds`)
+- `loadExtensions`: array of file extensions which knex will treat as seeds. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript seeds. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)
+- `recursive`: if true, will find seed files recursively in the directory / directories specified
+- `specific`: a specific seed file or an array of seed files to run from the seeds directory, if its value is `undefined` it will run all the seeds (default `undefined`). If an array is specified, seed files will be run in the same order as the array
+- `sortDirsSeparately`: if true and multiple directories are specified, all seeds from a single directory will be executed before executing seeds in the next folder (default `false`)
+- `seedSource`: specify a custom seed source, see [Custom Seed Source](#custom-seed-sources) for more info (default filesystem)
+- `extension`: extension to be used for newly generated seeds (default `js`)
+- `timestampFilenamePrefix`: whether timestamp should be added as a prefix for newly generated seeds (default `false`)
 
 
 ### make

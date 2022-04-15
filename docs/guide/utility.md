@@ -14,19 +14,19 @@ By default, the `chunkSize` is set to 1000.
 BatchInsert also allows for [returning values](#Builder-returning) and supplying transactions using [transacting](#Builder-transacting).
 
 ```js
-const rows = [{...}, {...}];
+const rows = [{/*...*/}, {/*...*/}];
 const chunkSize = 30;
 knex.batchInsert('TableName', rows, chunkSize)
   .returning('id')
-  .then(function(ids) { ... })
-  .catch(function(error) { ... });
+  .then(function(ids) { /*...*/ })
+  .catch(function(error) { /*...*/ });
 
 knex.transaction(function(tr) {
   return knex.batchInsert('TableName', rows, chunkSize)
     .transacting(tr)
   })
-  .then(function() { ... })
-  .catch(function(error) { ... });
+  .then(function() { /*...*/ })
+  .catch(function(error) { /*...*/ });
 ```
 
 ## now
@@ -60,7 +60,7 @@ knex('uuid_table').insert({
 
 Convert a uuid (char(16)) to a binary uuid (binary(36))
 
-```js
+```mjs
 const res = await knex('uuid_table').select('uuid_col_binary');
 knex.fn.binToUuid(res[0].uuid_col_binary)
 ```

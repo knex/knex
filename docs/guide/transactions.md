@@ -71,7 +71,7 @@ knex.transaction(function(trx) {
 
 Same example as above using await/async:
 
-```js
+```mjs
 try {
   await knex.transaction(async trx => {
 
@@ -100,7 +100,7 @@ try {
 
 Same example as above using another await/async approach:
 
-```js
+```mjs
 try {
   await knex.transaction(async trx => {
 
@@ -138,7 +138,7 @@ Note that Amazon Redshift does not support savepoints in transactions.
 
 In some cases you may prefer to create transaction but only execute statements in it later. In such case call method `transaction` without a handler function:
 
-```js
+```mjs
 // Using trx as a transaction object:
 const trx = await knex.transaction();
 
@@ -160,7 +160,7 @@ trx('catalogues')
 
 If you want to create a reusable transaction instance, but do not want to actually start it until it is used, you can create a transaction provider instance. It will start transaction after being called for the first time, and return same transaction on subsequent calls:
 
-```js
+```mjs
 // Does not start a transaction yet
 const trxProvider = knex.transactionProvider();
 
@@ -187,7 +187,7 @@ await sameTrx('books').insert(books);
 
 You can access the promise that gets resolved after transaction is rolled back explicitly by user or committed, or rejected if it gets rolled back by DB itself, when using either way of creating transaction, from field `executionPromise`:
 
-```js
+```mjs
 const trxProvider = knex.transactionProvider();
 const trx = await trxProvider();
 const trxPromise = trx.executionPromise;
@@ -206,7 +206,7 @@ const trx3Promise = trx3.executionPromise;
 
 You can check if a transaction has been committed or rolled back with the method `isCompleted`:
 
-```js
+```mjs
 const trx = await knex.transaction();
 trx.isCompleted(); // false
 await trx.commit();
@@ -221,7 +221,7 @@ You can check the property `knex.isTransaction` to see if the current knex insta
 
 In case you need to specify an isolation level for your transaction, you can use a config parameter `isolationLevel`. Not supported by oracle and sqlite, options are `read uncommitted`, `read committed`, `repeatable read`, `snapshot` (mssql only), `serializable`.
 
-```js
+```mjs
 // Simple read skew example
 const isolationLevel = 'read committed';
 const trx = await knex.transaction({isolationLevel});

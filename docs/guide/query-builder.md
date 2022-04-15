@@ -131,9 +131,13 @@ Only supported in MySQL and PostgreSQL for now.
 :::
 
 ```js
-knex.select().from('books').timeout(1000)
+knex.select()
+  .from('books')
+  .timeout(1000)
 
-knex.select().from('books').timeout(1000, {cancel: true}) // MySQL and PostgreSQL only
+knex.select()
+  .from('books')
+  .timeout(1000, {cancel: true}) // MySQL and PostgreSQL only
 ```
 
 ### select
@@ -143,9 +147,11 @@ knex.select().from('books').timeout(1000, {cancel: true}) // MySQL and PostgreSQ
 Creates a select query, taking an optional array of columns for the query, eventually defaulting to \* if none are specified when the query is built. The response of a select call will resolve with an array of objects selected from the database.
 
 ```js
-knex.select('title', 'author', 'year').from('books')
+knex.select('title', 'author', 'year')
+  .from('books')
 
-knex.select().table('books')
+knex.select()
+  .table('books')
 ```
 
 ##### Usage with TypeScript
@@ -153,19 +159,24 @@ knex.select().table('books')
 We are generally able to infer the result type based on the columns being selected as long as the select arguments match exactly the key names in record type. However, aliasing and scoping can get in the way of inference.
 
 ```ts
-knex.select('id').from<User>('users'); // Resolves to Pick<User, "id">[]
+knex.select('id')
+  .from<User>('users'); // Resolves to Pick<User, "id">[]
 
-knex.select('users.id').from<User>('users'); // Resolves to any[]
+knex.select('users.id')
+  .from<User>('users'); // Resolves to any[]
 // ^ TypeScript doesn't provide us a way to look into a string and infer the type
 //   from a substring, so we fall back to any
 
 // We can side-step this using knex.ref:
-knex.select(knex.ref('id').withSchema('users')).from<User>('users'); // Resolves to Pick<User, "id">[]
+knex.select(knex.ref('id').withSchema('users'))
+  .from<User>('users'); // Resolves to Pick<User, "id">[]
 
-knex.select('id as identifier').from<User>('users'); // Resolves to any[], for same reason as above
+knex.select('id as identifier')
+  .from<User>('users'); // Resolves to any[], for same reason as above
 
 // Refs are handy here too:
-knex.select(knex.ref('id').as('identifier')).from<User>('users'); // Resolves to { identifier: number; }[]
+knex.select(knex.ref('id').as('identifier'))
+  .from<User>('users'); // Resolves to { identifier: number; }[]
 ```
 
 ### as
@@ -175,9 +186,14 @@ knex.select(knex.ref('id').as('identifier')).from<User>('users'); // Resolves to
 Allows for aliasing a subquery, taking the string you wish to name the current query. If the query is not a sub-query, it will be ignored.
 
 ```ts
-knex.avg('sum_column1').from(function() {
-  this.sum('column1 as sum_column1').from('t1').groupBy('column1').as('t1')
-}).as('ignored_alias')
+knex.avg('sum_column1')
+  .from(function() {
+    this.sum('column1 as sum_column1')
+      .from('t1')
+      .groupBy('column1')
+      .as('t1')
+  })
+  .as('ignored_alias')
 ```
 
 ### column
@@ -187,11 +203,17 @@ knex.avg('sum_column1').from(function() {
 Specifically set the columns to be selected on a select query, taking an array, an object or a list of column names. Passing an object will automatically alias the columns with the given keys.
 
 ```js
-knex.column('title', 'author', 'year').select().from('books')
+knex.column('title', 'author', 'year')
+  .select()
+  .from('books')
 
-knex.column(['title', 'author', 'year']).select().from('books')
+knex.column(['title', 'author', 'year'])
+  .select()
+  .from('books')
 
-knex.column('title', {by: 'author'}, 'year').select().from('books')
+knex.column('title', { by: 'author' }, 'year')
+  .select()
+  .from('books')
 ```
 
 ### from
@@ -205,7 +227,8 @@ Only supported in PostgreSQL for now.
 :::
 
 ```js
-knex.select('*').from('users')
+knex.select('*')
+  .from('users')
 ```
 
 #### Usage with TypeScript
@@ -213,9 +236,11 @@ knex.select('*').from('users')
 We can specify the type of database row through the TRecord type parameter
 
 ```ts
-knex.select('id').from('users'); // Resolves to any[]
+knex.select('id')
+  .from('users'); // Resolves to any[]
 
-knex.select('id').from<User>('users'); // Results to Pick<User, "id">[]
+knex.select('id')
+  .from<User>('users'); // Results to Pick<User, "id">[]
 ```
 
 ### fromRaw
@@ -223,7 +248,8 @@ knex.select('id').from<User>('users'); // Results to Pick<User, "id">[]
 **.fromRaw(sql, [bindings])**
 
 ```js
-knex.select('*').fromRaw('(select * from "users" where "age" > ?)', '18')
+knex.select('*')
+  .fromRaw('(select * from "users" where "age" > ?)', '18')
 ```
 
 ### with
@@ -233,13 +259,31 @@ knex.select('*').fromRaw('(select * from "users" where "age" > ?)', '18')
 Add a "with" clause to the query. "With" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
 ```js
-knex.with('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+knex
+  .with(
+    'with_alias', 
+    knex.raw('select * from "books" where "author" = ?', 'Test')
+  )
+  .select('*')
+  .from('with_alias')
 
-knex.with('with_alias', ["title"], knex.raw('select "title" from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+knex
+  .with(
+    'with_alias', 
+    ["title"], 
+    knex.raw('select "title" from "books" where "author" = ?', 'Test')
+  )
+  .select('*')
+  .from('with_alias')
 
-knex.with('with_alias', (qb) => {
-  qb.select('*').from('books').where('author', 'Test')
-}).select('*').from('with_alias')
+knex
+  .with('with_alias', (qb) => {
+    qb.select('*')
+      .from('books')
+      .where('author', 'Test')
+  })
+  .select('*')
+  .from('with_alias')
 ```
 
 ### withRecursive
@@ -249,29 +293,38 @@ knex.with('with_alias', (qb) => {
 Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE.
 
 ```js
-knex.withRecursive('ancestors', (qb) => {
-  qb.select('*').from('people').where('people.id', 1).union((qb) => {
-    qb.select('*').from('people').join('ancestors', 'ancestors.parentId', 'people.id')
+knex
+  .withRecursive('ancestors', (qb) => {
+    qb.select('*')
+      .from('people')
+      .where('people.id', 1)
+      .union((qb) => {
+        qb.select('*')
+          .from('people')
+          .join('ancestors', 'ancestors.parentId', 'people.id')
+      })
   })
-}).select('*').from('ancestors')
+  .select('*')
+  .from('ancestors')
 
-knex.withRecursive('family', ['name', 'parentName'], (qb) => {
-  qb.select('name', 'parentName')
-    .from('folks')
-    .where({ name: 'grandchild' })
-    .unionAll((qb) =>
-      qb
-        .select('folks.name', 'folks.parentName')
-        .from('folks')
-        .join(
-          'family',
-          knex.ref('family.parentName'),
-          knex.ref('folks.name')
-        )
-    )
-})
-.select('name')
-.from('family')
+knex
+  .withRecursive('family', ['name', 'parentName'], (qb) => {
+    qb.select('name', 'parentName')
+      .from('folks')
+      .where({ name: 'grandchild' })
+      .unionAll((qb) =>
+        qb
+          .select('folks.name', 'folks.parentName')
+          .from('folks')
+          .join(
+            'family',
+            knex.ref('family.parentName'),
+            knex.ref('folks.name')
+          )
+      )
+  })
+  .select('name')
+  .from('family')
 ```
 
 ### withMaterialized
@@ -281,13 +334,31 @@ knex.withRecursive('family', ['name', 'parentName'], (qb) => {
 Add a "with" materialized clause to the query. "With" materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
 ```js
-knex.withMaterialized('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+knex
+  .withMaterialized(
+    'with_alias', 
+    knex.raw('select * from "books" where "author" = ?', 'Test')
+  )
+  .select('*')
+  .from('with_alias')
 
-knex.withMaterialized('with_alias', ["title"], knex.raw('select "title" from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+knex
+  .withMaterialized(
+    'with_alias', 
+    ["title"], 
+    knex.raw('select "title" from "books" where "author" = ?', 'Test')
+  )
+  .select('*')
+  .from('with_alias')
 
-knex.withMaterialized('with_alias', (qb) => {
-  qb.select('*').from('books').where('author', 'Test')
-}).select('*').from('with_alias')
+knex
+  .withMaterialized('with_alias', (qb) => {
+    qb.select('*')
+      .from('books')
+      .where('author', 'Test')
+  })
+  .select('*')
+  .from('with_alias')
 ```
 
 ### withNotMaterialized
@@ -297,13 +368,31 @@ knex.withMaterialized('with_alias', (qb) => {
 Add a "with" not materialized clause to the query. "With" not materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
 ```js
-knex.withNotMaterialized('with_alias', knex.raw('select * from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+knex
+  .withNotMaterialized(
+    'with_alias', 
+    knex.raw('select * from "books" where "author" = ?', 'Test')
+  )
+  .select('*')
+  .from('with_alias')
 
-knex.withNotMaterialized('with_alias', ["title"], knex.raw('select "title" from "books" where "author" = ?', 'Test')).select('*').from('with_alias')
+knex
+  .withNotMaterialized(
+    'with_alias', 
+    ["title"], 
+    knex.raw('select "title" from "books" where "author" = ?', 'Test')
+  )
+  .select('*')
+  .from('with_alias')
 
-knex.withNotMaterialized('with_alias', (qb) => {
-  qb.select('*').from('books').where('author', 'Test')
-}).select('*').from('with_alias')
+knex
+  .withNotMaterialized('with_alias', (qb) => {
+    qb.select('*')
+      .from('books')
+      .where('author', 'Test')
+  })
+  .select('*')
+  .from('with_alias')
 ```
 
 ### withSchema
@@ -313,7 +402,9 @@ knex.withNotMaterialized('with_alias', (qb) => {
 Specifies the schema to be used as prefix of table name.
 
 ```js
-knex.withSchema('public').select('*').from('users')
+knex.withSchema('public')
+  .select('*')
+  .from('users')
 ```
 
 ### jsonExtract
@@ -323,30 +414,35 @@ knex.withSchema('public').select('*').from('users')
 Extract a value from a json column given a JsonPath. An alias can be specified. The singleValue booleancan be used to specify, with Oracle or MSSQL, if the value returned by the function is a single value or an array/object value.An array of arrays can be used to specify multiple extractions with one call to this function.
 
 ```js
-knex('accounts').jsonExtract('json_col', '$.name')
+knex('accounts')
+  .jsonExtract('json_col', '$.name')
 
-knex('accounts').jsonExtract('json_col', '$.name', 'accountName')
+knex('accounts')
+  .jsonExtract('json_col', '$.name', 'accountName')
 
-knex('accounts').jsonExtract('json_col', '$.name', 'accountName', true)
+knex('accounts')
+  .jsonExtract('json_col', '$.name', 'accountName', true)
 
-knex('accounts').jsonExtract([ 
-  ['json_col', '$.name', 'accountName'], 
-  ['json_col', '$.lastName', 'accountLastName'] 
-])
+knex('accounts')
+  .jsonExtract([ 
+    ['json_col', '$.name', 'accountName'], 
+    ['json_col', '$.lastName', 'accountLastName'] 
+  ])
 ```
 
 All json\*() functions can be used directly from knex object and can be nested.
 
 ```js
-knex('cities').jsonExtract([
-  [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
-  [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
-  [
-    knex.jsonSet('population', '$.current', '1234'),
-    '$',
-    'currentModified',
-  ]
-])
+knex('cities')
+  .jsonExtract([
+    [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
+    [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
+    [
+      knex.jsonSet('population', '$.current', '1234'),
+      '$',
+      'currentModified',
+    ]
+  ])
 ```
 
 ### jsonSet
@@ -356,9 +452,11 @@ knex('cities').jsonExtract([
 Return a json value/object/array where a given value is set at the given JsonPath. Value can be single value or json object. If a value already exists at the given place, the value is replaced.Not supported by Redshift and versions before Oracle 21c.
 
 ```js
-knex('accounts').jsonSet('json_col', '$.name', 'newName', 'newNameCol')
+knex('accounts')
+  .jsonSet('json_col', '$.name', 'newName', 'newNameCol')
 
-knex('accounts').jsonSet('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+knex('accounts')
+  .jsonSet('json_col', '$.name', { "name": "newName" }, 'newNameCol')
 ```
 
 ### jsonInsert
@@ -368,11 +466,19 @@ knex('accounts').jsonSet('json_col', '$.name', { "name": "newName" }, 'newNameCo
 Return a json value/object/array where a given value is inserted at the given JsonPath. Value can be single value or json object. If a value exists at the given path, the value is not replaced.Not supported by Redshift and versions before Oracle 21c.
 
 ```js
-knex('accounts').jsonInsert('json_col', '$.name', 'newName', 'newNameCol')
+knex('accounts')
+  .jsonInsert('json_col', '$.name', 'newName', 'newNameCol')
 
-knex('accounts').jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+knex('accounts')
+  .jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
 
-knex('accounts').jsonInsert(knex.jsonExtract('json_col', '$.otherAccount'), '$.name', { "name": "newName" }, 'newNameCol')
+knex('accounts')
+  .jsonInsert(
+    knex.jsonExtract('json_col', '$.otherAccount'), 
+    '$.name', 
+    { "name": "newName" }, 
+    'newNameCol'
+  )
 ```
 
 ### jsonRemove
@@ -382,9 +488,11 @@ knex('accounts').jsonInsert(knex.jsonExtract('json_col', '$.otherAccount'), '$.n
 Return a json value/object/array where a given value is removed at the given JsonPath.Not supported by Redshift and versions before Oracle 21c.
 
 ```js
-knex('accounts').jsonRemove('json_col', '$.name', 'colWithRemove')
+knex('accounts')
+  .jsonRemove('json_col', '$.name', 'colWithRemove')
 
-knex('accounts').jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
+knex('accounts')
+  .jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNameCol')
 ```
 
 
@@ -395,12 +503,22 @@ knex('accounts').jsonInsert('json_col', '$.name', { "name": "newName" }, 'newNam
 Adds an offset clause to the query. An optional skipBinding parameter may be specified which would avoid setting offset as a prepared value (some databases don't allow prepared values for offset).
 
 ```js
-knex.select('*').from('users').offset(10)
+knex.select('*')
+  .from('users')
+  .offset(10)
 
-knex.select('*').from('users').offset(10).toSQL().sql
+knex.select('*')
+  .from('users')
+  .offset(10)
+  .toSQL()
+  .sql
 
 // Offset value isn't a prepared value.
-knex.select('*').from('users').offset(10, {skipBinding: true}).toSQL().sql
+knex.select('*')
+  .from('users')
+  .offset(10, {skipBinding: true})
+  .toSQL()
+  .sql
 ```
 
 ### limit
@@ -410,12 +528,25 @@ knex.select('*').from('users').offset(10, {skipBinding: true}).toSQL().sql
 Adds a limit clause to the query. An optional skipBinding parameter may be specified to avoid adding limit as a prepared value (some databases don't allow prepared values for limit).
 
 ```js
-knex.select('*').from('users').limit(10).offset(30)
+knex.select('*')
+  .from('users')
+  .limit(10)
+  .offset(30)
 
-knex.select('*').from('users').limit(10).offset(30).toSQL().sql
+knex.select('*')
+  .from('users')
+  .limit(10)
+  .offset(30)
+  .toSQL()
+  .sql
 
 // Limit value isn't a prepared value.
-knex.select('*').from('users').limit(10, {skipBinding: true}).offset(30).toSQL().sql
+knex.select('*')
+  .from('users')
+  .limit(10, {skipBinding: true})
+  .offset(30)
+  .toSQL()
+  .sql
 ```
 
 ### union
@@ -425,18 +556,31 @@ knex.select('*').from('users').limit(10, {skipBinding: true}).offset(30).toSQL()
 Creates a union query, taking an array or a list of callbacks, builders, or raw statements to build the union statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses.
 
 ```js
-knex.select('*').from('users').whereNull('last_name').union(function() {
-  this.select('*').from('users').whereNull('first_name')
-})
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .union(function() {
+    this.select('*')
+      .from('users')
+      .whereNull('first_name')
+  })
 
-knex.select('*').from('users').whereNull('last_name').union([
-  knex.select('*').from('users').whereNull('first_name')
-])
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .union([
+    knex.select('*')
+      .from('users')
+      .whereNull('first_name')
+  ])
 
-knex.select('*').from('users').whereNull('last_name').union(
-  knex.raw('select * from users where first_name is null'),
-  knex.raw('select * from users where email is null')
-)
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .union(
+    knex.raw('select * from users where first_name is null'),
+    knex.raw('select * from users where email is null')
+  )
 ```
 
 ### unionAll
@@ -1278,7 +1422,7 @@ Returns an object with the column info about the current table, or an individual
 -   **nullable**: whether the column may be null
 
 ```js
-knex('users').columnInfo().then(function(info) { // ... });
+knex('users').columnInfo().then(function(info) { /*...*/ });
 ```
 
 ### debug
@@ -1293,9 +1437,9 @@ Overrides the global debug setting for the current query chain. If enabled is om
 
 The method sets the db connection to use for the query without using the connection pool. You should pass to it the same object that acquireConnection() for the corresponding driver returns
 
-```js
-const Pool = require('pg-pool')
-const pool = new Pool({ ... })
+```mjs
+const Pool = require('pg-pool');
+const pool = new Pool({ /* ... */ });
 const connection = await pool.connect();
 
 try {
@@ -1322,7 +1466,7 @@ Allows for mixing in additional options as defined by database client specific l
       .where(knex.raw('a1.id = 1'))
       .options({ nestTables: true, rowMode: 'array' })
       .limit(2)
-      .then(...)
+      .then({ /*...*/ })
 ```
 
 ### queryContext
@@ -1349,14 +1493,14 @@ It allows to add custom function to the Query Builder.
 
 Example:
 
-```js
-    const Knex = require('knex');
-    Knex.QueryBuilder.extend('customSelect', function(value) {
-      return this.select(this.client.raw(`${value} as value`));
-    });
-    
-    const meaningOfLife = await knex('accounts')
-      .customSelect(42);
+```mjs
+const Knex = require('knex');
+Knex.QueryBuilder.extend('customSelect', function(value) {
+  return this.select(this.client.raw(`${value} as value`));
+});
+
+const meaningOfLife = await knex('accounts')
+  .customSelect(42);
 ```
 
 If using TypeScript, you can extend the QueryBuilder interface with your custom method.

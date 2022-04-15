@@ -57,11 +57,13 @@ return knex.insert({id: 1, name: 'Test'}, 'id')
   .into('accounts')
   .catch(function(error) {
     console.error(error);
-  }).then(function() {
+  })
+  .then(function() {
     return knex.select('*')
       .from('accounts')
       .where('id', 1);
-  }).then(function(rows) {
+  })
+  .then(function(rows) {
     console.log(rows[0]);
   })
   .catch(function(error) {
@@ -85,7 +87,8 @@ knex.select('name').from('users')
   .offset(x)
   .asCallback(function(err, rows) {
     if (err) return console.error(err);
-    knex.select('id').from('nicknames')
+    knex.select('id')
+      .from('nicknames')
       .whereIn('nickname', _.pluck(rows, 'name'))
       .asCallback(function(err, rows) {
         if (err) return console.error(err);
@@ -106,20 +109,29 @@ If called with a callback, the callback is passed the stream and a promise is re
 
 ```js
 // Retrieve the stream:
-const stream = knex.select('*').from('users').stream();
+const stream = knex.select('*')
+  .from('users')
+  .stream();
 stream.pipe(writableStream);
+```
 
+```js
 // With options:
-const stream = knex.select('*').from('users').stream({highWaterMark: 5});
+const stream = knex.select('*')
+  .from('users')
+  .stream({highWaterMark: 5});
 stream.pipe(writableStream);
+```
 
+```js
 // Use as a promise:
-const stream = knex.select('*').from('users')
+const stream = knex.select('*')
+  .from('users')
   .where(knex.raw('id = ?', [1]))
   .stream(function(stream) {
     stream.pipe(writableStream);
   })
-  .then(function() { // ... })
+  .then(function() { /* ... */ })
   .catch(function(e) { console.error(e); });
 ```
 
@@ -130,7 +142,9 @@ const stream = knex.select('*').from('users')
 Pipe a stream for the current query to a writableStream.
 
 ```js
-const stream = knex.select('*').from('users').pipe(writableStream);
+const stream = knex.select('*')
+  .from('users')
+  .pipe(writableStream);
 ```
 
 ## Events
@@ -160,7 +174,7 @@ knex.select(['NonExistentColumn'])
   .on('query-error', function(error, obj) {
     app.log(error);
   })
-  .then(function() { // ... })
+  .then(function() { /* ... */ })
   .catch(function(error) {
     // Same error object as the query-error event provides.
   });
@@ -212,7 +226,10 @@ knex.select('*')
 Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging, but should not be used to create queries for running them against DB.
 
 ```js
-const toStringQuery = knex.select('*').from('users').where('id', 1).toString();
+const toStringQuery = knex.select('*')
+  .from('users')
+  .where('id', 1)
+  .toString();
 
 // Outputs: console.log(toStringQuery); 
 // select * from "users" where "id" = 1
@@ -226,7 +243,8 @@ const toStringQuery = knex.select('*').from('users').where('id', 1).toString();
 Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging and building queries for running them manually with DB driver. `.toSQL().toNative()` outputs object with sql string and bindings in a dialects format in the same way that knex internally sends them to underlying DB driver.
 
 ```js
-knex.select('*').from('users')
+knex.select('*')
+  .from('users')
   .where(knex.raw('id = ?', [1]))
   .toSQL()
 // Outputs:
@@ -238,9 +256,11 @@ knex.select('*').from('users')
 //   toNative: function () {}
 // }
 
-knex.select('*').from('users')
+knex.select('*')
+  .from('users')
   .where(knex.raw('id = ?', [1]))
-  .toSQL().toNative()
+  .toSQL()
+  .toNative()
 // Outputs for postgresql dialect:
 // {
 //   bindings: [1],

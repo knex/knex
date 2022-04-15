@@ -5,11 +5,30 @@ module.exports = {
     ecmaVersion: 2018,
   },
   extends: [
-    'plugin:markdwn/recommended',
+    'plugin:markdown/recommended',
     'eslint:recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
     'prettier',
+  ],
+  overrides: [
+    {
+      // Code blocks in markdown file
+      files: ['**/*.md/*.*'],
+      rules: {
+        '@typescript-eslint/no-redeclare': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-use-before-define': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
+        'import/no-unresolved': 'off',
+        'no-alert': 'off',
+        'no-console': 'off',
+        'no-restricted-imports': 'off',
+        'no-undef': 'off',
+        'no-unused-expressions': 'off',
+        'no-unused-vars': 'off',
+      },
+    },
   ],
   plugins: ['import', 'mocha-no-only'],
   rules: {

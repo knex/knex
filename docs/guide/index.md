@@ -113,7 +113,9 @@ const knex = require('knex')({
     database : 'myapp_test'
   }
 });
+```
 
+```js
 const knex = require('knex')({
   client: 'mysql',
   version: '5.7',
@@ -198,10 +200,17 @@ Specify the client for the particular flavour of SQL you are interested in.
 
 ```js
 const pg = require('knex')({client: 'pg'});
-knex('table').insert({a: 'b'}).returning('*').toString();
+
+knex('table')
+  .insert({a: 'b'})
+  .returning('*')
+  .toString();
 // "insert into "table" ("a") values ('b')"
 
-pg('table').insert({a: 'b'}).returning('*').toString();
+pg('table')
+  .insert({a: 'b'})
+  .returning('*')
+  .toString();
 // "insert into "table" ("a") values ('b') returning *"
 ```
 
@@ -255,7 +264,7 @@ If you ever need to explicitly teardown the connection pool, you may use `knex.d
 ```js
 const knex = require('knex')({
   client: 'pg',
-  connection: {...},
+  connection: {/*...*/},
   pool: {
     afterCreate: function (conn, done) {
       // in this example we use pg driver's connection API
@@ -284,8 +293,8 @@ const knex = require('knex')({
 ```js
 const knex = require('knex')({
   client: 'pg',
-  connection: {...},
-  pool: {...},
+  connection: {/*...*/},
+  pool: {/*...*/},
   acquireConnectionTimeout: 10000
 });
 ```
@@ -297,7 +306,7 @@ Utilized by Oracledb. An array of types. The valid types are 'DATE', 'NUMBER' an
 ```js
 const knex = require('knex')({
   client: 'oracledb',
-  connection: {...},
+  connection: {/*...*/},
   fetchAsString: [ 'number', 'clob' ]
 });
 ```
@@ -443,7 +452,3 @@ declare module 'knex/types/tables' {
   }
 }
 ```
-
-## Support
-
-Have questions about the library? Come join us in the [#bookshelf freenode IRC](http://webchat.freenode.net/?channels=bookshelf) channel for support on knex.js and [bookshelf.js](http://bookshelfjs.org), or post an issue on [Stack Overflow](http://stackoverflow.com/questions/tagged/knex.js) or in the GitHub [issue tracker](https://github.com/knex/knex/issues).
