@@ -12,7 +12,7 @@
   /* --c-text-light-1: #c5bab5; */
   --c-text-light-2: #dfa486;
   --c-text-light-3: #d26a38;
-  --code-bg-color: #201d1c;
+  --code-bg-color: #362f2d;
   --code-inline-bg-color: rgb(68 52 47 / 5%);
 }
 html {
@@ -25,6 +25,7 @@ html {
   --c-text-light-1: #c5bab5;
   --c-text-light-2: #dfa486;
   --c-text-light-3: #d26a38;
+  --code-bg-color: #201d1c;
   --code-inline-bg-color: #201d1c;
 
   color-scheme: dark;
