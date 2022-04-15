@@ -72,10 +72,6 @@ function getGuideSidebar() {
       text: 'Migrations',
       link: '/guide/migrations'
     },
-    {
-      text: 'F.A.Q.',
-      link: '/guide/faq'
-    },
   ]
 }
 function getFaqSidebar() {
