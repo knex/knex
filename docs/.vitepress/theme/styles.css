@@ -30,3 +30,28 @@ a.header-anchor {
 .sidebar > .sidebar-links > .sidebar-link > .sidebar-link-item {
   padding: 0.35rem 1.5rem 0.35rem 1.25rem;
 }
+
+.container-home {
+  max-width: 42rem;
+  margin: 0 auto;
+  background: #f5f5f5;
+  padding: .5rem 2rem;
+  border-radius: 6px;
+}
+
+.home-hero .image {
+  animation: spin 5s linear infinite;
+  animation-play-state: paused;
+}
+.home-hero:hover .image {
+  animation-play-state: running;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

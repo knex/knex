@@ -3,6 +3,10 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'Knex.js',
   description: 'Beta knex.js documentation.',
+  base: '/',
+  head: [
+    ["link", { rel: "icon", type: "image/png", href: "/knex-logo.png" }],
+  ],
 
   themeConfig: {
     logo: '/knex-logo.png',
