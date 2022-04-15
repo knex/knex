@@ -4,11 +4,31 @@ name: Linting and Types
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
+    paths:
+      - ".github/**"
+      - "bin/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
+      - "test-tsd/**"
+      - "types/**"
+      - "knex.js"
+      - "knex.mjs"
+      - "package.json"
   pull_request:
-    branches:
-      - master
+    branches: [ master ]
+    paths:
+      - ".github/**"
+      - "bin/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
+      - "test-tsd/**"
+      - "types/**"
+      - "knex.js"
+      - "knex.mjs"
+      - "package.json"
 
 jobs:
   build:

@@ -3,8 +3,30 @@ name: "CodeQL"
 on:
   push:
     branches: [ master ]
+    paths:
+      - ".github/**"
+      - "bin/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
+      - "test-tsd/**"
+      - "types/**"
+      - "knex.js"
+      - "knex.mjs"
+      - "package.json"
   pull_request:
     branches: [ master ]
+    paths:
+      - ".github/**"
+      - "bin/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
+      - "test-tsd/**"
+      - "types/**"
+      - "knex.js"
+      - "knex.mjs"
+      - "package.json"
   schedule:
     - cron: '36 2 * * 0'
 

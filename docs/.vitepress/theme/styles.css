@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Source+Code+Pro&display=swap');
+
+:root {
+  --c-brand: #d26b38;
+  --c-brand-light: #ff8144;
+  --font-family-base: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-family-mono: 'Source Code Pro', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+
+  --code-font-size: 14px;
+  --code-line-height: 22px;
+}
+html {
+  font-size: 14px;
+}
+a.header-anchor {
+  float: left;
+  margin-top: 0.125em;
+  margin-left: -1.1em;
+  padding-right: 0.23em;
+  font-size: 0.85em;
+  opacity: 0;
+}
+.container {}
+.sidebar > .sidebar-links > .sidebar-link + .sidebar-link {
+  padding-top: .3rem;
+}
+.sidebar > .sidebar-links > .sidebar-link > a.sidebar-link-item {
+  font-weight: 600;
+}
+.sidebar > .sidebar-links > .sidebar-link > .sidebar-link-item {
+  padding: 0.35rem 1.5rem 0.35rem 1.25rem;
+}

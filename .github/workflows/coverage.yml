@@ -2,7 +2,31 @@
 
 name: Coverage
 
-on: ["push", "pull_request"]
+on: 
+  push:
+    paths:
+      - ".github/**"
+      - "bin/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
+      - "test-tsd/**"
+      - "types/**"
+      - "knex.js"
+      - "knex.mjs"
+      - "package.json"
+  pull_request:
+    paths:
+      - ".github/**"
+      - "bin/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
+      - "test-tsd/**"
+      - "types/**"
+      - "knex.js"
+      - "knex.mjs"
+      - "package.json"
 
 jobs:
   build:

@@ -5,6 +5,7 @@ module.exports = {
     ecmaVersion: 2018,
   },
   extends: [
+    'plugin:markdwn/recommended',
     'eslint:recommended',
     'plugin:import/errors',
     'plugin:import/warnings',
