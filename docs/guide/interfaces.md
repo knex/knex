@@ -184,7 +184,11 @@ knex.select('*')
 
 ### start
 
-A `start` event is fired right before a query-builder is compiled. Note: While this event can be used to alter a builders state prior to compilation it is not to be recommended. Future goals include ways of doing this in a different manner such as hooks.
+A `start` event is fired right before a query-builder is compiled.
+
+::: info
+While this event can be used to alter a builders state prior to compilation it is not to be recommended. Future goals include ways of doing this in a different manner such as hooks.
+:::
 
 ```js
 knex.select('*')

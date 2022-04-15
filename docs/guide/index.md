@@ -48,7 +48,8 @@ const knex = require('knex')({
 
 The connection options are passed directly to the appropriate database client to create the connection, and may be either an object, a connection string, or a function returning an object:
 
-Note: Knex's PostgreSQL client allows you to set the initial search path for each connection automatically using an additional option "searchPath" as shown below.
+::: info PostgreSQL
+Knex's PostgreSQL client allows you to set the initial search path for each connection automatically using an additional option "searchPath" as shown below.
 
 ```js
 const pg = require('knex')({
@@ -57,8 +58,11 @@ const pg = require('knex')({
   searchPath: ['knex', 'public'],
 });
 ```
+:::
 
-Note: When you use the SQLite3 or Better-SQLite3 adapter, there is a filename required, not a network connection. For example:
+::: info SQLite3 or Better-SQLite3
+When you use the SQLite3 or Better-SQLite3 adapter, there is a filename required, not a network connection. For example:
+
 ```js
 const knex = require('knex')({
   client: 'sqlite3', // or 'better-sqlite3'
@@ -68,7 +72,7 @@ const knex = require('knex')({
 });
 ```
 
-Note: You can also run either SQLite3 or Better-SQLite3 with an in-memory database by providing `:memory:` as the filename. For example:
+ You can also run either SQLite3 or Better-SQLite3 with an in-memory database by providing `:memory:` as the filename. For example:
 
 ```js
 const knex = require('knex')({
@@ -78,8 +82,10 @@ const knex = require('knex')({
   }
 });
 ```
+::: 
 
-Note: When you use the SQLite3 adapter, you can set flags used to open the connection. For example:
+::: info SQLite3
+When you use the SQLite3 adapter, you can set flags used to open the connection. For example:
 
 ```js
 const knex = require('knex')({
@@ -90,8 +96,10 @@ const knex = require('knex')({
   }
 });
 ```
+::: 
 
-Note: The database version can be added in knex configuration, when you use the PostgreSQL adapter to connect a non-standard database.
+::: info 
+The database version can be added in knex configuration, when you use the PostgreSQL adapter to connect a non-standard database.
 
 ```js
 const knex = require('knex')({
@@ -118,6 +126,7 @@ const knex = require('knex')({
   }
 });
 ```
+::: 
 
 A function can be used to determine the connection configuration dynamically. This function receives no parameters, and returns either a configuration object or a promise for a configuration object.
 

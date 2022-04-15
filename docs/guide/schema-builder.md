@@ -547,7 +547,9 @@ CREATE TYPE "foo_type" AS ENUM ('value1', 'value2');
 
 To use an existing native type across columns, specify 'existingType' in the options (this assumes the type has already been created):
 
-Note: Since the enum values aren't utilized for a native && existing type, the type being passed in for values is immaterial.
+::: info
+Since the enum values aren't utilized for a native && existing type, the type being passed in for values is immaterial.
+:::
 
 ```js
 table.enu('column', null, { useNative: true, existingType: true, enumName: 'foo_type' })
@@ -708,7 +710,9 @@ knex.schema.alterTable('job', function(t) {
 })
 ```
 
-Note: If you want to chain primary() while creating new column you can use [primary](#Schema-column-primary)
+::: info
+If you want to chain primary() while creating new column you can use [primary](#Schema-column-primary)
+:::
 
 ### unique
 
@@ -728,7 +732,9 @@ knex.schema.alterTable('job', function(t) {
 })
 ```
 
-Note: If you want to chain unique() while creating new column you can use [unique](#Schema-column-unique)
+::: info
+If you want to chain unique() while creating new column you can use [unique](#Schema-column-unique)
+:::
 
 ### foreign
 
@@ -815,7 +821,11 @@ The following three methods may be chained on the schema building methods, as mo
 
 **column.alter(options={[alterNullable: boolean = true, alterType: boolean = true])**
 
-Marks the column as an alter / modify, instead of the default add. Note: This only works in .alterTable() and is not supported by SQlite or Amazon Redshift. Alter is _not_ done incrementally over older column type so if you like to add `notNullable` and keep the old default value, the alter statement must contain both `.notNullable().defaultTo(1).alter()`. If one just tries to add `.notNullable().alter()` the old default value will be dropped. Nullable alterations are done only if alterNullable is true. Type alterations are done only if alterType is true.
+Marks the column as an alter / modify, instead of the default add. 
+
+::: warning
+This only works in .alterTable() and is not supported by SQlite or Amazon Redshift. Alter is _not_ done incrementally over older column type so if you like to add `notNullable` and keep the old default value, the alter statement must contain both `.notNullable().defaultTo(1).alter()`. If one just tries to add `.notNullable().alter()` the old default value will be dropped. Nullable alterations are done only if alterNullable is true. Type alterations are done only if alterType is true.
+:::
 
 ```js
 knex.schema.alterTable('user', function(t) {
@@ -849,7 +859,9 @@ knex.schema.table('users', function (table) {
 })
 ```
 
-Note: If you want to create primary constraint on existing column use [primary](#Schema-table-primary)
+::: info
+If you want to create primary constraint on existing column use [primary](#Schema-table-primary)
+:::
 
 ### unique
 
@@ -863,7 +875,9 @@ knex.schema.table('users', function (table) {
 })
 ```
 
-Note: If you want to create unique constraint on existing column use [unique](#Schema-table-unique)
+::: info
+If you want to create unique constraint on existing column use [unique](#Schema-table-unique)
+:::
 
 ### references
 

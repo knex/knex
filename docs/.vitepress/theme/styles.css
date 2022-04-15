@@ -31,6 +31,15 @@ a.header-anchor {
   padding: 0.35rem 1.5rem 0.35rem 1.25rem;
 }
 
+.custom-block.warning {
+  border-color: var(--c-brand);
+  color: #914926;
+  background-color: rgb(210 106 56 / 15%);
+}
+.custom-block.warning .custom-block-title {
+  color: #e7682a;
+}
+
 .container-home {
   max-width: 42rem;
   margin: 0 auto;

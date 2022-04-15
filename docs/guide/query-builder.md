@@ -13,7 +13,8 @@ There are two ways to declare an alias for identifier. One can directly give `as
 
 If the object has multiple aliases `{ alias1: 'identifier1', alias2: 'identifier2' }`, then all the aliased identifiers are expanded to comma separated list.
 
-NOTE: identifier syntax has no place for selecting schema, so if you are doing `schemaName.tableName`, query might be rendered wrong. Use `.withSchema('schemaName')` instead.
+::: info
+Identifier syntax has no place for selecting schema, so if you are doing `schemaName.tableName`, query might be rendered wrong. Use `.withSchema('schemaName')` instead.
 
 ```js
 knex({ a: 'table', b: 'table' })
@@ -23,6 +24,7 @@ knex({ a: 'table', b: 'table' })
   })
   .whereRaw('?? = ??', ['a.column_1', 'b.column_2'])
 ```
+:::
 
 ## Common 
 
@@ -31,7 +33,11 @@ knex({ a: 'table', b: 'table' })
 **knex(tableName, options={only: boolean})**  
 **knex.[methodName]**
 
-The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data. **NOTE:** only supported in PostgreSQL for now.
+The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data. 
+
+::: warning
+Only supported in PostgreSQL for now.
+::: 
 
 #### Usage with TypeScript
 
@@ -118,7 +124,11 @@ If you don't want to manually specify the result type, it is recommended to alwa
 
 **.timeout(ms, options={cancel: boolean})**
 
-Sets a timeout for the query and will throw a TimeoutError if the timeout is exceeded. The error contains information about the query, bindings, and the timeout that was set. Useful for complex queries that you want to make sure are not taking too long to execute. Optional second argument for passing options:\* **cancel**: if `true`, cancel query if timeout is reached. **NOTE:** only supported in MySQL and PostgreSQL for now.
+Sets a timeout for the query and will throw a TimeoutError if the timeout is exceeded. The error contains information about the query, bindings, and the timeout that was set. Useful for complex queries that you want to make sure are not taking too long to execute. Optional second argument for passing options:\* **cancel**: if `true`, cancel query if timeout is reached. 
+
+::: warning
+Only supported in MySQL and PostgreSQL for now.
+:::
 
 ```js
 knex.select().from('books').timeout(1000)
@@ -188,7 +198,11 @@ knex.column('title', {by: 'author'}, 'year').select().from('books')
 
 **.from([tableName], options={only: boolean})**
 
-Specifies the table used in the current query, replacing the current table name if one has already been specified. This is typically used in the sub-queries performed in the advanced where or union methods. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data. **NOTE:** only supported in PostgreSQL for now.
+Specifies the table used in the current query, replacing the current table name if one has already been specified. This is typically used in the sub-queries performed in the advanced where or union methods. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data. 
+
+::: warning
+Only supported in PostgreSQL for now.
+:::
 
 ```js
 knex.select('*').from('users')
@@ -520,9 +534,11 @@ knex('coords').insert([{x: 20}, {y: 30}, {x: 10, y: 20}])
 
 Implemented for the PostgreSQL, MySQL, and SQLite databases. A modifier for insert queries that specifies alternative behaviour in the case of a conflict. A conflict occurs when a table has a PRIMARY KEY or a UNIQUE index on a column (or a composite index on a set of columns) and a row being inserted has the same value as a row which already exists in the table in those column(s). The default behaviour in case of conflict is to raise an error and abort the query. Using this method you can change this behaviour to either silently ignore the error by using .onConflict().ignore() or to update the existing row with new data (perform an "UPSERT") by using .onConflict().merge().
 
-Note: For PostgreSQL and SQLite, the column(s) specified by this method must either be the table's PRIMARY KEY or have a UNIQUE index on them, or the query will fail to execute. When specifying multiple columns, they must be a composite PRIMARY KEY or have composite UNIQUE index. MySQL will ignore the specified columns and always use the table's PRIMARY KEY. For cross-platform support across PostgreSQL, MySQL, and SQLite you must both explicitly specify the columns in .onConflict() and those column(s) must be the table's PRIMARY KEY.
+::: info
+For PostgreSQL and SQLite, the column(s) specified by this method must either be the table's PRIMARY KEY or have a UNIQUE index on them, or the query will fail to execute. When specifying multiple columns, they must be a composite PRIMARY KEY or have composite UNIQUE index. MySQL will ignore the specified columns and always use the table's PRIMARY KEY. For cross-platform support across PostgreSQL, MySQL, and SQLite you must both explicitly specify the columns in .onConflict() and those column(s) must be the table's PRIMARY KEY.
 
 For PostgreSQL and SQLite, you can use knex.raw(...) function in onConflict. It can be useful to specify condition when you have partial index :
+:::
 
 ```js
 knex('tableName')
