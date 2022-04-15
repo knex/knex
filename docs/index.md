@@ -4,8 +4,10 @@ heroImage: /knex-logo.png
 heroAlt: Logo knex
 heroText: Knex.js
 tagline: SQL query builder
-actionText: Get Started
+actionText: View guide
 actionLink: /guide/
+altActionText: Star on GitHub
+altActionLink: https://github.com/knex/knex
 title: SQL Query Builder for Javascript
 ---
 
