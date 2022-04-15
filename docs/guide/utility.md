@@ -60,7 +60,7 @@ knex('uuid_table').insert({
 
 Convert a uuid (char(16)) to a binary uuid (binary(36))
 
-```mjs
+```ts
 const res = await knex('uuid_table').select('uuid_col_binary');
 knex.fn.binToUuid(res[0].uuid_col_binary)
 ```

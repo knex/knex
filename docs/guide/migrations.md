@@ -454,7 +454,7 @@ node --experimental-modules ./node_modules/.bin/knex $@
 
 When using migration and seed files with '.cjs' or '.mjs' extensions, you will need to specify that explicitly:
 
-```mjs
+```ts
 /** 
  * knexfile.mjs
  */
@@ -469,7 +469,7 @@ export default {
 
 When using '.mjs' extensions for your knexfile and '.js' for the seeds/migrations, you will need to specify that explicitly.
 
-```mjs
+```ts
 /** 
  * knexfile.mjs
  */
@@ -485,7 +485,7 @@ export default {
 For the knexfile you can use a default export,  
 it will take precedence over named export.
 
-```mjs
+```ts
 /**
  * filename: knexfile.js
  * For the knexfile you can use a default export
@@ -528,7 +528,7 @@ export const { client, connection, migrations, seeds } = config;
 
 Seed and migration files need to follow Knex conventions
 
-```mjs
+```ts
 // file: seed.js
 /** 
  * Same as with the CommonJS modules

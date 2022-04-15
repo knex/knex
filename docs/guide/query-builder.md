@@ -1437,7 +1437,7 @@ Overrides the global debug setting for the current query chain. If enabled is om
 
 The method sets the db connection to use for the query without using the connection pool. You should pass to it the same object that acquireConnection() for the corresponding driver returns
 
-```mjs
+```ts
 const Pool = require('pg-pool');
 const pool = new Pool({ /* ... */ });
 const connection = await pool.connect();
@@ -1493,7 +1493,7 @@ It allows to add custom function to the Query Builder.
 
 Example:
 
-```mjs
+```ts
 const Knex = require('knex');
 Knex.QueryBuilder.extend('customSelect', function(value) {
   return this.select(this.client.raw(`${value} as value`));
