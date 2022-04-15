@@ -556,7 +556,8 @@ knex('tableName')
 
 #### merge
 
-**insert(..).onConflict(..).merge() / insert(..).onConflict(..).merge(updates)**
+**insert(..).onConflict(..).merge()**  
+**insert(..).onConflict(..).merge(updates)**
 
 Implemented for the PostgreSQL, MySQL, and SQLite databases. Modifies an insert query, to turn it into an 'upsert' operation. Uses ON DUPLICATE KEY UPDATE in MySQL, and adds an ON CONFLICT (columns) DO UPDATE clause to the insert statement in PostgreSQL and SQLite. By default, it merges all columns.
 
@@ -653,7 +654,8 @@ knex('coords').upsert([{x: 20}, {y: 30}, {x: 10, y: 20}])
 
 ### update
 
-**.update(data, [returning], [options]) / .update(key, value, [returning], [options])**
+**.update(data, [returning], [options])**
+**.update(key, value, [returning], [options])**
 
 Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](#Builder-returning)
 
@@ -730,7 +732,8 @@ knex('accounts')
 
 ### returning
 
-**.returning(column, [options]) / .returning([column1, column2, ...], [options])**
+**.returning(column, [options])** 
+**.returning([column1, column2, ...], [options])**
 
 Utilized by PostgreSQL, MSSQL, and Oracle databases, the returning method specifies which column should be returned by the insert, update and delete methods. Passed column parameter may be a string or an array of strings. The SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is not supported on Amazon Redshift.
 
@@ -1388,7 +1391,8 @@ knex('accounts')
 
 ### where
 
-**.where(~mixed~) / .orWhere**
+**.where(~mixed~)**  
+**.orWhere**
 
 Object Syntax:
 
@@ -1449,7 +1453,8 @@ knex('users').where('id', 1).orWhere({votes: 100, user: 'knex'})
 
 ### whereNot
 
-**.whereNot(~mixed~) / .orWhereNot**
+**.whereNot(~mixed~)**
+**.orWhereNot**
 
 Object Syntax:
 
@@ -1496,7 +1501,8 @@ knex('accounts').where('id', 'not in', subquery)
 
 ### whereIn
 
-**.whereIn(column|columns, array|callback|builder) / .orWhereIn**
+**.whereIn(column|columns, array|callback|builder)**  
+**.orWhereIn**  
 
 Shorthand for .where('id', 'in', obj), the .whereIn and .orWhereIn methods add a "where in" clause to the query. Note that passing empty array as the value results in a query that never returns any rows (`WHERE 1 = 0`)
 
@@ -1524,9 +1530,10 @@ knex.select('name').from('users')
 
 ### whereNotIn
 
-```js
-**.whereNotIn(column, array|callback|builder) / .orWhereNotIn**
+**.whereNotIn(column, array|callback|builder)**
+**.orWhereNotIn**
 
+```js
 knex('users').whereNotIn('id', [1, 2, 3])
 
 knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3])
@@ -1534,7 +1541,8 @@ knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3])
 
 ### whereNull
 
-**.whereNull(column) / .orWhereNull**
+**.whereNull(column)**  
+**.orWhereNull**  
 
 ```js
 knex('users').whereNull('updated_at')
@@ -1542,7 +1550,8 @@ knex('users').whereNull('updated_at')
 
 ### whereNotNull
 
-**.whereNotNull(column) / .orWhereNotNull**
+**.whereNotNull(column)**  
+**.orWhereNotNull**  
 
 ```js
 knex('users').whereNotNull('created_at')
@@ -1550,7 +1559,8 @@ knex('users').whereNotNull('created_at')
 
 ### whereExists
 
-**.whereExists(builder | callback) / .orWhereExists**
+**.whereExists(builder | callback)**  
+**.orWhereExists**
 
 ```js
 knex('users').whereExists(function() {
@@ -1562,7 +1572,8 @@ knex('users').whereExists(knex.select('*').from('accounts').whereRaw('users.acco
 
 ### whereNotExists
 
-**.whereNotExists(builder | callback) / .orWhereNotExists**
+**.whereNotExists(builder | callback)**  
+**.orWhereNotExists**
 
 ```js
 knex('users').whereNotExists(function() {
@@ -1574,7 +1585,8 @@ knex('users').whereNotExists(knex.select('*').from('accounts').whereRaw('users.a
 
 ### whereBetween
 
-**.whereBetween(column, range) / .orWhereBetween**
+**.whereBetween(column, range)**  
+**.orWhereBetween**
 
 ```js
 knex('users').whereBetween('votes', [1, 100])
@@ -1582,7 +1594,8 @@ knex('users').whereBetween('votes', [1, 100])
 
 ### whereNotBetween
 
-**.whereNotBetween(column, range) / .orWhereNotBetween**
+**.whereNotBetween(column, range)**  
+**.orWhereNotBetween**
 
 ```js
 knex('users').whereNotBetween('votes', [1, 100])
@@ -1600,7 +1613,8 @@ knex('users').whereRaw('id = ?', [1])
 
 ### whereLike
 
-**.whereLike(column, string|builder|raw) / .orWhereLike**
+**.whereLike(column, string|builder|raw)**  
+**.orWhereLike**
 
 Adds a where clause with case-sensitive substring comparison on a given column with a given value.
 
@@ -1615,7 +1629,8 @@ knex('users')
 
 ### whereILike
 
-**.whereILike(column, string|builder|raw) / .orWhereILike**
+**.whereILike(column, string|builder|raw)**  
+**.orWhereILike**
 
 Adds a where clause with case-insensitive substring comparison on a given column with a given value.
 
