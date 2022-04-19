@@ -2097,12 +2097,12 @@ export declare namespace Knex {
     binary(columnName: string, length?: number): ColumnBuilder;
     enum(
       columnName: string,
-      values: readonly Value[],
+      values: (readonly Value[]) | null,
       options?: EnumOptions
     ): ColumnBuilder;
     enu(
       columnName: string,
-      values: readonly Value[],
+      values: (readonly Value[]) | null,
       options?: EnumOptions
     ): ColumnBuilder;
     json(columnName: string): ColumnBuilder;
