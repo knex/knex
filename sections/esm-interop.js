@@ -164,7 +164,7 @@ export default [
         content: `
         // file: migration.js
         /** 
-         * Same as the CommonJS version, the miration file should export 
+         * Same as the CommonJS version, the migration file should export 
          * "up" and "down" named functions
          */
         export function up(knex) {
