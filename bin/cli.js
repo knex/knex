@@ -30,6 +30,7 @@ const {
 } = require('../lib/migrations/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
+const { exec } = require('child_process');
 
 async function openKnexfile(configPath) {
   const importFile = require('../lib/migrations/util/import-file'); // require me late!
@@ -218,7 +219,7 @@ function invoke() {
     .action(async (name) => {
       try {
         const opts = commander.opts();
-        const instance = await initKnex(env, opts, true);  // Skip config check, we don't really care about client when creating migrations
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating migrations
         const ext = getMigrationExtension(env, opts);
         const configOverrides = { extension: ext };
 
@@ -233,7 +234,7 @@ function invoke() {
             success(color.green(`Created Migration: ${name}`));
           })
           .catch(exit);
-      } catch(err) {
+      } catch (err) {
         exit(err);
       }
     });
@@ -370,6 +371,54 @@ function invoke() {
     });
 
   commander
+    .command('db:dump')
+    .description('        Dump the database to a SQL file.')
+    .option('--output <file>', 'output file')
+    .action(() => {
+      initKnex(env, commander.opts())
+        .then((instance) => {
+          const { client, connection } = instance.client.config;
+          connection.host = connection.host || '127.0.0.1';
+          connection.database = connection.database || 'db'; // for sqlite
+          argv.output = argv.output || `${connection.database}.sql`;
+          let command;
+          const cb = (err, stdout, stderr) => {
+            if (err) {
+              exit(err);
+            }
+            if (stderr) {
+              console.log(color.yellow(stderr));
+            }
+            success(color.green(`Dump file created: ${argv.output}`));
+          };
+          if (client === 'mysql' || client === 'mysql2') {
+            command = `mysqldump -h ${connection.host} -u ${connection.user} -p${connection.password} ${connection.database} > ${argv.output}`;
+          } else if (
+            client === 'postgresql' ||
+            client === 'pg' ||
+            client === 'pgnative'
+          ) {
+            command = `pg_dump -h ${connection.host} -U ${connection.user} -p${connection.password} ${connection.database} > ${argv.output}`;
+          } else if (client === 'sqlite3' || client === 'better-sqlite3') {
+            command = `sqlite3 ${connection.filename} .dump > ${argv.output}`;
+          } else if (client === 'oracledb' || client === 'oracle') {
+            command = `sqlplus -S ${connection.user}/${connection.password}@${connection.host}/${connection.database} > ${argv.output}`;
+          } else if (client === 'mssql') {
+            command = `sqlcmd -S ${connection.host} -U ${connection.user} -P ${connection.password} -d ${connection.database} -i ${argv.output}`;
+          } else if (client === 'cockroachdb') {
+            command = `cockroach sql --insecure -e "SELECT * FROM ${connection.database}.sql" > ${argv.output}`;
+          } else if (client === 'redshift') {
+            command = `redshift-cli -h ${connection.host} -U ${connection.user} -p ${connection.password} -d ${connection.database} -o ${argv.output}`;
+          } else {
+            exit(`Unsupported client: ${client}`);
+          }
+
+          exec(command, cb);
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('seed:make <name>')
     .description('        Create a named seed file.')
     .option(
@@ -397,7 +446,8 @@ function invoke() {
         }
 
         if (opts.timestampFilenamePrefix) {
-          configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
+          configOverrides.timestampFilenamePrefix =
+            opts.timestampFilenamePrefix;
         }
 
         instance.seed
@@ -406,9 +456,9 @@ function invoke() {
             success(color.green(`Created seed file: ${name}`));
           })
           .catch(exit);
-      } catch(err) {
+      } catch (err) {
         exit(err);
-      }   
+      }
     });
 
   commander
