@@ -100,7 +100,6 @@
   },
   "devDependencies": {
     "@types/node": "^16.11.22",
-    "@vscode/sqlite3": "^5.0.7",
     "better-sqlite3": "^7.5.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
@@ -130,6 +129,7 @@
     "sinon": "^13.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
+    "sqlite3": "^5.0.4",
     "tap-spec": "^5.0.0",
     "tape": "^5.5.3",
     "tedious": "^14.4.0",
@@ -204,7 +204,6 @@
     "pg-query-stream": false,
     "oracle": false,
     "sqlite3": false,
-    "@vscode/sqlite3": false,
     "better-sqlite3": false,
     "oracledb": false
   },

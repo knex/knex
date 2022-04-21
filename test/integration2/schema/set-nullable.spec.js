@@ -142,7 +142,7 @@ describe('Schema', () => {
                 'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - NOT NULL constraint failed: primary_table.id_nullable';
             } else if (isSQLite(knex)) {
               errorMessage =
-                'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - SQLITE_CONSTRAINT_NOTNULL: NOT NULL constraint failed: primary_table.id_nullable';
+                'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - SQLITE_CONSTRAINT: NOT NULL constraint failed: primary_table.id_nullable';
             }
 
             await expect(
