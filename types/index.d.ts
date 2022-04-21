@@ -2584,8 +2584,14 @@ export declare namespace Knex {
     idle_in_transaction_session_timeout?: number;
     application_name?: string;
     connectionTimeoutMillis?: number;
-    types?: CustomTypesConfig;
+    types?: PgCustomTypesConfig;
     options?: string;
+  }
+
+  type PgGetTypeParser = (oid: number, format: string) => any
+
+  interface PgCustomTypesConfig {
+      getTypeParser: PgGetTypeParser;
   }
 
   type RedshiftConnectionConfig = PgConnectionConfig;
