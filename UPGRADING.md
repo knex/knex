@@ -1,6 +1,6 @@
 ## Upgrading to new knex.js versions
 
-### Upgrading to version 1.0.8+
+### Upgrading to version 2.0.0+
 
 * The package `sqlite3` is again maintained, we restore it and remove `@vscode/sqlite3` driver dependency, please
 replace it in the `package.json`;
