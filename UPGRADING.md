@@ -2,8 +2,7 @@
 
 ### Upgrading to version 2.0.0+
 
-* The package `sqlite3` is again maintained, we restore it and remove `@vscode/sqlite3` driver dependency, please
-replace it in the `package.json`;
+* Since `sqlite3` is maintained again, we switched back to it. If you are using `@vscode/sqlite3` driver dependency, please replace it with `sqlite3` in your `package.json`;
 
 ### Upgrading to version 1.0.0+
 

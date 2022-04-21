@@ -1,19 +1,30 @@
 # Master (Unreleased)
 
-# 1.0.7 - 13 March, 2022
+# 2.0.0 - 21 April, 2022
+
+### Breaking changes
+
+- Restore sqlite3 package #5136
+
+### Test / internal changes:
+
+- Migrate Husky from 4 to 7 #5137
+- Migrate Jake to 10.8.5 #5138
+
+# 1.0.7 - 13 April, 2022
 
 ### Bug fixes:
 
 - CLI: Fix cli migrate:make SQLite dependency #5106
 
-# 1.0.6 - 12 March, 2022
+# 1.0.6 - 12 April, 2022
 
 ### Bug fixes:
 
 - PostgreSQL: Wait for search path to be set before returning connection #5107
 - CLI: No client override during migrate:make #5109
 
-# 1.0.5 - 05 March, 2022
+# 1.0.5 - 05 April, 2022
 
 ### New features:
 
