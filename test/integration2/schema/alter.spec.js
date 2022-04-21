@@ -125,7 +125,7 @@ describe('Schema', () => {
                 knex('alter_table').insert({ column_notNullable: 'text' })
               ).to.be.rejectedWith(
                 Error,
-                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT_NOTNULL: NOT NULL constraint failed: alter_table.column_string"
+                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT: NOT NULL constraint failed: alter_table.column_string"
               );
               expect(tableAfter).to.equal(
                 "CREATE TABLE \"alter_table\" (`column_integer` integer DEFAULT '0', `column_string` varchar(255) NOT NULL, `column_datetime` datetime NOT NULL DEFAULT '0', `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NULL)"
@@ -163,7 +163,7 @@ describe('Schema', () => {
                 knex('alter_table').insert({ column_notNullable: 'text' })
               ).to.be.rejectedWith(
                 Error,
-                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT_NOTNULL: NOT NULL constraint failed: alter_table.column_nullable"
+                "insert into `alter_table` (`column_notNullable`) values ('text') - SQLITE_CONSTRAINT: NOT NULL constraint failed: alter_table.column_nullable"
               );
               expect(tableAfter).to.equal(
                 "CREATE TABLE \"alter_table\" (`column_integer` integer, `column_string` varchar(255), `column_datetime` datetime, `column_defaultTo` integer DEFAULT '0', `column_notNullable` varchar(255) NOT NULL, `column_defaultToAndNotNullable` datetime NOT NULL DEFAULT '0', `column_nullable` boolean NOT NULL)"
