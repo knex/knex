@@ -33,7 +33,7 @@ watch(isDark, () => {
   justify-content: center;
   margin-left: 1rem;
   cursor: pointer;
-  color: var(--c-text-light-3);
+  color: var(--c-text);
   transition: color .2s ease-in-out, background-color .2s ease-in-out;
 }
 .toggle-dark:hover {
