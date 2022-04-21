@@ -371,7 +371,7 @@ function invoke() {
     });
 
   commander
-    .command('db:dump')
+    .command('schema:dump')
     .description('        Dump the database to a SQL file.')
     .option('--output <file>', 'output file')
     .action(() => {
