@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+const { exec } = require('child_process');
+const { unlinkSync } = require('fs');
 const rechoir = require('rechoir');
 const merge = require('lodash/merge');
 const interpret = require('interpret');
@@ -30,7 +32,6 @@ const {
 } = require('../lib/migrations/util/fs');
 
 const { listMigrations } = require('./utils/migrationsLister');
-const { exec } = require('child_process');
 
 async function openKnexfile(configPath) {
   const importFile = require('../lib/migrations/util/import-file'); // require me late!
@@ -382,14 +383,21 @@ function invoke() {
           connection.database = connection.database || 'db'; // for sqlite
           argv.output = argv.output || `${connection.database}.sql`;
           let command;
+          // delete the file if it exists
+          if (existsSync(argv.output)) {
+            unlinkSync(argv.output);
+          }
           const cb = (err, stdout, stderr) => {
+            console.log(
+              color.green('Dumping schema to ') + color.blue(argv.output)
+            );
             if (err) {
               exit(err);
             }
             if (stderr) {
               console.log(color.yellow(stderr));
             }
-            success(color.green(`Dump file created: ${argv.output}`));
+            success(color.green('Dump complete'));
           };
           if (client === 'mysql' || client === 'mysql2') {
             command = `mysqldump -h ${connection.host} -u ${connection.user} -p${connection.password} ${connection.database} > ${argv.output}`;
