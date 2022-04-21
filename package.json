@@ -51,7 +51,8 @@
     "db:stop:oracle": "docker-compose -f scripts/docker-compose.yml down",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
-    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
+    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
+    "prepare": "husky install"
   },
   "dependencies": {
     "colorette": "2.0.16",
@@ -241,11 +242,6 @@
       "lib/dialects/oracle",
       "lib/dialects/oracledb"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "tsd": {
     "directory": "test-tsd",
