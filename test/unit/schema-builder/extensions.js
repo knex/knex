@@ -4,7 +4,7 @@ const expect = require('chai').expect;
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const knex = require('../../../knex');
 describe('SchemaBuilder Extensions', () => {
-  let client = new MySQL_Client({ client: 'mysql' });
+  const client = new MySQL_Client({ client: 'mysql' });
 
   const equal = require('assert').equal;
   const functionToExtend = () => true;
