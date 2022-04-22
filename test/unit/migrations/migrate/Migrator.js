@@ -1,8 +1,8 @@
 const Knex = require('../../../../lib');
 const { expect } = require('chai');
 const sqliteConfig = require('../../../knexfile').sqlite3;
-const FsMigrations = require('../../../../lib/migrations/migrate/sources/fs-migrations')
-  .default;
+const FsMigrations =
+  require('../../../../lib/migrations/migrate/sources/fs-migrations').default;
 
 describe('Migrator', () => {
   describe('does not use postProcessResponse for internal queries', (done) => {

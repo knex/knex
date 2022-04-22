@@ -336,9 +336,8 @@ describe('knex', () => {
     const knexWithParams = knex.withUserParams();
     knexWithParams.client.config.postProcessResponse = null;
     const builderForTable = knex('tableName').where('1 = 1');
-    const builderWithParamsForTable = knexWithParams('tableName').where(
-      '1 = 1'
-    );
+    const builderWithParamsForTable =
+      knexWithParams('tableName').where('1 = 1');
 
     expect(knex.client.config.postProcessResponse).to.equal(noop);
     expect(knexWithParams.client.config.postProcessResponse).to.equal(null);
@@ -629,7 +628,9 @@ describe('knex', () => {
       await knex('some_nonexisten_table')
         .select()
         .catch((err) => {
-          expect(err.stack.split('\n')[1]).to.match(/at createQueryBuilder \(/); // the index 1 might need adjustment if the code is refactored
+          expect(err.stack.split('\n')[1]).to.match(
+            /at Object.queryBuilder \(/
+          ); // the index 1 might need adjustment if the code is refactored
           expect(typeof err.originalStack).to.equal('string');
         });
 

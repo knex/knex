@@ -1,5 +1,17 @@
 ## Upgrading to new knex.js versions
 
+### Upgrading to version 2.0.0+
+
+* The package `sqlite3` is again maintained, we restore it and remove `@vscode/sqlite3` driver dependency, please
+replace it in the `package.json`;
+
+### Upgrading to version 1.0.0+
+
+* Node.js older than 12 is no longer supported, make sure to update your environment;
+* If you are using `sqlite3` driver dependency, please replace it with `@vscode/sqlite3` in your `package.json`;
+* `RETURNING` operations now always return an object with column names;
+* Migrator now returns list of migrations as objects.
+
 ### Upgrading to version 0.95.0+
 
 * TypeScript type exports changed significantly. While `import Knex from 'knex';` used to import the knex instantiation function, the namespace and the interface for the knex instantiation function/object, there is now a clear distinction between them:
@@ -42,6 +54,32 @@ to this:
 import { Knex } from 'knex'
 
 const qb: Knex.QueryBuilder = knex('table').select('*')
+```
+
+* IDE autocomplete may stop working if you are using JavaScript (not TypeScript). There are reports for autocomplete still working correctly if knex is used this way:
+```js
+  const knex = require('knex').knex({
+    //connection parameters
+  });
+```
+
+It also works when using ESM imports:
+```js
+  import { knex } from 'knex'
+
+  const kn = knex({
+    //connection parameters
+  })
+```
+
+For usage as param it can be addressed like this:
+```js
+  /**
+   * @param {import("knex").Knex} db
+   */
+  function up(db) {
+    // Your code
+  }
 ```
 
 * Syntax for QueryBuilder augmentation changed. Previously it looked like this:
