@@ -1,6 +1,6 @@
 const { resolveClientNameWithAliases } = require('../util/helpers')
 
-const dbNameToDialectLoader: Record<string, () => any> = {
+const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
   'better-sqlite3': () => require('./better-sqlite3'),
   cockroachdb: () => require('./cockroachdb'),
   mssql: () => require('./mssql'),
@@ -12,7 +12,7 @@ const dbNameToDialectLoader: Record<string, () => any> = {
   postgres: () => require('./postgres'),
   redshift: () => require('./redshift'),
   sqlite3: () => require('./sqlite3'),
-} as const
+})
 
 /**
  * Gets the Dialect object with the given client name or throw an
