@@ -1,6 +1,6 @@
-const { resolveClientNameWithAliases } = require('../util/helpers');
+const { resolveClientNameWithAliases } = require('../util/helpers')
 
-const dbNameToDialectLoader = Object.freeze({
+const dbNameToDialectLoader: Record<string, () => any> = {
   'better-sqlite3': () => require('./better-sqlite3'),
   cockroachdb: () => require('./cockroachdb'),
   mssql: () => require('./mssql'),
@@ -12,7 +12,7 @@ const dbNameToDialectLoader = Object.freeze({
   postgres: () => require('./postgres'),
   redshift: () => require('./redshift'),
   sqlite3: () => require('./sqlite3'),
-});
+} as const
 
 /**
  * Gets the Dialect object with the given client name or throw an
@@ -21,15 +21,11 @@ const dbNameToDialectLoader = Object.freeze({
  * NOTE: This is a replacement for prior practice of doing dynamic
  * string construction for imports of Dialect objects.
  */
-function getDialectByNameOrAlias(clientName) {
-  const resolvedClientName = resolveClientNameWithAliases(clientName);
-  const dialectLoader = dbNameToDialectLoader[resolvedClientName];
+export function getDialectByNameOrAlias(clientName: string) {
+  const resolvedClientName = resolveClientNameWithAliases(clientName)
+  const dialectLoader = dbNameToDialectLoader[resolvedClientName]
   if (!dialectLoader) {
-    throw new Error(`Invalid clientName given: ${clientName}`);
+    throw new Error(`Invalid clientName given: ${clientName}`)
   }
   return dialectLoader();
 }
-
-module.exports = {
-  getDialectByNameOrAlias,
-};
