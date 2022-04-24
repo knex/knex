@@ -8,6 +8,9 @@
     "node": ">=12"
   },
   "scripts": {
+    "build": "npm run build:gitignore && npm run build:ts",
+    "build:ts": "tsc",
+    "build:gitignore": "./scripts/update_gitignore_for_tsc_output.sh run",
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
@@ -216,6 +219,8 @@
   "files": [
     "bin/*",
     "lib/*",
+    "!lib/**/*.ts",
+    "!lib/.gitigore",
     "scripts/*",
     "types/index.d.ts",
     "types/result.d.ts",
