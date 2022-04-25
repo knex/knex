@@ -1,5 +1,9 @@
 ## Upgrading to new knex.js versions
 
+### Upgrading to version 2.0.0+
+
+* Since `sqlite3` is maintained again, we switched back to it. If you are using `@vscode/sqlite3` driver dependency, please replace it with `sqlite3` in your `package.json`;
+
 ### Upgrading to version 1.0.0+
 
 * Node.js older than 12 is no longer supported, make sure to update your environment;
