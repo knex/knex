@@ -30,3 +30,6 @@ test/coverage/*
 /coverage/
 
 test/integration/migrate/migration/
+
+# The dump created by shema-dump
+*.sql
