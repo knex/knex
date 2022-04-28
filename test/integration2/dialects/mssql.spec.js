@@ -170,7 +170,7 @@ describe('MSSQL dialect', () => {
           });
         });
 
-        describe('unique table constraint with options object', () => {
+        describe('unique table index with options object', () => {
           const tableName = 'test_unique_index_options';
           before(async () => {
             await knex.schema.createTable(tableName, function () {
@@ -188,7 +188,39 @@ describe('MSSQL dialect', () => {
             await knex.schema.alterTable(tableName, function () {
               this.unique(['x', 'y'], { indexName });
             });
-            expect(
+            await expect(
+              knex
+                .insert([
+                  { x: 1, y: 1 },
+                  { x: 1, y: 1 },
+                ])
+                .into(tableName)
+            ).to.eventually.be.rejectedWith(new RegExp(indexName));
+          });
+        });
+
+        describe('unique table constraint with options object', () => {
+          const tableName = 'test_unique_constraint_options';
+          before(async () => {
+            await knex.schema.createTable(tableName, function () {
+              this.integer('x').notNull();
+              this.integer('y').notNull();
+            });
+          });
+
+          after(async () => {
+            await knex.schema.dropTable(tableName);
+          });
+
+          it('accepts indexName and constraint in options object', async () => {
+            const indexName = `UK_${tableName}_x_y`;
+            await knex.schema.alterTable(tableName, function () {
+              this.unique(['x', 'y'], {
+                indexName: indexName,
+                useConstraint: true,
+              });
+            });
+            await expect(
               knex
                 .insert([
                   { x: 1, y: 1 },

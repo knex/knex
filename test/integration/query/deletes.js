@@ -2,12 +2,8 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const {
-  isSQLite,
-  isPostgreSQL,
-  isOracle,
-  isCockroachDB,
-} = require('../../util/db-helpers');
+const { isSQLite, isOracle, isCockroachDB } = require('../../util/db-helpers');
+const { isPostgreSQL } = require('../../util/db-helpers.js');
 
 module.exports = function (knex) {
   describe('Deletes', function () {
@@ -96,12 +92,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test3@example.com' })
           .del();
-        if (
-          isSQLite(knex) ||
-          isPostgreSQL(knex) ||
-          isCockroachDB(knex) ||
-          isOracle(knex)
-        ) {
+        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -109,6 +100,12 @@ module.exports = function (knex) {
           tester(
             'mysql',
             'delete `test_table_two` from `test_table_two` inner join `accounts` on `accounts`.`id` = `test_table_two`.`account_id` where `accounts`.`email` = ?',
+            ['test3@example.com'],
+            1
+          );
+          tester(
+            'pg',
+            'delete from "test_table_two" using "accounts" where "accounts"."email" = ? and "accounts"."id" = "test_table_two"."account_id"',
             ['test3@example.com'],
             1
           );
@@ -120,6 +117,35 @@ module.exports = function (knex) {
           );
         });
       });
+
+      it('should handle basic delete with join and "using" syntax in PostgreSQL', async function () {
+        if (!isPostgreSQL(knex)) {
+          this.skip();
+        }
+        await knex('test_table_two').insert({
+          account_id: 4,
+          details: '',
+          status: 1,
+        });
+        const query = knex('test_table_two')
+          .using('accounts')
+          .where({ 'accounts.email': 'test4@example.com' })
+          .whereRaw('"accounts"."id" = "test_table_two"."account_id"')
+          .del();
+        if (!isPostgreSQL(knex)) {
+          await expect(query).to.be.rejected;
+          return;
+        }
+        return query.testSql(function (tester) {
+          tester(
+            'pg',
+            'delete from "test_table_two" using "accounts" where "accounts"."email" = ? and "accounts"."id" = "test_table_two"."account_id"',
+            ['test4@example.com'],
+            1
+          );
+        });
+      });
+
       it('should handle returning', async function () {
         await knex('test_table_two').insert({
           account_id: 4,
@@ -130,12 +156,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test4@example.com' })
           .del('*');
-        if (
-          isSQLite(knex) ||
-          isPostgreSQL(knex) ||
-          isCockroachDB(knex) ||
-          isOracle(knex)
-        ) {
+        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -145,6 +166,28 @@ module.exports = function (knex) {
             'delete `test_table_two` from `test_table_two` inner join `accounts` on `accounts`.`id` = `test_table_two`.`account_id` where `accounts`.`email` = ?',
             ['test4@example.com'],
             1
+          );
+          tester(
+            'pg',
+            'delete from "test_table_two" using "accounts" where "accounts"."email" = ? and "accounts"."id" = "test_table_two"."account_id" returning *',
+            ['test4@example.com'],
+            [
+              {
+                about: 'Lorem ipsum Dolore labore incididunt enim.',
+                balance: 0,
+                id: '4',
+                account_id: 4,
+                details: '',
+                status: 1,
+                phone: null,
+                logins: 2,
+                email: 'test4@example.com',
+                first_name: 'Test',
+                last_name: 'User',
+                created_at: TEST_TIMESTAMP,
+                updated_at: TEST_TIMESTAMP,
+              },
+            ]
           );
           tester(
             'mssql',

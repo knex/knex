@@ -19,8 +19,12 @@ const {
   createTestTableTwo,
   dropTables,
   createDefaultTable,
+  createCities,
 } = require('../../../util/tableCreatorHelper');
-const { insertAccounts } = require('../../../util/dataInsertHelper');
+const {
+  insertAccounts,
+  insertCities,
+} = require('../../../util/dataInsertHelper');
 
 const {
   getAllDbs,
@@ -28,6 +32,7 @@ const {
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
 const { TEST_TIMESTAMP } = require('../../../util/constants.js');
+const { assertJsonEquals } = require('../../../util/assertHelper');
 
 describe('Where', function () {
   getAllDbs().forEach((db) => {
@@ -56,8 +61,8 @@ describe('Where', function () {
       });
 
       describe('simple "where" cases', function () {
-        it('allows key, value', function () {
-          return knex('accounts')
+        it('allows key, value', async function () {
+          await knex('accounts')
             .where('id', 1)
             .select('first_name', 'last_name')
             .testSql(function (tester) {
@@ -97,8 +102,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows key, operator, value', function () {
-          return knex('accounts')
+        it('allows key, operator, value', async function () {
+          await knex('accounts')
             .where('id', 1)
             .select('first_name', 'last_name')
             .testSql(function (tester) {
@@ -138,8 +143,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows selecting columns with an array', function () {
-          return knex('accounts')
+        it('allows selecting columns with an array', async function () {
+          await knex('accounts')
             .where('id', '>', 1)
             .select(['email', 'logins'])
             .testSql(function (tester) {
@@ -161,8 +166,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows a hash of where attrs', function () {
-          return knex('accounts')
+        it('allows a hash of where attrs', async function () {
+          await knex('accounts')
             .where({ id: 1 })
             .select('*')
             .testSql(function (tester) {
@@ -226,8 +231,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows where id: undefined or id: null as a where null clause', function () {
-          return knex('accounts')
+        it('allows where id: undefined or id: null as a where null clause', async function () {
+          await knex('accounts')
             .where({ id: null })
             .select('first_name', 'email')
             .testSql(function (tester) {
@@ -252,8 +257,8 @@ describe('Where', function () {
             });
         });
 
-        it('allows where id = 0', function () {
-          return knex('accounts')
+        it('allows where id = 0', async function () {
+          await knex('accounts')
             .where({ id: 0 })
             .select()
             .testSql(function (tester) {
@@ -279,39 +284,35 @@ describe('Where', function () {
         });
       });
 
-      it('does "orWhere" cases', function () {
-        return knex('accounts')
+      it('does "orWhere" cases', async function () {
+        await knex('accounts')
           .where('id', 1)
           .orWhere('id', '>', 2)
           .select('first_name', 'last_name');
       });
 
-      it('does "andWhere" cases', function () {
-        return knex('accounts')
+      it('does "andWhere" cases', async function () {
+        await knex('accounts')
           .select('first_name', 'last_name', 'about')
           .where('id', 1)
           .andWhere('email', 'test1@example.com');
       });
 
-      it('takes a function to wrap nested where statements', function () {
-        return Promise.all([
-          knex('accounts')
-            .where(function () {
-              this.where('id', 2);
-              this.orWhere('id', 3);
-            })
-            .select('*'),
-        ]);
+      it('takes a function to wrap nested where statements', async () => {
+        await knex('accounts')
+          .where(function () {
+            this.where('id', 2);
+            this.orWhere('id', 3);
+          })
+          .select('*');
       });
 
-      it('handles "where in" cases', function () {
-        return Promise.all([
-          knex('accounts').whereIn('id', [1, 2, 3]).select(),
-        ]);
+      it('handles "where in" cases', async () => {
+        await knex('accounts').whereIn('id', [1, 2, 3]).select();
       });
 
-      it('handles "or where in" cases', function () {
-        return knex('accounts')
+      it('handles "or where in" cases', async () => {
+        await knex('accounts')
           .where('email', 'test1@example.com')
           .orWhereIn('id', [2, 3, 4])
           .select();
@@ -431,9 +432,9 @@ describe('Where', function () {
         }
       });
 
-      it('handles multi-column "where in" cases with where', function () {
+      it('handles multi-column "where in" cases with where', async function () {
         if (!isSQLite(knex) && !isMssql(knex)) {
-          return knex('composite_key_test')
+          await knex('composite_key_test')
             .where('status', 1)
             .whereIn(
               ['column_a', 'column_b'],
@@ -487,29 +488,29 @@ describe('Where', function () {
         }
       });
 
-      it('handles "where exists"', function () {
-        return knex('accounts')
+      it('handles "where exists"', async () => {
+        await knex('accounts')
           .whereExists(function () {
             this.select('id').from('test_table_two').where({ id: 1 });
           })
           .select();
       });
 
-      it('handles "where between"', function () {
-        return knex('accounts').whereBetween('id', [1, 100]).select();
+      it('handles "where between"', async () => {
+        await knex('accounts').whereBetween('id', [1, 100]).select();
       });
 
-      it('handles "or where between"', function () {
-        return knex('accounts')
+      it('handles "or where between"', async () => {
+        await knex('accounts')
           .whereBetween('id', [1, 100])
           .orWhereBetween('id', [200, 300])
           .select();
       });
 
-      it('does where(raw)', function () {
+      it('does where(raw)', async function () {
         if (isOracle(knex)) {
           // special case for oracle
-          return knex('accounts')
+          await knex('accounts')
             .whereExists(function () {
               this.select(knex.raw(1))
                 .from('test_table_two')
@@ -519,7 +520,7 @@ describe('Where', function () {
             })
             .select();
         } else {
-          return knex('accounts')
+          await knex('accounts')
             .whereExists(function () {
               this.select(knex.raw(1))
                 .from('test_table_two')
@@ -529,31 +530,31 @@ describe('Where', function () {
         }
       });
 
-      it('does sub-selects', function () {
-        return knex('accounts')
+      it('does sub-selects', async () => {
+        await knex('accounts')
           .whereIn('id', function () {
             this.select('account_id').from('test_table_two').where('status', 1);
           })
           .select('first_name', 'last_name');
       });
 
-      it('supports the <> operator', function () {
-        return knex('accounts').where('id', '<>', 2).select('email', 'logins');
+      it('supports the <> operator', async () => {
+        await knex('accounts').where('id', '<>', 2).select('email', 'logins');
       });
 
-      it('Allows for knex.Raw passed to the `where` clause', function () {
+      it('Allows for knex.Raw passed to the `where` clause', async () => {
         if (isOracle(knex)) {
-          return knex('accounts')
+          await knex('accounts')
             .where(knex.raw('"id" = 2'))
             .select('email', 'logins');
         } else {
-          return knex('accounts')
+          await knex('accounts')
             .where(knex.raw('id = 2'))
             .select('email', 'logins');
         }
       });
 
-      describe('where like', function () {
+      describe('where like', async function () {
         beforeEach(function () {
           if (!(isPostgreSQL(knex) || isMssql(knex) || isMysql(knex))) {
             return this.skip();
@@ -577,6 +578,56 @@ describe('Where', function () {
             .select('*')
             .whereLike('email', 'test1%');
           expect(result[0].email).to.equal('test1@example.com');
+        });
+
+        it('finds data using orWhereLike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereLike('email', 'test1%')
+            .orWhereLike('email', 'test2%');
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+        });
+
+        it('finds data using andWhereLike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereLike('first_name', 'Te%')
+            .andWhereLike('email', '%example.com');
+          expect(result.length).to.equal(8);
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+          expect(result[2].email).to.equal('test3@example.com');
+          expect(result[3].email).to.equal('test4@example.com');
+          expect(result[4].email).to.equal('test5@example.com');
+          expect(result[5].email).to.equal('test6@example.com');
+          expect(result[6].email).to.equal('test7@example.com');
+          expect(result[7].email).to.equal('test8@example.com');
+        });
+
+        it('finds data using orWhereILike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereILike('email', 'TEST1%')
+            .orWhereILike('email', 'TeSt2%');
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+        });
+
+        it('finds data using andWhereILike', async () => {
+          const result = await knex('accounts')
+            .select('*')
+            .whereILike('first_name', 'te%')
+            .andWhereILike('email', '%examPle.COm');
+          expect(result.length).to.equal(8);
+          expect(result[0].email).to.equal('test1@example.com');
+          expect(result[1].email).to.equal('test2@example.com');
+          expect(result[2].email).to.equal('test3@example.com');
+          expect(result[3].email).to.equal('test4@example.com');
+          expect(result[4].email).to.equal('test5@example.com');
+          expect(result[5].email).to.equal('test6@example.com');
+          expect(result[6].email).to.equal('test7@example.com');
+          expect(result[7].email).to.equal('test8@example.com');
         });
 
         it("doesn't find data using whereLike when different case sensitivity", async () => {
@@ -606,6 +657,179 @@ describe('Where', function () {
         //Also expect raw's bindings to not have been modified by calling .toSQL() (preserving original bindings)
         expect(raw.bindings).to.eql(expected1);
         expect(raw2.bindings).to.eql(expected2);
+      });
+
+      describe('json wheres', () => {
+        before(async () => {
+          await knex.schema.dropTableIfExists('cities');
+          await createCities(knex);
+        });
+
+        beforeEach(async () => {
+          await knex('cities').truncate();
+          await insertCities(knex);
+        });
+
+        it('where json object', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonObject('descriptions', {
+              type: 'bigcity',
+              short: 'beautiful city',
+              long: 'beautiful and dirty city',
+            });
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
+        it('where json object with string object', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonObject(
+              'descriptions',
+              `{
+              "type": "bigcity",
+              "short": "beautiful city",
+              "long": "beautiful and dirty city"
+            }`
+            );
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
+        it('where not json object', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereNotJsonObject('descriptions', {
+              type: 'bigcity',
+              short: 'beautiful city',
+              long: 'beautiful and dirty city',
+            });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Milan',
+            },
+            {
+              name: 'Oslo',
+            },
+          ]);
+        });
+
+        it('where json path greater than numeric', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '>', 1000);
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
+        it('where json path equal numeric', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '=', 1455);
+          expect(result[0]).to.eql({
+            name: 'Milan',
+          });
+        });
+
+        it('where and or where json path equal numeric', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '=', 1455)
+            .orWhereJsonPath('statistics', '$.roads.min', '=', 1655);
+          expect(result[0]).to.eql({
+            name: 'Milan',
+          });
+        });
+
+        it('where json path equal string starting with number', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath(
+              'statistics',
+              '$.statisticId',
+              '=',
+              '6qITEHRUNJ4bdAmA0lk82'
+            );
+          expect(result[0]).to.eql({
+            name: 'Paris',
+          });
+        });
+
+        it('where multiple json path', async () => {
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonPath('statistics', '$.roads.min', '<', 2000)
+            .andWhereJsonPath('temperature', '$.desc', '=', 'cold');
+          expect(result.length).to.equal(1);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+          ]);
+        });
+
+        it('where json superset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where descriptions json object contains type : 'bigcity'
+            .whereJsonSupersetOf('descriptions', {
+              type: 'bigcity',
+            });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
+            },
+          ]);
+        });
+
+        it('where json superset of with string', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            .whereJsonSupersetOf('descriptions', '{"type": "bigcity"}');
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
+            },
+          ]);
+        });
+
+        it('where json subset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where temperature json object is included in given object
+            .whereJsonSubsetOf('temperature', {
+              desc: 'cold',
+              desc2: 'very cold',
+            });
+          expect(result.length).to.equal(1);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris', // contains only desc: 'cold' but it's matched
+            },
+          ]);
+        });
       });
     });
   });

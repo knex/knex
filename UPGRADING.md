@@ -1,5 +1,16 @@
 ## Upgrading to new knex.js versions
 
+### Upgrading to version 2.0.0+
+
+* Since `sqlite3` is maintained again, we switched back to it. If you are using `@vscode/sqlite3` driver dependency, please replace it with `sqlite3` in your `package.json`;
+
+### Upgrading to version 1.0.0+
+
+* Node.js older than 12 is no longer supported, make sure to update your environment;
+* If you are using `sqlite3` driver dependency, please replace it with `@vscode/sqlite3` in your `package.json`;
+* `RETURNING` operations now always return an object with column names;
+* Migrator now returns list of migrations as objects.
+
 ### Upgrading to version 0.95.0+
 
 * TypeScript type exports changed significantly. While `import Knex from 'knex';` used to import the knex instantiation function, the namespace and the interface for the knex instantiation function/object, there is now a clear distinction between them:

@@ -163,7 +163,7 @@ async function main() {
     await recreateProxy('postgresql', 25432, 5432);
     await recreateProxy('postgresql', 25433, 5433);
     await recreateProxy('mysql', 23306, 3306);
-    await recreateProxy('oracledbxe', 21521, 1521);
+    await recreateProxy('oracledb', 21521, 1521);
     await recreateProxy('mssql', 21433, 1433);
   }
 

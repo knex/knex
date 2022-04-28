@@ -19,6 +19,18 @@ expectType<Knex<any, unknown[]>>(knexCjsImport.knex({}));
 expectType<KnexTimeoutError>(new knex.KnexTimeoutError());
 expectType<KnexTimeoutError>(new knex.KnexTimeoutError());
 
+// Knex instances need to be assigned first so their generic types aren't inferred
+const k1 = knex({});
+expectAssignable<Knex>(k1);
+const k2 = knexStar.default({});
+expectAssignable<Knex>(k2);
+const k3 = knexStar.knex({});
+expectAssignable<Knex>(k3);
+const k4 = knexCjsImport.default({});
+expectAssignable<Knex>(k4);
+const k5 = knexCjsImport.knex({});
+expectAssignable<Knex>(k5);
+
 // eslint-disable-next-line
 expectType<any>(knexCjs({}));
 // eslint-disable-next-line
@@ -94,12 +106,7 @@ expectAssignable<QueryBuilder>(
     .debug(true)
 );
 
-expectType<
-  QueryBuilder<
-    User,
-    DeferredKeySelection<User, 'id', true, {}, true, {}, never>[]
-  >
->(
+expectAssignable<QueryBuilder>(
   knexInstance
     .table<User>('users')
     .insert({ id: 10, active: true })

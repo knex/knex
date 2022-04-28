@@ -85,7 +85,7 @@ services:
       - 'until /usr/local/bin/psql postgres://testuser:knextest@postgres/knex_test -c "SELECT 1"; do sleep 5; done'
 
   cockroachdb:
-    image: cockroachdb/cockroach:latest-v21.1
+    image: cockroachdb/cockroach:latest-v21.2
     container_name: crdb
     hostname: crdb
     command: start-single-node --cluster-name=example-single-node --insecure
@@ -125,25 +125,25 @@ services:
       - -c
       - 'until /usr/local/bin/psql postgres://testuser:knextest@pgnative/knex_test -c "SELECT 1"; do sleep 5; done'
 
-  oracledbxe:
+  oracledb:
     image: quillbuilduser/oracle-18-xe
-    container_name: oracledbxe_container
+    container_name: oracledb_container
     ports:
       - '21521:1521'
     environment:
       - ORACLE_ALLOW_REMOTE=true
-  waitoracledbxe:
+  waitoracledb:
     image: quillbuilduser/oracle-18-xe
     links:
-      - oracledbxe
+      - oracledb
     depends_on:
-      - oracledbxe
+      - oracledb
     environment:
       - ORACLE_HOME=/opt/oracle/product/18c/dbhomeXE
     entrypoint:
       - bash
       - -c
-      - 'until /opt/oracle/product/18c/dbhomeXE/bin/sqlplus -s sys/Oracle18@oracledbxe/XE as sysdba <<< "SELECT 13376411 FROM DUAL; exit;" | grep "13376411"; do echo "Could not connect to oracle... sleep for a while"; sleep 5; done'
+      - 'until /opt/oracle/product/18c/dbhomeXE/bin/sqlplus -s sys/Oracle18@oracledb/XE as sysdba <<< "SELECT 13376411 FROM DUAL; exit;" | grep "13376411"; do echo "Could not connect to oracle... sleep for a while"; sleep 5; done'
 
 volumes:
   mysql_data:

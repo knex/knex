@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const rechoir = require('rechoir');
+const merge = require('lodash/merge');
 const interpret = require('interpret');
 const resolveFrom = require('resolve-from');
 const path = require('path');
@@ -9,11 +10,13 @@ const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 const cliPkg = require('../package');
 const {
+  parseConfigObj,
   mkConfigObj,
   resolveEnvironmentConfig,
   exit,
   success,
   checkLocalModule,
+  checkConfigurationOptions,
   getMigrationExtension,
   getSeedExtension,
   getStubPath,
@@ -40,7 +43,7 @@ async function openKnexfile(configPath) {
   return config;
 }
 
-async function initKnex(env, opts) {
+async function initKnex(env, opts, useDefaultClientIfNotSpecified) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -48,6 +51,10 @@ async function initKnex(env, opts) {
       'Working directory changed to',
       color.magenta(tildify(env.cwd))
     );
+  }
+
+  if (!useDefaultClientIfNotSpecified) {
+    checkConfigurationOptions(env, opts);
   }
 
   env.configuration = env.configPath
@@ -59,8 +66,22 @@ async function initKnex(env, opts) {
     env.configuration,
     env.configPath
   );
+
+  const optionsConfig = parseConfigObj(opts);
+  const config = merge(resolvedConfig, optionsConfig);
+
+  // Migrations directory gets defaulted if it is undefined.
+  if (!env.configPath && !config.migrations.directory) {
+    config.migrations.directory = null;
+  }
+
+  // Client gets defaulted if undefined and it's allowed
+  if (useDefaultClientIfNotSpecified && config.client === undefined) {
+    config.client = 'sqlite3';
+  }
+
   const knex = require(env.modulePath);
-  return knex(resolvedConfig);
+  return knex(config);
 }
 
 function invoke() {
@@ -112,8 +133,6 @@ function invoke() {
     configuration: null,
   };
 
-  // rechoir.prepare(interpret.jsVariants, configPath, cwd);
-
   let modulePackage = {};
   try {
     modulePackage = require(path.join(
@@ -138,16 +157,10 @@ function invoke() {
     .option('--knexfile [path]', 'Specify the knexfile path.')
     .option('--knexpath [path]', 'Specify the path to knex instance.')
     .option('--cwd [path]', 'Specify the working directory.')
-    .option('--client [name]', 'Set DB client without a knexfile.')
-    .option('--connection [address]', 'Set DB connection without a knexfile.')
-    .option(
-      '--migrations-directory [path]',
-      'Set migrations directory without a knexfile.'
-    )
-    .option(
-      '--migrations-table-name [path]',
-      'Set migrations table name without a knexfile.'
-    )
+    .option('--client [name]', 'Set DB client.')
+    .option('--connection [address]', 'Set DB connection.')
+    .option('--migrations-directory [path]', 'Set migrations directory.')
+    .option('--migrations-table-name [path]', 'Set migrations table name.')
     .option(
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
@@ -203,23 +216,26 @@ function invoke() {
       'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
-      const instance = await initKnex(env, opts);
-      const ext = getMigrationExtension(env, opts);
-      const configOverrides = { extension: ext };
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true);  // Skip config check, we don't really care about client when creating migrations
+        const ext = getMigrationExtension(env, opts);
+        const configOverrides = { extension: ext };
 
-      const stub = getStubPath('migrations', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
+        const stub = getStubPath('migrations', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
+
+        instance.migrate
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created Migration: ${name}`));
+          })
+          .catch(exit);
+      } catch(err) {
+        exit(err);
       }
-
-      instance.migrate
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created Migration: ${name}`));
-        })
-        .catch(exit);
     });
 
   commander
@@ -370,26 +386,29 @@ function invoke() {
       false
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
-      const instance = await initKnex(env, opts);
-      const ext = getSeedExtension(env, opts);
-      const configOverrides = { extension: ext };
-      const stub = getStubPath('seeds', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
-      }
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating seeds
+        const ext = getSeedExtension(env, opts);
+        const configOverrides = { extension: ext };
+        const stub = getStubPath('seeds', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
 
-      if (opts.timestampFilenamePrefix) {
-        configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
-      }
+        if (opts.timestampFilenamePrefix) {
+          configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
+        }
 
-      instance.seed
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created seed file: ${name}`));
-        })
-        .catch(exit);
+        instance.seed
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created seed file: ${name}`));
+          })
+          .catch(exit);
+      } catch(err) {
+        exit(err);
+      }   
     });
 
   commander

@@ -4,6 +4,7 @@ const {
   isSQLite,
   isPgBased,
   isCockroachDB,
+  isBetterSQLite3,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
@@ -30,7 +31,7 @@ describe('Schema', () => {
         });
 
         afterEach(async () => {
-          await knex.schema.dropTable('primary_table');
+          await knex.schema.dropTableIfExists('primary_table');
         });
 
         describe('createPrimaryKey', () => {
@@ -45,7 +46,11 @@ describe('Schema', () => {
               await knex('primary_table').insert({ id_four: 1 });
               throw new Error(`Shouldn't reach this`);
             } catch (err) {
-              if (isSQLite(knex)) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_four`) values (1) - UNIQUE constraint failed: primary_table.id_four'
+                );
+              } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
@@ -56,6 +61,103 @@ describe('Schema', () => {
                 );
               }
             }
+          });
+
+          it('create multiple primary keys with increments on same column', async function () {
+            await knex.schema.dropTableIfExists('table_multiple_keys');
+            await knex.schema.createTable('table_multiple_keys', function (t) {
+              t.primary(['id', 'second_id', 'other_col']);
+              t.string('second_id', 16).notNullable();
+              t.integer('other_col').notNullable();
+              t.increments('id');
+            });
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'abc',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 3,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  id: 1,
+                  second_id: 'abc',
+                  other_col: 2,
+                },
+              ]);
+            }).to.throw;
+            // It's always ok, the primary key is on three columns.
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'abc',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 3,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  id: 4,
+                  second_id: 'abc',
+                  other_col: 3,
+                },
+              ]);
+            }).to.throw;
+          });
+
+          it('create multiple primary keys with increments on other columns', async function () {
+            await knex.schema.dropTableIfExists('table_multiple_keys');
+            await knex.schema.createTable('table_multiple_keys', function (t) {
+              t.primary(['second_id', 'other_col']);
+              t.string('second_id', 16).notNullable();
+              t.integer('other_col').notNullable();
+              t.increments('id');
+            });
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'abc',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 3,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  second_id: 'abc',
+                  other_col: 2,
+                },
+              ]);
+            }).to.throw;
+            // It's always ok, the primary key is on three columns.
+            await knex('table_multiple_keys').insert([
+              {
+                second_id: 'bcd',
+                other_col: 2,
+              },
+              {
+                second_id: 'abc',
+                other_col: 4,
+              },
+            ]);
+            expect(() => {
+              knex('table_multiple_keys').insert([
+                {
+                  id: 4,
+                  second_id: 'abc',
+                  other_col: 3,
+                },
+              ]);
+            }).to.throw;
           });
 
           it('creates a primary key with a custom constraint name', async function () {
@@ -76,7 +178,11 @@ describe('Schema', () => {
               await knex('primary_table').insert({ id_four: 1 });
               throw new Error(`Shouldn't reach this`);
             } catch (err) {
-              if (isSQLite(knex)) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_four`) values (1) - UNIQUE constraint failed: primary_table.id_four'
+                );
+              } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
@@ -112,7 +218,11 @@ describe('Schema', () => {
             try {
               await knex('primary_table').insert({ id_two: 1, id_three: 1 });
             } catch (err) {
-              if (isSQLite(knex)) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                );
+              } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
@@ -154,7 +264,11 @@ describe('Schema', () => {
               try {
                 await knex('primary_table').insert({ id_two: 1, id_three: 1 });
               } catch (err) {
-                if (isSQLite(knex)) {
+                if (isBetterSQLite3(knex)) {
+                  expect(err.message).to.equal(
+                    'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                  );
+                } else if (isSQLite(knex)) {
                   expect(err.message).to.equal(
                     'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                   );

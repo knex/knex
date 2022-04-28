@@ -25,6 +25,18 @@ const main = async () => {
       .returning(['id', 'subject']);
   }));
 
+  expectType<Pick<Article, "id" | "subject">[]>(await knexInstance.transaction((trx) => {
+    const articles: Article[] = [
+      { id: 1, subject: 'Canterbury Tales' },
+      { id: 2, subject: 'Moby Dick' },
+      { id: 3, subject: 'Hamlet' },
+    ];
+    return trx
+      .insert(articles)
+      .into<Article>('articles')
+      .returning(['id', trx.raw('subject')]);
+  }));
+
   expectType<Article[]>(await knexInstance.transaction((trx) => {
     return trx
       .select('*')

@@ -75,10 +75,20 @@ function setupFileHelper() {
   return fileHelper;
 }
 
+function createTable(db, ddl) {
+  return new Promise((resolve, reject) =>
+    db.exec(`create TABLE if not exists ${ddl};`, (err) => {
+      if (err) reject(err);
+      else resolve();
+    })
+  );
+}
+
 module.exports = {
   expectContentMatchesStub,
   getRootDir,
   migrationStubOptionSetup,
   seedStubOptionSetup,
   setupFileHelper,
+  createTable,
 };

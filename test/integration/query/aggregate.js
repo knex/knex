@@ -23,7 +23,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'sum(`logins`)': 10,
+                'sum(`logins`)': 15,
               },
             ]
           );
@@ -33,7 +33,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'sum(`logins`)': '10',
+                'sum(`logins`)': '15',
               },
             ]
           );
@@ -43,7 +43,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                sum: '10',
+                sum: '15',
               },
             ]
           );
@@ -53,7 +53,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                sum: '10',
+                sum: '15',
               },
             ]
           );
@@ -63,7 +63,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'sum(`logins`)': 10,
+                'sum(`logins`)': 15,
               },
             ]
           );
@@ -73,7 +73,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'SUM("LOGINS")': 10,
+                'SUM("LOGINS")': 15,
               },
             ]
           );
@@ -83,7 +83,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                '': 10,
+                '': 15,
               },
             ]
           );
@@ -100,7 +100,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -110,7 +110,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                login_sum: '10',
+                login_sum: '15',
               },
             ]
           );
@@ -120,7 +120,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                login_sum: '10',
+                login_sum: '15',
               },
             ]
           );
@@ -130,7 +130,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                login_sum: '10',
+                login_sum: '15',
               },
             ]
           );
@@ -140,7 +140,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -150,7 +150,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -160,7 +160,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -178,7 +178,7 @@ module.exports = function (knex) {
             [
               {
                 balance_sum: 0,
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -189,7 +189,7 @@ module.exports = function (knex) {
             [
               {
                 balance_sum: 0,
-                login_sum: '10',
+                login_sum: '15',
               },
             ]
           );
@@ -200,7 +200,7 @@ module.exports = function (knex) {
             [
               {
                 balance_sum: 0,
-                login_sum: '10',
+                login_sum: '15',
               },
             ]
           );
@@ -211,7 +211,7 @@ module.exports = function (knex) {
             [
               {
                 balance_sum: '0',
-                login_sum: '10',
+                login_sum: '15',
               },
             ]
           );
@@ -222,7 +222,7 @@ module.exports = function (knex) {
             [
               {
                 balance_sum: 0,
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -233,7 +233,7 @@ module.exports = function (knex) {
             [
               {
                 balance_sum: 0,
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -244,7 +244,7 @@ module.exports = function (knex) {
             [
               {
                 balance_sum: 0,
-                login_sum: 10,
+                login_sum: 15,
               },
             ]
           );
@@ -256,7 +256,7 @@ module.exports = function (knex) {
         .avg('logins')
         .testSql(function (tester) {
           function checkResRange(key, resp) {
-            return Math.abs(10 / 6 - +resp[0][key]) < 0.001;
+            return Math.abs(15 / 8 - +resp[0][key]) < 0.001;
           }
           function checkResRangeMssql(key, resp) {
             return +resp[0][key] === 1;
@@ -317,7 +317,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'count(`id`)': 6,
+                'count(`id`)': 8,
               },
             ]
           );
@@ -327,7 +327,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
+                count: '8',
               },
             ]
           );
@@ -337,7 +337,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
+                count: '8',
               },
             ]
           );
@@ -347,7 +347,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'count(`id`)': 6,
+                'count(`id`)': 8,
               },
             ]
           );
@@ -357,7 +357,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'COUNT("ID")': 6,
+                'COUNT("ID")': 8,
               },
             ]
           );
@@ -367,7 +367,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                '': 6,
+                '': 8,
               },
             ]
           );
@@ -386,8 +386,8 @@ module.exports = function (knex) {
             [],
             [
               {
-                'count(`id`)': 6,
-                'max(`logins`)': 2,
+                'count(`id`)': 8,
+                'max(`logins`)': 3,
                 'min(`logins`)': 1,
               },
             ]
@@ -398,8 +398,8 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
-                max: 2,
+                count: '8',
+                max: 3,
                 min: 1,
               },
             ]
@@ -410,8 +410,8 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
-                max: 2,
+                count: '8',
+                max: 3,
                 min: 1,
               },
             ]
@@ -422,8 +422,8 @@ module.exports = function (knex) {
             [],
             [
               {
-                'count(`id`)': 6,
-                'max(`logins`)': 2,
+                'count(`id`)': 8,
+                'max(`logins`)': 3,
                 'min(`logins`)': 1,
               },
             ]
@@ -434,8 +434,8 @@ module.exports = function (knex) {
             [],
             [
               {
-                'COUNT("ID")': 6,
-                'MAX("LOGINS")': 2,
+                'COUNT("ID")': 8,
+                'MAX("LOGINS")': 3,
                 'MIN("LOGINS")': 1,
               },
             ]
@@ -446,7 +446,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                '': [6, 2, 1],
+                '': [8, 3, 1],
               },
             ]
           );
@@ -465,9 +465,9 @@ module.exports = function (knex) {
             [],
             [
               {
-                'count(distinct `id`)': 6,
-                'sum(distinct `logins`)': 3,
-                'avg(distinct `logins`)': 1.5,
+                'count(distinct `id`)': 8,
+                'sum(distinct `logins`)': 6,
+                'avg(distinct `logins`)': 2.0,
               },
             ]
           );
@@ -477,9 +477,9 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
-                sum: '3',
-                avg: '1.5000000000000000',
+                count: '8',
+                sum: '6',
+                avg: '2.0000000000000000',
               },
             ]
           );
@@ -489,8 +489,8 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
-                sum: '3',
+                count: '8',
+                sum: '6',
                 avg: '1',
               },
             ]
@@ -501,9 +501,9 @@ module.exports = function (knex) {
             [],
             [
               {
-                'count(distinct `id`)': 6,
-                'sum(distinct `logins`)': 3,
-                'avg(distinct `logins`)': 1.5,
+                'count(distinct `id`)': 8,
+                'sum(distinct `logins`)': 6,
+                'avg(distinct `logins`)': 2.0,
               },
             ]
           );
@@ -513,9 +513,9 @@ module.exports = function (knex) {
             [],
             [
               {
-                'COUNT(DISTINCT"ID")': 6,
-                'SUM(DISTINCT"LOGINS")': 3,
-                'AVG(DISTINCT"LOGINS")': 1.5,
+                'COUNT(DISTINCT"ID")': 8,
+                'SUM(DISTINCT"LOGINS")': 6,
+                'AVG(DISTINCT"LOGINS")': 2.0,
               },
             ]
           );
@@ -525,7 +525,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                '': [6, 3, 1],
+                '': [8, 6, 2],
               },
             ]
           );
@@ -548,7 +548,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                'count(distinct `id`, `logins`)': 6,
+                'count(distinct `id`, `logins`)': 8,
               },
             ]
           );
@@ -558,7 +558,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
+                count: '8',
               },
             ]
           );
@@ -579,7 +579,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: 6,
+                count: 8,
               },
             ]
           );
@@ -589,7 +589,7 @@ module.exports = function (knex) {
             [],
             [
               {
-                count: '6',
+                count: '8',
               },
             ]
           );
@@ -611,7 +611,10 @@ module.exports = function (knex) {
                 'count(`id`)': 2,
               },
               {
-                'count(`id`)': 4,
+                'count(`id`)': 5,
+              },
+              {
+                'count(`id`)': 1,
               },
             ]
           );
@@ -624,7 +627,10 @@ module.exports = function (knex) {
                 count: '2',
               },
               {
-                count: '4',
+                count: '5',
+              },
+              {
+                count: '1',
               },
             ]
           );
@@ -637,7 +643,10 @@ module.exports = function (knex) {
                 count: '2',
               },
               {
-                count: '4',
+                count: '5',
+              },
+              {
+                count: '1',
               },
             ]
           );
@@ -650,7 +659,10 @@ module.exports = function (knex) {
                 'count(`id`)': 2,
               },
               {
-                'count(`id`)': 4,
+                'count(`id`)': 5,
+              },
+              {
+                'count(`id`)': 1,
               },
             ]
           );
@@ -663,7 +675,10 @@ module.exports = function (knex) {
                 'COUNT("ID")': 2,
               },
               {
-                'COUNT("ID")': 4,
+                'COUNT("ID")': 5,
+              },
+              {
+                'COUNT("ID")': 1,
               },
             ]
           );
@@ -676,7 +691,10 @@ module.exports = function (knex) {
                 '': 2,
               },
               {
-                '': 4,
+                '': 5,
+              },
+              {
+                '': 1,
               },
             ]
           );
@@ -694,6 +712,9 @@ module.exports = function (knex) {
                   {
                     'count(`id`)': 6,
                   },
+                  {
+                    'count(`id`)': 2,
+                  },
                 ]
               );
               tester(
@@ -703,6 +724,9 @@ module.exports = function (knex) {
                 [
                   {
                     count: '6',
+                  },
+                  {
+                    count: '2',
                   },
                 ]
               );
@@ -714,6 +738,9 @@ module.exports = function (knex) {
                   {
                     count: '6',
                   },
+                  {
+                    count: '2',
+                  },
                 ]
               );
               tester(
@@ -723,6 +750,9 @@ module.exports = function (knex) {
                 [
                   {
                     'count(`id`)': 6,
+                  },
+                  {
+                    'count(`id`)': 2,
                   },
                 ]
               );
@@ -734,6 +764,9 @@ module.exports = function (knex) {
                   {
                     'COUNT("ID")': 6,
                   },
+                  {
+                    'COUNT("ID")': 2,
+                  },
                 ]
               );
               tester(
@@ -743,6 +776,9 @@ module.exports = function (knex) {
                 [
                   {
                     '': 6,
+                  },
+                  {
+                    '': 2,
                   },
                 ]
               );

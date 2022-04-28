@@ -76,7 +76,7 @@ describe('Oracle SchemaBuilder', function () {
         table.increments('id', { primaryKey: false });
       });
 
-    equal(2, tableSql.toSQL().length);
+    expect(tableSql.toSQL().length).to.equal(2);
     expect(tableSql.toSQL()[0].sql).to.equal(
       'begin execute immediate \'create table "users" ("id" integer not null)\'; exception when others then if sqlcode != -955 then raise; end if; end;'
     );
