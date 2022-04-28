@@ -133,6 +133,30 @@ module.exports = {
       expect(fileCount).to.equal(1);
     });
 
+    it('Does not create new seed with default knexfile with invalid client', () => {
+      fileHelper.registerGlobForCleanup(
+        'test/jake-util/knexfile_seeds/somename.js'
+      );
+      fileHelper.createFile(
+        process.cwd() + '/knexfile.js',
+        `
+module.exports = {
+  client: 'invalidclient',
+  migrations: {
+    directory: __dirname + '/test/jake-util/knexfile_seeds',
+  },
+};
+    `,
+        { isPathAbsolute: true }
+      );
+      return execCommand(
+        `node ${KNEX} seed:make somename --knexpath=../knex.js`,
+        {
+          expectedErrorMessage: `Unknown configuration option 'client' value invalidclient.`,
+        }
+      );
+    });
+
     it('Creates new seed with default ts knexfile', async () => {
       fileHelper.registerGlobForCleanup(
         'test/jake-util/knexfile_seeds/somename.ts'

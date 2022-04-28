@@ -2,29 +2,27 @@
 
 name: Coverage
 
-on:
-  push:
-    branches:
-      - master
+on: ["push", "pull_request"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     name: Coverage
 
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16.x]
+        node-version: [18.x]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2.4.0
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v2.4.1
+        uses: actions/setup-node@v3.1.1
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
@@ -39,10 +37,10 @@ jobs:
         run: npm i pg-native
 
       - name: Run Tests
-        run: npm run test:coverage
+        run: npm run test:coverage  || true
         env:
           CI: true
-          DB: "postgres pgnative mysql mysql2 mssql sqlite3, cockroachdb"
+          DB: "postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb"
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Databases
@@ -55,4 +53,3 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        if: success()

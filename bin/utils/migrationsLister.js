@@ -6,7 +6,7 @@ function listMigrations(completed, newMigrations) {
   let message = '';
 
   if (completed.length === 0) {
-    message += color.red('No Completed Migration files Found. \n');
+    message += color.red('No Completed Migration files Found.\n');
   } else {
     message = color.green(
       `Found ${completed.length} Completed Migration file/files.\n`
@@ -14,7 +14,7 @@ function listMigrations(completed, newMigrations) {
 
     for (let i = 0; i < completed.length; i++) {
       const file = completed[i];
-      message += color.cyan(`${file} \n`);
+      message += color.cyan(`${file.name}\n`);
     }
   }
 
@@ -27,7 +27,7 @@ function listMigrations(completed, newMigrations) {
 
     for (let i = 0; i < newMigrations.length; i++) {
       const file = newMigrations[i];
-      message += color.cyan(`${file.file} \n`);
+      message += color.cyan(`${file.file}\n`);
     }
   }
 

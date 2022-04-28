@@ -123,6 +123,20 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('create table like another with additionnal columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('numeric_col');
+      })
+      .toSQL();
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users_like" (like "users" including all, "add_col" text, "numeric_col" integer)'
+    );
+  });
+
   it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()
@@ -173,6 +187,69 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('should not alter nullable when alterNullable is false', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').default('foo').alter({ alterNullable: false });
+      })
+      .toSQL();
+
+    equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" alter column "foo" drop default'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'alter table "users" alter column "foo" set default \'foo\''
+    );
+  });
+
+  it('should alter nullable when alterNullable is true', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').default('foo').alter({ alterNullable: true });
+      })
+      .toSQL();
+
+    equal(4, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" alter column "foo" drop default'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" alter column "foo" drop not null'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))'
+    );
+    expect(tableSql[3].sql).to.equal(
+      'alter table "users" alter column "foo" set default \'foo\''
+    );
+  });
+
+  it('should not alter type when alterType is false', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.string('foo').default('foo').alter({ alterType: false });
+      })
+      .toSQL();
+
+    equal(3, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" alter column "foo" drop default'
+    );
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" alter column "foo" drop not null'
+    );
+    expect(tableSql[2].sql).to.equal(
+      'alter table "users" alter column "foo" set default \'foo\''
+    );
+  });
+
   it('alter table with schema', function () {
     tableSql = client
       .schemaBuilder()
@@ -184,6 +261,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "myschema"."users" add column "id" serial primary key'
+    );
+  });
+
+  it('alter table with checks', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.integer('price').checkPositive();
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "price" integer check ("price" > 0)'
     );
   });
 
@@ -220,6 +310,19 @@ describe('PostgreSQL SchemaBuilder', function () {
       );
     });
 
+    it('basic create view without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        'create view "adults" as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
     it('create view or replace', async function () {
       const viewSql = client
         .schemaBuilder()
@@ -228,9 +331,22 @@ describe('PostgreSQL SchemaBuilder', function () {
           view.as(knexPg('users').select('name').where('age', '>', '18'));
         })
         .toSQL();
+      expect(viewSql.length).to.equal(1);
+      expect(viewSql[0].sql).to.equal(
+        'create or replace view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+      );
+    });
+
+    it('create view or replace without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.as(knexPg('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create view or replace "adults" ("name") as select "name" from "users" where "age" > \'18\''
+        'create or replace view "adults" as select "name" from "users" where "age" > \'18\''
       );
     });
 
@@ -1619,6 +1735,23 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding timestamps with options object', () => {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', (table) => {
+        table.timestamps({
+          useTimestamps: true,
+          defaultToNow: true,
+          useCamelCase: true,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "createdAt" timestamptz not null default CURRENT_TIMESTAMP, add column "updatedAt" timestamptz not null default CURRENT_TIMESTAMP'
+    );
+  });
+
   it('adding binary', function () {
     tableSql = client
       .schemaBuilder()
@@ -1641,6 +1774,34 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     expect(tableSql[0].sql).to.equal(
       'alter table "user" add column "preferences" jsonb'
+    );
+  });
+
+  it('adding uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo');
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" uuid'
+    );
+  });
+
+  it('adding binary uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo', { useBinaryUuid: true });
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" uuid'
     );
   });
 
@@ -1931,6 +2092,131 @@ describe('PostgreSQL SchemaBuilder', function () {
         'email',
         'email alter context',
       ]);
+    });
+  });
+
+  describe('Checks tests', function () {
+    it('allows adding checks positive', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkPositive();
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" > 0)'
+      );
+    });
+
+    it('allows adding checks negative', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkNegative();
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" < 0)'
+      );
+    });
+
+    it('allows adding checks in', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.string('animal').checkIn(['cat', 'dog']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "animal" varchar(255) check ("animal" in (\'cat\',\'dog\'))'
+      );
+    });
+
+    it('allows adding checks not in', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.string('animal').checkNotIn(['cat', 'dog']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "animal" varchar(255) check ("animal" not in (\'cat\',\'dog\'))'
+      );
+    });
+
+    it('allows adding checks between', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkBetween([10, 15]);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" between 10 and 15)'
+      );
+    });
+
+    it('allows adding checks between with multiple intervals', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkBetween([
+            [10, 15],
+            [20, 25],
+          ]);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" between 10 and 15 or "price" between 20 and 25)'
+      );
+    });
+
+    it('allows adding checks between strings', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.integer('price').checkBetween(['banana', 'orange']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "price" integer check ("price" between \'banana\' and \'orange\')'
+      );
+    });
+
+    it('allows length equals', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.varchar('phone').checkLength('=', 8);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "phone" varchar(255) check (length("phone") = 8)'
+      );
+    });
+
+    it('check regexp', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.varchar('phone').checkRegex('[0-9]{8}');
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" add column "phone" varchar(255) check ("phone" ~ \'[0-9]{8}\')'
+      );
+    });
+
+    it('drop checks', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('user', function (t) {
+          t.dropChecks(['check_constraint1', 'check_constraint2']);
+        })
+        .toSQL();
+      expect(tableSql[0].sql).to.equal(
+        'alter table "user" drop constraint check_constraint1, drop constraint check_constraint2'
+      );
     });
   });
 });

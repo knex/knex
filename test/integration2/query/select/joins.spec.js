@@ -7,6 +7,8 @@ const { isOracle, isMssql } = require('../../../util/db-helpers');
 const {
   insertTestTableTwoData,
   insertAccounts,
+  insertCities,
+  insertCountry,
 } = require('../../../util/dataInsertHelper');
 const {
   getAllDbs,
@@ -17,6 +19,8 @@ const {
   dropTables,
   createAccounts,
   createTestTableTwo,
+  createCities,
+  createCountry,
 } = require('../../../util/tableCreatorHelper');
 const { assertNumber } = require('../../../util/assertHelper');
 
@@ -44,8 +48,8 @@ describe('Joins', function () {
         await knex.destroy();
       });
 
-      it('uses inner join by default', function () {
-        return knex('accounts')
+      it('uses inner join by default', async function () {
+        await knex('accounts')
           .join(
             'test_table_two',
             'accounts.id',
@@ -346,8 +350,8 @@ describe('Joins', function () {
           });
       });
 
-      it('has a leftJoin method parameter to specify the join type', function () {
-        return knex('accounts')
+      it('has a leftJoin method parameter to specify the join type', async function () {
+        await knex('accounts')
           .leftJoin(
             'test_table_two',
             'accounts.id',
@@ -442,6 +446,32 @@ describe('Joins', function () {
                   phone: null,
                   details: null,
                 },
+                {
+                  id: 7,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 8,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
               ]
             );
             tester(
@@ -522,6 +552,32 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '7',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '8',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -616,6 +672,32 @@ describe('Joins', function () {
                   phone: null,
                   details: null,
                 },
+                {
+                  id: '7',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '8',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
               ]
             );
             tester(
@@ -696,6 +778,32 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 7,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 8,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -790,6 +898,32 @@ describe('Joins', function () {
                   phone: null,
                   details: null,
                 },
+                {
+                  id: 7,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 8,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
               ]
             );
             tester(
@@ -877,13 +1011,39 @@ describe('Joins', function () {
                   phone: null,
                   details: null,
                 },
+                {
+                  id: '7',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: '8',
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
               ]
             );
           });
       });
 
-      it('accepts a callback as the second argument for advanced joins', function () {
-        return knex('accounts')
+      it('accepts a callback as the second argument for advanced joins', async function () {
+        await knex('accounts')
           .leftJoin('test_table_two', function (join) {
             join.on('accounts.id', '=', 'test_table_two.account_id');
             join.orOn('accounts.email', '=', 'test_table_two.details');
@@ -988,6 +1148,36 @@ describe('Joins', function () {
                   details: null,
                   status: null,
                 },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
               ]
             );
             tester(
@@ -1078,6 +1268,36 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -1186,6 +1406,36 @@ describe('Joins', function () {
                   details: null,
                   status: null,
                 },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
               ]
             );
             tester(
@@ -1276,6 +1526,36 @@ describe('Joins', function () {
                   last_name: 'User',
                   email: 'test6@example.com',
                   logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
                   balance: 0,
                   about: 'Lorem ipsum Dolore labore incididunt enim.',
                   created_at: TEST_TIMESTAMP,
@@ -1384,14 +1664,44 @@ describe('Joins', function () {
                   details: null,
                   status: null,
                 },
+                {
+                  id: ['7', null],
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: ['8', null],
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
               ]
             );
           });
       });
 
-      it('supports join aliases', function () {
+      it('supports join aliases', async function () {
         //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
-        return knex('accounts')
+        await knex('accounts')
           .join('accounts as a2', 'a2.email', '<>', 'accounts.email')
           .select(['accounts.email as e1', 'a2.email as e2'])
           .where('a2.email', 'test2@example.com')
@@ -1563,10 +1873,10 @@ describe('Joins', function () {
           });
       });
 
-      it('supports join aliases with advanced joins', function () {
+      it('supports join aliases with advanced joins', async function () {
         //Expected output: all pairs of account emails, excluding pairs where the emails are the same.
         //But also include the case where the emails are the same, for account 2.
-        return knex('accounts')
+        await knex('accounts')
           .join('accounts as a2', function () {
             this.on('accounts.email', '<>', 'a2.email').orOn(
               'accounts.id',
@@ -1744,8 +2054,8 @@ describe('Joins', function () {
           });
       });
 
-      it('supports cross join without arguments', function () {
-        return knex
+      it('supports cross join without arguments', async function () {
+        await knex
           .select('account_id')
           .from('accounts')
           .crossJoin('test_table_two')
@@ -1756,7 +2066,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1764,7 +2074,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1773,7 +2083,7 @@ describe('Joins', function () {
               [],
               function (res) {
                 // redshift, not supporting insert...returning, had to fake 6 of these in previous tests
-                return res.length === 12;
+                return res.length === 24;
               }
             );
             tester(
@@ -1781,7 +2091,7 @@ describe('Joins', function () {
               'select "account_id" from "accounts" cross join "test_table_two" order by "account_id" asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1789,7 +2099,7 @@ describe('Joins', function () {
               'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
             tester(
@@ -1797,18 +2107,81 @@ describe('Joins', function () {
               'select [account_id] from [accounts] cross join [test_table_two] order by [account_id] asc',
               [],
               function (res) {
-                return res.length === 18;
+                return res.length === 24;
               }
             );
           });
       });
 
-      it('supports joins with overlapping column names', function () {
+      it('left join with subquery in on clause, #', async function () {
+        await knex
+          .select('account_id')
+          .from('accounts')
+          .leftJoin('test_table_two', (j) =>
+            j.on(
+              'accounts.id',
+              '=',
+              knex('test_table_two').select('id').limit(1)
+            )
+          )
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
+              [1],
+              function (res) {
+                return res.length === 10;
+              }
+            );
+            tester(
+              'pg',
+              'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
+              [1],
+              function (res) {
+                return res.length === 10;
+              }
+            );
+            tester(
+              'pg-redshift',
+              'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select "id" from "test_table_two" limit ?)',
+              [1],
+              function (res) {
+                return res.length === 10;
+              }
+            );
+            tester(
+              'oracledb',
+              'select "account_id" from "accounts" left join "test_table_two" on "accounts"."id" = (select * from (select "id" from "test_table_two") where rownum <= ?)',
+              [1],
+              function (res) {
+                return res.length === 10;
+              }
+            );
+            tester(
+              'sqlite3',
+              'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
+              [1],
+              function (res) {
+                return res.length === 10;
+              }
+            );
+            tester(
+              'mssql',
+              'select [account_id] from [accounts] left join [test_table_two] on [accounts].[id] = (select top (?) [id] from [test_table_two])',
+              [1],
+              function (res) {
+                return res.length === 10;
+              }
+            );
+          });
+      });
+
+      it('supports joins with overlapping column names', async function () {
         if (isOracle(knex)) {
           return this.skip();
         }
 
-        return knex('accounts as a1')
+        await knex('accounts as a1')
           .leftJoin('accounts as a2', function () {
             this.on('a1.email', '<>', 'a2.email');
           })
@@ -1949,6 +2322,45 @@ describe('Joins', function () {
         expect(rows2.length).to.equal(2);
         assertNumber(knex, rows2[0].testcolumn, 50);
         assertNumber(knex, rows2[1].testcolumn, 70);
+      });
+
+      describe('json joins', () => {
+        before(async () => {
+          await knex.schema.dropTableIfExists('cities');
+          await knex.schema.dropTableIfExists('country');
+          await createCities(knex);
+          await createCountry(knex);
+        });
+
+        beforeEach(async () => {
+          await knex('cities').truncate();
+          await knex('country').truncate();
+          await insertCities(knex);
+          await insertCountry(knex);
+        });
+
+        it('join on json path value', async () => {
+          const result = await knex('cities')
+            .select('cities.name as cityName', 'country.name as countryName')
+            .join('country', function () {
+              this.onJsonPathEquals(
+                'temperature',
+                '$.desc',
+                'climate',
+                '$.type'
+              );
+            });
+          expect(result).to.eql([
+            {
+              cityName: 'Paris',
+              countryName: 'France',
+            },
+            {
+              cityName: 'Milan',
+              countryName: 'Italy',
+            },
+          ]);
+        });
       });
     });
   });

@@ -130,7 +130,7 @@ module.exports = function (knex) {
               ['id'],
               triggerOptions
             );
-            insertSecondary[secondaryLink] = primaryId[0];
+            insertSecondary[secondaryLink] = primaryId[0].id;
 
             // Insert to table with trigger to test delete
             insertedId = (
@@ -139,7 +139,7 @@ module.exports = function (knex) {
                 ['id'],
                 triggerOptions
               )
-            )[0];
+            )[0].id;
           }
 
           async function deleteTriggerTable() {
@@ -148,7 +148,7 @@ module.exports = function (knex) {
               await knex(secondaryTable)
                 .whereRaw(`id = ${insertedId}`)
                 .delete(['id'], triggerOptions)
-            )[0];
+            )[0].id;
           }
 
           await insertWithReturn();
@@ -184,7 +184,7 @@ module.exports = function (knex) {
               ['id'],
               triggerOptions
             );
-            insertSecondary[secondaryLink] = primaryId[0];
+            insertSecondary[secondaryLink] = primaryId[0].id;
 
             // Insert to table with trigger to test delete
             insertedId = (
@@ -193,7 +193,7 @@ module.exports = function (knex) {
                 ['id'],
                 triggerOptions
               )
-            )[0];
+            )[0].id;
           }
 
           async function deleteTriggerTable() {
@@ -203,7 +203,7 @@ module.exports = function (knex) {
                 .whereRaw(`id = ${insertedId}`)
                 .returning(['id'], triggerOptions)
                 .delete()
-            )[0];
+            )[0].id;
           }
 
           await insertWithReturn();

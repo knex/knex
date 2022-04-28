@@ -50,6 +50,26 @@ describe('SQLite SchemaBuilder', function () {
     );
   });
 
+  it('test create table like with additionnal columns', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTableLike('users_like', 'users', function (table) {
+        table.text('add_col');
+        table.integer('add_num_col');
+      });
+
+    expect(tableSql.toSQL().length).to.equal(3);
+    expect(tableSql.toSQL()[0].sql).to.equal(
+      'create table `users_like` as select * from `users` where 0=1'
+    );
+    expect(tableSql.toSQL()[1].sql).to.equal(
+      'alter table `users_like` add column `add_col` text'
+    );
+    expect(tableSql.toSQL()[2].sql).to.equal(
+      'alter table `users_like` add column `add_num_col` integer'
+    );
+  });
+
   describe('views', function () {
     let knexSqlite3;
 
@@ -76,15 +96,46 @@ describe('SQLite SchemaBuilder', function () {
       );
     });
 
+    it('basic create view without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('adults', function (view) {
+          view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.equal(
+        "create view `adults` as select `name` from `users` where `age` > '18'"
+      );
+    });
+
     it('create view or replace', async function () {
-      expect(() => {
-        tableSql = client
-          .schemaBuilder()
-          .view('users', function (view) {
-            view.column('oldName').rename('newName').defaultTo('10');
-          })
-          .toSQL();
-      }).to.throw('rename column of views is not supported by this dialect.');
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.columns(['name']);
+          view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      expect(viewSql.length).to.equal(2);
+      expect(viewSql[0].sql).to.equal('drop view if exists `adults`');
+      expect(viewSql[1].sql).to.equal(
+        "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+      );
+    });
+
+    it('create view or replace without columns', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createViewOrReplace('adults', function (view) {
+          view.as(knexSqlite3('users').select('name').where('age', '>', '18'));
+        })
+        .toSQL();
+      expect(viewSql.length).to.equal(2);
+      expect(viewSql[0].sql).to.equal('drop view if exists `adults`');
+      expect(viewSql[1].sql).to.equal(
+        "create view `adults` as select `name` from `users` where `age` > '18'"
+      );
     });
 
     it('create view with check options', async function () {
@@ -181,15 +232,15 @@ describe('SQLite SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .createTable('users', function (table) {
-        table.increments('id');
-        table.increments('other_id', { primaryKey: false });
+        // This make nothing in SQLite, autoincrement without primary key is a syntax error.
+        table.increments('id', { primaryKey: false });
       })
       .toSQL();
 
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table `users` (`id` integer not null primary key autoincrement, `other_id` integer not null autoincrement)'
+      'create table `users` (`id` integer not null primary key autoincrement)'
     );
   });
 
@@ -530,6 +581,7 @@ describe('SQLite SchemaBuilder', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
+        // This make nothing in SQLite, autoincrement without primary key is a syntax error.
         table.bigIncrements('id', { primaryKey: false });
       })
       .toSQL();
@@ -537,7 +589,7 @@ describe('SQLite SchemaBuilder', function () {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'alter table `users` add column `id` integer not null autoincrement'
+      'alter table `users` add column `id` integer not null primary key autoincrement'
     );
   });
 
@@ -859,6 +911,34 @@ describe('SQLite SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     equal(tableSql[0].sql, 'alter table `users` add column `foo` blob');
+  });
+
+  it('adding uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo');
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table `users` add column `foo` char(36)'
+    );
+  });
+
+  it('adding binary uuid', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.uuid('foo', { useBinaryUuid: true });
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'alter table `users` add column `foo` binary(16)'
+    );
   });
 
   it('allows for on delete cascade with foreign keys, #166', function () {
@@ -4412,6 +4492,131 @@ describe('SQLite parser and compiler', function () {
       const parsedSql = compileCreateIndex(parseCreateIndex(sql), wrap);
 
       expect(parsedSql).to.equal(newSql);
+    });
+
+    describe('Checks tests', function () {
+      it('allows adding checks positive', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkPositive();
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add column `price` integer check (`price` > 0)'
+        );
+      });
+
+      it('allows adding checks negative', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkNegative();
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add column `price` integer check (`price` < 0)'
+        );
+      });
+
+      it('allows adding checks in', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.string('animal').checkIn(['cat', 'dog']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add column `animal` varchar(255) check (`animal` in ('cat','dog'))"
+        );
+      });
+
+      it('allows adding checks not in', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.string('animal').checkNotIn(['cat', 'dog']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add column `animal` varchar(255) check (`animal` not in ('cat','dog'))"
+        );
+      });
+
+      it('allows adding checks between', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween([10, 15]);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add column `price` integer check (`price` between 10 and 15)'
+        );
+      });
+
+      it('allows adding checks between with multiple intervals', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween([
+              [10, 15],
+              [20, 25],
+            ]);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add column `price` integer check (`price` between 10 and 15 or `price` between 20 and 25)'
+        );
+      });
+
+      it('allows adding checks between strings', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween(['banana', 'orange']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add column `price` integer check (`price` between 'banana' and 'orange')"
+        );
+      });
+
+      it('allows length equals', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.varchar('phone').checkLength('=', 8);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add column `phone` varchar(255) check (length(`phone`) = 8)'
+        );
+      });
+
+      it('check regexp', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.varchar('phone').checkRegex('[0-9]{8}');
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add column `phone` varchar(255) check (`phone` REGEXP '[0-9]{8}')"
+        );
+      });
+
+      it('drop checks', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.dropChecks(['check_constraint1', 'check_constraint2']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` drop constraint check_constraint1, drop constraint check_constraint2'
+        );
+      });
     });
   });
 });

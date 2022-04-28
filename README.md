@@ -1,10 +1,10 @@
-# [knex.js](http://knexjs.org)
+# [knex.js](https://knex.github.io/documentation/)
 
 [![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
 [![npm downloads](https://img.shields.io/npm/dm/knex.svg)](https://npmjs.org/package/knex)
 ![](https://github.com/knex/knex/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/knex/knex/badge.svg?branch=master)](https://coveralls.io/r/knex/knex?branch=master)
-[![Dependencies Status](https://david-dm.org/knex/knex.svg)](https://david-dm.org/knex/knex)
+[![Dependencies Status](https://img.shields.io/librariesio/github/knex/knex)](https://libraries.io/npm/knex)
 [![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex)
 [![Language Grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/knex/knex.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/knex/knex/context:javascript)
 
@@ -13,15 +13,15 @@
 A batteries-included, multi-dialect (PostgreSQL, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
 Node.js, featuring:
 
-- [transactions](https://knexjs.org/#Transactions)
-- [connection pooling](https://knexjs.org/#Installation-pooling)
-- [streaming queries](https://knexjs.org/#Interfaces-Streams)
-- both a [promise](https://knexjs.org/#Interfaces-Promises) and [callback](https://knexjs.org/#Interfaces-Callbacks) API
+- [transactions](https://knex.github.io/documentation/#Transactions)
+- [connection pooling](https://knex.github.io/documentation/#Installation-pooling)
+- [streaming queries](https://knex.github.io/documentation/#Interfaces-Streams)
+- both a [promise](https://knex.github.io/documentation/#Interfaces-Promises) and [callback](https://knex.github.io/documentation/#Interfaces-Callbacks) API
 - a [thorough test suite](https://github.com/knex/knex/actions)
 
-Node.js versions 10+ are supported.
+Node.js versions 12+ are supported.
 
-* Take a look at the [full documentation](https://knexjs.org) to get started!
+* Take a look at the [full documentation](https://knex.github.io/documentation) to get started!
 * Browse the [list of plugins and tools](https://github.com/knex/knex/blob/master/ECOSYSTEM.md) built for knex
 * Check out our [recipes wiki](https://github.com/knex/knex/wiki/Recipes) to search for solutions to some specific problems  
 * In case of upgrading from an older version, see [migration guide](https://github.com/knex/knex/blob/master/UPGRADING.md)

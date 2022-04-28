@@ -1,32 +1,45 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
 const { resolveClientNameWithAliases } = require('../../lib/util/helpers');
-const fs = require('fs');
 const path = require('path');
 const escalade = require('escalade/sync');
 const tildify = require('tildify');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 
-function mkConfigObj(opts) {
-  if (!opts.client) {
-    throw new Error(
-      `No configuration file found and no commandline connection parameters passed`
-    );
+function parseConfigObj(opts) {
+  const config = { migrations: {} };
+
+  if (opts.client) {
+    config.client = opts.client;
   }
 
+  if (opts.connection) {
+    config.connection = opts.connection;
+  }
+
+  if (opts.migrationsDirectory) {
+    config.migrations.directory = opts.migrationsDirectory;
+  }
+
+  if (opts.migrationsTableName) {
+    config.migrations.tableName = opts.migrationsTableName;
+  }
+
+  return config;
+}
+
+function mkConfigObj(opts) {
   const envName = opts.env || process.env.NODE_ENV || 'development';
   const resolvedClientName = resolveClientNameWithAliases(opts.client);
   const useNullAsDefault = resolvedClientName === 'sqlite3';
+  const parsedConfig = parseConfigObj(opts);
+
   return {
     ext: DEFAULT_EXT,
     [envName]: {
+      ...parsedConfig,
       useNullAsDefault,
-      client: opts.client,
-      connection: opts.connection,
-      migrations: {
-        directory: opts.migrationsDirectory,
-        tableName: opts.migrationsTableName || DEFAULT_TABLE_NAME,
-      },
+      tableName: parsedConfig.tableName || DEFAULT_TABLE_NAME,
     },
   };
 }
@@ -83,6 +96,14 @@ function checkLocalModule(env) {
       color.magenta(tildify(env.cwd))
     );
     exit('Try running: npm install knex');
+  }
+}
+
+function checkConfigurationOptions(env, opts) {
+  if (!env.configPath && !opts.client) {
+    throw new Error(
+      `No configuration file found and no commandline connection parameters passed`
+    );
   }
 }
 
@@ -174,11 +195,13 @@ function findUpConfig(cwd, name, extensions) {
 }
 
 module.exports = {
+  parseConfigObj,
   mkConfigObj,
   resolveEnvironmentConfig,
   exit,
   success,
   checkLocalModule,
+  checkConfigurationOptions,
   getSeedExtension,
   getMigrationExtension,
   getStubPath,
