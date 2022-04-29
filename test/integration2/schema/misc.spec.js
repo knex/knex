@@ -1661,9 +1661,9 @@ describe('Schema (misc)', () => {
               expect(exists).to.equal(true);
             }));
 
-          describe('sqlite only', () => {
+          describe('sqlite and mysql only', () => {
             it('checks whether a column exists without being case sensitive, resolving with a boolean', async function () {
-              if (!isSQLite(knex)) {
+              if (!isSQLite(knex)&& !isMysql(knex)) {
                 return this.skip();
               }
 
