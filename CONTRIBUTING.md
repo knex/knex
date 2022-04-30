@@ -177,7 +177,7 @@ Starting with release 2.0.0, Knex is support source additions in Typescript! Thi
 
 To develop in this repository use the `npm run build` command. If you wish to have the `tsc` compiled watch and recompile on changes then run `npm run build:ts -- --watch`. Note that for easy integration with Javascript the outputted files are done in a "side-by-side" manner meaning that `lib/foo/bar.ts` will result in `lib/foo/bar.js`.
 
-The script file `./scripts/update_gitignore_for_tsc_output.sh` file is called as part of the `npm run build` command which will update the `lib/.gitignore` file which is used to ensure generated `.js` and related files from `tsc` compilation are not checked into the git repo.
+The script file `./scripts/update_gitignore_for_tsc_output.js` file is called as part of the `npm run build` command which will update the `lib/.gitignore` file which is used to ensure generated `.js` and related files from `tsc` compilation are not checked into the git repo.
 
 ## Want to be Collaborator?
 
