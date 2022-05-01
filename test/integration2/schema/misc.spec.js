@@ -687,7 +687,7 @@ describe('Schema (misc)', () => {
             })
             .testSql((tester) => {
               tester('mysql', [
-                "create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default '1', `balance` float(8, 2) default '0', `about` text comment 'A comment.', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = 'A table comment.'",
+                "create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar, `last_name` varchar, `email` varchar null, `logins` int default '1', `balance` float(8, 2) default '0', `about` text comment 'A comment.', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = 'A table comment.'",
                 'alter table `test_table_one` add index `test_table_one_first_name_index`(`first_name`)',
                 'alter table `test_table_one` add unique `test_table_one_email_unique`(`email`)',
                 'alter table `test_table_one` add index `test_table_one_logins_index`(`logins`)',
@@ -695,7 +695,7 @@ describe('Schema (misc)', () => {
               tester(
                 ['pg', 'cockroachdb'],
                 [
-                  'create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)',
+                  'create table "test_table_one" ("id" bigserial primary key, "first_name" varchar, "last_name" varchar, "email" varchar null, "logins" integer default \'1\', "balance" real default \'0\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)',
                   'comment on table "test_table_one" is \'A table comment.\'',
                   'comment on column "test_table_one"."logins" is NULL',
                   'comment on column "test_table_one"."about" is \'A comment.\'',
@@ -705,14 +705,14 @@ describe('Schema (misc)', () => {
                 ]
               );
               tester('pg-redshift', [
-                'create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" varchar(max), "created_at" timestamptz, "updated_at" timestamptz)',
+                'create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "first_name" varchar, "last_name" varchar, "email" varchar null, "logins" integer default \'1\', "balance" real default \'0\', "about" varchar(max), "created_at" timestamptz, "updated_at" timestamptz)',
                 'comment on table "test_table_one" is \'A table comment.\'',
                 'comment on column "test_table_one"."logins" is NULL',
                 'comment on column "test_table_one"."about" is \'A comment.\'',
                 'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
               ]);
               tester('sqlite3', [
-                "create table `test_table_one` (`id` integer not null primary key autoincrement, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` integer default '1', `balance` float default '0', `about` text, `created_at` datetime, `updated_at` datetime)",
+                "create table `test_table_one` (`id` integer not null primary key autoincrement, `first_name` varchar, `last_name` varchar, `email` varchar null, `logins` integer default '1', `balance` float default '0', `about` text, `created_at` datetime, `updated_at` datetime)",
                 'create index `test_table_one_first_name_index` on `test_table_one` (`first_name`)',
                 'create unique index `test_table_one_email_unique` on `test_table_one` (`email`)',
                 'create index `test_table_one_logins_index` on `test_table_one` (`logins`)',
@@ -1663,7 +1663,7 @@ describe('Schema (misc)', () => {
 
           describe('sqlite and mysql only', () => {
             it('checks whether a column exists without being case sensitive, resolving with a boolean', async function () {
-              if (!isSQLite(knex)&& !isMysql(knex)) {
+              if (!isSQLite(knex) && !isMysql(knex)) {
                 return this.skip();
               }
 
@@ -2311,7 +2311,7 @@ describe('Schema (misc)', () => {
             sql:
               'CREATE TABLE `' +
               tableName +
-              '` (`test` varchar(255) not null, `test2` varchar(255) not null, constraint `' +
+              '` (`test` varchar not null, `test2` varchar not null, constraint `' +
               constraintName +
               '` primary key (`test`))',
           },
@@ -2411,7 +2411,7 @@ describe('Schema (misc)', () => {
                     sql:
                       'CREATE TABLE `' +
                       tableName +
-                      '` (`test` varchar(255) not null, `test2` varchar(255) not null, constraint `' +
+                      '` (`test` varchar not null, `test2` varchar not null, constraint `' +
                       constraintName +
                       '` primary key (`test`, `test2`))',
                   },
