@@ -2009,6 +2009,21 @@ describe('PostgreSQL SchemaBuilder', function () {
       client.config.wrapIdentifier = originalWrapIdentifier;
     });
 
+    it('should test varchar length', function () {
+      const tableSql = client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.string('description');
+          table.string('email', 30);
+        })
+        .toSQL();
+
+      expect(tableSql[0].sql).to.equal(
+        'create table "users" ("description" varchar, "email" varchar(30))'
+      );
+    });
+
     it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
       client
         .schemaBuilder()
