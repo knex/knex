@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "npm run build:gitignore && npm run build:ts",
+    "clean": "git clean -f -X lib/",
     "build:ts": "tsc",
     "build:gitignore": "./scripts/update_gitignore_for_tsc_output.js run",
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
@@ -56,7 +57,8 @@
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
     "prepare": "husky install",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run clean && npm run build",
+    "postinstall": "npm run clean && npm run build"
   },
   "dependencies": {
     "colorette": "2.0.16",
