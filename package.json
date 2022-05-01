@@ -55,7 +55,8 @@
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "colorette": "2.0.16",
