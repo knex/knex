@@ -222,7 +222,7 @@
     "!lib/**/*.ts",
     "!lib/**/*.d.ts",
     "!lib/**/*.js.map",
-    "!lib/.gitigore",
+    "!lib/.gitignore",
     "scripts/*",
     "types/index.d.ts",
     "types/result.d.ts",
