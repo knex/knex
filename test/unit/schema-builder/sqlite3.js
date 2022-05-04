@@ -4602,7 +4602,7 @@ describe('SQLite parser and compiler', function () {
           })
           .toSQL();
         expect(tableSql[0].sql).to.equal(
-          "alter table `user` add column `phone` varchar check (`phone` REGEXP '[0-9]{8}')"
+          "alter table `user` add column `phone` varchar(255) check (`phone` REGEXP '[0-9]{8}')"
         );
       });
 
