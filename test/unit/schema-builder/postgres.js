@@ -445,6 +445,18 @@ describe('PostgreSQL SchemaBuilder', function () {
         'refresh materialized view "view_to_refresh"'
       );
     });
+
+
+    it('refresh view concurrently', function () {
+      tableSql = client
+        .schemaBuilder()
+        .refreshMaterializedView('view_to_refresh', true)
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'refresh materialized view concurrently "view_to_refresh"'
+      );
+    });
   });
 
   it('drop table with schema', function () {

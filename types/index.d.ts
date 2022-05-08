@@ -1983,7 +1983,7 @@ export declare namespace Knex {
       viewName: string,
       callback: (viewBuilder: ViewBuilder) => any
     ): SchemaBuilder;
-    refreshMaterializedView(viewName: string): SchemaBuilder;
+    refreshMaterializedView(viewName: string, concurrently?: boolean): SchemaBuilder;
     dropView(viewName: string): SchemaBuilder;
     dropViewIfExists(viewName: string): SchemaBuilder;
     dropMaterializedView(viewName: string): SchemaBuilder;
