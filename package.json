@@ -120,7 +120,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
-    "husky": "^7.0.4",
+    "husky": "^8.0.1",
     "jake": "^10.8.5",
     "JSONStream": "^1.3.5",
     "lint-staged": "^12.3.7",
