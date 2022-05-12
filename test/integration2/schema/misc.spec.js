@@ -1597,7 +1597,7 @@ describe('Schema (misc)', () => {
       });
 
       describe('hasTable', () => {
-        it('checks whether a table exists', () =>
+        it('should be true if a table exists', () =>
           knex.schema.hasTable('test_table_two').then((resp) => {
             expect(resp).to.equal(true);
           }));
@@ -1663,7 +1663,7 @@ describe('Schema (misc)', () => {
 
           describe('sqlite and mysql only', () => {
             it('checks whether a column exists without being case sensitive, resolving with a boolean', async function () {
-              if (!isSQLite(knex)&& !isMysql(knex)) {
+              if (!isSQLite(knex) && !isMysql(knex)) {
                 return this.skip();
               }
 
@@ -2046,7 +2046,7 @@ describe('Schema (misc)', () => {
 
       describe('withSchema', () => {
         describe('mssql only', () => {
-          if (!knex || !knex.client || !/mssql/i.test(knex.client.dialect)) {
+          if (!isMssql(knex)) {
             return Promise.resolve(true);
           }
 
@@ -2085,15 +2085,23 @@ describe('Schema (misc)', () => {
           }
 
           const defaultSchemaName = 'public';
-          const testSchemaName = 'test';
+          const testSchemaName = 'test_schema';
 
           before(() => createSchema(testSchemaName));
 
+          afterEach(() =>
+            knex.schema.withSchema(testSchemaName).dropTableIfExists('test')
+          );
           after(() => knex.schema.raw('DROP SCHEMA ' + testSchemaName));
 
           it('should not find non-existent tables', () =>
             checkTable(testSchemaName, 'test', false).then(() =>
               checkTable(defaultSchemaName, 'test', false)
+            ));
+
+          it('should find existent tables', () =>
+            createTable(testSchemaName, 'test').then(() =>
+              checkTable(testSchemaName, 'test', true)
             ));
 
           it('should create and drop tables', () =>
