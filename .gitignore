@@ -1,8 +1,2 @@
 node_modules
-npm-debug.log
-.idea
-.DS_Store
-.vagrant
-build/CHANGELOG.md
-build/version.js
-package-lock.json
+.vitepress/dist
