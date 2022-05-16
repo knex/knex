@@ -126,7 +126,7 @@ describe('Inserts', function () {
                 1,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [{ id: 1 }]
             );
             tester(
               'oracledb',
@@ -270,7 +270,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [2]
+              [{ id: 1 }, { id: 2 }]
             );
             tester(
               'oracledb',
@@ -488,7 +488,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [2]
+              [{ id: 1 }, { id: 2 }]
             );
             tester(
               'oracledb',
@@ -724,7 +724,7 @@ describe('Inserts', function () {
                 2,
                 TEST_TIMESTAMP,
               ],
-              [1]
+              [{ id: 1 }]
             );
             tester(
               'oracledb',
@@ -1018,7 +1018,13 @@ describe('Inserts', function () {
                 'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
                 0,
               ],
-              [1]
+              [
+                {
+                  account_id: 10,
+                  details:
+                    'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                },
+              ]
             );
             tester(
               'oracledb',
