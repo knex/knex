@@ -11,7 +11,7 @@
     "build": "npm run build:gitignore && npm run build:ts",
     "clean": "git clean -f -X lib/",
     "build:ts": "tsc",
-    "build:gitignore": "./scripts/update_gitignore_for_tsc_output.js run",
+    "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
