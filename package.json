@@ -11,7 +11,7 @@
     "build": "npm run build:gitignore && npm run build:ts",
     "clean": "git clean -f -X lib/",
     "build:ts": "tsc",
-    "build:gitignore": "./scripts/update_gitignore_for_tsc_output.js run",
+    "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
@@ -56,9 +56,7 @@
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
-    "prepare": "husky install",
-    "prepublishOnly": "npm run clean && npm run build",
-    "postinstall": "npm run clean && npm run build"
+    "prepare": "husky install && npm run clean && npm run build"
   },
   "dependencies": {
     "colorette": "2.0.16",
@@ -120,7 +118,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
-    "husky": "^7.0.4",
+    "husky": "^8.0.1",
     "jake": "^10.8.5",
     "JSONStream": "^1.3.5",
     "lint-staged": "^12.3.7",
@@ -221,7 +219,8 @@
   },
   "files": [
     "bin/*",
-    "lib/*",
+    "lib/",
+    "lib/**/*.js",
     "!lib/**/*.ts",
     "!lib/**/*.d.ts",
     "!lib/**/*.js.map",

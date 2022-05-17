@@ -91,3 +91,25 @@ jobs:
             --file "scripts/docker-compose.yml" \
             down
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
+
+  user_experience:
+    runs-on: ${{ matrix.os }}
+    name: Test user experience
+    strategy:
+      matrix:
+        node-version: [18.x, 16.x, 14.x, 12.x]
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with: { fetch-depth: 1 }
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          always-auth: false
+          node-version: ${{ matrix.node-version }}
+      
+      - run: npm install
+      - run: npm pack
+      - run: npm install -g
