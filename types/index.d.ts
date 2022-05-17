@@ -384,6 +384,43 @@ export declare namespace knex {
     ): void;
   }
 
+  class TableBuilder {
+    static extend(
+      methodName: string,
+      fn: (
+        this: Knex.TableBuilder,
+        ...args: any[]
+      ) => Knex.TableBuilder
+    ): void;
+  }
+  class ViewBuilder {
+    static extend(
+      methodName: string,
+      fn: (
+        this: Knex.ViewBuilder,
+        ...args: any[]
+      ) => Knex.ViewBuilder
+    ): void;
+  }
+  class SchemaBuilder {
+    static extend(
+      methodName: string,
+      fn: (
+        this: Knex.SchemaBuilder,
+        ...args: any[]
+      ) => Knex.SchemaBuilder
+    ): void;
+  }
+  class ColumnBuilder {
+    static extend(
+      methodName: string,
+      fn: (
+        this: Knex.ColumnBuilder,
+        ...args: any[]
+      ) => Knex.ColumnBuilder
+    ): void;
+  }
+
   export class KnexTimeoutError extends Error {}
 
   export const Client: typeof Knex.Client;
