@@ -6,7 +6,6 @@ on: ["push", "pull_request"]
 
 jobs:
   build:
-    if: false
     runs-on: ubuntu-latest
 
     name: Coverage

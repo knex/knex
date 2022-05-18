@@ -10,7 +10,6 @@ on:
 
 jobs:
   analyze:
-    if: false
     name: Analyze
     runs-on: ubuntu-latest
 
