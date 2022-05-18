@@ -62,6 +62,8 @@ jobs:
         run: ./scripts/oracledb-install-driver-libs.sh run
         if: matrix.database-type == 'oracledb'
 
+      - run: npm run build
+
       - name: Run Tests
         run: npm run test:db
         if: matrix.database-type != 'oracledb'

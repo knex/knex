@@ -8,6 +8,10 @@
     "node": ">=12"
   },
   "scripts": {
+    "build": "npm run build:gitignore && npm run build:ts",
+    "clean": "git clean -f -X lib/",
+    "build:ts": "tsc",
+    "build:gitignore": "./scripts/update_gitignore_for_tsc_output.js run",
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
@@ -52,7 +56,9 @@
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prepublishOnly": "npm run clean && npm run build",
+    "postinstall": "npm run clean && npm run build"
   },
   "dependencies": {
     "colorette": "2.0.16",
@@ -100,6 +106,7 @@
     ]
   },
   "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
     "@types/node": "^17.0.25",
     "better-sqlite3": "^7.5.1",
     "chai": "^4.3.6",
@@ -137,7 +144,7 @@
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.7.0",
     "tsd": "^0.20.0",
-    "typescript": "4.6.3"
+    "typescript": "4.6.4"
   },
   "buildDependencies": [
     "rimraf"
@@ -215,6 +222,10 @@
   "files": [
     "bin/*",
     "lib/*",
+    "!lib/**/*.ts",
+    "!lib/**/*.d.ts",
+    "!lib/**/*.js.map",
+    "!lib/.gitignore",
     "scripts/*",
     "types/index.d.ts",
     "types/result.d.ts",
