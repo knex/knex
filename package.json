@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "npm run build:gitignore && npm run build:ts",
-    "clean": "git clean -f -X lib/",
+    "clean": "git clean -f -X lib/ || true",
     "build:ts": "tsc",
     "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
     "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
