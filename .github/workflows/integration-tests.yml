@@ -110,6 +110,9 @@ jobs:
           always-auth: false
           node-version: ${{ matrix.node-version }}
       
-      - run: npm install
-      - run: npm pack
-      - run: npm install -g
+      - name: Test npm git dependency
+        run: |
+          mkdir TMP/
+          echo "{ \"dependencies\": { \"knex\": \"git+file://${pwd}/" } }" > TMP/package.json
+          cd TMP/
+          npm install --verbose
