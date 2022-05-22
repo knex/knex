@@ -198,9 +198,9 @@
     }
   ],
   "browser": {
-    "./lib/migrate/Migrator.js": "./lib/util/noop.js",
+    "./lib/migrations/migrate/Migrator.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
-    "./lib/seed/Seeder.js": "./lib/util/noop.js",
+    "./lib/migrations/seed/Seeder.js": "./lib/util/noop.js",
     "tedious": false,
     "mysql": false,
     "mysql2": false,
