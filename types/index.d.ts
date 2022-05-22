@@ -2588,7 +2588,7 @@ export declare namespace Knex {
     options?: string;
   }
 
-  type PgGetTypeParser = (oid: number, format: string) => any
+  type PgGetTypeParser = (oid: number, format: string) => any;
 
   interface PgCustomTypesConfig {
       getTypeParser: PgGetTypeParser;
