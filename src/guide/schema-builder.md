@@ -877,7 +877,7 @@ Sets the `column` as unique. On Amazon Redshift, this constraint is not enforced
 
 ```js
 knex.schema.table('users', function (table) {
-  table.integer('user_id').unique({indexName:'user_unqiue_id', deferrable:'immediate'})
+  table.integer('user_id').unique({indexName:'user_unique_id', deferrable:'immediate'})
 })
 ```
 
