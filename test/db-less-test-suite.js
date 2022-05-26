@@ -45,6 +45,10 @@ if (config.postgres) {
   require('./unit/dialects/postgres');
 }
 
+if (config.oracledb) {
+  require('./unit/dialects/oracledb');
+}
+
 describe('CLI tests', function () {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
   require('./cli/help.spec');
