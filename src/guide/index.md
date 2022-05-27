@@ -247,6 +247,8 @@ Passing an `asyncStackTraces: true` flag on your initialization object will turn
 
 The client created by the configuration initializes a connection pool, using the [tarn.js](https://github.com/vincit/tarn.js) library. This connection pool has a default setting of a `min: 2, max: 10` for the MySQL and PG libraries, and a single connection for sqlite3 (due to issues with utilizing multiple connections on a single file). To change the config settings for the pool, pass a `pool` option as one of the keys in the initialize block.
 
+Note that the default value of `min` is 2 only for historical reasons. It can result in problems with stale connections, despite tarn's default idle connection timeout of 30 seconds, which is only applied when there are more than `min` active connections. It is recommended to set `min: 0` so all idle connections can be terminated.
+
 Checkout the [tarn.js](https://github.com/vincit/tarn.js) library for more information.
 
 ```js
