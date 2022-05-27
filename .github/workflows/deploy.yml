@@ -41,6 +41,7 @@ jobs:
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .vitepress/dist
           cname: knexjs.org
           force_orphan: true
