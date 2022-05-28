@@ -79,8 +79,20 @@ function initialize(userOptions: any) {
       },
       transformItems: (items: DocSearchHit[]) => {
         return items.map((item) => {
+          // The original base URL of this website is apparently a GitHub pages domain
+          // in which every page seems to start with the path `/knex`.
+          // This effectively breaks the algolia search box in the `knexjs.org` domain
+          // since all items in the search box link to pages with paths that start with
+          // `/knex`, which in this domain seem to not start with `/knex`, so using
+          // the search box effectively makes any result redirect to a 404 page.
+          // This fix attempts to remove the `/knex` prefix from all results of
+          // the search box.
+          const url = new URL(item.url);
+          if(url.pathname.startsWith('/knex'))
+            url.pathname = url.pathname.replace('/knex', '');
+
           return Object.assign({}, item, {
-            url: getRelativePath(item.url)
+            url: getRelativePath(url.href)
           })
         })
       },

@@ -11,8 +11,8 @@ export default defineConfig({
   ],
   themeConfig: {
     logo: '/knex-logo.png',
-    repo: 'knex/knex',  
-    docsRepo: 'knex/documentation',  
+    repo: 'knex/knex',
+    docsRepo: 'knex/documentation',
     docsDir: 'src',
     docsBranch: 'main',
     editLinks: true,
@@ -37,7 +37,7 @@ export default defineConfig({
       appId: 'V7E3EHUPD6',
       apiKey: '44b5077836c1c8fba0f364383dde7fb4',
       indexName: 'knex',
-      initialQuery: 'Installation',
+      initialQuery: '',
     }
   },
    vite: {
