@@ -132,6 +132,7 @@ const testConfigs = {
     pool,
     migrations,
     seeds,
+    jsonbSupport: true,
   },
 
   pgnative: {
