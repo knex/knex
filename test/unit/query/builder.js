@@ -10932,7 +10932,7 @@ describe('QueryBuilder', () => {
             .from('cities'),
           {
             pg: {
-              sql: 'select jsonb_path_query(jsonb_insert("population", ?, ?), ?) as "insertExtract" from "cities"',
+              sql: 'select jsonb_path_query_first(jsonb_insert("population", ?, ?), ?) as "insertExtract" from "cities"',
               bindings: ['{test}', '1234', '$.test'],
             },
             mysql: {
