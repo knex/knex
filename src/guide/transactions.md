@@ -177,7 +177,7 @@ const trx = await trxProvider();
 const ids = await trx('catalogues')
   .insert({name: 'Old Books'}, 'id')
 books.forEach((book) => book.catalogue_id = ids[0]);
-await  trx('books').insert(books);
+await trx('books').insert(books);
 
 // Reuses same transaction
 const sameTrx = await trxProvider();
