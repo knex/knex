@@ -482,6 +482,47 @@ describe('Schema (misc)', () => {
           });
         });
 
+        describe('uuid types - postgres', () => {
+          before(async () => {
+            await knex.schema.createTable('uuid_column', (table) => {
+              table.uuid('id', { primaryKey: true });
+            });
+          });
+
+          it('#5211 - creates an uuid column as primary key', function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
+
+            const table_name = 'uuid_columns_test';
+            const expected_column = 'id';
+
+            return knex
+              .raw(
+                'SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',
+                [table_name]
+              )
+              .then((res) => {
+                const column_oid = res.rows[0].oid;
+
+                return knex
+                  .raw(
+                    `select c.column_name
+                     from INFORMATION_SCHEMA.COLUMNS c
+                     join INFORMATION_SCHEMA.KEY_COLUMN_USAGE cu
+                     on (c.table_name = cu.table_name and c.column_name = cu.column_name)
+                     where c.table_name = ? and cu.constraint_name like '%_pkey`,
+                    table_name
+                  )
+                  .then((res) => {
+                    const column_name = res.rows[0].column_name;
+
+                    expect(column_name).to.equal(expected_column);
+                  });
+              });
+          });
+        });
+
         describe('increments types - mysql', () => {
           before(() =>
             Promise.all([
