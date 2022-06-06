@@ -13,7 +13,7 @@ $ npm install knex --save
 # Then add one of the following (adding a --save) flag:
 $ npm install pg
 $ npm install pg-native
-$ npm install @vscode/sqlite3 # required for sqlite
+$ npm install sqlite3
 $ npm install better-sqlite3
 $ npm install mysql
 $ npm install mysql2
