@@ -60,7 +60,7 @@
     "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {
-    "colorette": "2.0.16",
+    "colorette": "2.0.17",
     "commander": "^9.1.0",
     "debug": "4.3.4",
     "escalade": "^3.1.1",
