@@ -502,18 +502,13 @@ describe('Schema (misc)', () => {
             const expected_column = 'id';
             const expected_type = 'uuid';
 
-            const res = await knex.raw(
-              'SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',
-              [table_name]
-            );
-            const column_oid = res.rows[0].oid;
-
             const cols = await knex.raw(
               `select c.column_name, c.data_type
                      from INFORMATION_SCHEMA.COLUMNS c
                      join INFORMATION_SCHEMA.KEY_COLUMN_USAGE cu
                      on (c.table_name = cu.table_name and c.column_name = cu.column_name)
-                     where c.table_name = ? and cu.constraint_name like '%_pkey'`,
+                     where c.table_name = ?
+                     and (cu.constraint_name like '%_pkey' or cu.constraint_name = 'primary')`,
               table_name
             );
             const column_name = cols.rows[0].column_name;
