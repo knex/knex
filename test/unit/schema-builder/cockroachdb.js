@@ -2,10 +2,8 @@ const { expect } = require('chai');
 
 let tableSql;
 
-const sinon = require('sinon');
-const PG_Client = require('../../../lib/dialects/postgres');
+const PG_Client = require('../../../lib/dialects/cockroachdb');
 const client = new PG_Client({ client: 'pg' });
-const knex = require('../../../knex');
 
 const equal = require('chai').assert.equal;
 
