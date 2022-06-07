@@ -484,42 +484,43 @@ describe('Schema (misc)', () => {
 
         describe('uuid types - postgres', () => {
           before(async () => {
-            await knex.schema.createTable('uuid_column', (table) => {
+            await knex.schema.createTable('uuid_column_test', (table) => {
               table.uuid('id', { primaryKey: true });
             });
           });
 
-          it('#5211 - creates an uuid column as primary key', function () {
+          after(async () => {
+            await knex.schema.dropTable('uuid_column_test');
+          });
+
+          it('#5211 - creates an uuid column as primary key', async function () {
             if (!isPgBased(knex)) {
               return this.skip();
             }
 
-            const table_name = 'uuid_columns_test';
+            const table_name = 'uuid_column_test';
             const expected_column = 'id';
+            const expected_type = 'uuid';
 
-            return knex
-              .raw(
-                'SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',
-                [table_name]
-              )
-              .then((res) => {
-                const column_oid = res.rows[0].oid;
+            const res = await knex.raw(
+              'SELECT c.oid FROM pg_catalog.pg_class c WHERE c.relname = ?',
+              [table_name]
+            );
+            const column_oid = res.rows[0].oid;
 
-                return knex
-                  .raw(
-                    `select c.column_name
+            const cols = await knex.raw(
+              `select c.column_name, c.data_type
                      from INFORMATION_SCHEMA.COLUMNS c
                      join INFORMATION_SCHEMA.KEY_COLUMN_USAGE cu
                      on (c.table_name = cu.table_name and c.column_name = cu.column_name)
-                     where c.table_name = ? and cu.constraint_name like '%_pkey`,
-                    table_name
-                  )
-                  .then((res) => {
-                    const column_name = res.rows[0].column_name;
+                     where c.table_name = ? and cu.constraint_name like '%_pkey'`,
+              table_name
+            );
+            const column_name = cols.rows[0].column_name;
+            const column_type = cols.rows[0].data_type;
 
-                    expect(column_name).to.equal(expected_column);
-                  });
-              });
+            expect(column_name).to.equal(expected_column);
+            expect(column_type).to.equal(expected_type);
           });
         });
 
