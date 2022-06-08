@@ -590,9 +590,11 @@ Adds a jsonb column. Works similar to table.json(), but uses native jsonb type i
 
 ### uuid
 
-**table.uuid(name, options=({[useBinaryUuid:boolean]})**
+**table.uuid(name, options=({[useBinaryUuid:boolean],[primaryKey:boolean]})**
 
-Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling back to a char(36) in other databases by default. If useBinaryUuid is true, binary(16) is used. See uuidToBin function to convert uuid in binary before inserting and binToUuid to convert binary uuid to uuid.
+Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling back to a char(36) in other databases by default.
+If useBinaryUuid is true, binary(16) is used. See uuidToBin function to convert uuid in binary before inserting and binToUuid to convert binary uuid to uuid.
+If primaryKey is true, then for PostgreSQL the field will be configured as `uuid primary key`, for CockroackDB an additional `default gen_random_uuid()` is set on the type.
 
 ### geometry
 
