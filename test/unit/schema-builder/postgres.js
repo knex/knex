@@ -93,6 +93,41 @@ describe('PostgreSQL Config', function () {
         );
       });
     });
+
+    describe('check custom pg client', function () {
+      it('jsonb as text', function () {
+        knexInstance = knex({
+          ...config,
+          version: 'custom-pg',
+          jsonbSupport: false,
+        });
+        tableSql = knexInstance.schema
+          .table('public', function (t) {
+            t.jsonb('test_name');
+          })
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal(
+          'alter table "public" add column "test_name" text'
+        );
+      });
+      it('jsonb', function () {
+        knexInstance = knex({
+          ...config,
+          version: 'custom-pg',
+          jsonbSupport: true,
+        });
+        tableSql = knexInstance.schema
+          .table('public', function (t) {
+            t.jsonb('test_name');
+          })
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal(
+          'alter table "public" add column "test_name" jsonb'
+        );
+      });
+    });
   });
 });
 
@@ -445,7 +480,6 @@ describe('PostgreSQL SchemaBuilder', function () {
         'refresh materialized view "view_to_refresh"'
       );
     });
-
 
     it('refresh view concurrently', function () {
       tableSql = client
