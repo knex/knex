@@ -1120,8 +1120,8 @@ Specify a check on column that test if the value match the specified regular exp
 ```js
 knex.schema.createTable('product', function (table) {
   table.string('phone').checkRegex('[0-9]{8}');
-  // In MSSQL, {8} syntax don't work, y
-  // ou need to duplicate [0-9].
+  // In MSSQL, {8} syntax don't work,
+  // you need to duplicate [0-9].
   table.string('phone').checkRegex('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]');
 })
 ```
