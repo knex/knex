@@ -450,7 +450,7 @@ export declare namespace knex {
       ) =>
         | Knex.QueryBuilder<TRecord, TResult>
         | Promise<
-            | QueryBuilder<TRecord | TResult, any>
+            | Knex.QueryBuilder<TRecord | TResult>
             | DeferredKeySelection.Resolve<TResult>
           >
     ): void;
