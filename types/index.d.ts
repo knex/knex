@@ -385,39 +385,39 @@ export declare namespace knex {
   }
 
   class TableBuilder {
-    static extend (
+    static extend<T = Knex.TableBuilder, B = Knex.TableBuilder> (
       methodName: string,
       fn: (
-        this: Knex.TableBuilder,
+        this: T,
         ...args: any[]
-      ) => Knex.TableBuilder
+      ) => B
     ): void;
   }
   class ViewBuilder {
-    static extend (
+    static extend<T = Knex.ViewBuilder, B = Knex.ViewBuilder> (
       methodName: string,
       fn: (
-        this: Knex.ViewBuilder,
+        this: T,
         ...args: any[]
-      ) => Knex.ViewBuilder
+      ) => B
     ): void;
   }
   class SchemaBuilder {
-    static extend (
+    static extend<T = Knex.SchemaBuilder, B = Knex.SchemaBuilder> (
       methodName: string,
       fn: (
-        this: Knex.SchemaBuilder,
+        this: T,
         ...args: any[]
-      ) => Knex.SchemaBuilder
+      ) => B
     ): void;
   }
   class ColumnBuilder {
-    static extend (
+    static extend<T = Knex.ColumnBuilder, B = Knex.ColumnBuilder> (
       methodName: string,
       fn: (
-        this: Knex.ColumnBuilder,
+        this: T,
         ...args: any[]
-      ) => Knex.ColumnBuilder
+      ) => B
     ): void;
   }
 
