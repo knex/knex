@@ -2142,12 +2142,12 @@ export declare namespace Knex {
       values: (readonly Value[]) | null,
       options?: EnumOptions
     ): ColumnBuilder;
-    json (columnName: string): ColumnBuilder;
-    jsonb (columnName: string): ColumnBuilder;
-    uuid (columnName: string, options?: Readonly<{ useBinaryUuid?: boolean }>): ColumnBuilder;
-    comment (val: string): void;
-    specificType (columnName: string, type: string): ColumnBuilder;
-    primary (columnNames: readonly string[], options?: Readonly<{ constraintName?: string, deferrable?: deferrableType }>): TableBuilder;
+    json(columnName: string): ColumnBuilder;
+    jsonb(columnName: string): ColumnBuilder;
+    uuid(columnName: string, options?: Readonly<{useBinaryUuid?: boolean, primaryKey?: boolean}>): ColumnBuilder;
+    comment(val: string): void;
+    specificType(columnName: string, type: string): ColumnBuilder;
+    primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
     /** @deprecated */
     primary (columnNames: readonly string[], constraintName?: string): TableBuilder;
     index (
