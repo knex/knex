@@ -423,6 +423,27 @@ describe('Additional', function () {
           expect(expectedUuid).to.equal(originalUuid);
         });
 
+        it ('#5154 - should properly mark COLUMN_DEFAULT as null', async function () {
+          if (!isMysql(knex)) {
+            return this.skip();
+          }
+
+          await knex.schema.dropTableIfExists('null_col');
+          await knex.schema.createTable('null_col', function (table) {
+            table.date('foo').defaultTo(null).nullable();
+          })
+          const columnInfo = await knex('null_col').columnInfo();
+
+          expect(columnInfo).to.deep.equal({
+            foo: {
+              type: 'date',
+              maxLength: null,
+              nullable: true,
+              defaultValue: null,
+            },
+          });
+        });
+
         it('#2184 - should properly escape table name for SQLite columnInfo', async function () {
           if (!isSQLite(knex)) {
             return this.skip();

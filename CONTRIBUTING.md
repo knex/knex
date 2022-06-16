@@ -169,6 +169,16 @@ Once this is done, check it works by attempting to login:
 psql -h localhost -U postgres -d knex_test
 ```
 
+## Typescript source files
+
+> TL;DR: Starting with release 2.0.0 Knex is adding support for Typescript source files. Thus to develop in this repo you will need to run `npm run build` each time you edit `.ts` files to generate the resulting `.js` files. This is automatically run whenever you run `npm install` or checkout a new Git branch so when developing in Javascript you don't have to worry about it. It is encouraged that new functionality and sources be written in Typescript but this is not required.
+
+Starting with release 2.0.0, Knex is support source additions in Typescript! This allows for better safety in the code added. However, pre-2.0.0 Knex was always written in pure Javascript and thus a "hybrid" approach is being used for 2.0.0 to allow for the new `.ts` files to exist along `.js` files that make up the majority of this repository.
+
+To develop in this repository use the `npm run build` and `npm run clean` commands to compile and delete the `.js` and related files from `.ts` files. If you wish to have the `tsc` compiled watch and recompile on changes then run `npm run build:ts -- --watch`. Note that for easy integration with Javascript the outputted files are done in a "side-by-side" manner meaning that `lib/foo/bar.ts` will result in `lib/foo/bar.js`. This is done automatically via the npm script command `"prepare"` whenever you run `npm install` and Git hook for `post-checkout` (added by Husky) which executes when you run commands like `git checkout` , thus making it easier to not have to worry about this if you're working in pure Javascript.
+
+The script file `./scripts/update_gitignore_for_tsc_output.js` file is called as part of the `npm run build` command which will update the `lib/.gitignore` file which is used to ensure generated `.js` and related files from `tsc` compilation are not checked into the git repo.
+
 ## Want to be Collaborator?
 
 There is always room for more collaborators. Be active on resolving github issues / sending pull requests / reviewing code and we will ask you to join.

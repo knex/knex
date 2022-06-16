@@ -26,13 +26,15 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.1.1
+        uses: actions/setup-node@v3.2.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
 
       - name: Run npm install
         run: npm install
+
+      - run: npm run build
 
       - name: Run Tests
         run: npm run test:unit

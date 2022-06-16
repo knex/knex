@@ -511,9 +511,9 @@ describe('MSSQL SchemaBuilder', function () {
 
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ?'
+      'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = ? AND TABLE_SCHEMA = ?'
     );
-    expect(tableSql[0].bindings[0]).to.equal('schema.users');
+    expect(tableSql[0].bindings[0]).to.equal('users');
   });
 
   it('test rename table with schema', function () {

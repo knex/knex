@@ -137,6 +137,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('create table with uuid primary key in one go', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('uuid_primary', function (table) {
+        table.uuid('id', { primaryKey: true });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "uuid_primary" ("id" uuid primary key)'
+    );
+  });
+
   it('basic alter table', function () {
     tableSql = client
       .schemaBuilder()
@@ -443,6 +456,17 @@ describe('PostgreSQL SchemaBuilder', function () {
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'refresh materialized view "view_to_refresh"'
+      );
+    });
+
+    it('refresh view concurrently', function () {
+      tableSql = client
+        .schemaBuilder()
+        .refreshMaterializedView('view_to_refresh', true)
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'refresh materialized view concurrently "view_to_refresh"'
       );
     });
   });
