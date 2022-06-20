@@ -502,6 +502,7 @@ export declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
+    | object
     | Knex.Raw;
 
   interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
