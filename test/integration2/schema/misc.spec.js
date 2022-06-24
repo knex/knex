@@ -484,7 +484,9 @@ describe('Schema (misc)', () => {
 
         describe('uuid types - postgres', () => {
           after(async () => {
-            await knex.schema.dropTable('uuid_column_test');
+            if (isPgBased(knex)) {
+              await knex.schema.dropTable('uuid_column_test');
+            }
           });
 
           it('creates a uuid column as primary using fluid syntax', async function () {
