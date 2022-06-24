@@ -2072,7 +2072,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         'alter table "users" add constraint "testname" primary key ("test")'
       );
     });
-    it('call on table with columns and name', function (t) {
+    it('call on table with columns and name', function () {
       tableSql = client
         .schemaBuilder()
         .alterTable('users', function (t) {
@@ -2080,6 +2080,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         })
         .toSQL();
 
+      equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")'
       );
