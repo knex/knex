@@ -314,7 +314,7 @@ describe('Updates', function () {
             );
             tester(
               'sqlite3',
-              'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+              'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ? returning *',
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
               1
             );

@@ -31,7 +31,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('should allow returning for deletes in postgresql and mssql', function () {
+    it('should allow returning for deletes in postgresql, mssql and sqlite3', function () {
       return knex('accounts')
         .where('id', 2)
         .del('*')
@@ -62,7 +62,12 @@ module.exports = function (knex) {
             [2],
             1
           );
-          tester('sqlite3', 'delete from `accounts` where `id` = ?', [2], 1);
+          tester(
+            'sqlite3',
+            'delete from `accounts` where `id` = ? returning *',
+            [2],
+            1
+          );
           tester('oracledb', 'delete from "accounts" where "id" = ?', [2], 1);
           tester(
             'mssql',
