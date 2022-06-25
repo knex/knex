@@ -730,6 +730,120 @@ describe('Selects', function () {
         await knex.schema.dropTable('OrderByNullTest');
       });
 
+      it('order by with null desc on integer column', async () => {
+        await knex.schema
+          .dropTableIfExists('OrderByNullTest')
+          .createTable('OrderByNullTest', function (table) {
+            table.increments('id').primary();
+            table.integer('score').nullable().defaultTo(null);
+          });
+
+        await knex('OrderByNullTest').insert([
+          { score: 2 },
+          { score: 1 },
+          { score: null },
+          { score: null },
+          { score: 5 },
+        ]);
+
+        await knex('OrderByNullTest')
+          .pluck('score')
+          .orderBy('score', 'desc', 'first')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select `score` from `OrderByNullTest` order by (`score` is not null) desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'pg',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'pgnative',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'pg-redshift',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'sqlite3',
+              'select `score` from `OrderByNullTest` order by (`score` is not null) desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'oracledb',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'mssql',
+              'select [score] from [OrderByNullTest] order by IIF([score] is null,1,0) desc, [score] desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+          });
+
+        await knex('OrderByNullTest')
+          .pluck('score')
+          .orderBy('score', 'desc', 'last')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select `score` from `OrderByNullTest` order by (`score` is null) desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'pg',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'pgnative',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'pg-redshift',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'sqlite3',
+              'select `score` from `OrderByNullTest` order by (`score` is null) desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'oracledb',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'mssql',
+              'select [score] from [OrderByNullTest] order by IIF([score] is null,0,1) desc, [score] desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+          });
+        await knex.schema.dropTable('OrderByNullTest');
+      });
+
       it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', async function () {
         await knex.schema
           .dropTableIfExists('DatesTest')
