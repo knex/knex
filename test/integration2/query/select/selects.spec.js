@@ -776,7 +776,7 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
-              'select `score` from `OrderByNullTest` order by (`score` is not null) desc',
+              'select `score` from `OrderByNullTest` order by (`score` is not null) desc, `score` desc',
               [],
               [null, null, 5, 2, 1]
             );
@@ -824,7 +824,7 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
-              'select `score` from `OrderByNullTest` order by (`score` is null) desc',
+              'select `score` from `OrderByNullTest` order by (`score` is null) desc, `score` desc',
               [],
               [5, 2, 1, null, null]
             );
