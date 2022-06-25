@@ -258,12 +258,32 @@ describe('Additional', function () {
             return this.skip();
           }
 
-          const res = await knex('accounts_foo')
+          const insertRes = await knex('accounts_foo')
             .insert({ balance_foo: 123 })
             .returning('balance_foo');
-          expect(res).to.eql([
+          expect(insertRes).to.eql([
             {
               balance_foo: 123,
+            },
+          ]);
+
+          const updateRes = await knex('accounts_foo')
+            .where({ balance_foo: 123 })
+            .update({ balance_foo: 456 })
+            .returning('balance_foo');
+          expect(updateRes).to.eql([
+            {
+              balance_foo: 456,
+            },
+          ]);
+
+          const delRes = await knex('accounts_foo')
+            .where({ balance_foo: 456 })
+            .del()
+            .returning('balance_foo');
+          expect(delRes).to.eql([
+            {
+              balance_foo: 456,
             },
           ]);
         });
@@ -273,11 +293,28 @@ describe('Additional', function () {
             return this.skip();
           }
 
-          const res = await knex('accounts_foo')
+          const insertRes = await knex('accounts_foo')
             .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
             .returning(['balance_foo', 'email_foo']);
+          expect(insertRes).to.eql([
+            { balance_foo: 123, email_foo: 'foo@bar.com' },
+          ]);
 
-          expect(res).to.eql([{ balance_foo: 123, email_foo: 'foo@bar.com' }]);
+          const updateRes = await knex('accounts_foo')
+            .where({ balance_foo: 123, email_foo: 'foo@bar.com' })
+            .update({ balance_foo: 456, email_foo: 'bar@foo.com' })
+            .returning(['balance_foo', 'email_foo']);
+          expect(updateRes).to.eql([
+            { balance_foo: 456, email_foo: 'bar@foo.com' },
+          ]);
+
+          const delRes = await knex('accounts_foo')
+            .where({ balance_foo: 456, email_foo: 'bar@foo.com' })
+            .del()
+            .returning(['balance_foo', 'email_foo']);
+          expect(delRes).to.eql([
+            { balance_foo: 456, email_foo: 'bar@foo.com' },
+          ]);
         });
       });
 
@@ -423,7 +460,7 @@ describe('Additional', function () {
           expect(expectedUuid).to.equal(originalUuid);
         });
 
-        it ('#5154 - should properly mark COLUMN_DEFAULT as null', async function () {
+        it('#5154 - should properly mark COLUMN_DEFAULT as null', async function () {
           if (!isMysql(knex)) {
             return this.skip();
           }
@@ -431,7 +468,7 @@ describe('Additional', function () {
           await knex.schema.dropTableIfExists('null_col');
           await knex.schema.createTable('null_col', function (table) {
             table.date('foo').defaultTo(null).nullable();
-          })
+          });
           const columnInfo = await knex('null_col').columnInfo();
 
           expect(columnInfo).to.deep.equal({
