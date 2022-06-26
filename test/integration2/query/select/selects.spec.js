@@ -635,7 +635,7 @@ describe('Selects', function () {
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `null_col` asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null), `null_col` asc, `string_col` asc',
               [],
               [2, 4, 1, 3]
             );
@@ -659,7 +659,7 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `null_col` asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null), `null_col` asc, `string_col` asc',
               [],
               [2, 4, 1, 3]
             );
@@ -686,7 +686,7 @@ describe('Selects', function () {
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `null_col` asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null), `null_col` asc, `string_col` asc',
               [],
               [1, 3, 2, 4]
             );
@@ -710,7 +710,7 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `null_col` asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null), `null_col` asc, `string_col` asc',
               [],
               [1, 3, 2, 4]
             );
@@ -752,7 +752,7 @@ describe('Selects', function () {
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `score` from `OrderByNullTest` order by (`score` is not null) desc, `score` desc',
+              'select `score` from `OrderByNullTest` order by (`score` is not null), `score` desc',
               [],
               [null, null, 5, 2, 1]
             );
@@ -776,7 +776,7 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
-              'select `score` from `OrderByNullTest` order by (`score` is not null) desc, `score` desc',
+              'select `score` from `OrderByNullTest` order by (`score` is not null), `score` desc',
               [],
               [null, null, 5, 2, 1]
             );
@@ -800,7 +800,7 @@ describe('Selects', function () {
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `score` from `OrderByNullTest` order by (`score` is null) desc, `score` desc',
+              'select `score` from `OrderByNullTest` order by (`score` is null), `score` desc',
               [],
               [5, 2, 1, null, null]
             );
@@ -824,7 +824,7 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
-              'select `score` from `OrderByNullTest` order by (`score` is null) desc, `score` desc',
+              'select `score` from `OrderByNullTest` order by (`score` is null), `score` desc',
               [],
               [5, 2, 1, null, null]
             );
