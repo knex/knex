@@ -671,7 +671,7 @@ describe('Selects', function () {
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0) asc, [null_col] asc, [string_col] asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0), [null_col] asc, [string_col] asc',
               [],
               [2, 4, 1, 3]
             );
@@ -722,7 +722,7 @@ describe('Selects', function () {
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1) asc,[null_col] asc, [string_col] asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1),[null_col] asc, [string_col] asc',
               [],
               [1, 3, 2, 4]
             );
