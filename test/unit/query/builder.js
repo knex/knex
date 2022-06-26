@@ -6230,7 +6230,7 @@ describe('QueryBuilder', () => {
   it('order by, null first', () => {
     testsql(qb().from('users').orderBy('foo', 'desc', 'first'), {
       mysql: {
-        sql: 'select * from `users` order by (`foo` is not null) desc, `foo` desc',
+        sql: 'select * from `users` order by (`foo` is not null), `foo` desc',
       },
       mssql: {
         sql: 'select * from [users] order by IIF([foo] is null,0,1) desc, [foo] desc',
