@@ -122,11 +122,29 @@ describe('Additional', function () {
           expect(res.queryContext).to.equal('the context');
         });
 
-        it('should handle error correctly in a stream', (done) => {
+        it('should emit error events when a stream query fails', (done) => {
           const stream = knex('wrongtable').limit(1).stream();
           stream.on('error', () => {
             done();
           });
+        });
+
+        it('should close the connection when a stream query iteration errors', async function () {
+          const spy = sinon.spy(knex.client, 'releaseConnection');
+
+          const stream = knex.raw('VALUES (1), (2), (3)').stream();
+          try {
+            // eslint-disable-next-line no-unused-vars
+            for await (const _ of stream) {
+              throw new Error('boom');
+            }
+            // eslint-disable-next-line no-empty
+          } catch (e) {}
+
+          await new Promise((res) => setTimeout(res, 50));
+
+          expect(spy).to.have.been.called;
+          spy.restore();
         });
 
         it('should process response done through a stream', async () => {
@@ -423,7 +441,7 @@ describe('Additional', function () {
           expect(expectedUuid).to.equal(originalUuid);
         });
 
-        it ('#5154 - should properly mark COLUMN_DEFAULT as null', async function () {
+        it('#5154 - should properly mark COLUMN_DEFAULT as null', async function () {
           if (!isMysql(knex)) {
             return this.skip();
           }
@@ -431,7 +449,7 @@ describe('Additional', function () {
           await knex.schema.dropTableIfExists('null_col');
           await knex.schema.createTable('null_col', function (table) {
             table.date('foo').defaultTo(null).nullable();
-          })
+          });
           const columnInfo = await knex('null_col').columnInfo();
 
           expect(columnInfo).to.deep.equal({
