@@ -67,7 +67,7 @@
     "esm": "^3.2.25",
     "get-package-type": "^0.1.0",
     "getopts": "2.3.0",
-    "interpret": "^2.2.0",
+    "interpret": "^3.1.1",
     "lodash": "^4.17.21",
     "pg-connection-string": "2.5.0",
     "rechoir": "^0.8.0",
