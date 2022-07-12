@@ -6,10 +6,10 @@
 //                 Shrey Jain <https://github.com/shreyjain1994>
 // TypeScript Version: 4.1
 
-import tarn = require('tarn');
-import events = require('events');
-import stream = require('stream');
-import ResultTypes = require('./result');
+import * as tarn from 'tarn';
+import * as events from 'events';
+import * as stream from 'stream';
+import * as ResultTypes from './result';
 
 import { Tables } from './tables';
 
@@ -3020,7 +3020,7 @@ declare namespace Knex {
     nestTables?: boolean | string;
     passwordSha1?: string;
     rowsAsArray?: boolean;
-    stream?: boolean | ((opts: any) => Stream) | Stream;
+    stream?: boolean | ((opts: any) => stream.Stream) | stream.Stream;
     uri?: string;
   }
 
