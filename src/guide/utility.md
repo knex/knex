@@ -39,11 +39,11 @@ Return the current timestamp with a precision (optional)
 table.datetime('some_time', { precision: 6 }).defaultTo(knex.fn.now(6))
 ```
 
-## binToUuid
+## uuidToBin
 
-**knex.fn.binToUuid(binaryUuid)**
+**knex.fn.uuidToBin(uuid)**
 
-Convert a binary uuid (binary(16)) to a string uuid (char(36))
+Convert a string uuid (char(36)) to a binary uuid (binary(16))
 
 ```js
 knex.schema.createTable('uuid_table', (t) => {
@@ -54,13 +54,13 @@ knex('uuid_table').insert({
 });
 ```
 
-## uuidToBin
+## binToUuid
 
-**knex.fn.uuidToBin(uuid)**
+**knex.fn.binToUuid(binaryUuid)**
 
-Convert a uuid (char(16)) to a binary uuid (binary(36))
+Convert a binary uuid (binary(16)) to a string uuid (char(36))
 
-```ts
+```js
 const res = await knex('uuid_table').select('uuid_col_binary');
 knex.fn.binToUuid(res[0].uuid_col_binary)
 ```
