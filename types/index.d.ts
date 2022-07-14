@@ -6,15 +6,15 @@
 //                 Shrey Jain <https://github.com/shreyjain1994>
 // TypeScript Version: 4.1
 
-import type { Pool } from 'tarn';
 import type { EventEmitter } from 'events';
 import type { Duplex, PassThrough } from 'stream';
-import type { Registry } from './result';
+import type { Pool } from 'tarn';
+import type { ConnectionOptions } from 'tls';
 
+import type { Registry } from './result';
 import type { Tables } from './tables';
 
 import { Stream } from 'stream';
-import type { ConnectionOptions } from 'tls';
 
 // # Generic type-level utilities
 
