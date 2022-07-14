@@ -7,7 +7,7 @@
 // TypeScript Version: 4.1
 
 import type { EventEmitter } from 'events';
-import type { Duplex, PassThrough } from 'stream';
+import type { Duplex, PassThrough, Stream } from 'stream';
 import type { Pool } from 'tarn';
 import type { ConnectionOptions } from 'tls';
 
