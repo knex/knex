@@ -14,8 +14,6 @@ import type { ConnectionOptions } from 'tls';
 import type { Registry } from './result';
 import type { Tables } from './tables';
 
-import { Stream } from 'stream';
-
 // # Generic type-level utilities
 
 // If T is object then make it a partial otherwise fallback to any
