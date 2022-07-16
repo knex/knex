@@ -375,7 +375,7 @@ interface DMLOptions {
 }
 
 interface BuilderExtendOptions {
-  force?: boolean
+  force?: boolean;
 }
 
 export interface Knex<TRecord extends {} = any, TResult = any[]>
