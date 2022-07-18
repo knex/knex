@@ -1,5 +1,22 @@
 # Master (Unreleased)
 
+# 2.2.0 - 19 July, 2022
+
+### New features:
+
+- Inline primary key creation for postgres flavours #5233
+- SQLite: Add warning for undefined connection file #5223
+- MSSQL: Add JSON parameter support for connection #5200
+
+### Bug fixes:
+
+- PostgreSQL: add primaryKey option for uuid #5212
+
+### Typings:
+
+- Add promisable and better types #5222
+- Update raw query bind parameter type #5208
+
 # 2.1.0 - 26 May, 2022
 
 ### New features:
