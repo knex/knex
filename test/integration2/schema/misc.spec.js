@@ -482,6 +482,72 @@ describe('Schema (misc)', () => {
           });
         });
 
+        describe('uuid types - postgres', () => {
+          after(async () => {
+            if (isPgBased(knex)) {
+              await knex.schema.dropTable('uuid_column_test');
+            }
+          });
+
+          it('creates a uuid column as primary using fluid syntax', async function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
+            const table_name = 'uuid_column_test';
+            const expected_column = 'id';
+            const expected_type = 'uuid';
+
+            await knex.schema.dropTableIfExists(table_name);
+            await knex.schema.createTable(table_name, (table) => {
+              table.uuid('id').primary();
+            });
+
+            const cols = await knex.raw(
+              `select c.column_name, c.data_type
+                     from INFORMATION_SCHEMA.COLUMNS c
+                     join INFORMATION_SCHEMA.KEY_COLUMN_USAGE cu
+                     on (c.table_name = cu.table_name and c.column_name = cu.column_name)
+                     where c.table_name = ?
+                     and (cu.constraint_name like '%_pkey' or cu.constraint_name = 'primary')`,
+              table_name
+            );
+            const column_name = cols.rows[0].column_name;
+            const column_type = cols.rows[0].data_type;
+
+            expect(column_name).to.equal(expected_column);
+            expect(column_type).to.equal(expected_type);
+          });
+
+          it('#5211 - creates an uuid column as primary key', async function () {
+            if (!isPgBased(knex)) {
+              return this.skip();
+            }
+            const table_name = 'uuid_column_test';
+            const expected_column = 'id';
+            const expected_type = 'uuid';
+
+            await knex.schema.dropTableIfExists(table_name);
+            await knex.schema.createTable(table_name, (table) => {
+              table.uuid('id', { primaryKey: true });
+            });
+
+            const cols = await knex.raw(
+              `select c.column_name, c.data_type
+                     from INFORMATION_SCHEMA.COLUMNS c
+                     join INFORMATION_SCHEMA.KEY_COLUMN_USAGE cu
+                     on (c.table_name = cu.table_name and c.column_name = cu.column_name)
+                     where c.table_name = ?
+                     and (cu.constraint_name like '%_pkey' or cu.constraint_name = 'primary')`,
+              table_name
+            );
+            const column_name = cols.rows[0].column_name;
+            const column_type = cols.rows[0].data_type;
+
+            expect(column_name).to.equal(expected_column);
+            expect(column_type).to.equal(expected_type);
+          });
+        });
+
         describe('increments types - mysql', () => {
           before(() =>
             Promise.all([
@@ -825,8 +891,7 @@ describe('Schema (misc)', () => {
               tester(
                 ['pg', 'cockroachdb'],
                 [
-                  'create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', "metadata" json default \'{"a":10}\', "details" jsonb default \'{"b":{"d":20}}\')',
-                  'alter table "test_table_three" add constraint "test_table_three_pkey" primary key ("main")',
+                  'create table "test_table_three" ("main" integer not null, "paragraph" text default \'Lorem ipsum Qui quis qui in.\', "metadata" json default \'{"a":10}\', "details" jsonb default \'{"b":{"d":20}}\', constraint "test_table_three_pkey" primary key ("main"))',
                 ]
               );
               tester('pg-redshift', [
@@ -1597,7 +1662,7 @@ describe('Schema (misc)', () => {
       });
 
       describe('hasTable', () => {
-        it('checks whether a table exists', () =>
+        it('should be true if a table exists', () =>
           knex.schema.hasTable('test_table_two').then((resp) => {
             expect(resp).to.equal(true);
           }));
@@ -1663,7 +1728,7 @@ describe('Schema (misc)', () => {
 
           describe('sqlite and mysql only', () => {
             it('checks whether a column exists without being case sensitive, resolving with a boolean', async function () {
-              if (!isSQLite(knex)&& !isMysql(knex)) {
+              if (!isSQLite(knex) && !isMysql(knex)) {
                 return this.skip();
               }
 
@@ -2046,7 +2111,7 @@ describe('Schema (misc)', () => {
 
       describe('withSchema', () => {
         describe('mssql only', () => {
-          if (!knex || !knex.client || !/mssql/i.test(knex.client.dialect)) {
+          if (!isMssql(knex)) {
             return Promise.resolve(true);
           }
 
@@ -2085,15 +2150,23 @@ describe('Schema (misc)', () => {
           }
 
           const defaultSchemaName = 'public';
-          const testSchemaName = 'test';
+          const testSchemaName = 'test_schema';
 
           before(() => createSchema(testSchemaName));
 
+          afterEach(() =>
+            knex.schema.withSchema(testSchemaName).dropTableIfExists('test')
+          );
           after(() => knex.schema.raw('DROP SCHEMA ' + testSchemaName));
 
           it('should not find non-existent tables', () =>
             checkTable(testSchemaName, 'test', false).then(() =>
               checkTable(defaultSchemaName, 'test', false)
+            ));
+
+          it('should find existent tables', () =>
+            createTable(testSchemaName, 'test').then(() =>
+              checkTable(testSchemaName, 'test', true)
             ));
 
           it('should create and drop tables', () =>

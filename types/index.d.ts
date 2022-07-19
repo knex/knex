@@ -13,8 +13,8 @@ import ResultTypes = require('./result');
 
 import { Tables } from './tables';
 
-import { ConnectionOptions } from "tls";
-import { Stream } from "stream";
+import { ConnectionOptions } from 'tls';
+import { Stream } from 'stream';
 
 // # Generic type-level utilities
 
@@ -30,9 +30,10 @@ type StrKey<T> = string & keyof T;
 
 // If T is unknown then convert to any, else retain original
 type UnknownToAny<T> = unknown extends T ? any : T;
-type CurlyCurlyToAny<T> = T extends unknown ? // distribute
-  (<U>() => U extends T ? 0 : 1) extends
-  (<U>() => U extends {} ? 0 : 1) ? any : T
+type CurlyCurlyToAny<T> = T extends unknown // distribute
+  ? (<U>() => U extends T ? 0 : 1) extends <U>() => U extends {} ? 0 : 1
+    ? any
+    : T
   : never;
 type UnknownOrCurlyCurlyToAny<T> = [UnknownToAny<T> | CurlyCurlyToAny<T>][0];
 type AnyToUnknown<T> = unknown extends T ? unknown : T;
@@ -42,8 +43,8 @@ type AnyOrUnknownToOther<T1, T2> = unknown extends T1 ? T2 : T1;
 // This is primarily to keep the signatures more intuitive.
 type AugmentParams<TTarget, TParams> = TParams extends {}
   ? keyof TParams extends never
-  ? TTarget
-  : {} & TTarget & TParams
+    ? TTarget
+    : {} & TTarget & TParams
   : TTarget;
 
 // Check if provided keys (expressed as a single or union type) are members of TBase
@@ -52,9 +53,9 @@ type AreKeysOf<TBase, TKeys> = Boxed<TKeys> extends Boxed<keyof TBase>
   : false;
 
 // https://stackoverflow.com/a/50375286/476712
-type UnionToIntersection<U> = (U extends any
-  ? (k: U) => void
-  : never) extends ((k: infer I) => void)
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
   ? I
   : never;
 
@@ -89,8 +90,8 @@ type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
 // to facilitates type-safe aliasing for object syntax
 type MappedAliasType<TBase, TAliasMapping> = {} & {
   [K in keyof TAliasMapping]: TAliasMapping[K] extends keyof TBase
-  ? TBase[TAliasMapping[K]]
-  : any
+    ? TBase[TAliasMapping[K]]
+    : any;
 };
 
 // Container type for situations when we want a partial/intersection eventually
@@ -117,17 +118,17 @@ type DeferredKeySelection<
   TIntersectProps extends {} = {},
   // Extra props which will be unioned with the result
   TUnionProps = never
-  > = {
-    // These properties are not actually used, but exist simply because
-    // typescript doesn't end up happy when type parameters are unused
-    _base: TBase;
-    _hasSelection: THasSelect;
-    _keys: TKeys;
-    _aliases: TAliasMapping;
-    _single: TSingle;
-    _intersectProps: TIntersectProps;
-    _unionProps: TUnionProps;
-  };
+> = {
+  // These properties are not actually used, but exist simply because
+  // typescript doesn't end up happy when type parameters are unused
+  _base: TBase;
+  _hasSelection: THasSelect;
+  _keys: TKeys;
+  _aliases: TAliasMapping;
+  _single: TSingle;
+  _intersectProps: TIntersectProps;
+  _unionProps: TUnionProps;
+};
 
 // An companion namespace for DeferredKeySelection which provides type operators
 // to build up participants of intersection/partial over multiple invocations
@@ -149,7 +150,15 @@ declare namespace DeferredKeySelection {
     infer TIntersectProps,
     infer TUnionProps
   >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
+    ? DeferredKeySelection<
+        TBase,
+        TKeys,
+        THasSelect,
+        TAliasMapping,
+        TSingle,
+        TIntersectProps,
+        TUnionProps
+      >
     : DeferredKeySelection<TBase, never>;
 
   // If TSelection is already a deferred selection, then replace the base with TBase
@@ -158,47 +167,68 @@ declare namespace DeferredKeySelection {
   //
   // For practical reasons applicable to current context, we always return arrays of
   // deferred selections. So, this particular operator may not be useful in generic contexts.
-  type ReplaceBase<TSelection, TBase> = UnwrapArrayMember<
-    TSelection
-  > extends DeferredKeySelection.Any
-    ? ArrayIfAlready<TSelection, DeferredKeySelection.SetBase<UnwrapArrayMember<TSelection>, TBase>>
-    : unknown extends UnwrapArrayMember<TSelection>
-    ? ArrayIfAlready<TSelection, DeferredKeySelection.SetBase<unknown, TBase>>
-    : TSelection;
+  type ReplaceBase<TSelection, TBase> =
+    UnwrapArrayMember<TSelection> extends DeferredKeySelection.Any
+      ? ArrayIfAlready<
+          TSelection,
+          DeferredKeySelection.SetBase<UnwrapArrayMember<TSelection>, TBase>
+        >
+      : unknown extends UnwrapArrayMember<TSelection>
+      ? ArrayIfAlready<TSelection, DeferredKeySelection.SetBase<unknown, TBase>>
+      : TSelection;
 
   // Type operators to substitute individual type parameters:
 
   type SetSingle<
     TSelection,
     TSingle extends boolean
-    > = TSelection extends DeferredKeySelection<
-      infer TBase,
-      infer TKeys,
-      infer THasSelect,
-      infer TAliasMapping,
-      any,
-      infer TIntersectProps,
-      infer TUnionProps
-    >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
+  > = TSelection extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    infer THasSelect,
+    infer TAliasMapping,
+    any,
+    infer TIntersectProps,
+    infer TUnionProps
+  >
+    ? DeferredKeySelection<
+        TBase,
+        TKeys,
+        THasSelect,
+        TAliasMapping,
+        TSingle,
+        TIntersectProps,
+        TUnionProps
+      >
     : never;
 
   type AddKey<
     TSelection,
     TKey extends string
-    > = TSelection extends DeferredKeySelection<
-      infer TBase,
-      infer TKeys,
-      any,
-      infer TAliasMapping,
-      infer TSingle,
-      infer TIntersectProps,
-      infer TUnionProps
-    >
-    ? DeferredKeySelection<TBase, TKeys | TKey, true, TAliasMapping, TSingle, TIntersectProps, TUnionProps>
+  > = TSelection extends DeferredKeySelection<
+    infer TBase,
+    infer TKeys,
+    any,
+    infer TAliasMapping,
+    infer TSingle,
+    infer TIntersectProps,
+    infer TUnionProps
+  >
+    ? DeferredKeySelection<
+        TBase,
+        TKeys | TKey,
+        true,
+        TAliasMapping,
+        TSingle,
+        TIntersectProps,
+        TUnionProps
+      >
     : DeferredKeySelection<unknown, TKey, true>;
 
-  type AddAliases<TSelection, T extends {}> = TSelection extends DeferredKeySelection<
+  type AddAliases<
+    TSelection,
+    T extends {}
+  > = TSelection extends DeferredKeySelection<
     infer TBase,
     infer TKeys,
     infer THasSelect,
@@ -207,7 +237,15 @@ declare namespace DeferredKeySelection {
     infer TIntersectProps,
     infer TUnionProps
   >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping & T, TSingle, TIntersectProps, TUnionProps>
+    ? DeferredKeySelection<
+        TBase,
+        TKeys,
+        THasSelect,
+        TAliasMapping & T,
+        TSingle,
+        TIntersectProps,
+        TUnionProps
+      >
     : DeferredKeySelection<unknown, never, false, T>;
 
   type AddUnionMember<TSelection, T> = TSelection extends DeferredKeySelection<
@@ -219,15 +257,25 @@ declare namespace DeferredKeySelection {
     infer TIntersectProps,
     infer TUnionProps
   >
-    ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps, TUnionProps | T>
+    ? DeferredKeySelection<
+        TBase,
+        TKeys,
+        THasSelect,
+        TAliasMapping,
+        TSingle,
+        TIntersectProps,
+        TUnionProps | T
+      >
     : DeferredKeySelection<TSelection, never, false, {}, false, {}, T>;
 
   // Convenience utility to set base, keys and aliases in a single type
   // application
-  type Augment<T, TBase, TKey extends string, TAliasMapping extends {} = {}> = AddAliases<
-    AddKey<SetBase<T, TBase>, TKey>,
-    TAliasMapping
-  >;
+  type Augment<
+    T,
+    TBase,
+    TKey extends string,
+    TAliasMapping extends {} = {}
+  > = AddAliases<AddKey<SetBase<T, TBase>, TKey>, TAliasMapping>;
 
   // Core resolution logic -- Refer to docs for DeferredKeySelection for specifics
   type ResolveOne<TSelection> = TSelection extends DeferredKeySelection<
@@ -240,27 +288,30 @@ declare namespace DeferredKeySelection {
     infer TUnionProps
   >
     ? UnknownOrCurlyCurlyToAny<
-      // ^ We convert final result to any if it is unknown for backward compatibility.
-      //   Historically knex typings have been liberal with returning any and changing
-      //   default return type to unknown would be a major breaking change for users.
-      //
-      //   So we compromise on type safety here and return any.
-      AugmentParams<
-        AnyToUnknown<TBase> extends {}
-        // ^ Conversion of any -> unknown is needed here to prevent distribution
-        //   of any over the conditional
-        ? TSingle extends true
-        ? TKeys extends keyof TBase
-        ? TBase[TKeys]
-        : any
-        : AugmentParams<
-          true extends THasSelect ? PartialOrAny<TBase, TKeys> : TBase,
-          MappedAliasType<TBase, TAliasMapping>
-        >
-        : unknown,
-        TIntersectProps
-      > | TUnionProps
-    >
+        // ^ We convert final result to any if it is unknown for backward compatibility.
+        //   Historically knex typings have been liberal with returning any and changing
+        //   default return type to unknown would be a major breaking change for users.
+        //
+        //   So we compromise on type safety here and return any.
+        | AugmentParams<
+            AnyToUnknown<TBase> extends {}
+              ? // ^ Conversion of any -> unknown is needed here to prevent distribution
+                //   of any over the conditional
+                TSingle extends true
+                ? TKeys extends keyof TBase
+                  ? TBase[TKeys]
+                  : any
+                : AugmentParams<
+                    true extends THasSelect
+                      ? PartialOrAny<TBase, TKeys>
+                      : TBase,
+                    MappedAliasType<TBase, TAliasMapping>
+                  >
+              : unknown,
+            TIntersectProps
+          >
+        | TUnionProps
+      >
     : TSelection;
 
   type Resolve<TSelection> = TSelection extends DeferredKeySelection.Any
@@ -272,7 +323,10 @@ declare namespace DeferredKeySelection {
     : UnknownOrCurlyCurlyToAny<Knex.ResolveTableType<TSelection>>;
 }
 
-type AggregationQueryResult<TResult, TIntersectProps2 extends {}> = ArrayIfAlready<
+type AggregationQueryResult<
+  TResult,
+  TIntersectProps2 extends {}
+> = ArrayIfAlready<
   TResult,
   UnwrapArrayMember<TResult> extends DeferredKeySelection<
     infer TBase,
@@ -283,10 +337,18 @@ type AggregationQueryResult<TResult, TIntersectProps2 extends {}> = ArrayIfAlrea
     infer TIntersectProps,
     infer TUnionProps
   >
-  ? true extends THasSelect
-  ? DeferredKeySelection<TBase, TKeys, THasSelect, TAliasMapping, TSingle, TIntersectProps & TIntersectProps2, TUnionProps>
-  : DeferredKeySelection<{}, never, true, {}, false, TIntersectProps2>
-  : TIntersectProps2
+    ? true extends THasSelect
+      ? DeferredKeySelection<
+          TBase,
+          TKeys,
+          THasSelect,
+          TAliasMapping,
+          TSingle,
+          TIntersectProps & TIntersectProps2,
+          TUnionProps
+        >
+      : DeferredKeySelection<{}, never, true, {}, false, TIntersectProps2>
+    : TIntersectProps2
 >;
 
 // If we have more categories of deferred selection in future,
@@ -298,7 +360,7 @@ type ResolveResult<S> = DeferredKeySelection.Resolve<S>;
 type Callback = Function;
 type Client = Function;
 
-type Dict<T = any> = { [k: string]: T; };
+type Dict<T = any> = { [k: string]: T };
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
@@ -313,12 +375,19 @@ interface DMLOptions {
 }
 
 export interface Knex<TRecord extends {} = any, TResult = any[]>
-  extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
+  extends Knex.QueryInterface<TRecord, TResult>,
+    events.EventEmitter {
   <TTable extends Knex.TableNames>(
     tableName: TTable,
     options?: TableOptions
-  ): Knex.QueryBuilder<Knex.TableType<TTable>, DeferredKeySelection<Knex.ResolveTableType<Knex.TableType<TTable>>, never>[]>;
-  <TRecord2 extends {} = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
+  ): Knex.QueryBuilder<
+    Knex.TableType<TTable>,
+    DeferredKeySelection<Knex.ResolveTableType<Knex.TableType<TTable>>, never>[]
+  >;
+  <
+    TRecord2 extends {} = TRecord,
+    TResult2 = DeferredKeySelection<TRecord2, never>[]
+  >(
     tableName?: Knex.TableDescriptor | Knex.AliasDict,
     options?: TableOptions
   ): Knex.QueryBuilder<TRecord2, TResult2>;
@@ -330,9 +399,7 @@ export interface Knex<TRecord extends {} = any, TResult = any[]>
   transactionProvider(
     config?: Knex.TransactionConfig
   ): Knex.TransactionProvider;
-  transaction(
-    config?: Knex.TransactionConfig
-  ): Promise<Knex.Transaction>;
+  transaction(config?: Knex.TransactionConfig): Promise<Knex.Transaction>;
   transaction(
     transactionScope?: null,
     config?: Knex.TransactionConfig
@@ -350,14 +417,14 @@ export interface Knex<TRecord extends {} = any, TResult = any[]>
     data: TRecord2 extends Knex.CompositeTableType<unknown>
       ? ReadonlyArray<Knex.ResolveTableType<TRecord2, 'insert'>>
       : ReadonlyArray<Knex.DbRecordArr<TRecord2>>,
-    chunkSize?: number,
+    chunkSize?: number
   ): Knex.BatchInsertBuilder<TRecord2, TResult2>;
 
   schema: Knex.SchemaBuilder;
-  queryBuilder<TRecord2 extends {} = TRecord, TResult2 = TResult>(): Knex.QueryBuilder<
-    TRecord2,
-    TResult2
-  >;
+  queryBuilder<
+    TRecord2 extends {} = TRecord,
+    TResult2 = TResult
+  >(): Knex.QueryBuilder<TRecord2, TResult2>;
 
   client: any;
   migrate: Knex.Migrator;
@@ -380,7 +447,37 @@ export declare namespace knex {
       fn: <TRecord extends {} = any, TResult = unknown[]>(
         this: Knex.QueryBuilder<TRecord, TResult>,
         ...args: any[]
-      ) => Knex.QueryBuilder<TRecord, TResult>
+      ) =>
+        | Knex.QueryBuilder<TRecord, TResult>
+        | Promise<
+            | Knex.QueryBuilder<TRecord | TResult>
+            | DeferredKeySelection.Resolve<TResult>
+          >
+    ): void;
+  }
+
+  class TableBuilder {
+    static extend<T = Knex.TableBuilder, B = Knex.TableBuilder>(
+      methodName: string,
+      fn: (this: T, ...args: any[]) => B
+    ): void;
+  }
+  class ViewBuilder {
+    static extend<T = Knex.ViewBuilder, B = Knex.ViewBuilder>(
+      methodName: string,
+      fn: (this: T, ...args: any[]) => B
+    ): void;
+  }
+  class SchemaBuilder {
+    static extend<T = Knex.SchemaBuilder, B = Knex.SchemaBuilder>(
+      methodName: string,
+      fn: (this: T, ...args: any[]) => B
+    ): void;
+  }
+  class ColumnBuilder {
+    static extend<T = Knex.ColumnBuilder, B = Knex.ColumnBuilder>(
+      methodName: string,
+      fn: (this: T, ...args: any[]) => B
     ): void;
   }
 
@@ -405,6 +502,7 @@ export declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
+    | object
     | Knex.Raw;
 
   interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
@@ -423,15 +521,16 @@ export declare namespace Knex {
 
   type TableDescriptor = string | Knex.Raw | Knex.QueryBuilder;
 
-  type Lookup<TRegistry extends {}, TKey extends string, TDefault = never> =
-    TKey extends keyof TRegistry ?
-    TRegistry[TKey] :
-    TDefault;
+  type Lookup<
+    TRegistry extends {},
+    TKey extends string,
+    TDefault = never
+  > = TKey extends keyof TRegistry ? TRegistry[TKey] : TDefault;
 
   type MaybeRawColumn<TColumn> = TColumn | Raw<TColumn>;
 
   type MaybeRawRecord<TRecord> = {
-    [K in keyof TRecord]: MaybeRawColumn<TRecord[K]>
+    [K in keyof TRecord]: MaybeRawColumn<TRecord[K]>;
   };
 
   type DbColumn<TColumn> = Readonly<MaybeRawColumn<TColumn>>;
@@ -440,11 +539,16 @@ export declare namespace Knex {
 
   type DbRecordArr<TRecord> = Readonly<MaybeArray<DbRecord<TRecord>>>;
 
-  export type CompositeTableType<TBase, TInsert = TBase, TUpdate = Partial<TInsert>, TUpsert = Partial<TInsert>> = {
-    base: TBase,
-    insert: TInsert,
-    update: TUpdate,
-    upsert: TUpsert,
+  export type CompositeTableType<
+    TBase,
+    TInsert = TBase,
+    TUpdate = Partial<TInsert>,
+    TUpsert = Partial<TInsert>
+  > = {
+    base: TBase;
+    insert: TInsert;
+    update: TUpdate;
+    upsert: TUpsert;
   };
 
   type TableNames = keyof Tables;
@@ -453,20 +557,40 @@ export declare namespace Knex {
 
   type TableType<TTable extends keyof Tables> = Tables[TTable];
 
-  type ResolveTableType<TCompositeTableType, TScope extends TableInterfaceScope = 'base'> = TCompositeTableType extends CompositeTableType<unknown>
+  type ResolveTableType<
+    TCompositeTableType,
+    TScope extends TableInterfaceScope = 'base'
+  > = TCompositeTableType extends CompositeTableType<unknown>
     ? TCompositeTableType[TScope]
     : TCompositeTableType;
 
   interface OnConflictQueryBuilder<TRecord extends {}, TResult> {
     ignore(): QueryBuilder<TRecord, TResult>;
     merge(mergeColumns?: (keyof TRecord)[]): QueryBuilder<TRecord, TResult>;
-    merge(data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>): QueryBuilder<TRecord, TResult>;
+    merge(
+      data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   //
   // QueryInterface
   //
-  type ClearStatements = "with" | "select" | "columns" | "hintComments" | "where" | "union" | "using" | "join" | "group" | "order" | "having" | "limit" | "offset" | "counter" | "counters";
+  type ClearStatements =
+    | 'with'
+    | 'select'
+    | 'columns'
+    | 'hintComments'
+    | 'where'
+    | 'union'
+    | 'using'
+    | 'join'
+    | 'group'
+    | 'order'
+    | 'having'
+    | 'limit'
+    | 'offset'
+    | 'counter'
+    | 'counters';
 
   interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
@@ -618,8 +742,8 @@ export declare namespace Knex {
         any,
         any
       >
-      ? DeferredKeySelection<TBase, never>[]
-      : TResult
+        ? DeferredKeySelection<TBase, never>[]
+        : TResult
     >;
     clearWhere(): QueryBuilder<TRecord, TResult>;
     clearGroup(): QueryBuilder<TRecord, TResult>;
@@ -629,12 +753,26 @@ export declare namespace Knex {
     clear(statement: ClearStatements): QueryBuilder<TRecord, TResult>;
 
     // Paging
-    offset(offset: number, options?: boolean | Readonly<{skipBinding?: boolean}>): QueryBuilder<TRecord, TResult>;
-    limit(limit: number, options?: string | Readonly<{skipBinding?: boolean}>): QueryBuilder<TRecord, TResult>;
+    offset(
+      offset: number,
+      options?: boolean | Readonly<{ skipBinding?: boolean }>
+    ): QueryBuilder<TRecord, TResult>;
+    limit(
+      limit: number,
+      options?: string | Readonly<{ skipBinding?: boolean }>
+    ): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count: AsymmetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
-    countDistinct: AsymmetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    count: AsymmetricAggregation<
+      TRecord,
+      TResult,
+      Lookup<ResultTypes.Registry, 'Count', number | string>
+    >;
+    countDistinct: AsymmetricAggregation<
+      TRecord,
+      TResult,
+      Lookup<ResultTypes.Registry, 'Count', number | string>
+    >;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
     sum: TypePreservingAggregation<TRecord, TResult>;
@@ -666,7 +804,10 @@ export declare namespace Knex {
     rowNumber: AnalyticFunction<TRecord, TResult>;
 
     // Others
-    first: Select<TRecord, DeferredKeySelection.AddUnionMember<UnwrapArrayMember<TResult>, undefined>>;
+    first: Select<
+      TRecord,
+      DeferredKeySelection.AddUnionMember<UnwrapArrayMember<TResult>, undefined>
+    >;
 
     pluck<K extends keyof TRecord>(
       column: K
@@ -675,7 +816,9 @@ export declare namespace Knex {
 
     insert(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        ?
+            | ResolveTableType<TRecord, 'insert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: '*',
       options?: DMLOptions
@@ -689,7 +832,9 @@ export declare namespace Knex {
       >[]
     >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        ?
+            | ResolveTableType<TRecord, 'insert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: TKey,
       options?: DMLOptions
@@ -703,7 +848,9 @@ export declare namespace Knex {
       >[]
     >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        ?
+            | ResolveTableType<TRecord, 'insert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: readonly TKey[],
       options?: DMLOptions
@@ -717,7 +864,9 @@ export declare namespace Knex {
       >[]
     >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        ?
+            | ResolveTableType<TRecord, 'insert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: TKey,
       options?: DMLOptions
@@ -731,20 +880,26 @@ export declare namespace Knex {
       >[]
     >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        ?
+            | ResolveTableType<TRecord, 'insert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: readonly TKey[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     insert<TResult2 = number[]>(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'insert'> | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
+        ?
+            | ResolveTableType<TRecord, 'insert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'insert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>
     ): QueryBuilder<TRecord, TResult2>;
 
     upsert(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        ?
+            | ResolveTableType<TRecord, 'upsert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: '*',
       options?: DMLOptions
@@ -755,10 +910,12 @@ export declare namespace Knex {
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
-        >[]
-      >(
+      >[]
+    >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        ?
+            | ResolveTableType<TRecord, 'upsert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: TKey,
       options?: DMLOptions
@@ -769,10 +926,12 @@ export declare namespace Knex {
         UnwrapArrayMember<TResult>,
         ResolveTableType<TRecord>,
         TKey
-        >[]
-      >(
+      >[]
+    >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        ?
+            | ResolveTableType<TRecord, 'upsert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: readonly TKey[],
       options?: DMLOptions
@@ -783,10 +942,12 @@ export declare namespace Knex {
         UnwrapArrayMember<TResult>,
         TRecord,
         TKey
-        >[]
-      >(
+      >[]
+    >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        ?
+            | ResolveTableType<TRecord, 'upsert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: TKey,
       options?: DMLOptions
@@ -797,17 +958,21 @@ export declare namespace Knex {
         UnwrapArrayMember<TResult>,
         TRecord,
         TKey
-        >[]
-      >(
+      >[]
+    >(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        ?
+            | ResolveTableType<TRecord, 'upsert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>,
       returning: readonly TKey[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     upsert<TResult2 = number[]>(
       data: TRecord extends CompositeTableType<unknown>
-        ? ResolveTableType<TRecord, 'upsert'> | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
+        ?
+            | ResolveTableType<TRecord, 'upsert'>
+            | ReadonlyArray<ResolveTableType<TRecord, 'upsert'>>
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -866,7 +1031,9 @@ export declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'update'>
+        : DbRecordArr<TRecord>,
       returning: TKey,
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -878,7 +1045,9 @@ export declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'update'>
+        : DbRecordArr<TRecord>,
       returning: readonly TKey[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -890,7 +1059,9 @@ export declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'update'>
+        : DbRecordArr<TRecord>,
       returning: TKey | readonly TKey[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -902,17 +1073,27 @@ export declare namespace Knex {
         TKey
       >[]
     >(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>,
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'update'>
+        : DbRecordArr<TRecord>,
       returning: readonly TKey[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
     update<TResult2 = number>(
-      data: TRecord extends CompositeTableType<unknown> ? ResolveTableType<TRecord, 'update'> : DbRecordArr<TRecord>
+      data: TRecord extends CompositeTableType<unknown>
+        ? ResolveTableType<TRecord, 'update'>
+        : DbRecordArr<TRecord>
     ): QueryBuilder<TRecord, TResult2>;
 
-    update<TResult2 = number>(columnName: string, value: Value): QueryBuilder<TRecord, TResult2>;
+    update<TResult2 = number>(
+      columnName: string,
+      value: Value
+    ): QueryBuilder<TRecord, TResult2>;
 
-    returning(column: '*', options?: DMLOptions): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
+    returning(
+      column: '*',
+      options?: DMLOptions
+    ): QueryBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
       TResult2 = DeferredKeySelection.Augment<
@@ -927,7 +1108,11 @@ export declare namespace Knex {
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
       TResult2 = DeferredKeySelection.SetSingle<
-        DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, ResolveTableType<TRecord>, TKey>,
+        DeferredKeySelection.Augment<
+          UnwrapArrayMember<TResult>,
+          ResolveTableType<TRecord>,
+          TKey
+        >,
         false
       >[]
     >(
@@ -939,28 +1124,18 @@ export declare namespace Knex {
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
 
-    onConflict<
-      TKey extends StrKey<ResolveTableType<TRecord>>
-    >(
+    onConflict<TKey extends StrKey<ResolveTableType<TRecord>>>(
       column: TKey
     ): OnConflictQueryBuilder<TRecord, TResult>;
-    onConflict<
-      TKey extends StrKey<ResolveTableType<TRecord>>
-    >(
+    onConflict<TKey extends StrKey<ResolveTableType<TRecord>>>(
       columns: readonly TKey[]
     ): OnConflictQueryBuilder<TRecord, TResult>;
 
-    onConflict(
-      columns: string
-    ): OnConflictQueryBuilder<TRecord, TResult>;
+    onConflict(columns: string): OnConflictQueryBuilder<TRecord, TResult>;
 
-    onConflict(
-      columns: string[]
-    ): OnConflictQueryBuilder<TRecord, TResult>;
+    onConflict(columns: string[]): OnConflictQueryBuilder<TRecord, TResult>;
 
-    onConflict(
-      raw: Raw
-    ): OnConflictQueryBuilder<TRecord, TResult>;
+    onConflict(raw: Raw): OnConflictQueryBuilder<TRecord, TResult>;
 
     onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
 
@@ -1036,79 +1211,98 @@ export declare namespace Knex {
     (columnName: string): QueryBuilder<TRecord, TResult>;
   }
 
-  type IntersectAliases<AliasUT> =
-    UnionToIntersection<
-      IncompatibleToAlt<
-        AliasUT extends (infer I)[]
+  type IntersectAliases<AliasUT> = UnionToIntersection<
+    IncompatibleToAlt<
+      AliasUT extends (infer I)[]
         ? I extends Ref<any, infer TMapping>
-        ? TMapping
-        : I
+          ? TMapping
+          : I
         : never,
-        Dict,
-        {}
-      >
-    > & {}; // filters out `null` and `undefined`
+      Dict,
+      {}
+    >
+  > & {}; // filters out `null` and `undefined`
 
   interface AliasQueryBuilder<TRecord extends {} = any, TResult = unknown[]> {
     <
       AliasUT extends InferrableColumnDescriptor<ResolveTableType<TRecord>>[],
-      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
-        UnwrapArrayMember<TResult>,
-        ResolveTableType<TRecord>,
-        IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        IntersectAliases<AliasUT>
-      >>
-      >(
+      TResult2 = ArrayIfAlready<
+        TResult,
+        DeferredKeySelection.Augment<
+          UnwrapArrayMember<TResult>,
+          ResolveTableType<TRecord>,
+          IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
+          IntersectAliases<AliasUT>
+        >
+      >
+    >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
       AliasUT extends InferrableColumnDescriptor<ResolveTableType<TRecord>>[],
-      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
-        UnwrapArrayMember<TResult>,
-        ResolveTableType<TRecord>,
-        IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        IntersectAliases<AliasUT>
-      >>
-      >(
+      TResult2 = ArrayIfAlready<
+        TResult,
+        DeferredKeySelection.Augment<
+          UnwrapArrayMember<TResult>,
+          ResolveTableType<TRecord>,
+          IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
+          IntersectAliases<AliasUT>
+        >
+      >
+    >(
       aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
       AliasUT extends (Dict | string)[],
-      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
-        UnwrapArrayMember<TResult>,
-        ResolveTableType<TRecord>,
-        IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        IntersectAliases<AliasUT>
-      >>
-      >(
+      TResult2 = ArrayIfAlready<
+        TResult,
+        DeferredKeySelection.Augment<
+          UnwrapArrayMember<TResult>,
+          ResolveTableType<TRecord>,
+          IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
+          IntersectAliases<AliasUT>
+        >
+      >
+    >(
       ...aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
 
     <
       AliasUT extends (Dict | string)[],
-      TResult2 = ArrayIfAlready<TResult, DeferredKeySelection.Augment<
-        UnwrapArrayMember<TResult>,
-        TRecord,
-        IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
-        IntersectAliases<AliasUT>
-      >>
-      >(
+      TResult2 = ArrayIfAlready<
+        TResult,
+        DeferredKeySelection.Augment<
+          UnwrapArrayMember<TResult>,
+          TRecord,
+          IncompatibleToAlt<ArrayMember<AliasUT>, string, never>,
+          IntersectAliases<AliasUT>
+        >
+      >
+    >(
       aliases: AliasUT
     ): QueryBuilder<TRecord, TResult2>;
   }
 
   interface Select<TRecord extends {} = any, TResult = unknown[]>
     extends AliasQueryBuilder<TRecord, TResult>,
-    ColumnNameQueryBuilder<TRecord, TResult> {
+      ColumnNameQueryBuilder<TRecord, TResult> {
     (): QueryBuilder<TRecord, TResult>;
 
-    <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord extends {} = any, TInnerResult = any>(
+    <
+      TResult2 = ArrayIfAlready<TResult, any>,
+      TInnerRecord extends {} = any,
+      TInnerResult = any
+    >(
       ...subQueryBuilders: readonly QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
 
-    <TResult2 = ArrayIfAlready<TResult, any>, TInnerRecord extends {} = any, TInnerResult = any>(
+    <
+      TResult2 = ArrayIfAlready<TResult, any>,
+      TInnerRecord extends {} = any,
+      TInnerResult = any
+    >(
       subQueryBuilders: readonly QueryBuilder<TInnerRecord, TInnerResult>[]
     ): QueryBuilder<TRecord, TResult2>;
   }
@@ -1121,20 +1315,42 @@ export declare namespace Knex {
   }
 
   interface JsonExtract<TRecord extends {} = any, TResult = any> {
-    (column: string | Raw | QueryBuilder, path: string, alias?: string, singleValue?: boolean): QueryBuilder<TRecord, TResult>;
-    (column: JsonExtraction[] | any[][], singleValue?: boolean): QueryBuilder<TRecord, TResult>;
+    (
+      column: string | Raw | QueryBuilder,
+      path: string,
+      alias?: string,
+      singleValue?: boolean
+    ): QueryBuilder<TRecord, TResult>;
+    (column: JsonExtraction[] | any[][], singleValue?: boolean): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface JsonSet<TRecord extends {} = any, TResult = any> {
-    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+    (
+      column: string | Raw | QueryBuilder,
+      path: string,
+      value: any,
+      alias?: string
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface JsonInsert<TRecord extends {} = any, TResult = any> {
-    (column: string | Raw | QueryBuilder, path: string, value: any, alias?: string): QueryBuilder<TRecord, TResult>;
+    (
+      column: string | Raw | QueryBuilder,
+      path: string,
+      value: any,
+      alias?: string
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface JsonRemove<TRecord extends {} = any, TResult = any> {
-    (column: string | Raw | QueryBuilder, path: string, alias?: string): QueryBuilder<TRecord, TResult>;
+    (
+      column: string | Raw | QueryBuilder,
+      path: string,
+      alias?: string
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface HintComment<TRecord extends {} = any, TResult = any> {
@@ -1146,29 +1362,32 @@ export declare namespace Knex {
     <
       TTable extends TableNames,
       TRecord2 extends {} = TableType<TTable>,
-      TResult2 = DeferredKeySelection.ReplaceBase<TResult, ResolveTableType<TRecord2>>
-      >(
+      TResult2 = DeferredKeySelection.ReplaceBase<
+        TResult,
+        ResolveTableType<TRecord2>
+      >
+    >(
       tableName: TTable,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 extends {} = {},
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 extends {} = {},
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       callback: Function,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 extends {} = {},
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       raw: Raw,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1199,15 +1418,15 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TTable extends TableNames,
       TRecord2 extends {} = ResolveTableType<TRecord> &
-      ResolveTableType<TableType<TTable>>,
+        ResolveTableType<TableType<TTable>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TTable,
       clause: JoinCallback
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1215,7 +1434,7 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       clause: JoinCallback
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1223,7 +1442,7 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       columns: { [key: string]: string | number | boolean | Raw }
     ): QueryBuilder<TRecord2, TResult2>;
@@ -1231,19 +1450,20 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       raw: Raw
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TTable1 extends TableNames,
       TTable2 extends TableNames,
-      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> &
+        StrKey<TRecord1>,
       TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
       TRecord1 = ResolveTableType<TRecord>,
       TRecord2 extends {} = TRecord1 & ResolveTableType<TableType<TTable2>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TTable2,
       column1: `${TTable1}.${TKey1}`,
       column2: `${TTable2}.${TKey2}`
@@ -1251,12 +1471,13 @@ export declare namespace Knex {
     <
       TTable1 extends TableNames,
       TTable2 extends TableNames,
-      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> &
+        StrKey<TRecord1>,
       TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
       TRecord1 = ResolveTableType<TRecord>,
       TRecord2 extends {} = TRecord1 & ResolveTableType<TableType<TTable2>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TTable2,
       column1: `${TTable2}.${TKey2}`,
       column2: `${TTable1}.${TKey1}`
@@ -1265,7 +1486,7 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       column2: string
@@ -1274,7 +1495,7 @@ export declare namespace Knex {
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       raw: Raw
@@ -1282,12 +1503,13 @@ export declare namespace Knex {
     <
       TTable1 extends TableNames,
       TTable2 extends TableNames,
-      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> &
+        StrKey<TRecord1>,
       TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
       TRecord1 = ResolveTableType<TRecord>,
       TRecord2 extends {} = TRecord1 & ResolveTableType<TableType<TTable2>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TTable2,
       column1: `${TTable1}.${TKey1}`,
       operator: string,
@@ -1296,22 +1518,23 @@ export declare namespace Knex {
     <
       TTable1 extends TableNames,
       TTable2 extends TableNames,
-      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> & StrKey<TRecord1>,
+      TKey1 extends StrKey<ResolveTableType<TableType<TTable1>>> &
+        StrKey<TRecord1>,
       TKey2 extends StrKey<ResolveTableType<TableType<TTable2>>>,
       TRecord1 = ResolveTableType<TRecord>,
       TRecord2 extends {} = TRecord1 & ResolveTableType<TableType<TTable2>>,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TTable2,
       column1: `${TTable2}.${TKey2}`,
       operator: string,
-      column2: `${TTable1}.${TKey1}`,
+      column2: `${TTable1}.${TKey1}`
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TJoinTargetRecord extends {} = any,
       TRecord2 extends {} = TRecord & TJoinTargetRecord,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
-      >(
+    >(
       tableName: TableDescriptor | AliasDict | QueryCallback,
       column1: string,
       operator: string,
@@ -1368,8 +1591,18 @@ export declare namespace Knex {
     onNotBetween(column1: string, range: readonly [any, any]): JoinClause;
     andOnNotBetween(column1: string, range: readonly [any, any]): JoinClause;
     orOnNotBetween(column1: string, range: readonly [any, any]): JoinClause;
-    onJsonPathEquals(columnFirst: string, jsonPathFirst: string, columnSecond: string, jsonPathSecond: string): JoinClause;
-    orOnJsonPathEquals(columnFirst: string, jsonPathFirst: string, columnSecond: string, jsonPathSecond: string): JoinClause;
+    onJsonPathEquals(
+      columnFirst: string,
+      jsonPathFirst: string,
+      columnSecond: string,
+      jsonPathSecond: string
+    ): JoinClause;
+    orOnJsonPathEquals(
+      columnFirst: string,
+      jsonPathFirst: string,
+      columnSecond: string,
+      jsonPathSecond: string
+    ): JoinClause;
     using(
       column: string | readonly string[] | Raw | { [key: string]: string | Raw }
     ): JoinClause;
@@ -1389,19 +1622,26 @@ export declare namespace Knex {
 
   interface With<TRecord extends {} = any, TResult = unknown[]>
     extends WithRaw<TRecord, TResult>,
-    WithWrapped<TRecord, TResult> {}
+      WithWrapped<TRecord, TResult> {}
 
   interface WithRaw<TRecord extends {} = any, TResult = unknown[]> {
     (alias: string, raw: Raw | QueryBuilder): QueryBuilder<TRecord, TResult>;
-    (alias: string, sql: string, bindings?: readonly Value[] | Object): QueryBuilder<
-      TRecord,
-      TResult
-    >;
-    (alias: string, columnList: string[], raw: Raw | QueryBuilder): QueryBuilder<TRecord, TResult>;
-    (alias: string, columnList: string[], sql: string, bindings?: readonly Value[] | Object): QueryBuilder<
-      TRecord,
-      TResult
-    >;
+    (
+      alias: string,
+      sql: string,
+      bindings?: readonly Value[] | Object
+    ): QueryBuilder<TRecord, TResult>;
+    (
+      alias: string,
+      columnList: string[],
+      raw: Raw | QueryBuilder
+    ): QueryBuilder<TRecord, TResult>;
+    (
+      alias: string,
+      columnList: string[],
+      sql: string,
+      bindings?: readonly Value[] | Object
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface WithSchema<TRecord extends {} = any, TResult = unknown[]> {
@@ -1414,7 +1654,11 @@ export declare namespace Knex {
       alias: string,
       callback: (queryBuilder: QueryBuilder) => any
     ): QueryBuilder<TRecord, TResult>;
-    (alias: string, columnList: string[], queryBuilder: QueryBuilder): QueryBuilder<TRecord, TResult>;
+    (
+      alias: string,
+      columnList: string[],
+      queryBuilder: QueryBuilder
+    ): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
       columnList: string[],
@@ -1424,13 +1668,16 @@ export declare namespace Knex {
 
   interface Where<TRecord extends {} = any, TResult = unknown>
     extends WhereRaw<TRecord, TResult>,
-    WhereWrapped<TRecord, TResult>,
-    WhereNull<TRecord, TResult> {
+      WhereWrapped<TRecord, TResult>,
+      WhereNull<TRecord, TResult> {
     (raw: Raw): QueryBuilder<TRecord, TResult>;
 
     (callback: QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult>;
 
-    (object: DbRecord<ResolveTableType<TRecord>>): QueryBuilder<TRecord, TResult>;
+    (object: DbRecord<ResolveTableType<TRecord>>): QueryBuilder<
+      TRecord,
+      TResult
+    >;
 
     (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
 
@@ -1452,7 +1699,11 @@ export declare namespace Knex {
       TResult
     >;
 
-    <T extends keyof ResolveTableType<TRecord>, TRecordInner extends {}, TResultInner>(
+    <
+      T extends keyof ResolveTableType<TRecord>,
+      TRecordInner extends {},
+      TResultInner
+    >(
       columnName: T,
       operator: ComparisonOperator,
       value: QueryBuilder<TRecordInner, TResultInner>
@@ -1495,7 +1746,10 @@ export declare namespace Knex {
       columnName: K,
       range: readonly [DbColumn<TRecord[K]>, DbColumn<TRecord[K]>]
     ): QueryBuilder<TRecord, TResult>;
-    (columnName: string, range: readonly [Value, Value]): QueryBuilder<TRecord, TResult>;
+    (columnName: string, range: readonly [Value, Value]): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface WhereExists<TRecord extends {} = any, TResult = unknown[]> {
@@ -1510,7 +1764,12 @@ export declare namespace Knex {
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof TRecord, jsonPath: string, operator: string, value: any): QueryBuilder<TRecord, TResult>;
+    (
+      columnName: keyof TRecord,
+      jsonPath: string,
+      operator: string,
+      value: any
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereIn<TRecord extends {} = any, TResult = unknown[]> {
@@ -1518,18 +1777,20 @@ export declare namespace Knex {
       columnName: K,
       values: readonly DbColumn<ResolveTableType<TRecord>[K]>[] | QueryCallback
     ): QueryBuilder<TRecord, TResult>;
-    (columnName: string, values: readonly Value[] | QueryCallback): QueryBuilder<
-      TRecord,
-      TResult
-    >;
+    (
+      columnName: string,
+      values: readonly Value[] | QueryCallback
+    ): QueryBuilder<TRecord, TResult>;
     <K extends keyof ResolveTableType<TRecord>>(
       columnNames: readonly K[],
-      values: readonly (readonly DbColumn<ResolveTableType<TRecord>[K]>[])[] | QueryCallback
+      values:
+        | readonly (readonly DbColumn<ResolveTableType<TRecord>[K]>[])[]
+        | QueryCallback
     ): QueryBuilder<TRecord, TResult>;
-    (columnNames: readonly string[], values: readonly Value[][] | QueryCallback): QueryBuilder<
-      TRecord,
-      TResult
-    >;
+    (
+      columnNames: readonly string[],
+      values: readonly Value[][] | QueryCallback
+    ): QueryBuilder<TRecord, TResult>;
     <K extends keyof TRecord, TRecordInner extends {}, TResultInner>(
       columnName: K,
       values: QueryBuilder<TRecordInner, TRecord[K]>
@@ -1552,11 +1813,18 @@ export declare namespace Knex {
   // by extracting out a common base interface will not work because order of overloads
   // is significant.
 
-  interface AsymmetricAggregation<TRecord extends {} = any, TResult = unknown[], TValue = any> {
+  interface AsymmetricAggregation<
+    TRecord extends {} = any,
+    TResult = unknown[],
+    TValue = any
+  > {
     <
-      TOptions extends { "as": string },
-      TResult2 = AggregationQueryResult<TResult, {[k in TOptions["as"]]: TValue}>
-      >(
+      TOptions extends { as: string },
+      TResult2 = AggregationQueryResult<
+        TResult,
+        { [k in TOptions['as']]: TValue }
+      >
+    >(
       columnName: Readonly<keyof ResolveTableType<TRecord>>,
       options: Readonly<TOptions>
     ): QueryBuilder<TRecord, TResult2>;
@@ -1565,88 +1833,133 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
     <
       TAliases extends {} = Record<string, string | string[] | Knex.Raw>,
-      TResult2 = AggregationQueryResult<TResult, {[k in keyof TAliases]?: TValue}>
-      >(aliases: TAliases): QueryBuilder<TRecord, TResult2>;
+      TResult2 = AggregationQueryResult<
+        TResult,
+        { [k in keyof TAliases]?: TValue }
+      >
+    >(
+      aliases: TAliases
+    ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
-      ...columnNames: ReadonlyArray<Readonly<Record<string, string | string[] | Knex.Raw>> | Knex.Raw | string>
+      ...columnNames: ReadonlyArray<
+        | Readonly<Record<string, string | string[] | Knex.Raw>>
+        | Knex.Raw
+        | string
+      >
     ): QueryBuilder<TRecord, TResult2>;
   }
 
-  interface TypePreservingAggregation<TRecord extends {} = any, TResult = unknown[], TValue = any> {
+  interface TypePreservingAggregation<
+    TRecord extends {} = any,
+    TResult = unknown[],
+    TValue = any
+  > {
     <
       TKey extends keyof ResolveTableType<TRecord>,
-      TOptions extends { "as": string },
-      TResult2 = AggregationQueryResult<TResult, {
-        [k in TOptions["as"]]: ResolveTableType<TRecord>[TKey]
-      }>
-      >(
+      TOptions extends { as: string },
+      TResult2 = AggregationQueryResult<
+        TResult,
+        {
+          [k in TOptions['as']]: ResolveTableType<TRecord>[TKey];
+        }
+      >
+    >(
       columnName: Readonly<TKey>,
       options: Readonly<TOptions>
     ): QueryBuilder<TRecord, TResult2>;
     <
       TKey extends keyof ResolveTableType<TRecord>,
-      TResult2 = AggregationQueryResult<TResult, Dict<ResolveTableType<TRecord>[TKey]>>
-      >(
+      TResult2 = AggregationQueryResult<
+        TResult,
+        Dict<ResolveTableType<TRecord>[TKey]>
+      >
+    >(
       ...columnNames: readonly TKey[]
     ): QueryBuilder<TRecord, TResult2>;
     <
-      TAliases extends {} = Readonly<Record<string, string | string[] | Knex.Raw>>,
-      TResult2 = AggregationQueryResult<TResult, {
-        // We have optional here because in most dialects aggregating by multiple keys simultaneously
-        // causes rest of the keys to be dropped and only first to be considered
-        [K in keyof TAliases]?: K extends keyof TRecord ?
-        TRecord[K] :
-        TValue
-      }>
-      >(aliases: TAliases): QueryBuilder<TRecord, TResult2>;
+      TAliases extends {} = Readonly<
+        Record<string, string | string[] | Knex.Raw>
+      >,
+      TResult2 = AggregationQueryResult<
+        TResult,
+        {
+          // We have optional here because in most dialects aggregating by multiple keys simultaneously
+          // causes rest of the keys to be dropped and only first to be considered
+          [K in keyof TAliases]?: K extends keyof TRecord ? TRecord[K] : TValue;
+        }
+      >
+    >(
+      aliases: TAliases
+    ): QueryBuilder<TRecord, TResult2>;
     <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
-      ...columnNames: ReadonlyArray<Readonly<Record<string, string | readonly string[] | Knex.Raw>> | Knex.Raw | string>
+      ...columnNames: ReadonlyArray<
+        | Readonly<Record<string, string | readonly string[] | Knex.Raw>>
+        | Knex.Raw
+        | string
+      >
     ): QueryBuilder<TRecord, TResult2>;
   }
 
   interface AnalyticFunction<TRecord extends {} = any, TResult = unknown[]> {
     <
       TAlias extends string,
-      TResult2 = AggregationQueryResult<TResult, {[x in TAlias]: number}>
-      >(alias: TAlias, raw: Raw | QueryCallback<TRecord, TResult>): QueryBuilder<TRecord, TResult2>;
+      TResult2 = AggregationQueryResult<TResult, { [x in TAlias]: number }>
+    >(
+      alias: TAlias,
+      raw: Raw | QueryCallback<TRecord, TResult>
+    ): QueryBuilder<TRecord, TResult2>;
     <
       TAlias extends string,
       TKey extends keyof ResolveTableType<TRecord>,
-      TResult2 = AggregationQueryResult<TResult, {[x in TAlias]: number}>
-      >(alias: TAlias,
-        orderBy: TKey | TKey[] | { columnName: TKey, order?: 'asc' | 'desc', nulls?: 'first' | 'last' },
-        partitionBy?: TKey | TKey[] | { columnName: TKey, order?: 'asc' | 'desc' }):
-      QueryBuilder<
-        TRecord,
-        TResult2
-      >;
+      TResult2 = AggregationQueryResult<TResult, { [x in TAlias]: number }>
+    >(
+      alias: TAlias,
+      orderBy:
+        | TKey
+        | TKey[]
+        | {
+            columnName: TKey;
+            order?: 'asc' | 'desc';
+            nulls?: 'first' | 'last';
+          },
+      partitionBy?: TKey | TKey[] | { columnName: TKey; order?: 'asc' | 'desc' }
+    ): QueryBuilder<TRecord, TResult2>;
   }
 
   interface GroupBy<TRecord extends {} = any, TResult = unknown[]>
     extends RawQueryBuilder<TRecord, TResult>,
-    ColumnNameQueryBuilder<TRecord, TResult> {}
+      ColumnNameQueryBuilder<TRecord, TResult> {}
 
   interface OrderBy<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof TRecord | QueryBuilder, order?: 'asc' | 'desc', nulls?: 'first' | 'last'): QueryBuilder<
-      TRecord,
-      TResult
-    >;
-    (columnName: string | QueryBuilder, order?: string, nulls?: string): QueryBuilder<TRecord, TResult>;
+    (
+      columnName: keyof TRecord | QueryBuilder,
+      order?: 'asc' | 'desc',
+      nulls?: 'first' | 'last'
+    ): QueryBuilder<TRecord, TResult>;
+    (
+      columnName: string | QueryBuilder,
+      order?: string,
+      nulls?: string
+    ): QueryBuilder<TRecord, TResult>;
     (
       columnDefs: Array<
-        keyof TRecord | Readonly<{
-          column: keyof TRecord | QueryBuilder;
-          order?: 'asc' | 'desc',
-          nulls?: 'first' | 'last'
-        }>
+        | keyof TRecord
+        | Readonly<{
+            column: keyof TRecord | QueryBuilder;
+            order?: 'asc' | 'desc';
+            nulls?: 'first' | 'last';
+          }>
       >
     ): QueryBuilder<TRecord, TResult>;
     (
-      columnDefs: Array<string | Readonly<{
-        column: string | QueryBuilder;
-        order?: string;
-        nulls?: string;
-      }>>
+      columnDefs: Array<
+        | string
+        | Readonly<{
+            column: string | QueryBuilder;
+            order?: string;
+            nulls?: string;
+          }>
+      >
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -1680,10 +1993,7 @@ export declare namespace Knex {
       value: Value | QueryBuilder | null
     ): QueryBuilder<TRecord, TResult>;
 
-    (raw: Raw): QueryBuilder<
-      TRecord,
-      TResult
-    >;
+    (raw: Raw): QueryBuilder<TRecord, TResult>;
   }
 
   interface HavingRange<TRecord extends {} = any, TResult = unknown[]> {
@@ -1691,12 +2001,18 @@ export declare namespace Knex {
       columnName: K,
       values: readonly DbColumn<TRecord[K]>[]
     ): QueryBuilder<TRecord, TResult>;
-    (columnName: string, values: readonly Value[]): QueryBuilder<TRecord, TResult>;
+    (columnName: string, values: readonly Value[]): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   // commons
 
-  interface ColumnNameQueryBuilder<TRecord extends {} = any, TResult = unknown[]> {
+  interface ColumnNameQueryBuilder<
+    TRecord extends {} = any,
+    TResult = unknown[]
+  > {
     // When all columns are known to be keys of original record,
     // we can extend our selection by these columns
     (columnName: '*'): QueryBuilder<
@@ -1711,7 +2027,7 @@ export declare namespace Knex {
         ResolveTableType<TRecord>,
         ColNameUT & string
       >[]
-      >(
+    >(
       ...columnNames: readonly ColNameUT[]
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -1722,7 +2038,7 @@ export declare namespace Knex {
         ResolveTableType<TRecord>,
         ColNameUT & string
       >[]
-      >(
+    >(
       columnNames: readonly ColNameUT[]
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -1734,7 +2050,7 @@ export declare namespace Knex {
         SafePartial<TRecord>,
         keyof TRecord & string
       >[]
-      >(
+    >(
       ...columnNames: readonly ColumnDescriptor<TRecord, TResult>[]
     ): QueryBuilder<TRecord, TResult2>;
 
@@ -1744,7 +2060,7 @@ export declare namespace Knex {
         SafePartial<TRecord>,
         keyof TRecord & string
       >[]
-      >(
+    >(
       columnNames: readonly ColumnDescriptor<TRecord, TResult>[]
     ): QueryBuilder<TRecord, TResult2>;
   }
@@ -1756,18 +2072,15 @@ export declare namespace Knex {
       sql: string,
       bindings?: readonly RawBinding[] | ValueDict | RawBinding
     ): QueryBuilder<TRecord, TResult2>;
-    <TResult2 = TResult>(raw: Raw<TResult2>): QueryBuilder<
-      TRecord,
-      TResult2
-    >;
+    <TResult2 = TResult>(raw: Raw<TResult2>): QueryBuilder<TRecord, TResult2>;
   }
 
   // Raw
 
   interface Raw<TResult = any>
     extends events.EventEmitter,
-    ChainableInterface<ResolveResult<TResult>> {
-    timeout(ms: number, options?: {cancel?: boolean}): Raw<TResult>;
+      ChainableInterface<ResolveResult<TResult>> {
+    timeout(ms: number, options?: { cancel?: boolean }): Raw<TResult>;
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
@@ -1776,8 +2089,14 @@ export declare namespace Knex {
 
   interface RawBuilder<TRecord extends {} = any, TResult = any> {
     <TResult2 = TResult>(value: Value): Raw<TResult2>;
-    <TResult2 = TResult>(sql: string, ...bindings: readonly RawBinding[]): Raw<TResult2>;
-    <TResult2 = TResult>(sql: string, bindings: readonly RawBinding[] | ValueDict): Raw<TResult2>;
+    <TResult2 = TResult>(
+      sql: string,
+      ...bindings: readonly RawBinding[]
+    ): Raw<TResult2>;
+    <TResult2 = TResult>(
+      sql: string,
+      bindings: readonly RawBinding[] | ValueDict
+    ): Raw<TResult2>;
   }
 
   const RefMemberTag: unique symbol;
@@ -1795,21 +2114,26 @@ export declare namespace Knex {
     // Because unique symbol is used here, there is no way to actually
     // access this at runtime
     [RefMemberTag]: {
-      src: TSrc,
-      mapping: TMapping
+      src: TSrc;
+      mapping: TMapping;
     };
     withSchema(schema: string): this;
-    as<TAlias extends string>(alias: TAlias): Ref<TSrc, {[K in TAlias]: TSrc}>;
+    as<TAlias extends string>(
+      alias: TAlias
+    ): Ref<TSrc, { [K in TAlias]: TSrc }>;
   }
 
   interface RefBuilder {
-    <TSrc extends string>(src: TSrc): Ref<TSrc, {[K in TSrc]: TSrc}>;
+    <TSrc extends string>(src: TSrc): Ref<TSrc, { [K in TSrc]: TSrc }>;
   }
 
-  interface BatchInsertBuilder<TRecord extends {} = any, TResult = number[]> extends Promise<ResolveResult<TResult>> {
+  interface BatchInsertBuilder<TRecord extends {} = any, TResult = number[]>
+    extends Promise<ResolveResult<TResult>> {
     transacting(trx: Transaction): this;
     // see returning methods from QueryInterface
-    returning(column: '*'): BatchInsertBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
+    returning(
+      column: '*'
+    ): BatchInsertBuilder<TRecord, DeferredKeySelection<TRecord, never>[]>;
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
       TResult2 = DeferredKeySelection.Augment<
@@ -1823,7 +2147,11 @@ export declare namespace Knex {
     returning<
       TKey extends StrKey<ResolveTableType<TRecord>>,
       TResult2 = DeferredKeySelection.SetSingle<
-        DeferredKeySelection.Augment<UnwrapArrayMember<TResult>, ResolveTableType<TRecord>, TKey>,
+        DeferredKeySelection.Augment<
+          UnwrapArrayMember<TResult>,
+          ResolveTableType<TRecord>,
+          TKey
+        >,
         false
       >[]
     >(
@@ -1831,7 +2159,9 @@ export declare namespace Knex {
     ): BatchInsertBuilder<TRecord, TResult2>;
     // if data with specific type passed, exclude this method
     returning<TResult2 = SafePartial<TRecord>[]>(
-      column: unknown extends TRecord ? string | readonly (string | Raw)[] | Raw: never
+      column: unknown extends TRecord
+        ? string | readonly (string | Raw)[] | Raw
+        : never
     ): BatchInsertBuilder<TRecord, TResult2>;
   }
 
@@ -1850,20 +2180,21 @@ export declare namespace Knex {
     ...args: any[]
   ) => void;
 
-  interface QueryBuilder<
-    TRecord extends {} = any,
-    TResult = any
-    >
+  interface QueryBuilder<TRecord extends {} = any, TResult = any>
     extends QueryInterface<TRecord, TResult>,
-    ChainableInterface<ResolveResult<TResult>> {
+      ChainableInterface<ResolveResult<TResult>> {
     client: Client;
     or: QueryBuilder<TRecord, TResult>;
     not: QueryBuilder<TRecord, TResult>;
     and: QueryBuilder<TRecord, TResult>;
 
     // TODO: Promise?
-    columnInfo(column: keyof DeferredKeySelection.Resolve<TRecord>): Promise<ColumnInfo>;
-    columnInfo(): Promise<Record<keyof DeferredKeySelection.Resolve<TRecord>, ColumnInfo>>;
+    columnInfo(
+      column: keyof DeferredKeySelection.Resolve<TRecord>
+    ): Promise<ColumnInfo>;
+    columnInfo(): Promise<
+      Record<keyof DeferredKeySelection.Resolve<TRecord>, ColumnInfo>
+    >;
 
     forUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forUpdate(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
@@ -1872,7 +2203,9 @@ export declare namespace Knex {
     forShare(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
 
     forNoKeyUpdate(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
-    forNoKeyUpdate(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
+    forNoKeyUpdate(
+      tableNames: readonly string[]
+    ): QueryBuilder<TRecord, TResult>;
 
     forKeyShare(...tableNames: string[]): QueryBuilder<TRecord, TResult>;
     forKeyShare(tableNames: readonly string[]): QueryBuilder<TRecord, TResult>;
@@ -1888,7 +2221,10 @@ export declare namespace Knex {
     queryContext(): any;
 
     clone(): QueryBuilder<TRecord, TResult>;
-    timeout(ms: number, options?: {cancel?: boolean}): QueryBuilder<TRecord, TResult>;
+    timeout(
+      ms: number,
+      options?: { cancel?: boolean }
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface Sql {
@@ -1908,16 +2244,20 @@ export declare namespace Knex {
   // Chainable interface
   //
 
-  type ExposedPromiseKeys =
-    | "then"
-    | "catch"
-    | "finally";
+  type ExposedPromiseKeys = 'then' | 'catch' | 'finally';
 
   interface StringTagSupport {
     readonly [Symbol.toStringTag]: string;
   }
-  interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys>, StringTagSupport {
-    generateDdlCommands(): Promise<{ pre: string[], sql: string[], check: string | null, post: string[] }>;
+  interface ChainableInterface<T = any>
+    extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys>,
+      StringTagSupport {
+    generateDdlCommands(): Promise<{
+      pre: string[];
+      sql: string[];
+      check: string | null;
+      post: string[];
+    }>;
     toQuery(): string;
     options(options: Readonly<{ [key: string]: any }>): this;
     connection(connection: any): this;
@@ -1928,7 +2268,9 @@ export declare namespace Knex {
       options: Readonly<{ [key: string]: any }>,
       handler: (readable: stream.PassThrough) => any
     ): Promise<any>;
-    stream(options?: Readonly<{ [key: string]: any }>): stream.PassThrough & AsyncIterable<ArrayMember<T>>;
+    stream(
+      options?: Readonly<{ [key: string]: any }>
+    ): stream.PassThrough & AsyncIterable<ArrayMember<T>>;
     pipe<T extends NodeJS.WritableStream>(
       writable: T,
       options?: Readonly<{ [key: string]: any }>
@@ -1937,7 +2279,12 @@ export declare namespace Knex {
   }
 
   // Not all of these are possible for all drivers, notably, sqlite doesn't support any of these
-  type IsolationLevels = 'read uncommitted' | 'read committed' | 'snapshot' | 'repeatable read' | 'serializable';
+  type IsolationLevels =
+    | 'read uncommitted'
+    | 'read committed'
+    | 'snapshot'
+    | 'repeatable read'
+    | 'serializable';
   interface TransactionConfig {
     isolationLevel?: IsolationLevels;
     userParams?: Record<string, any>;
@@ -1956,9 +2303,7 @@ export declare namespace Knex {
       status: any,
       value: any
     ): QueryBuilder<TRecord, TResult>;
-    savepoint<T = any>(
-      transactionScope: (trx: Transaction) => any
-    ): Promise<T>;
+    savepoint<T = any>(transactionScope: (trx: Transaction) => any): Promise<T>;
     commit(value?: any): QueryBuilder<TRecord, TResult>;
     rollback(error?: any): QueryBuilder<TRecord, TResult>;
   }
@@ -1983,7 +2328,10 @@ export declare namespace Knex {
       viewName: string,
       callback: (viewBuilder: ViewBuilder) => any
     ): SchemaBuilder;
-    refreshMaterializedView(viewName: string, concurrently?: boolean): SchemaBuilder;
+    refreshMaterializedView(
+      viewName: string,
+      concurrently?: boolean
+    ): SchemaBuilder;
     dropView(viewName: string): SchemaBuilder;
     dropViewIfExists(viewName: string): SchemaBuilder;
     dropMaterializedView(viewName: string): SchemaBuilder;
@@ -2077,19 +2425,36 @@ export declare namespace Knex {
     ): ColumnBuilder;
     boolean(columnName: string): ColumnBuilder;
     date(columnName: string): ColumnBuilder;
-    dateTime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
-    datetime(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
+    dateTime(
+      columnName: string,
+      options?: Readonly<{ useTz?: boolean; precision?: number }>
+    ): ColumnBuilder;
+    datetime(
+      columnName: string,
+      options?: Readonly<{ useTz?: boolean; precision?: number }>
+    ): ColumnBuilder;
     time(columnName: string): ColumnBuilder;
-    timestamp(columnName: string, options?: Readonly<{useTz?: boolean, precision?: number}>): ColumnBuilder;
+    timestamp(
+      columnName: string,
+      options?: Readonly<{ useTz?: boolean; precision?: number }>
+    ): ColumnBuilder;
     /** @deprecated */
-    timestamp(columnName: string, withoutTz?: boolean, precision?: number): ColumnBuilder;
+    timestamp(
+      columnName: string,
+      withoutTz?: boolean,
+      precision?: number
+    ): ColumnBuilder;
     timestamps(
       useTimestamps?: boolean,
       defaultToNow?: boolean,
       useCamelCase?: boolean
     ): ColumnBuilder;
     timestamps(
-      options?: Readonly<{useTimestamps?: boolean, defaultToNow?: boolean, useCamelCase?: boolean}>
+      options?: Readonly<{
+        useTimestamps?: boolean;
+        defaultToNow?: boolean;
+        useCamelCase?: boolean;
+      }>
     ): void;
     geometry(columnName: string): ColumnBuilder;
     geography(columnName: string): ColumnBuilder;
@@ -2097,22 +2462,34 @@ export declare namespace Knex {
     binary(columnName: string, length?: number): ColumnBuilder;
     enum(
       columnName: string,
-      values: (readonly Value[]) | null,
+      values: readonly Value[] | null,
       options?: EnumOptions
     ): ColumnBuilder;
     enu(
       columnName: string,
-      values: (readonly Value[]) | null,
+      values: readonly Value[] | null,
       options?: EnumOptions
     ): ColumnBuilder;
     json(columnName: string): ColumnBuilder;
     jsonb(columnName: string): ColumnBuilder;
-    uuid(columnName: string, options?: Readonly<{useBinaryUuid?: boolean}>): ColumnBuilder;
+    uuid(
+      columnName: string,
+      options?: Readonly<{ useBinaryUuid?: boolean; primaryKey?: boolean }>
+    ): ColumnBuilder;
     comment(val: string): void;
     specificType(columnName: string, type: string): ColumnBuilder;
-    primary(columnNames: readonly string[], options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): TableBuilder;
+    primary(
+      columnNames: readonly string[],
+      options?: Readonly<{
+        constraintName?: string;
+        deferrable?: deferrableType;
+      }>
+    ): TableBuilder;
     /** @deprecated */
-    primary(columnNames: readonly string[], constraintName?: string): TableBuilder;
+    primary(
+      columnNames: readonly string[],
+      constraintName?: string
+    ): TableBuilder;
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
@@ -2121,23 +2498,51 @@ export declare namespace Knex {
     index(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string,
-      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType, predicate?: QueryBuilder}>
+      options?: Readonly<{
+        indexType?: string;
+        storageEngineIndexType?: storageEngineIndexType;
+        predicate?: QueryBuilder;
+      }>
     ): TableBuilder;
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
-    unique(columnNames: readonly (string | Raw)[], options?: Readonly<{indexName?: string, storageEngineIndexType?: string, deferrable?: deferrableType, useConstraint?: boolean}>): TableBuilder;
+    unique(
+      columnNames: readonly (string | Raw)[],
+      options?: Readonly<{
+        indexName?: string;
+        storageEngineIndexType?: string;
+        deferrable?: deferrableType;
+        useConstraint?: boolean;
+      }>
+    ): TableBuilder;
     /** @deprecated */
-    unique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
+    unique(
+      columnNames: readonly (string | Raw)[],
+      indexName?: string
+    ): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
     foreign(
       columns: readonly string[],
       foreignKeyName?: string
     ): MultikeyForeignConstraintBuilder;
-    check(checkPredicate: string, bindings?: Record<string, any>, constraintName?: string): TableBuilder;
-    dropForeign(columnNames: string | readonly string[], foreignKeyName?: string): TableBuilder;
-    dropUnique(columnNames: readonly (string | Raw)[], indexName?: string): TableBuilder;
+    check(
+      checkPredicate: string,
+      bindings?: Record<string, any>,
+      constraintName?: string
+    ): TableBuilder;
+    dropForeign(
+      columnNames: string | readonly string[],
+      foreignKeyName?: string
+    ): TableBuilder;
+    dropUnique(
+      columnNames: readonly (string | Raw)[],
+      indexName?: string
+    ): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
-    dropIndex(columnNames: string | readonly (string | Raw)[], indexName?: string): TableBuilder;
+    dropIndex(
+      columnNames: string | readonly (string | Raw)[],
+      indexName?: string
+    ): TableBuilder;
     dropTimestamps(useCamelCase?: boolean): TableBuilder;
     dropChecks(checkConstraintNames: string | string[]): TableBuilder;
     queryContext(context: any): TableBuilder;
@@ -2176,11 +2581,18 @@ export declare namespace Knex {
 
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
-    primary(options?: Readonly<{constraintName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    primary(
+      options?: Readonly<{
+        constraintName?: string;
+        deferrable?: deferrableType;
+      }>
+    ): ColumnBuilder;
     /** @deprecated */
     primary(constraintName?: string): ColumnBuilder;
 
-    unique(options?: Readonly<{indexName?: string, deferrable?: deferrableType}>): ColumnBuilder;
+    unique(
+      options?: Readonly<{ indexName?: string; deferrable?: deferrableType }>
+    ): ColumnBuilder;
     /** @deprecated */
     unique(indexName?: string): ColumnBuilder;
     references(columnName: string): ReferencingColumnBuilder;
@@ -2189,7 +2601,9 @@ export declare namespace Knex {
     notNullable(): ColumnBuilder;
     nullable(): ColumnBuilder;
     comment(value: string): ColumnBuilder;
-    alter(options?: Readonly<{alterNullable?: boolean, alterType?: boolean}>): ColumnBuilder;
+    alter(
+      options?: Readonly<{ alterNullable?: boolean; alterType?: boolean }>
+    ): ColumnBuilder;
     queryContext(context: any): ColumnBuilder;
     after(columnName: string): ColumnBuilder;
     first(): ColumnBuilder;
@@ -2197,8 +2611,15 @@ export declare namespace Knex {
     checkNegative(constraintName?: string): ColumnBuilder;
     checkIn(values: string[], constraintName?: string): ColumnBuilder;
     checkNotIn(values: string[], constraintName?: string): ColumnBuilder;
-    checkBetween(values: any[] | any[][], constraintName?: string): ColumnBuilder;
-    checkLength(operator: lengthOperator, length: number, constraintName?: string): ColumnBuilder;
+    checkBetween(
+      values: any[] | any[][],
+      constraintName?: string
+    ): ColumnBuilder;
+    checkLength(
+      operator: lengthOperator,
+      length: number,
+      constraintName?: string
+    ): ColumnBuilder;
     checkRegex(regex: string, constraintName?: string): ColumnBuilder;
   }
 
@@ -2213,7 +2634,7 @@ export declare namespace Knex {
   interface PostgreSqlColumnBuilder extends ColumnBuilder {
     index(
       indexName?: string,
-      options?: Readonly<{indexType?: string, predicate?: QueryBuilder}>
+      options?: Readonly<{ indexType?: string; predicate?: QueryBuilder }>
     ): ColumnBuilder;
     index(indexName?: string, indexType?: string): ColumnBuilder;
   }
@@ -2221,28 +2642,33 @@ export declare namespace Knex {
   interface SqlLiteColumnBuilder extends ColumnBuilder {
     index(
       indexName?: string,
-      options?: Readonly<{predicate?: QueryBuilder}>
+      options?: Readonly<{ predicate?: QueryBuilder }>
     ): ColumnBuilder;
   }
 
   interface MsSqlColumnBuilder extends ColumnBuilder {
     index(
       indexName?: string,
-      options?: Readonly<{predicate?: QueryBuilder}>
+      options?: Readonly<{ predicate?: QueryBuilder }>
     ): ColumnBuilder;
   }
 
   interface MySqlColumnBuilder extends ColumnBuilder {
     index(
       indexName?: string,
-      options?: Readonly<{indexType?: string, storageEngineIndexType?: storageEngineIndexType}>
+      options?: Readonly<{
+        indexType?: string;
+        storageEngineIndexType?: storageEngineIndexType;
+      }>
     ): ColumnBuilder;
   }
 
   // patched ColumnBuilder methods to return ReferencingColumnBuilder with new methods
   // relies on ColumnBuilder returning only ColumnBuilder
   type ReferencingColumnBuilder = {
-    [K in keyof ColumnBuilder]: (...args: Parameters<ColumnBuilder[K]>) => ReferencingColumnBuilder;
+    [K in keyof ColumnBuilder]: (
+      ...args: Parameters<ColumnBuilder[K]>
+    ) => ReferencingColumnBuilder;
   } & {
     inTable(tableName: string): ReferencingColumnBuilder;
     deferrable(type: deferrableType): ReferencingColumnBuilder;
@@ -2303,9 +2729,11 @@ export declare namespace Knex {
     | Sqlite3ConnectionConfig
     | SocketConnectionConfig;
 
-  type ConnectionConfigProvider  = SyncConnectionConfigProvider | AsyncConnectionConfigProvider;
-  type SyncConnectionConfigProvider  = () => StaticConnectionConfig;
-  type AsyncConnectionConfigProvider  = () => Promise<StaticConnectionConfig>;
+  type ConnectionConfigProvider =
+    | SyncConnectionConfigProvider
+    | AsyncConnectionConfigProvider;
+  type SyncConnectionConfigProvider = () => StaticConnectionConfig;
+  type AsyncConnectionConfigProvider = () => Promise<StaticConnectionConfig>;
 
   interface ConnectionConfig {
     host: string;
@@ -2449,7 +2877,12 @@ export declare namespace Knex {
       abortTransactionOnError?: boolean;
       trustedConnection?: boolean;
       enableArithAbort?: boolean;
-      isolationLevel?: 'READ_UNCOMMITTED' | 'READ_COMMITTED' | 'REPEATABLE_READ' | 'SERIALIZABLE' | 'SNAPSHOT';
+      isolationLevel?:
+        | 'READ_UNCOMMITTED'
+        | 'READ_COMMITTED'
+        | 'REPEATABLE_READ'
+        | 'SERIALIZABLE'
+        | 'SNAPSHOT';
       maxRetriesOnTransientErrors?: number;
       multiSubnetFailover?: boolean;
       packetSize?: number;
@@ -2537,11 +2970,13 @@ export declare namespace Knex {
   // Config object for mysql2: https://github.com/sidorares/node-mysql2/blob/master/lib/connection_config.js
   // Some options for connection pooling and MySQL server API are excluded.
   interface MySql2ConnectionConfig extends MySqlConnectionConfig {
-    authPlugins?: {[pluginName: string]: (pluginMetadata: any) => ((pluginData: any) => any)};
+    authPlugins?: {
+      [pluginName: string]: (pluginMetadata: any) => (pluginData: any) => any;
+    };
     authSwitchHandler?: (data: any, callback: () => void) => any;
     charsetNumber?: number;
     compress?: boolean;
-    connectAttributes?: {[attrNames: string]: any};
+    connectAttributes?: { [attrNames: string]: any };
     enableKeepAlive?: boolean;
     keepAliveInitialDelay?: number;
     maxPreparedStatements?: number;
@@ -2570,17 +3005,28 @@ export declare namespace Knex {
   interface PgConnectionConfig {
     user?: string;
     database?: string;
-    password?: string;
+    password?: string | (() => string | Promise<string>);
     port?: number;
     host?: string;
     connectionString?: string;
     keepAlive?: boolean;
     stream?: stream.Duplex;
     statement_timeout?: false | number;
-    connectionTimeoutMillis?: number;
-    keepAliveInitialDelayMillis?: number;
+    parseInputDatesAsUTC?: boolean;
     ssl?: boolean | ConnectionOptions;
+    query_timeout?: number;
+    keepAliveInitialDelayMillis?: number;
+    idle_in_transaction_session_timeout?: number;
     application_name?: string;
+    connectionTimeoutMillis?: number;
+    types?: PgCustomTypesConfig;
+    options?: string;
+  }
+
+  type PgGetTypeParser = (oid: number, format: string) => any;
+
+  interface PgCustomTypesConfig {
+    getTypeParser: PgGetTypeParser;
   }
 
   type RedshiftConnectionConfig = PgConnectionConfig;
@@ -2738,7 +3184,12 @@ export declare namespace Knex {
     queryCompiler(builder: any): any;
     schemaBuilder(): SchemaBuilder;
     schemaCompiler(builder: SchemaBuilder): any;
-    tableBuilder(type: any, tableName: any, tableNameLike: any, fn: any): TableBuilder;
+    tableBuilder(
+      type: any,
+      tableName: any,
+      tableNameLike: any,
+      fn: any
+    ): TableBuilder;
     tableCompiler(tableBuilder: any): any;
     columnBuilder(tableBuilder: any, type: any, args: any): ColumnBuilder;
     columnCompiler(tableBuilder: any, columnBuilder: any): any;
