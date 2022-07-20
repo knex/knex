@@ -138,7 +138,7 @@
     "sqlite3": "^5.0.4",
     "tap-spec": "^5.0.0",
     "tape": "^5.5.3",
-    "tedious": "^14.4.0",
+    "tedious": "^15.0.0",
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.7.0",
     "tsd": "^0.22.0",
