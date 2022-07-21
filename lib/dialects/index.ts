@@ -12,12 +12,13 @@ const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
   postgres: () => require('./postgres'),
   redshift: () => require('./redshift'),
   sqlite3: () => require('./sqlite3'),
+  clickhouse: () => require('./clickhouse'),
 })
 
 /**
  * Gets the Dialect object with the given client name or throw an
  * error if not found.
- * 
+ *
  * NOTE: This is a replacement for prior practice of doing dynamic
  * string construction for imports of Dialect objects.
  */
