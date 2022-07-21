@@ -32,6 +32,7 @@
     "test:mysql2": "cross-env DB=mysql2 npm run test:db",
     "test:oracledb": "cross-env DB=oracledb npm run test:db",
     "test:sqlite": "cross-env DB=sqlite3 npm run test:db",
+    "test:clickhouse": "cross-env DB=clickhouse npm run test:db",
     "test:better-sqlite3": "cross-env DB=better-sqlite3 npm run test:db",
     "test:postgres": "cross-env DB=postgres npm run test:db",
     "test:cockroachdb": "cross-env DB=cockroachdb npm run test:db",
@@ -96,6 +97,9 @@
     },
     "better-sqlite3": {
       "optional": true
+    },
+    "clickhouse": {
+      "optional": true
     }
   },
   "lint-staged": {
@@ -111,6 +115,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^3.1.0",
     "cli-testlab": "^2.2.0",
+    "clickhouse": "^2.5.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
     "dtslint": "4.2.1",

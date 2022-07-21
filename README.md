@@ -10,7 +10,7 @@
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (PostgreSQL, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
+A batteries-included, multi-dialect (PostgreSQL, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication), Clickhouse) query builder for
 Node.js, featuring:
 
 - [transactions](https://knex.github.io/documentation/#Transactions)
@@ -45,43 +45,36 @@ We have several examples [on the website](http://knexjs.org). Here is the first 
 
 ```js
 const knex = require('knex')({
-  client: 'sqlite3',
+  client: 'clickhouse',
   connection: {
-    filename: './data.db',
+    connection: "http://user:password@127.0.0.1:8123/dbname",
+    // connection: {
+    //   "database": "dbname",
+    //   "host": "127.0.0.1",
+    //   "port": 8123,
+    //   "user": "user name",
+    //   "password": "password"
+    // }
   },
 });
 
 try {
+  const insertedRows = await knex('candlestick')
+    .insert([
+      {
+        pair: "btc/usdt",
+        open: 50000,
+        close: 50010,
+        openTime: '2022-07-19 19:39:50',
+        closeTime: '2022-07-19 19:39:51'
+      },
+    ]);
 
-  // Create a table
-  await knex.schema
-    .createTable('users', table => {
-      table.increments('id');
-      table.string('user_name');
-    })
-    // ...and another
-    .createTable('accounts', table => {
-      table.increments('id');
-      table.string('account_name');
-      table
-        .integer('user_id')
-        .unsigned()
-        .references('users.id');
-    })
-
-  // Then query the table...
-  const insertedRows = await knex('users').insert({ user_name: 'Tim' })
-
-  // ...and using the insert id, insert into the other table.
-  await knex('accounts').insert({ account_name: 'knex', user_id: insertedRows[0] })
-
-  // Query both of the rows.
-  const selectedRows = await knex('users')
-    .join('accounts', 'users.id', 'accounts.user_id')
-    .select('users.user_name as user', 'accounts.account_name as account')
-
-  // map over the results
-  const enrichedRows = selectedRows.map(row => ({ ...row, active: true }))
+  const selectedRows = await knex("candlestick")
+    .select("pair")
+    // notice: use value wrapper
+    .where("open", ">", knex.client.val("1", "Decimal32(8)"))
+    .limit(10);
 
   // Finally, add a catch statement
 } catch(e) {
