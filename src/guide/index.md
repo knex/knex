@@ -405,6 +405,16 @@ const knex = require('knex')({
 });
 ```
 
+### compileSqlOnError
+
+Knex builds an error message in case of query error. To avoid leaking sensitive values, the parameterized SQL (`SELECT * FROM users WHERE password = ?`) will be added to the message by default, this can be changed to compiled SQL (`SELECT * FROM users WHERE password =  'myPassword'`) by setting `compileSqlOnError` to true.
+
+```js
+const knex = require('knex')({
+  compileSqlOnError: true
+});
+```
+
 ## TypeScript 
 
 While knex is written in JavaScript, officially supported TypeScript bindings are available (within the knex npm package).
