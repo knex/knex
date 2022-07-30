@@ -444,7 +444,7 @@ export declare namespace knex {
   class QueryBuilder {
     static extend(
       methodName: string,
-      fn: <TRecord extends {} = any, TResult = unknown[]>(
+      fn: <TRecord extends {} = any, TResult extends {} = unknown[]>(
         this: Knex.QueryBuilder<TRecord, TResult>,
         ...args: any[]
       ) =>
