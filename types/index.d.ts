@@ -3081,7 +3081,7 @@ export declare namespace Knex {
 
   interface Migration {
     up: (knex: Knex) => PromiseLike<any>;
-    down?: (kenx: Knex) => PromiseLike<any>;
+    down?: (knex: Knex) => PromiseLike<any>;
   }
 
   interface MigrationSource<TMigrationSpec> {
