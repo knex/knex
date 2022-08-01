@@ -276,12 +276,32 @@ describe('Additional', function () {
             return this.skip();
           }
 
-          const res = await knex('accounts_foo')
+          const insertRes = await knex('accounts_foo')
             .insert({ balance_foo: 123 })
             .returning('balance_foo');
-          expect(res).to.eql([
+          expect(insertRes).to.eql([
             {
               balance_foo: 123,
+            },
+          ]);
+
+          const updateRes = await knex('accounts_foo')
+            .where({ balance_foo: 123 })
+            .update({ balance_foo: 456 })
+            .returning('balance_foo');
+          expect(updateRes).to.eql([
+            {
+              balance_foo: 456,
+            },
+          ]);
+
+          const delRes = await knex('accounts_foo')
+            .where({ balance_foo: 456 })
+            .del()
+            .returning('balance_foo');
+          expect(delRes).to.eql([
+            {
+              balance_foo: 456,
             },
           ]);
         });
@@ -291,11 +311,28 @@ describe('Additional', function () {
             return this.skip();
           }
 
-          const res = await knex('accounts_foo')
+          const insertRes = await knex('accounts_foo')
             .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
             .returning(['balance_foo', 'email_foo']);
+          expect(insertRes).to.eql([
+            { balance_foo: 123, email_foo: 'foo@bar.com' },
+          ]);
 
-          expect(res).to.eql([{ balance_foo: 123, email_foo: 'foo@bar.com' }]);
+          const updateRes = await knex('accounts_foo')
+            .where({ balance_foo: 123, email_foo: 'foo@bar.com' })
+            .update({ balance_foo: 456, email_foo: 'bar@foo.com' })
+            .returning(['balance_foo', 'email_foo']);
+          expect(updateRes).to.eql([
+            { balance_foo: 456, email_foo: 'bar@foo.com' },
+          ]);
+
+          const delRes = await knex('accounts_foo')
+            .where({ balance_foo: 456, email_foo: 'bar@foo.com' })
+            .del()
+            .returning(['balance_foo', 'email_foo']);
+          expect(delRes).to.eql([
+            { balance_foo: 456, email_foo: 'bar@foo.com' },
+          ]);
         });
       });
 
