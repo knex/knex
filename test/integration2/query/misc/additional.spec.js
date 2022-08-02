@@ -20,7 +20,6 @@ const {
   isPgBased,
   isPgNative,
   isCockroachDB,
-  isBetterSQLite3,
 } = require('../../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../../util/constants');
 const {
@@ -272,7 +271,7 @@ describe('Additional', function () {
         });
 
         it('should return the correct column when a single property is given to returning', async function () {
-          if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
+          if (!isPostgreSQL(knex) && !isMssql(knex) && !isSQLite(knex)) {
             return this.skip();
           }
 
@@ -287,7 +286,7 @@ describe('Additional', function () {
         });
 
         it('should return the correct columns when multiple properties are given to returning', async function () {
-          if (!isPostgreSQL(knex) && !isMssql(knex) && !isBetterSQLite3(knex)) {
+          if (!isPostgreSQL(knex) && !isMssql(knex) && !isSQLite(knex)) {
             return this.skip();
           }
 
