@@ -1014,7 +1014,7 @@ knex('accounts')
 **.returning(column, [options])** 
 **.returning([column1, column2, ...], [options])**
 
-Utilized by PostgreSQL, MSSQL, and Oracle databases, the returning method specifies which column should be returned by the insert, update and delete methods. Passed column parameter may be a string or an array of strings. The SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is not supported on Amazon Redshift.
+Utilized by PostgreSQL, MSSQL, SQLite, and Oracle databases, the returning method specifies which column should be returned by the insert, update and delete methods. Passed column parameter may be a string or an array of strings. The SQL result be reported as an array of objects, each containing a single property for each of the specified columns. The returning method is not supported on Amazon Redshift.
 
 ```js
 // Returns [ { id: 1 } ]
