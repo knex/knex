@@ -2887,6 +2887,7 @@ export declare namespace Knex {
       multiSubnetFailover?: boolean;
       packetSize?: number;
       trustServerCertificate?: boolean;
+      mapBinding?: (value: any) => ({ value: any, type: any } | undefined);
     }>;
     pool?: Readonly<{
       min?: number;

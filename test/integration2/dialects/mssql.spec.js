@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const { TYPES } = require('tedious');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
 async function fetchDefaultConstraint(knex, table, column) {
@@ -31,6 +32,8 @@ describe('MSSQL dialect', () => {
         beforeEach(async () => {
           await knex.schema.createTable('test', function () {
             this.increments('id').primary();
+            this.specificType('varchar', 'varchar(100)');
+            this.string('nvarchar');
           });
         });
 
@@ -361,6 +364,31 @@ describe('MSSQL dialect', () => {
               .first();
             return result ? result.comment : undefined;
           }
+        });
+
+        describe('supports mapBinding config', async () => {
+          it('can remap types', async () => {
+            const query = knex('test')
+              .where('varchar', { value: 'testing', type: TYPES.VarChar })
+              .select('id');
+            const { bindings } = query.toSQL().toNative();
+            expect(bindings[0].type, TYPES.VarChar);
+            expect(bindings[0].value, 'testing');
+
+            // verify the query runs successfully
+            await query;
+          });
+          it('undefined mapBinding result falls back to default implementation', async () => {
+            const query = knex('test')
+              .where('nvarchar', 'testing')
+              .select('id');
+
+            const { bindings } = query.toSQL().toNative();
+            expect(bindings[0], 'testing');
+
+            // verify the query runs successfully
+            await query;
+          });
         });
       });
     });
