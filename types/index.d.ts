@@ -1864,7 +1864,7 @@ export declare namespace Knex {
         }
       >
     >(
-      columnName: Readonly<TKey>,
+      columnName: TKey,
       options: Readonly<TOptions>
     ): QueryBuilder<TRecord, TResult2>;
     <
