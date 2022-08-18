@@ -1918,11 +1918,11 @@ export declare namespace Knex {
         | TKey
         | TKey[]
         | {
-            columnName: TKey;
+            column: TKey;
             order?: 'asc' | 'desc';
             nulls?: 'first' | 'last';
           },
-      partitionBy?: TKey | TKey[] | { columnName: TKey; order?: 'asc' | 'desc' }
+      partitionBy?: TKey | TKey[] | { column: TKey; order?: 'asc' | 'desc' }
     ): QueryBuilder<TRecord, TResult2>;
   }
 
