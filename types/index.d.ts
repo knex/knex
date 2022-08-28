@@ -1760,12 +1760,12 @@ export declare namespace Knex {
   }
 
   interface WhereJsonObject<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof TRecord, value: any): QueryBuilder<TRecord, TResult>;
+    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
     (
-      columnName: keyof TRecord,
+      columnName: keyof ResolveTableType<TRecord>,
       jsonPath: string,
       operator: string,
       value: any
