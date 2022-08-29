@@ -1760,12 +1760,12 @@ export declare namespace Knex {
   }
 
   interface WhereJsonObject<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof TRecord, value: any): QueryBuilder<TRecord, TResult>;
+    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
     (
-      columnName: keyof TRecord,
+      columnName: keyof ResolveTableType<TRecord>,
       jsonPath: string,
       operator: string,
       value: any
@@ -1864,7 +1864,7 @@ export declare namespace Knex {
         }
       >
     >(
-      columnName: Readonly<TKey>,
+      columnName: TKey,
       options: Readonly<TOptions>
     ): QueryBuilder<TRecord, TResult2>;
     <
@@ -1918,11 +1918,11 @@ export declare namespace Knex {
         | TKey
         | TKey[]
         | {
-            columnName: TKey;
+            column: TKey;
             order?: 'asc' | 'desc';
             nulls?: 'first' | 'last';
           },
-      partitionBy?: TKey | TKey[] | { columnName: TKey; order?: 'asc' | 'desc' }
+      partitionBy?: TKey | TKey[] | { column: TKey; order?: 'asc' | 'desc' }
     ): QueryBuilder<TRecord, TResult2>;
   }
 
