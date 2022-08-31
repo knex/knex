@@ -98,6 +98,41 @@ const knex = require('knex')({
 ```
 ::: 
 
+::: info MSSQL
+When you use the MSSQL client, you can define a `mapBinding` function to define your own logic for mapping from knex query parameters to `tedious` types. 
+Returning undefined from the function will fallback to the default mapping.
+```js
+import { TYPES } from 'tedious';
+
+const knex = require('knex')({
+  client: 'mssql',
+  connection: {
+    options: {
+      mapBinding: value => {
+        // bind all strings to varchar instead of nvarchar
+        if (typeof value === 'string') {
+          return {
+            type: TYPES.VarChar,
+            value
+          };
+        }
+
+        // allow devs to pass tedious type at query time
+        if (value != null && value.type) {
+          return {
+            type: value.type,
+            value: value.value
+          };
+        }
+
+        // undefined is returned; falling back to default mapping function
+      }
+    }
+  }
+});
+```
+::: 
+
 ::: info 
 The database version can be added in knex configuration, when you use the PostgreSQL adapter to connect a non-standard database.
 
