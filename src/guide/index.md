@@ -165,6 +165,19 @@ const knex = require('knex')({
 ```
 ::: 
 
+::: info
+When using a custom PostgreSQL client like `knex-aurora-data-api-client`, you can explicitly state if it supports jsonb column types
+
+```js
+const knex = require('knex')({
+    client: require('knex-aurora-data-api-client').postgres,
+    connection: { resourceArn, secretArn, database: `mydb` },
+    version: 'data-api',
+    jsonbSupport: true
+})
+```
+:::
+
 A function can be used to determine the connection configuration dynamically. This function receives no parameters, and returns either a configuration object or a promise for a configuration object.
 
 ```js
