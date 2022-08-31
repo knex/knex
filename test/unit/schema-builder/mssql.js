@@ -641,6 +641,53 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('test adding unique index with a predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'CREATE UNIQUE INDEX [baz] ON [users] ([foo], [bar]) where email = "foo@bar"'
+    );
+  });
+
+  it('test adding unique index with a where not null predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().whereNotNull('email'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'CREATE UNIQUE INDEX [baz] ON [users] ([foo], [bar]) where [email] is not null'
+    );
+  });
+
+  it('throws when adding unique constraint with predicate', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.unique(['foo', 'bar'], {
+            indexName: 'baz',
+            useConstraint: true,
+            predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+          });
+        })
+        .toSQL();
+    }).to.throw('mssql cannot create constraint with predicate');
+  });
+
   it('test adding foreign key', function () {
     tableSql = client
       .schemaBuilder()

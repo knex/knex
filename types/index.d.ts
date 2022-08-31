@@ -2513,6 +2513,7 @@ export declare namespace Knex {
         storageEngineIndexType?: string;
         deferrable?: deferrableType;
         useConstraint?: boolean;
+        predicate?: QueryBuilder;
       }>
     ): TableBuilder;
     /** @deprecated */
