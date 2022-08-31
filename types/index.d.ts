@@ -2699,6 +2699,7 @@ export declare namespace Knex {
     debug?: boolean;
     client?: string | typeof Client;
     dialect?: string;
+    jsonbSupport?: boolean;
     version?: string;
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
