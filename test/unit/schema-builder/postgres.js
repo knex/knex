@@ -886,7 +886,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .table('users', function (table) {
         table.unique('foo', {
           indexName: 'bar',
-          useConstraint: true,
+          useConstraint: false,
         });
       })
       .toSQL();
@@ -1042,23 +1042,6 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'create unique index "baz" on "users" ("foo", "bar") where email = "foo@bar"'
-    );
-  });
-
-  it('adding unique index with an index type and a predicate', function () {
-    tableSql = client
-      .schemaBuilder()
-      .table('users', function (table) {
-        table.unique(['foo', 'bar'], {
-          indexName: 'baz',
-          indexType: 'gist',
-          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
-        });
-      })
-      .toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal(
-      'create unique index "baz" on "users" using gist ("foo", "bar") where email = "foo@bar"'
     );
   });
 
