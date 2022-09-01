@@ -376,7 +376,7 @@ const knex = require('knex')({
 
 ### migrations
 
-For convenience, the any migration configuration may be specified when initializing the library. Read the [Migrations](migrations) section for more information and a full list of configuration options.
+For convenience, the any migration configuration may be specified when initializing the library. Read the [Migrations](https://knexjs.org/guide/migrations.html) section for more information and a full list of configuration options.
 
 ```js
 const knex = require('knex')({
