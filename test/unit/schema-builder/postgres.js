@@ -915,6 +915,22 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding unique index', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique('foo', {
+          indexName: 'bar',
+          useConstraint: false,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "bar" on "users" ("foo")'
+    );
+  });
+
   it('adding index without value', function () {
     tableSql = client
       .schemaBuilder()
@@ -1046,6 +1062,68 @@ describe('PostgreSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'create index "baz" on "users" ("foo", "bar") where "email" is not null'
     );
+  });
+
+  it('adding unique index with a predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "baz" on "users" ("foo", "bar") where email = "foo@bar"'
+    );
+  });
+
+  it('adding unique index with a where not null predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().whereNotNull('email'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "baz" on "users" ("foo", "bar") where "email" is not null'
+    );
+  });
+
+  it('throws when adding unique constraint with a predicate', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.unique(['foo', 'bar'], {
+            indexName: 'baz',
+            useConstraint: true,
+            predicate: client.queryBuilder().whereNotNull('email'),
+          });
+        })
+        .toSQL();
+    }).to.throw('postgres cannot create constraint with predicate');
+  });
+
+  it('throws when adding unique index with deferrable set', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.unique(['foo', 'bar'], {
+            indexName: 'baz',
+            useConstraint: false,
+            deferrable: 'immediate',
+          });
+        })
+        .toSQL();
+    }).to.throw('postgres cannot create deferrable index');
   });
 
   it('adding incrementing id', function () {
