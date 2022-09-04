@@ -93,6 +93,41 @@ describe('PostgreSQL Config', function () {
         );
       });
     });
+
+    describe('check custom pg client', function () {
+      it('jsonb as text', function () {
+        knexInstance = knex({
+          ...config,
+          version: 'custom-pg',
+          jsonbSupport: false,
+        });
+        tableSql = knexInstance.schema
+          .table('public', function (t) {
+            t.jsonb('test_name');
+          })
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal(
+          'alter table "public" add column "test_name" text'
+        );
+      });
+      it('jsonb', function () {
+        knexInstance = knex({
+          ...config,
+          version: 'custom-pg',
+          jsonbSupport: true,
+        });
+        tableSql = knexInstance.schema
+          .table('public', function (t) {
+            t.jsonb('test_name');
+          })
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal(
+          'alter table "public" add column "test_name" jsonb'
+        );
+      });
+    });
   });
 });
 
@@ -134,6 +169,33 @@ describe('PostgreSQL SchemaBuilder', function () {
     expect(tableSql.length).to.equal(1);
     expect(tableSql[0].sql).to.equal(
       'create table "users_like" (like "users" including all, "add_col" text, "numeric_col" integer)'
+    );
+  });
+
+  it('create table with uuid primary key in one go', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('uuid_primary', function (table) {
+        table.uuid('id', { primaryKey: true });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "uuid_primary" ("id" uuid primary key)'
+    );
+  });
+
+  it('should create a table with inline uuid primary key creation', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('uuids', function (table) {
+        table.uuid('id').primary();
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "uuids" ("id" uuid, constraint "uuids_pkey" primary key ("id"))'
     );
   });
 
@@ -445,6 +507,17 @@ describe('PostgreSQL SchemaBuilder', function () {
         'refresh materialized view "view_to_refresh"'
       );
     });
+
+    it('refresh view concurrently', function () {
+      tableSql = client
+        .schemaBuilder()
+        .refreshMaterializedView('view_to_refresh', true)
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'refresh materialized view concurrently "view_to_refresh"'
+      );
+    });
   });
 
   it('drop table with schema', function () {
@@ -520,6 +593,19 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" drop constraint "users_pkey"'
+    );
+  });
+
+  it('drop primary takes constraint name', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropPrimary('testconstraintname');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint "testconstraintname"'
     );
   });
 
@@ -664,9 +750,9 @@ describe('PostgreSQL SchemaBuilder', function () {
         });
       })
       .toSQL();
-    equal(2, tableSql.length);
-    expect(tableSql[1].sql).to.equal(
-      'alter table "person" add constraint "user_id_primary" primary key ("user_id") deferrable initially immediate'
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "person" ("user_id" integer, constraint "user_id_primary" primary key ("user_id") deferrable initially immediate)'
     );
   });
 
@@ -828,6 +914,22 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding unique index', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique('foo', {
+          indexName: 'bar',
+          useConstraint: false,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "bar" on "users" ("foo")'
+    );
+  });
+
   it('adding index without value', function () {
     tableSql = client
       .schemaBuilder()
@@ -959,6 +1061,68 @@ describe('PostgreSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'create index "baz" on "users" ("foo", "bar") where "email" is not null'
     );
+  });
+
+  it('adding unique index with a predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "baz" on "users" ("foo", "bar") where email = "foo@bar"'
+    );
+  });
+
+  it('adding unique index with a where not null predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().whereNotNull('email'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "baz" on "users" ("foo", "bar") where "email" is not null'
+    );
+  });
+
+  it('throws when adding unique constraint with a predicate', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.unique(['foo', 'bar'], {
+            indexName: 'baz',
+            useConstraint: true,
+            predicate: client.queryBuilder().whereNotNull('email'),
+          });
+        })
+        .toSQL();
+    }).to.throw('postgres cannot create constraint with predicate');
+  });
+
+  it('throws when adding unique index with deferrable set', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.unique(['foo', 'bar'], {
+            indexName: 'baz',
+            useConstraint: false,
+            deferrable: 'immediate',
+          });
+        })
+        .toSQL();
+    }).to.throw('postgres cannot create deferrable index');
   });
 
   it('adding incrementing id', function () {
@@ -1964,12 +2128,15 @@ describe('PostgreSQL SchemaBuilder', function () {
   it('#1430 - .primary & .dropPrimary takes columns and constraintName', function () {
     tableSql = client
       .schemaBuilder()
-      .table('users', function (t) {
+      .createTable('users', function (t) {
+        t.string('test1');
+        t.string('test2');
         t.primary(['test1', 'test2'], 'testconstraintname');
       })
       .toSQL();
+    equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")'
+      'create table "users" ("test1" varchar(255), "test2" varchar(255), constraint "testconstraintname" primary key ("test1", "test2"))'
     );
 
     tableSql = client
@@ -1979,9 +2146,57 @@ describe('PostgreSQL SchemaBuilder', function () {
       })
       .toSQL();
 
-    expect(tableSql[1].sql).to.equal(
-      'alter table "users" add constraint "testconstraintname" primary key ("test")'
+    expect(tableSql[0].sql).to.equal(
+      'create table "users" ("test" varchar(255), constraint "testconstraintname" primary key ("test"))'
     );
+  });
+
+  describe('alter with primary', function () {
+    it('liquid argument', function () {
+      tableSql = client
+        .schemaBuilder()
+        .alterTable('users', function (t) {
+          t.string('test').primary();
+        })
+        .toSQL();
+
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table "users" add column "test" varchar(255)'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table "users" add constraint "users_pkey" primary key ("test")'
+      );
+    });
+    it('liquid argument with name', function () {
+      tableSql = client
+        .schemaBuilder()
+        .alterTable('users', function (t) {
+          t.string('test').primary('testname');
+        })
+        .toSQL();
+
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table "users" add column "test" varchar(255)'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table "users" add constraint "testname" primary key ("test")'
+      );
+    });
+    it('call on table with columns and name', function () {
+      tableSql = client
+        .schemaBuilder()
+        .alterTable('users', function (t) {
+          t.primary(['test1', 'test2'], 'testconstraintname');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")'
+      );
+    });
   });
 
   describe('queryContext', function () {

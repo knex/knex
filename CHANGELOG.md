@@ -1,5 +1,58 @@
 # Master (Unreleased)
 
+# 2.3.0 - 31 August, 2022
+
+### New features:
+
+- PostgreSQL: Explicit jsonb support for custom pg clients #5201
+- SQLite: Support returning with sqlite3 and better-sqlite3 #5285
+- MSSQL: Implement mapBinding mssql dialect option #5292
+
+### Typings:
+
+- Update types for TS 4.8 #5279
+- Fix typo #5267
+- Fix WhereJsonObject withCompositeTableType #5306
+- Fix AnalyticFunction type #5304
+- Infer specific column value type in aggregations #5297
+
+# 2.2.0 - 19 July, 2022
+
+### New features:
+
+- Inline primary key creation for postgres flavours #5233
+- SQLite: Add warning for undefined connection file #5223
+- MSSQL: Add JSON parameter support for connection #5200
+
+### Bug fixes:
+
+- PostgreSQL: add primaryKey option for uuid #5212
+
+### Typings:
+
+- Add promisable and better types #5222
+- Update raw query bind parameter type #5208
+
+# 2.1.0 - 26 May, 2022
+
+### New features:
+
+- Improve bundling experience to safely import dialects while using static paths #5142
+- Implement extendable builders #5041
+- PostgreSQL: Refresh materialized view concurrently #5166
+
+### Bug fixes:
+
+- Use correct paths in package.json browser field #5174
+- MariaDB: Fix 'NULL' returned instead of NULL on MariaDB 10.2.6+ #5181
+- MySQL: fix hasColumn Error (hasColumn ('a_id') is true, but hasColumn('a_Id') is false) #5148
+- MSSQL: Fix .hasTable result when using .withSchema #5176
+- Oracle: correctly INSERTS Buffer #4869
+
+### Typings:
+
+- Update type definitions for pg connection #5139
+
 # 2.0.0 - 21 April, 2022
 
 ### Breaking changes

@@ -173,6 +173,13 @@ const testConfigs = {
       server: 'localhost',
       port: 21433,
       database: 'knex_test',
+      options: {
+        mapBinding(value) {
+          if (value && value.type) {
+            return { value: value.value, type: value.type };
+          }
+        },
+      },
     },
     pool: pool,
     migrations,
