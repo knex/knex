@@ -2136,7 +2136,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'create table "users" ("test1" varchar(255), "test2" varchar(255), constraint "testconstraintname" primary key ("test1", "test2"))'
+      'create table "users" ("test1" varchar, "test2" varchar, constraint "testconstraintname" primary key ("test1", "test2"))'
     );
 
     tableSql = client
@@ -2162,7 +2162,7 @@ describe('PostgreSQL SchemaBuilder', function () {
 
       equal(2, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'alter table "users" add column "test" varchar(255)'
+        'alter table "users" add column "test" varchar'
       );
       expect(tableSql[1].sql).to.equal(
         'alter table "users" add constraint "users_pkey" primary key ("test")'
@@ -2178,7 +2178,7 @@ describe('PostgreSQL SchemaBuilder', function () {
 
       equal(2, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'alter table "users" add column "test" varchar(255)'
+        'alter table "users" add column "test" varchar'
       );
       expect(tableSql[1].sql).to.equal(
         'alter table "users" add constraint "testname" primary key ("test")'
