@@ -444,7 +444,7 @@ export declare namespace knex {
   class QueryBuilder {
     static extend(
       methodName: string,
-      fn: <TRecord extends {} = any, TResult = unknown[]>(
+      fn: <TRecord extends {} = any, TResult extends {} = unknown[]>(
         this: Knex.QueryBuilder<TRecord, TResult>,
         ...args: any[]
       ) =>
@@ -1760,12 +1760,12 @@ export declare namespace Knex {
   }
 
   interface WhereJsonObject<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof TRecord, value: any): QueryBuilder<TRecord, TResult>;
+    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<TRecord, TResult>;
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
     (
-      columnName: keyof TRecord,
+      columnName: keyof ResolveTableType<TRecord>,
       jsonPath: string,
       operator: string,
       value: any
@@ -1864,7 +1864,7 @@ export declare namespace Knex {
         }
       >
     >(
-      columnName: Readonly<TKey>,
+      columnName: TKey,
       options: Readonly<TOptions>
     ): QueryBuilder<TRecord, TResult2>;
     <
@@ -1918,11 +1918,11 @@ export declare namespace Knex {
         | TKey
         | TKey[]
         | {
-            columnName: TKey;
+            column: TKey;
             order?: 'asc' | 'desc';
             nulls?: 'first' | 'last';
           },
-      partitionBy?: TKey | TKey[] | { columnName: TKey; order?: 'asc' | 'desc' }
+      partitionBy?: TKey | TKey[] | { column: TKey; order?: 'asc' | 'desc' }
     ): QueryBuilder<TRecord, TResult2>;
   }
 
@@ -2513,6 +2513,7 @@ export declare namespace Knex {
         storageEngineIndexType?: string;
         deferrable?: deferrableType;
         useConstraint?: boolean;
+        predicate?: QueryBuilder;
       }>
     ): TableBuilder;
     /** @deprecated */
@@ -2699,6 +2700,7 @@ export declare namespace Knex {
     debug?: boolean;
     client?: string | typeof Client;
     dialect?: string;
+    jsonbSupport?: boolean;
     version?: string;
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
@@ -2888,6 +2890,7 @@ export declare namespace Knex {
       multiSubnetFailover?: boolean;
       packetSize?: number;
       trustServerCertificate?: boolean;
+      mapBinding?: (value: any) => ({ value: any, type: any } | undefined);
     }>;
     pool?: Readonly<{
       min?: number;
@@ -3082,7 +3085,7 @@ export declare namespace Knex {
 
   interface Migration {
     up: (knex: Knex) => PromiseLike<any>;
-    down?: (kenx: Knex) => PromiseLike<any>;
+    down?: (knex: Knex) => PromiseLike<any>;
   }
 
   interface MigrationSource<TMigrationSpec> {
