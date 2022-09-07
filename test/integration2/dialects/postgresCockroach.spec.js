@@ -1,13 +1,12 @@
 const { expect } = require('chai');
 const {
-  getAllDbs,
   getKnexForDb,
   Db,
   getDbTestConfig,
 } = require('../util/knex-instance-provider');
 
-describe('PostgreSQL dialect', () => {
-  const dbs = getAllDbs().filter((db) => db === Db.PostgresSQL);
+describe('PostgreSQL & Cockroach DB', () => {
+  const dbs = [Db.PostgresSQL, Db.CockroachDB];
 
   dbs.forEach((db) => {
     describe(db, () => {
@@ -43,6 +42,11 @@ describe('PostgreSQL dialect', () => {
 
             const keyedResults = {};
             for (const row of result.rows || []) {
+              // cast datetime_precision to number, since it gets returned as a string for some reason on cockroachdb
+              if (row['datetime_precision']) {
+                row['datetime_precision'] = parseInt(row['datetime_precision']);
+              }
+
               keyedResults[row['column_name']] = row;
             }
 
@@ -77,41 +81,44 @@ describe('PostgreSQL dialect', () => {
             );
           });
 
-          it('if default datetime precision specified, it gets used when updating datetime/timestamp fields', async () => {
-            const tableName = 'default_datetime_precision_test_' + Date.now();
-            const colTimestamp = 'timestamp_field';
-            const colDatetime = 'datetime_field';
+          // cockroachdb doesn't support altering columns at this point in time? https://github.com/cockroachdb/cockroach/issues/49329
+          if (db !== Db.CockroachDB) {
+            it('if default datetime precision specified, it gets used when altering datetime/timestamp fields', async () => {
+              const tableName = 'default_datetime_precision_test_' + Date.now();
+              const colTimestamp = 'timestamp_field';
+              const colDatetime = 'datetime_field';
 
-            const initialPrecision = 5;
+              const initialPrecision = 5;
 
-            await knex.schema.createTable(tableName, (table) => {
-              table.timestamp(colTimestamp, {
-                precision: initialPrecision,
+              await knex.schema.createTable(tableName, (table) => {
+                table.timestamp(colTimestamp, {
+                  precision: initialPrecision,
+                });
+                table.datetime(colDatetime, { precision: initialPrecision });
               });
-              table.datetime(colDatetime, { precision: initialPrecision });
+
+              const metaData = await checkColMetadata(tableName);
+              expect(metaData[colTimestamp]['datetime_precision']).to.eq(
+                initialPrecision
+              );
+              expect(metaData[colDatetime]['datetime_precision']).to.eq(
+                initialPrecision
+              );
+
+              await knex.schema.alterTable(tableName, (table) => {
+                table.timestamp(colTimestamp).alter();
+                table.datetime(colDatetime).alter();
+              });
+
+              const newMetaData = await checkColMetadata(tableName);
+              expect(newMetaData[colTimestamp]['datetime_precision']).to.eq(
+                CONFIGURED_DEFAULT_DATETIME_PRECISION
+              );
+              expect(newMetaData[colDatetime]['datetime_precision']).to.eq(
+                CONFIGURED_DEFAULT_DATETIME_PRECISION
+              );
             });
-
-            const metaData = await checkColMetadata(tableName);
-            expect(metaData[colTimestamp]['datetime_precision']).to.eq(
-              initialPrecision
-            );
-            expect(metaData[colDatetime]['datetime_precision']).to.eq(
-              initialPrecision
-            );
-
-            await knex.schema.alterTable(tableName, (table) => {
-              table.timestamp(colTimestamp).alter();
-              table.datetime(colDatetime).alter();
-            });
-
-            const newMetaData = await checkColMetadata(tableName);
-            expect(newMetaData[colTimestamp]['datetime_precision']).to.eq(
-              CONFIGURED_DEFAULT_DATETIME_PRECISION
-            );
-            expect(newMetaData[colDatetime]['datetime_precision']).to.eq(
-              CONFIGURED_DEFAULT_DATETIME_PRECISION
-            );
-          });
+          }
         });
       });
     });
