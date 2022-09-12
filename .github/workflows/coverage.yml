@@ -51,6 +51,12 @@ jobs:
       - name: Generate LCOV
         run: npm run coveralls
 
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: ./coverage/**/*
+
       - name: Update Coveralls
         uses: coverallsapp/github-action@master
         with:
