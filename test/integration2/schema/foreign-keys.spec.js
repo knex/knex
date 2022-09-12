@@ -10,7 +10,7 @@ const {
   isBetterSQLite3,
 } = require('../../util/db-helpers');
 
-describe.only('Schema', () => {
+describe('Schema', () => {
   describe('Foreign keys', () => {
     getAllDbs().forEach((db) => {
       describe(db, () => {
