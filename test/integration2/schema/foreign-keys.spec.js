@@ -10,11 +10,12 @@ const {
   isBetterSQLite3,
 } = require('../../util/db-helpers');
 
-describe('Schema', () => {
+describe.only('Schema', () => {
   describe('Foreign keys', () => {
     getAllDbs().forEach((db) => {
       describe(db, () => {
         let knex;
+        let spy;
         before(async () => {
           sinon.stub(Math, 'random').returns(0.1);
           knex = getKnexForDb(db);
@@ -207,6 +208,49 @@ describe('Schema', () => {
               } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (99, 9999) - SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`
+                );
+              }
+              if (isPostgreSQL(knex)) {
+                expect(err.message).to.equal(
+                  `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert or update on table "foreign_keys_table_one" violates foreign key constraint "fk_fkey_threeee"`
+                );
+              }
+              if (isCockroachDB(knex)) {
+                expect(err.message).to.equal(
+                  `insert into "foreign_keys_table_one" ("fkey_three", "fkey_two") values ($1, $2) - insert on table "foreign_keys_table_one" violates foreign key constraint "fk_fkey_threeee"`
+                );
+              }
+              expect(err.message).to.include('constraint');
+            }
+          });
+
+          it('handles multiple foreign key constraint errors', async () => {
+            await knex('foreign_keys_table_two').insert({});
+            await knex('foreign_keys_table_three').insert({});
+            await knex.schema.alterTable('foreign_keys_table_one', (table) => {
+              table
+                .foreign('fkey_three')
+                .references('foreign_keys_table_three.id')
+                .withKeyName('fk_fkey_threeee');
+              table
+                .foreign('fkey_two')
+                .references('foreign_keys_table_two.id')
+                .withKeyName('fk_fkey_twooo');
+            });
+            try {
+              await knex('foreign_keys_table_one').insert({
+                fkey_two: 31459,
+                fkey_three: 31459,
+              });
+              throw new Error("Shouldn't reach this");
+            } catch (err) {
+              if (isBetterSQLite3(knex)) {
+                expect(err.message).to.equal(
+                  `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (31459, 31459) - FOREIGN KEY constraint failed`
+                );
+              } else if (isSQLite(knex)) {
+                expect(err.message).to.equal(
+                  `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (31459, 31459) - SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`
                 );
               }
               if (isPostgreSQL(knex)) {
