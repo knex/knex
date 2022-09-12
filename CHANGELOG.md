@@ -1,5 +1,21 @@
 # Master (Unreleased)
 
+# 2.3.0 - 31 August, 2022
+
+### New features:
+
+- PostgreSQL: Explicit jsonb support for custom pg clients #5201
+- SQLite: Support returning with sqlite3 and better-sqlite3 #5285
+- MSSQL: Implement mapBinding mssql dialect option #5292
+
+### Typings:
+
+- Update types for TS 4.8 #5279
+- Fix typo #5267
+- Fix WhereJsonObject withCompositeTableType #5306
+- Fix AnalyticFunction type #5304
+- Infer specific column value type in aggregations #5297
+
 # 2.2.0 - 19 July, 2022
 
 ### New features:

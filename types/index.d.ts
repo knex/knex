@@ -2513,6 +2513,7 @@ export declare namespace Knex {
         storageEngineIndexType?: string;
         deferrable?: deferrableType;
         useConstraint?: boolean;
+        predicate?: QueryBuilder;
       }>
     ): TableBuilder;
     /** @deprecated */
@@ -2699,6 +2700,7 @@ export declare namespace Knex {
     debug?: boolean;
     client?: string | typeof Client;
     dialect?: string;
+    jsonbSupport?: boolean;
     version?: string;
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
@@ -2887,6 +2889,7 @@ export declare namespace Knex {
       multiSubnetFailover?: boolean;
       packetSize?: number;
       trustServerCertificate?: boolean;
+      mapBinding?: (value: any) => ({ value: any, type: any } | undefined);
     }>;
     pool?: Readonly<{
       min?: number;
