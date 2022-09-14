@@ -35,7 +35,7 @@ describe('Oracledb dialect', () => {
         describe('Version Detection', () => {
           it('should correctly resolve the oracle database version on connection if not specified', async () => {
             const client = knex.client;
-            await client.acquireRawConnection();
+            await client.acquireConnection();
 
             expect(client.version).to.match(/^\d+\.\d+$/);
           });
@@ -43,7 +43,7 @@ describe('Oracledb dialect', () => {
           it('should not attempt to dynamically resolve database version on connection if specified', async () => {
             // Manually specifying a version number other than the one we use for testing.
             const client = getKnexForDb('oracledb', { version: '12.2' }).client;
-            await client.acquireRawConnection();
+            await client.acquireConnection();
 
             expect(client.version).to.equal('12.2');
           });
@@ -52,7 +52,7 @@ describe('Oracledb dialect', () => {
             const client = getKnexForDb('oracledb', {
               version: 'not a good version number',
             }).client;
-            await client.acquireRawConnection();
+            await client.acquireConnection();
 
             expect(client.version).to.match(/^\d+\.\d+$/);
           });

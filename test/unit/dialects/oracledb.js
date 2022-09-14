@@ -39,7 +39,11 @@ describe('OracleDB Unit Tests', () => {
       });
 
       it('should strip off any character suffixes from versions', () => {
-        expect(client._parseVersion('12c')).to.equal('12');
+        const client = new Oracle_Client({
+          client: 'oracledb',
+          version: '12c',
+        });
+        expect(client.version).to.equal('12');
       });
 
       it('should error indicating the need to specify a version if it could not be auto-detected', async () => {
