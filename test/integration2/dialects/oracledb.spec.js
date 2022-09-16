@@ -25,8 +25,7 @@ describe('Oracledb dialect', () => {
             // to silent dropping of the Buffer.
             expect(queryObj.bindings.length).to.eql(2);
             expect(queryObj).to.eql({
-              sql:
-                'insert into "table1" ("value") values (:1) returning "value" into :2',
+              sql: 'insert into "table1" ("value") values (:1) returning "value" into :2',
               bindings: [b, { type: 2019, dir: 3003 }],
             });
           });
@@ -35,7 +34,8 @@ describe('Oracledb dialect', () => {
         describe('Version Detection', () => {
           it('should correctly resolve the oracle database version on connection if not specified', async () => {
             const client = knex.client;
-            await client.acquireConnection();
+            const connection = await client.acquireConnection();
+            await client.releaseConnection(connection);
 
             expect(client.version).to.match(/^\d+\.\d+$/);
           });
@@ -43,7 +43,8 @@ describe('Oracledb dialect', () => {
           it('should not attempt to dynamically resolve database version on connection if specified', async () => {
             // Manually specifying a version number other than the one we use for testing.
             const client = getKnexForDb('oracledb', { version: '12.2' }).client;
-            await client.acquireConnection();
+            const connection = await client.acquireConnection();
+            await client.releaseConnection(connection);
 
             expect(client.version).to.equal('12.2');
           });
@@ -52,7 +53,8 @@ describe('Oracledb dialect', () => {
             const client = getKnexForDb('oracledb', {
               version: 'not a good version number',
             }).client;
-            await client.acquireConnection();
+            const connection = await client.acquireConnection();
+            await client.releaseConnection(connection);
 
             expect(client.version).to.match(/^\d+\.\d+$/);
           });
