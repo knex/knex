@@ -3024,6 +3024,7 @@ export declare namespace Knex {
     connectionTimeoutMillis?: number;
     types?: PgCustomTypesConfig;
     options?: string;
+    expirationChecker?(): boolean;
   }
 
   type PgGetTypeParser = (oid: number, format: string) => any;
