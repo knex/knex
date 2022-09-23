@@ -455,11 +455,11 @@ const knex = require('knex')({
 
 ### compileSqlOnError
 
-Knex builds an error message in case of query error. To avoid leaking sensitive values, the parameterized SQL (`SELECT * FROM users WHERE password = ?`) will be added to the message by default, this can be changed to compiled SQL (`SELECT * FROM users WHERE password =  'myPassword'`) by setting `compileSqlOnError` to true.
+Knex builds an error message in case of query error. By default Knex adds compiled SQL (`SELECT * FROM users WHERE password = 'myPassword'`) to the error message. This can be changed to parameterized SQL (`SELECT * FROM users WHERE password = ?`) by setting `compileSqlOnError` to `false`.
 
 ```js
 const knex = require('knex')({
-  compileSqlOnError: true
+  compileSqlOnError: false
 });
 ```
 
