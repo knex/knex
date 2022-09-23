@@ -5,7 +5,7 @@ Sometimes you may need to use a raw expression in a query. Raw query object may 
 
 ## Raw Parameter Binding
 
-One can paramterize sql given to `knex.raw(sql, bindings)`. Parameters can be positional named. One can also choose if parameter should be treated as value or as sql identifier e.g. in case of `'TableName.ColumnName'` reference.
+One can parameterize sql given to `knex.raw(sql, bindings)`. Parameters can be positional named. One can also choose if parameter should be treated as value or as sql identifier e.g. in case of `'TableName.ColumnName'` reference.
 
 ```js
 knex('users')
