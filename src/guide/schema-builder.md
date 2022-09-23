@@ -75,7 +75,7 @@ knex.schema.dropTableIfExists('users')
 Renames a table from a current tableName to another.
 
 ```js
-knex.schema.renameTable('users', 'old_users')
+knex.schema.renameTable('old_users', 'users')
 ```
 
 ### hasTable
