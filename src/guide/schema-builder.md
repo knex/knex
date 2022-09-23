@@ -330,7 +330,7 @@ Drops a column, specified by the column's name
 
 ### dropColumns
 
-**table.dropColumns(*columns)**
+**table.dropColumns(columns)**
 
 Drops multiple columns, taking a variable number of column names.
 
