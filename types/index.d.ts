@@ -2717,6 +2717,7 @@ export declare namespace Knex {
     searchPath?: string | readonly string[];
     asyncStackTraces?: boolean;
     log?: Logger;
+    compileSqlOnError?: boolean;
   }
 
   type StaticConnectionConfig =
