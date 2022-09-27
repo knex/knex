@@ -3,7 +3,7 @@ import { expectAssignable } from 'tsd';
 import {Knex} from '../types';
 import * as stream from "stream";
 
-const connectionConfig: Knex.PgConnectionConfig = {
+expectAssignable<Knex.PgConnectionConfig>({
   user: '',
   database: '',
   password: '',
@@ -25,6 +25,4 @@ const connectionConfig: Knex.PgConnectionConfig = {
   },
   options: '',
   expirationChecker: () => {return true;},
-};
-
-expectAssignable<Knex.PgConnectionConfig>(connectionConfig);
+});
