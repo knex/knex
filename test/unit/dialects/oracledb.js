@@ -1,7 +1,6 @@
 const { expect } = require('chai');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
 const { NameHelper } = require('../../../lib/dialects/oracle/utils');
-const client = new Oracle_Client({ client: 'oracledb' });
 
 describe('OracleDB Unit Tests', () => {
   describe('Client', () => {
