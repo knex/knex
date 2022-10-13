@@ -25,7 +25,7 @@ const {
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
 
-describe('unions', function () {
+describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]', function () {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
@@ -59,128 +59,130 @@ describe('unions', function () {
         await knex.destroy();
       });
 
-      it('handles unions with a callback', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union(function () {
-            this.select(unionCols).from('accounts').where('id', 2);
-          });
-      });
-
-      it('handles unions with an array of callbacks', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union([
-            function () {
+      describe('.union()', () => {
+        it('handles unions with a callback', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .union(function () {
               this.select(unionCols).from('accounts').where('id', 2);
-            },
-            function () {
-              this.select(unionCols).from('accounts').where('id', 3);
-            },
-          ]);
-      });
+            });
+        });
 
-      it('handles unions with a list of callbacks', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union(
-            function () {
-              this.select(unionCols).from('accounts').where('id', 2);
-            },
-            function () {
-              this.select(unionCols).from('accounts').where('id', 3);
-            }
-          );
-      });
+        it('handles unions with an array of callbacks', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .union([
+              function () {
+                this.select(unionCols).from('accounts').where('id', 2);
+              },
+              function () {
+                this.select(unionCols).from('accounts').where('id', 3);
+              },
+            ]);
+        });
 
-      it('handles unions with an array of builders', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union([
-            knex.select(unionCols).from('accounts').where('id', 2),
-            knex.select(unionCols).from('accounts').where('id', 3),
-          ]);
-      });
+        it('handles unions with a list of callbacks', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .union(
+              function () {
+                this.select(unionCols).from('accounts').where('id', 2);
+              },
+              function () {
+                this.select(unionCols).from('accounts').where('id', 3);
+              }
+            );
+        });
 
-      it('handles unions with a list of builders', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union(
-            knex.select(unionCols).from('accounts').where('id', 2),
-            knex.select(unionCols).from('accounts').where('id', 3)
-          );
-      });
+        it('handles unions with an array of builders', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .union([
+              knex.select(unionCols).from('accounts').where('id', 2),
+              knex.select(unionCols).from('accounts').where('id', 3),
+            ]);
+        });
 
-      it('handles unions with a raw query', async () => {
-        await knex('union_raw_test')
-          .select('*')
-          .where('id', '=', 1)
-          .union(
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              2,
-            ])
-          );
-      });
+        it('handles unions with a list of builders', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .union(
+              knex.select(unionCols).from('accounts').where('id', 2),
+              knex.select(unionCols).from('accounts').where('id', 3)
+            );
+        });
 
-      it('handles unions with an array raw queries', async () => {
-        await knex('union_raw_test')
-          .select('*')
-          .where('id', '=', 1)
-          .union([
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              2,
-            ]),
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              3,
-            ]),
-          ]);
-      });
+        it('handles unions with a raw query', async () => {
+          await knex('union_raw_test')
+            .select('*')
+            .where('id', '=', 1)
+            .union(
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                2,
+              ])
+            );
+        });
 
-      it('handles unions with a list of raw queries', async () => {
-        await knex('union_raw_test')
-          .select('*')
-          .where('id', '=', 1)
-          .union(
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              2,
-            ]),
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              3,
-            ])
-          );
-      });
+        it('handles unions with an array raw queries', async () => {
+          await knex('union_raw_test')
+            .select('*')
+            .where('id', '=', 1)
+            .union([
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                3,
+              ]),
+            ]);
+        });
 
-      it('handles nested unions with limit', async function () {
-        if (!isPostgreSQL(knex)) {
-          return this.skip();
-        }
-        const results = await knex('accounts')
-          .select('last_name')
-          .unionAll(function () {
-            this.select('last_name').from('accounts');
-          })
-          .first();
-        expect(results).to.eql({
-          last_name: 'User',
+        it('handles unions with a list of raw queries', async () => {
+          await knex('union_raw_test')
+            .select('*')
+            .where('id', '=', 1)
+            .union(
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                3,
+              ])
+            );
         });
       });
 
-      describe('unions with wrapped queries', () => {
+      describe('.unionAll()', () => {
+        it('handles nested unions with limit', async function () {
+          if (!isPostgreSQL(knex)) {
+            return this.skip();
+          }
+          const results = await knex('accounts')
+            .select('last_name')
+            .unionAll(function () {
+              this.select('last_name').from('accounts');
+            })
+            .first();
+          expect(results).to.eql({
+            last_name: 'User',
+          });
+        });
+
         it('nested unions with group by in subqueries and limit and orderby', async function () {
           if (!isPostgreSQL(knex) && !isMysql(knex)) {
             return this.skip();
@@ -505,7 +507,7 @@ describe('unions', function () {
         });
       });
 
-      describe('intersects', function () {
+      describe('.intersect()', function () {
         before(async function () {
           await knex.schema.createTable('intersect_test', function (t) {
             t.integer('id');
@@ -796,7 +798,8 @@ describe('unions', function () {
             });
         });
       });
-      describe('excepts', function () {
+
+      describe('.except()', function () {
         it('handles excepts with a callback', async () => {
           await knex('accounts')
             .select(unionCols)
