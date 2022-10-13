@@ -796,6 +796,113 @@ describe('unions', function () {
             });
         });
       });
+      describe('excepts', function () {
+        it('handles excepts with a callback', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .except(function () {
+              this.select(unionCols).from('accounts').where('id', 2);
+            });
+        });
+
+        it('handles excepts with an array of callbacks', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .except([
+              function () {
+                this.select(unionCols).from('accounts').where('id', 2);
+              },
+              function () {
+                this.select(unionCols).from('accounts').where('id', 3);
+              },
+            ]);
+        });
+
+        it('handles excepts with a list of callbacks', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .except(
+              function () {
+                this.select(unionCols).from('accounts').where('id', 2);
+              },
+              function () {
+                this.select(unionCols).from('accounts').where('id', 3);
+              }
+            );
+        });
+
+        it('handles excepts with an array of builders', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .except([
+              knex.select(unionCols).from('accounts').where('id', 2),
+              knex.select(unionCols).from('accounts').where('id', 3),
+            ]);
+        });
+
+        it('handles excepts with a list of builders', async () => {
+          await knex('accounts')
+            .select(unionCols)
+            .where('id', '=', 1)
+            .except(
+              knex.select(unionCols).from('accounts').where('id', 2),
+              knex.select(unionCols).from('accounts').where('id', 3)
+            );
+        });
+
+        it('handles excepts with a raw query', async () => {
+          await knex('union_raw_test')
+            .select('*')
+            .where('id', '=', 1)
+            .except(
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                2,
+              ])
+            );
+        });
+
+        it('handles excepts with an array raw queries', async () => {
+          await knex('union_raw_test')
+            .select('*')
+            .where('id', '=', 1)
+            .except([
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                3,
+              ]),
+            ]);
+        });
+
+        it('handles excepts with a list of raw queries', async () => {
+          await knex('union_raw_test')
+            .select('*')
+            .where('id', '=', 1)
+            .except(
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_raw_test',
+                'id',
+                3,
+              ])
+            );
+        });
+      });
     });
   });
 });
