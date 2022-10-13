@@ -708,12 +708,12 @@ export declare namespace Knex {
     // Partition by
     partitionBy: PartitionBy<TRecord, TResult>;
 
-    // Intersect
-    intersect: Intersect<TRecord, TResult>;
-
-    // Union
+    // Unions
     union: Union<TRecord, TResult>;
     unionAll: Union<TRecord, TResult>;
+    intersect: Intersect<TRecord, TResult>;
+    except: Except<TRecord, TResult>;
+
 
     // Having
     having: Having<TRecord, TResult>;
@@ -1975,6 +1975,9 @@ export declare namespace Knex {
       ...callbacks: readonly (QueryCallback | Raw | QueryBuilder<TRecord>)[]
     ): QueryBuilder<TRecord, TResult>;
   }
+
+  interface Except<TRecord extends {} = any, TResult = unknown[]>
+    extends Intersect<TRecord, TResult> {}
 
   interface Union<TRecord extends {} = any, TResult = unknown[]>
     extends Intersect<TRecord, TResult> {}
