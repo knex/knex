@@ -1159,6 +1159,80 @@ describe('OracleDb SchemaBuilder', function () {
     );
   });
 
+  describe('wrapIdentifier', function () {
+    let spy;
+    let originalWrapIdentifier;
+
+    before(function () {
+      spy = sinon.spy();
+      originalWrapIdentifier = client.config.wrapIdentifier;
+      client.config.wrapIdentifier = function (value, wrap) {
+        spy(value);
+        return wrap(value);
+      };
+    });
+
+    beforeEach(function () {
+      spy.resetHistory();
+    });
+
+    after(function () {
+      client.config.wrapIdentifier = originalWrapIdentifier;
+    });
+
+    it('TableCompiler createQuery should format table name and ColumnCompiler should not format increments trigger and sequence names', function () {
+      client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.increments('id');
+          table.string('email');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(4);
+      expect(spy.firstCall.args).to.deep.equal(['id']);
+      expect(spy.secondCall.args).to.deep.equal(['users']);
+      expect(spy.thirdCall.args).to.deep.equal(['email']);
+      expect(spy.lastCall.args).to.deep.equal(['users']);
+    });
+
+    it('TableCompiler renameColumn should format provided column names while not formatting increments trigger and sequence names', function () {
+      client
+        .schemaBuilder()
+        .alterTable('users', function (table) {
+          table.renameColumn('increments1', 'increments2');
+        })
+        .toSQL();
+
+      expect(spy.callCount).to.equal(3);
+      expect(spy.firstCall.args).to.deep.equal(['users']);
+      expect(spy.secondCall.args).to.deep.equal(['increments1']);
+      expect(spy.thirdCall.args).to.deep.equal(['increments2']);
+    });
+
+    it('SchemaCompiler renameTable should format provided table names while not formatting increments trigger and sequence names', function () {
+      client.schemaBuilder().renameTable('old', 'new').toSQL();
+
+      expect(spy.callCount).to.equal(2);
+      expect(spy.firstCall.args).to.deep.equal(['old']);
+      expect(spy.secondCall.args).to.deep.equal(['new']);
+    });
+
+    it('SchemaCompiler dropTable should not reformat increments sequence and trigger names', function () {
+      client.schemaBuilder().dropTable('users').toSQL();
+
+      expect(spy.callCount).to.equal(1);
+      expect(spy.firstCall.args).to.deep.equal(['users']);
+    });
+
+    it('SchemaCompiler dropTableIfExists should not reformat increments sequence and trigger names', function () {
+      client.schemaBuilder().dropTableIfExists('users').toSQL();
+
+      expect(spy.callCount).to.equal(1);
+      expect(spy.firstCall.args).to.deep.equal(['users']);
+    });
+  });
+
   describe('queryContext', function () {
     let spy;
     let originalWrapIdentifier;
