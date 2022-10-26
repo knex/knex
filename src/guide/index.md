@@ -142,7 +142,7 @@ const knex = require('knex')({
   version: '7.2',
   connection: {
     host : '127.0.0.1',
-    port : 3306,
+    port : 5432,
     user : 'your_database_user',
     password : 'your_database_password',
     database : 'myapp_test'
@@ -202,7 +202,7 @@ const knex = require('knex')({
 
     return {
       host : 'your_host',
-      port : 3306,
+      port : 5432,
       user : 'your_database_user',
       password : token,
       database : 'myapp_test',
