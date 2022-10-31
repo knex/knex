@@ -2581,7 +2581,15 @@ export declare namespace Knex {
   type lengthOperator = '>' | '<' | '<=' | '>=' | '!=' | '=';
 
   interface ColumnBuilder {
-    index(indexName?: string): ColumnBuilder;
+    index(indexName?: string, indexType?:string): ColumnBuilder;
+    index(
+      indexName?: string,
+      options?: Readonly<{
+        indexType?: string,
+        storageEngineIndexType?: storageEngineIndexType,
+        predicate?: QueryBuilder
+      }>
+    ): ColumnBuilder;
     primary(
       options?: Readonly<{
         constraintName?: string;
