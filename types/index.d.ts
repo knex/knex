@@ -1151,6 +1151,8 @@ export declare namespace Knex {
 
     onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
 
+    updateFrom: Table<TRecord, TResult>;
+
     del(
       returning: '*',
       options?: DMLOptions

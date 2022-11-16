@@ -534,6 +534,26 @@ describe('Updates', function () {
         expect(results[0].last_name).to.equal('olivier');
       });
 
+      it('should allow explicit from', async function () {
+        await knex('accounts')
+          .update({ last_name: 'olivier' })
+          .with('withClause', function () {
+            this.select('id', 'last_name')
+              .from('accounts')
+              .where('email', '=', 'test1@example.com');
+          })
+          .updateFrom('withClause')
+          .where('withClause.id', '=', knex.ref('accounts.id'))
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'with "withClause" as (select "id", "last_name" from "accounts" where "email" = ?) update "accounts" set "last_name" = ? from "withClause" where "withClause"."id" = "accounts"."id"',
+              ['test1@example.com', 'olivier'],
+              1
+            );
+          });
+      });
+
       it('should escaped json objects when update value #5059', async function () {
         await knex.schema.dropTableIfExists('testing');
         await knex.schema.createTable('testing', (t) => {

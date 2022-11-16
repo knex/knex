@@ -6080,6 +6080,22 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('update from table', () => {
+    testsql(
+      qb()
+        .update({ email: 'foo', name: 'bar' })
+        .table('users')
+        .updateFrom('others')
+        .where('id', '=', 1),
+      {
+        pg: {
+          sql: 'update "users" set "email" = ?, "name" = ? from "others" where "id" = ?',
+          bindings: ['foo', 'bar', 1],
+        },
+      }
+    );
+  });
+
   it('should not update columns undefined values', () => {
     testsql(
       qb()
