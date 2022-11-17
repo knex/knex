@@ -878,7 +878,7 @@ If you want to create primary constraint on existing column use [primary](#Schem
 
 **column.unique(options={[indexName:string],[deferrable:'not deferrable'|'immediate'|'deferred']})**
 
-Sets the `column` as unique. On Amazon Redshift, this constraint is not enforced, but it is used by the query planner. Deferrable unqiue constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.
+Sets the `column` as unique. On Amazon Redshift, this constraint is not enforced, but it is used by the query planner. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.
 
 ```js
 knex.schema.table('users', function (table) {
