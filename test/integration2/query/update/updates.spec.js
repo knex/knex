@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../../util/constants');
+const { isPostgreSQL } = require('../../../util/db-helpers');
 const {
   getAllDbs,
   getKnexForDb,
@@ -535,6 +536,10 @@ describe('Updates', function () {
       });
 
       it('should allow explicit from', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
         await knex('accounts')
           .update({ last_name: 'olivier' })
           .with('withClause', function () {
