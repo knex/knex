@@ -106,7 +106,7 @@
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
     "@types/node": "^18.7.14",
-    "better-sqlite3": "^7.6.2",
+    "better-sqlite3": "^8.0.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^3.1.0",
