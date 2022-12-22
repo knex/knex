@@ -848,6 +848,34 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('basic wheres should not accept array or object as a value', () => {
+    try {
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .where('id', '=', [0]);
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'The values in where clause must not be object or array.'
+      );
+    }
+
+    try {
+      clientsWithCustomLoggerForTestWarnings.pg
+        .queryBuilder()
+        .select('*')
+        .from('users')
+        .where({ id: { test: 'test' } });
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'The values in where clause must not be object or array.'
+      );
+    }
+  });
+
   it('uses whereLike, #2265', () => {
     testsql(qb().select('*').from('users').whereLike('name', 'luk%'), {
       mysql: {

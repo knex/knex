@@ -2,6 +2,9 @@
 
 # 2.3.0 - 31 August, 2022
 
+### Bug fixes
+- Add assertion for basic where clause not to be object or array #1227
+
 ### New features:
 
 - PostgreSQL: Explicit jsonb support for custom pg clients #5201
