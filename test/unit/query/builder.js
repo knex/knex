@@ -848,13 +848,22 @@ describe('QueryBuilder', () => {
     });
   });
 
-  it('basic wheres should not accept array or object as a value', () => {
+  it('basic wheres should not accept array or object as a value #1227', () => {
+    testquery(qb().select('*').from('users').where('id', '=', 1), {
+      mysql: 'select * from `users` where `id` = 1',
+      pg: 'select * from "users" where "id" = 1',
+      'pg-redshift': 'select * from "users" where "id" = 1',
+      mssql: 'select * from [users] where [id] = 1',
+    });
+    testquery(qb().select('*').from('users').where({ id: 1 }), {
+      mysql: 'select * from `users` where `id` = 1',
+      pg: 'select * from "users" where "id" = 1',
+      'pg-redshift': 'select * from "users" where "id" = 1',
+      mssql: 'select * from [users] where [id] = 1',
+    });
+
     try {
-      clientsWithCustomLoggerForTestWarnings.pg
-        .queryBuilder()
-        .select('*')
-        .from('users')
-        .where('id', '=', [0]);
+      qb().select('*').from('users').where('id', '=', [0]);
       throw new Error('Should not reach this point');
     } catch (error) {
       expect(error.message).to.equal(
@@ -863,11 +872,34 @@ describe('QueryBuilder', () => {
     }
 
     try {
-      clientsWithCustomLoggerForTestWarnings.pg
-        .queryBuilder()
+      qb()
         .select('*')
         .from('users')
         .where({ id: { test: 'test' } });
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'The values in where clause must not be object or array.'
+      );
+    }
+
+    try {
+      qb()
+        .select('*')
+        .from('users')
+        .where(raw('?? = ?', ['id', [0]]));
+      throw new Error('Should not reach this point');
+    } catch (error) {
+      expect(error.message).to.equal(
+        'The values in where clause must not be object or array.'
+      );
+    }
+
+    try {
+      qb()
+        .select('*')
+        .from('users')
+        .whereRaw('?? = ?', ['id', { test: 'test' }]);
       throw new Error('Should not reach this point');
     } catch (error) {
       expect(error.message).to.equal(
