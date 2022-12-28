@@ -861,6 +861,12 @@ describe('QueryBuilder', () => {
       'pg-redshift': 'select * from "users" where "id" = 1',
       mssql: 'select * from [users] where [id] = 1',
     });
+    testquery(qb().select('*').from('users').whereRaw('?? = ?'), {
+      mysql: 'select * from `users` where ?? = ?',
+      pg: 'select * from "users" where ?? = ?',
+      'pg-redshift': 'select * from "users" where ?? = ?',
+      mssql: 'select * from [users] where ?? = ?',
+    });
 
     try {
       qb().select('*').from('users').where('id', '=', [0]);
