@@ -9269,7 +9269,7 @@ describe('QueryBuilder', () => {
     }).to.throw('Hint comment must be a string');
   });
 
-  it('Any undefined binding in a SELECT query should throw an error', () => {
+  it.only('Any undefined binding in a SELECT query should throw an error', () => {
     const qbuilders = [
       {
         builder: qb()
@@ -9304,18 +9304,27 @@ describe('QueryBuilder', () => {
           .from('accounts')
           .where({ Login: ['1', '2', '3', void 0] }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
           .from('accounts')
           .where({ Login: { Test: '123', Value: void 0 } }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
           .from('accounts')
           .where({ Login: ['1', ['2', [void 0]]] }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
@@ -9329,10 +9338,6 @@ describe('QueryBuilder', () => {
       try {
         //Must be present, but makes no difference since it throws.
         testsql(builder, {
-          mysql: {
-            sql: '',
-            bindings: [],
-          },
           oracledb: {
             sql: '',
             bindings: [],
@@ -9350,16 +9355,35 @@ describe('QueryBuilder', () => {
             bindings: [],
           },
         });
-        expect(true).to.equal(
-          false,
-          'Expected to throw error in compilation about undefined bindings.'
-        );
+        throw new Error('Should not reach this point');
       } catch (error) {
         expect(error.message).to.contain(
           'Undefined binding(s) detected when compiling ' +
             builder._method.toUpperCase() +
             `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
         ); //This test is not for asserting correct queries
+      }
+    });
+    qbuilders.forEach(({ builder, undefinedColumns, clientError }) => {
+      try {
+        //Must be present, but makes no difference since it throws.
+        testsql(builder, {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+        });
+        throw new Error('Should not reach this point');
+      } catch (error) {
+        if (clientError && clientError.mysql) {
+          expect(error.message).to.contain(clientError.mysql);
+        } else {
+          expect(error.message).to.contain(
+            'Undefined binding(s) detected when compiling ' +
+              builder._method.toUpperCase() +
+              `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
+          ); //This test is not for asserting correct queries
+        }
       }
     });
   });
