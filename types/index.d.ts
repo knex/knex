@@ -3100,6 +3100,7 @@ export declare namespace Knex {
     directory?: string | readonly string[];
     extension?: string;
     stub?: string;
+    getNewMigrationName?: (name: string) => string;
     tableName?: string;
     schemaName?: string;
     disableTransactions?: boolean;
