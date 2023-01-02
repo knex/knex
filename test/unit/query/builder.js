@@ -9269,7 +9269,7 @@ describe('QueryBuilder', () => {
     }).to.throw('Hint comment must be a string');
   });
 
-  it.only('Any undefined binding in a SELECT query should throw an error', () => {
+  it('Any undefined binding in a SELECT query should throw an error', () => {
     const qbuilders = [
       {
         builder: qb()
