@@ -1,5 +1,8 @@
 # Master (Unreleased)
 
+### Bug fixes
+- Add assertion for basic where clause not to be object or array #1227
+
 # 2.3.0 - 31 August, 2022
 
 ### New features:
