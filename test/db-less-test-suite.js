@@ -46,6 +46,10 @@ if (config.postgres) {
   require('./unit/dialects/postgres');
 }
 
+if (config.mysql) {
+  require('./unit/dialects/mysql');
+}
+
 describe('CLI tests', function () {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
   require('./cli/help.spec');

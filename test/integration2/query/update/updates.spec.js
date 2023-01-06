@@ -314,9 +314,22 @@ describe('Updates', function () {
             );
             tester(
               'sqlite3',
-              'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+              'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ? returning *',
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
-              1
+              [
+                {
+                  id: 1,
+                  first_name: 'UpdatedUser',
+                  last_name: 'UpdatedTest',
+                  email: 'test100@example.com',
+                  logins: 1,
+                  balance: 12.240000000000002,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                },
+              ]
             );
             tester(
               'oracledb',

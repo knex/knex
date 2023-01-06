@@ -794,6 +794,33 @@ describe('Where', function () {
           ]);
         });
 
+        it('or where json superset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where descriptions json object contains type : 'bigcity' or 'city'
+            .whereJsonSupersetOf('descriptions', {
+              type: 'bigcity',
+            })
+            .orWhereJsonSupersetOf('descriptions', {
+              type: 'city',
+            });
+          expect(result.length).to.equal(3);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
+            },
+            {
+              name: 'Oslo',
+            },
+          ]);
+        });
+
         it('where json superset of with string', async function () {
           if (!(isPostgreSQL(knex) || isMysql(knex))) {
             this.skip();
@@ -827,6 +854,32 @@ describe('Where', function () {
           assertJsonEquals(result, [
             {
               name: 'Paris', // contains only desc: 'cold' but it's matched
+            },
+          ]);
+        });
+
+        it('or where json subset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where temperature json object is included in given object
+            .whereJsonSubsetOf('temperature', {
+              desc: 'cold',
+              desc2: 'very cold',
+            })
+            .orWhereJsonSubsetOf('temperature', {
+              desc: 'warm',
+              desc2: 'very warm',
+            });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
             },
           ]);
         });

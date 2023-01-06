@@ -1,5 +1,57 @@
 # Master (Unreleased)
 
+# 2.4.0 - 06 January, 2022
+
+### New features:
+
+- Support partial unique indexes #5316
+- Make compiling SQL in error message optional #5282
+
+### Bug fixes
+
+- Insert array into json column #5321
+- Fix unexpected max acquire-timeout #5377
+- Fix: orWhereJson #5361
+- MySQL: Add assertion for basic where clause not to be object or array #1227
+- SQLite: Fix changing the default value of a boolean column in SQLite #5319
+
+### Typings:
+
+- add missing type for 'expirationChecker' on PgConnectionConfig #5334
+
+# 2.3.0 - 31 August, 2022
+
+### New features:
+
+- PostgreSQL: Explicit jsonb support for custom pg clients #5201
+- SQLite: Support returning with sqlite3 and better-sqlite3 #5285
+- MSSQL: Implement mapBinding mssql dialect option #5292
+
+### Typings:
+
+- Update types for TS 4.8 #5279
+- Fix typo #5267
+- Fix WhereJsonObject withCompositeTableType #5306
+- Fix AnalyticFunction type #5304
+- Infer specific column value type in aggregations #5297
+
+# 2.2.0 - 19 July, 2022
+
+### New features:
+
+- Inline primary key creation for postgres flavours #5233
+- SQLite: Add warning for undefined connection file #5223
+- MSSQL: Add JSON parameter support for connection #5200
+
+### Bug fixes:
+
+- PostgreSQL: add primaryKey option for uuid #5212
+
+### Typings:
+
+- Add promisable and better types #5222
+- Update raw query bind parameter type #5208
+
 # 2.1.0 - 26 May, 2022
 
 ### New features:

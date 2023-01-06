@@ -9304,18 +9304,27 @@ describe('QueryBuilder', () => {
           .from('accounts')
           .where({ Login: ['1', '2', '3', void 0] }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
           .from('accounts')
           .where({ Login: { Test: '123', Value: void 0 } }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
           .from('accounts')
           .where({ Login: ['1', ['2', [void 0]]] }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
@@ -9329,10 +9338,6 @@ describe('QueryBuilder', () => {
       try {
         //Must be present, but makes no difference since it throws.
         testsql(builder, {
-          mysql: {
-            sql: '',
-            bindings: [],
-          },
           oracledb: {
             sql: '',
             bindings: [],
@@ -9350,16 +9355,35 @@ describe('QueryBuilder', () => {
             bindings: [],
           },
         });
-        expect(true).to.equal(
-          false,
-          'Expected to throw error in compilation about undefined bindings.'
-        );
+        throw new Error('Should not reach this point');
       } catch (error) {
         expect(error.message).to.contain(
           'Undefined binding(s) detected when compiling ' +
             builder._method.toUpperCase() +
             `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
         ); //This test is not for asserting correct queries
+      }
+    });
+    qbuilders.forEach(({ builder, undefinedColumns, clientError }) => {
+      try {
+        //Must be present, but makes no difference since it throws.
+        testsql(builder, {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+        });
+        throw new Error('Should not reach this point');
+      } catch (error) {
+        if (clientError && clientError.mysql) {
+          expect(error.message).to.contain(clientError.mysql);
+        } else {
+          expect(error.message).to.contain(
+            'Undefined binding(s) detected when compiling ' +
+              builder._method.toUpperCase() +
+              `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
+          ); //This test is not for asserting correct queries
+        }
       }
     });
   });
@@ -11023,31 +11047,32 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonPath('address', '$.street.number', '>', 5),
+            .whereJsonPath('address', '$.street.number', '>', 5)
+            .orWhereJsonPath('address', '$.street.number', '<', 8),
           {
             pg: {
-              sql: 'select * from "users" where jsonb_path_query_first("address", ?)::int > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from "users" where jsonb_path_query_first("address", ?)::int > ? or jsonb_path_query_first("address", ?)::int < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             mysql: {
-              sql: 'select * from `users` where json_extract(`address`, ?) > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from `users` where json_extract(`address`, ?) > ? or json_extract(`address`, ?) < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             mssql: {
-              sql: 'select * from [users] where JSON_VALUE([address], ?) > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from [users] where JSON_VALUE([address], ?) > ? or JSON_VALUE([address], ?) < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             oracledb: {
-              sql: 'select * from "users" where json_value("address", \'$.street.number\') > ?',
-              bindings: [5],
+              sql: 'select * from "users" where json_value("address", \'$.street.number\') > ? or json_value("address", \'$.street.number\') < ?',
+              bindings: [5, 8],
             },
             sqlite3: {
-              sql: 'select * from `users` where json_extract(`address`, ?) > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from `users` where json_extract(`address`, ?) > ? or json_extract(`address`, ?) < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             cockroachdb: {
-              sql: 'select * from "users" where json_extract_path("address", ?, ?)::int > ?',
-              bindings: ['street', 'number', 5],
+              sql: 'select * from "users" where json_extract_path("address", ?, ?)::int > ? or json_extract_path("address", ?, ?)::int < ?',
+              bindings: ['street', 'number', 5, 'street', 'number', 8],
             },
           }
         );
@@ -11058,19 +11083,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonSupersetOf('address', { test: 'value' }),
+            .whereJsonSupersetOf('address', { test: 'value' })
+            .orWhereJsonSupersetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where json_contains(`address`,?)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where json_contains(`address`,?) or json_contains(`address`,?)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );
@@ -11078,19 +11104,23 @@ describe('QueryBuilder', () => {
 
       it('where a json column is a superset of value', async function () {
         testsql(
-          qb().select().from('users').whereJsonSupersetOf('address', 'test'),
+          qb()
+            .select()
+            .from('users')
+            .whereJsonSupersetOf('address', 'test')
+            .orWhereJsonSupersetOf('address', 'test2'),
           {
             pg: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['test'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['test', 'test2'],
             },
             mysql: {
-              sql: 'select * from `users` where json_contains(`address`,?)',
-              bindings: ['test'],
+              sql: 'select * from `users` where json_contains(`address`,?) or json_contains(`address`,?)',
+              bindings: ['test', 'test2'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['test'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['test', 'test2'],
             },
           }
         );
@@ -11101,19 +11131,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonNotSupersetOf('address', { test: 'value' }),
+            .whereJsonNotSupersetOf('address', { test: 'value' })
+            .orWhereJsonNotSupersetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where not "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" @> ? or not "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where not json_contains(`address`,?)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where not json_contains(`address`,?) or not json_contains(`address`,?)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where not "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" @> ? or not "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );
@@ -11124,19 +11155,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonSubsetOf('address', { test: 'value' }),
+            .whereJsonSubsetOf('address', { test: 'value' })
+            .orWhereJsonSubsetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" <@ ? or "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where json_contains(?,`address`)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where json_contains(?,`address`) or json_contains(?,`address`)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" <@ ? or "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );
@@ -11147,19 +11179,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonNotSubsetOf('address', { test: 'value' }),
+            .whereJsonNotSubsetOf('address', { test: 'value' })
+            .orWhereJsonNotSubsetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where not "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" <@ ? or not "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where not json_contains(?,`address`)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where not json_contains(?,`address`) or not json_contains(?,`address`)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where not "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" <@ ? or not "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );

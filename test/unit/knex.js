@@ -753,6 +753,44 @@ describe('knex', () => {
       expect(errorArgs.queryContext).to.equal(context);
     });
 
+    it('should show compiled sql on error message when compileSqlOnError is true', async function () {
+      const spy = sinon.spy();
+      const knex = Knex({ ...sqliteConfig, compileSqlOnError: true })
+        .from('test')
+        .on('query-error', spy);
+
+      try {
+        await knex.insert({ foo: 'bar' });
+        // eslint-disable-next-line no-empty
+      } catch (_e) {}
+
+      expect(spy).to.be.calledOnce;
+      const [[error]] = spy.args;
+      expect(error).to.be.instanceOf(Error);
+      expect(error.message).to.equal(
+        "insert into `test` (`foo`) values ('bar') - SQLITE_ERROR: no such table: test"
+      );
+    });
+
+    it('should show parameterized sql on error message when compileSqlOnError is false', async function () {
+      const spy = sinon.spy();
+      const knex = Knex({ ...sqliteConfig, compileSqlOnError: false })
+        .from('test')
+        .on('query-error', spy);
+
+      try {
+        await knex.insert({ foo: 'bar' });
+        // eslint-disable-next-line no-empty
+      } catch (_e) {}
+
+      expect(spy).to.be.calledOnce;
+      const [[error]] = spy.args;
+      expect(error).to.be.instanceOf(Error);
+      expect(error.message).to.equal(
+        'insert into `test` (`foo`) values (?) - SQLITE_ERROR: no such table: test'
+      );
+    });
+
     // TODO: Consider moving these somewhere that tests the
     //       QueryBuilder interface more directly.
     context('qb = knex.select(1)', function () {
