@@ -49,4 +49,18 @@ describe('SchemaBuilder Extensions', () => {
       })
       .toSQL();
   });
+
+  it('querybuilder has method', () => {
+    knex.QueryBuilder.extend('testQueryBuilderExt', () => true);
+    expect(client.queryBuilder().testQueryBuilderExt()).to.be.true;
+  });
+
+  it('should throw when querybuilder method exists', () => {
+    expect(() => knex.QueryBuilder.extend('upsert', () => true)).to.throw();
+  });
+
+  it('should not throw when querybuilder method exists and force option is given', () => {
+    knex.QueryBuilder.extend('upsert', () => true, { force: true });
+    expect(client.queryBuilder().upsert()).to.be.true;
+  });
 });

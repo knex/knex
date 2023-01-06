@@ -374,6 +374,10 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
+interface BuilderExtendOptions {
+  force?: boolean;
+}
+
 export interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>,
     events.EventEmitter {
@@ -452,32 +456,37 @@ export declare namespace knex {
         | Promise<
             | Knex.QueryBuilder<TRecord | TResult>
             | DeferredKeySelection.Resolve<TResult>
-          >
+          >,
+      options?: BuilderExtendOptions
     ): void;
   }
 
   class TableBuilder {
     static extend<T = Knex.TableBuilder, B = Knex.TableBuilder>(
       methodName: string,
-      fn: (this: T, ...args: any[]) => B
+      fn: (this: T, ...args: any[]) => B,
+      options?: BuilderExtendOptions
     ): void;
   }
   class ViewBuilder {
     static extend<T = Knex.ViewBuilder, B = Knex.ViewBuilder>(
       methodName: string,
-      fn: (this: T, ...args: any[]) => B
+      fn: (this: T, ...args: any[]) => B,
+      options?: BuilderExtendOptions
     ): void;
   }
   class SchemaBuilder {
     static extend<T = Knex.SchemaBuilder, B = Knex.SchemaBuilder>(
       methodName: string,
-      fn: (this: T, ...args: any[]) => B
+      fn: (this: T, ...args: any[]) => B,
+      options?: BuilderExtendOptions
     ): void;
   }
   class ColumnBuilder {
     static extend<T = Knex.ColumnBuilder, B = Knex.ColumnBuilder>(
       methodName: string,
-      fn: (this: T, ...args: any[]) => B
+      fn: (this: T, ...args: any[]) => B,
+      options?: BuilderExtendOptions
     ): void;
   }
 
