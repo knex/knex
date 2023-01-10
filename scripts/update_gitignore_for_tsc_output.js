@@ -64,7 +64,8 @@ function main(cliCommand) {
       const relativeTsPath = filepath.slice(libDirectory.length + 1)
       // Swaps .ts for .js file ending
       const relativeJsPath = relativeTsPath.slice(0, relativeTsPath.length - 3) + '.js'
-      return relativeJsPath
+      // Always use POSIX-style path separators - .gitignore requires it
+      return relativeJsPath.split(path.sep).join(path.posix.sep);
     })
     const jsFilesToIgnoreString = jsFilesToIgnore.join('\n')
     const libGitignorePath = path.join(libDirectory, '.gitignore')
