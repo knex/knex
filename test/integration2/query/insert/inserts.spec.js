@@ -1982,7 +1982,7 @@ describe('Inserts', function () {
         expect(row3 && row3.name).to.equal('AFTER');
       });
 
-      it('update values on conflit with "where" condition and partial unique index #4590', async function () {
+      it('update values on conflict with "where" condition and partial unique index #4590', async function () {
         if (!isPostgreSQL(knex) && !isSQLite(knex)) {
           return this.skip();
         }
@@ -2099,6 +2099,33 @@ describe('Inserts', function () {
               return trx('accounts').delete().where('id', results[0].id);
             });
         });
+      });
+
+      it('should insert arrays into postgres array columns #5365', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        await knex.schema.dropTableIfExists('redirect_array');
+        await knex.schema.createTable('redirect_array', (table) => {
+          table.string('name');
+          table.specificType('redirect_urls', 'text ARRAY');
+        });
+
+        const redirects = ['https://knexjs.org/', 'https://knexjs.org/guide/'];
+
+        await knex('redirect_array').insert({ name: 'knex', redirect_urls: redirects })
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'insert into "redirect_urls" ("name", "redirect_urls") values (?, ?) returning "id"',
+              [
+                'knex',
+                ['https://knexjs.org/', 'https://knexjs.org/guide/'],
+              ],
+              [{ id: 1 }]
+            );
+          });
       });
     });
   });
