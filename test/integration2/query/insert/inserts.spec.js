@@ -2108,21 +2108,27 @@ describe('Inserts', function () {
 
         await knex.schema.dropTableIfExists('redirect_array');
         await knex.schema.createTable('redirect_array', (table) => {
+          table.increments();
           table.string('name');
           table.specificType('redirect_urls', 'text ARRAY');
         });
 
-        const redirects = ['https://knexjs.org/', 'https://knexjs.org/guide/'];
-
-        await knex('redirect_array').insert({ name: 'knex', redirect_urls: redirects })
+        await knex('redirect_array')
+          .insert(
+            {
+              name: 'knex',
+              redirect_urls: [
+                'https://knexjs.org/',
+                'https://knexjs.org/guide/',
+              ],
+            },
+            'id'
+          )
           .testSql(function (tester) {
             tester(
               'pg',
-              'insert into "redirect_urls" ("name", "redirect_urls") values (?, ?) returning "id"',
-              [
-                'knex',
-                ['https://knexjs.org/', 'https://knexjs.org/guide/'],
-              ],
+              'insert into "redirect_array" ("name", "redirect_urls") values (?, ?) returning "id"',
+              ['knex', ['https://knexjs.org/', 'https://knexjs.org/guide/']],
               [{ id: 1 }]
             );
           });
