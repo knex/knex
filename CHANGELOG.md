@@ -1,6 +1,6 @@
 # Master (Unreleased)
 
-# 2.4.0 - 06 January, 2022
+# 2.4.0 - 06 January, 2023
 
 ### New features:
 
