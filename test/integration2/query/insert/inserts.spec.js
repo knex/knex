@@ -2100,6 +2100,74 @@ describe('Inserts', function () {
             });
         });
       });
+      
+      it(`#5420 should insert data to json column if it's an array containing plain object`, async function () {
+        if (isSQLite(knex)) {
+          return true;
+        }
+
+        const jsonArray = [{
+          foo: {
+            bar: 'baz'
+          }
+        }];
+
+        await knex.schema.dropTableIfExists('json_array');
+        await knex.schema.createTable('json_array', (table) => {
+          table.increments();
+          table.string('name');
+          table.jsonb('content');
+        });
+
+        await knex('json_array')
+          .insert(
+            {
+              name: 'json_array',
+              content: jsonArray,
+            },
+            'id'
+          )
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'insert into "json_array" ("name", "content") values (?, ?) returning "id"',
+              ['json_array', JSON.stringify(jsonArray)],
+              [{ id: 1 }]
+            );
+          });
+      });
+
+      it('#5430 should insert string array to text ARRAY column', async function () {
+        if (isSQLite(knex)) {
+          return true;
+        }
+
+        const stringArrayContent = ['SOME TEXT', 'SOME OTHER TEXT'];
+
+        await knex.schema.dropTableIfExists('text_array');
+        await knex.schema.createTable('text_array', (table) => {
+          table.increments();
+          table.string('name');
+          table.specificType('content', 'text ARRAY');
+        });
+
+        await knex('text_array')
+          .insert(
+            {
+              name: 'text_array',
+              content: stringArrayContent,
+            },
+            'id'
+          )
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'insert into "text_array" ("name", "content") values (?, ?) returning "id"',
+              ['text_array', stringArrayContent],
+              [{ id: 1 }]
+            );
+          });
+      });
     });
   });
 });
