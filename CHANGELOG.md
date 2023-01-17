@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 2.4.1 - 18 January, 2022
+
+### Bug fixes
+
+- PostgreSQL: Fix Malformed array literal 2.4.0 Regression #5439
+
 # 2.4.0 - 06 January, 2022
 
 ### New features:
