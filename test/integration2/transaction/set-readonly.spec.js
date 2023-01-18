@@ -1,7 +1,6 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const { isSQLite, isMssql, isOracle } = require('../../util/db-helpers');
 const { expect } = require('chai');
-const { describe, it } = require('node:test');
 
 describe('Transaction', () => {
   describe('setReadOnly', () => {
@@ -9,7 +8,7 @@ describe('Transaction', () => {
       describe(db, () => {
         let knex;
         const tableName = 'key_value';
-        
+
         before(() => {
           knex = getKnexForDb(db);
         });
@@ -43,7 +42,7 @@ describe('Transaction', () => {
             )
           ).to.be.rejected;
         });
-      })
-    })
+      });
+    });
   });
 });
