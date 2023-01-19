@@ -714,7 +714,6 @@ export declare namespace Knex {
     intersect: Intersect<TRecord, TResult>;
     except: Except<TRecord, TResult>;
 
-
     // Having
     having: Having<TRecord, TResult>;
     andHaving: Having<TRecord, TResult>;
