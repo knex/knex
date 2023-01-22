@@ -1,7 +1,7 @@
 import { expectAssignable } from 'tsd';
 
-import {Knex} from '../types';
-import * as stream from "stream";
+import { Knex } from '../types';
+import * as stream from 'stream';
 
 expectAssignable<Knex.PgConnectionConfig>({
   user: '',
@@ -24,5 +24,5 @@ expectAssignable<Knex.PgConnectionConfig>({
     getTypeParser: () => {},
   },
   options: '',
-  expirationChecker: () => {return true;},
+  expirationChecker: () => true,
 });

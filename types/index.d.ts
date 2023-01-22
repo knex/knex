@@ -1778,7 +1778,10 @@ export declare namespace Knex {
   }
 
   interface WhereJsonObject<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<TRecord, TResult>;
+    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
@@ -2920,7 +2923,7 @@ export declare namespace Knex {
       multiSubnetFailover?: boolean;
       packetSize?: number;
       trustServerCertificate?: boolean;
-      mapBinding?: (value: any) => ({ value: any, type: any } | undefined);
+      mapBinding?: (value: any) => { value: any; type: any } | undefined;
     }>;
     pool?: Readonly<{
       min?: number;
