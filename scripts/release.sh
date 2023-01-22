@@ -22,7 +22,8 @@ next_ref="v$next_version"
 git add -u
 
 npm run build
-npm lint:everything
+npm run format:check
+npm run lint:check:everything
 npm test
 
 update_version 'package.json' $next_version
