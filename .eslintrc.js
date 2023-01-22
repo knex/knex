@@ -10,11 +10,12 @@ module.exports = {
     'plugin:import/warnings',
     'prettier',
   ],
-  plugins: ['import', 'mocha-no-only'],
+  plugins: ['prettier', 'import', 'mocha-no-only'],
   rules: {
     'mocha-no-only/mocha-no-only': ['error'],
     'no-unused-vars': [warning, { vars: 'all', args: 'none' }],
     'no-console': 'off',
+    'no-empty': 'off',
     'no-var': 2,
     'no-debugger': warning,
     'prefer-const': warning,
