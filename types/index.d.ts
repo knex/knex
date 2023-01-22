@@ -2730,6 +2730,7 @@ export declare namespace Knex {
     | PgConnectionConfig
     | RedshiftConnectionConfig
     | Sqlite3ConnectionConfig
+    | BetterSqlite3ConnectionConfig
     | SocketConnectionConfig;
 
   type ConnectionConfigProvider =
@@ -3042,6 +3043,14 @@ export declare namespace Knex {
     flags?: string[];
     debug?: boolean;
     expirationChecker?(): boolean;
+  }
+
+  /** Used with `better-sqlite3` adapter */
+  interface BetterSqlite3ConnectionConfig {
+    filename: string;
+    options?: {
+      nativeBinding?: string;
+    };
   }
 
   interface SocketConnectionConfig {
