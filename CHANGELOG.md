@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 2.4.2 - 22 January, 2022
+
+### Bug fixes
+
+- CLI: Fix incorrent EOL causing errors on Linux #5455
+
 # 2.4.1 - 18 January, 2022
 
 ### Bug fixes
