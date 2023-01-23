@@ -43,9 +43,14 @@ describe('Transaction', () => {
             return;
           }
 
-          const trx = await knex.transaction({ readOnly: true });
-          await expect(trx(tableName).insert({ id: 1, value: 1 })).to.be
-            .rejected;
+          await expect(
+            knex.transaction(
+              async (trx) => {
+                await trx(tableName).insert({ id: 1, value: 1 });
+              },
+              { readOnly: true }
+            )
+          ).to.be.rejected;
         });
       });
     });
