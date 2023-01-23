@@ -1,5 +1,10 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isSQLite, isMssql, isOracle } = require('../../util/db-helpers');
+const {
+  isSQLite,
+  isMssql,
+  isOracle,
+  isCockroachDB,
+} = require('../../util/db-helpers');
 const { expect } = require('chai');
 
 describe('Transaction', () => {
@@ -29,18 +34,18 @@ describe('Transaction', () => {
         });
 
         it('Expect insert in read only transaction to be rejected', async () => {
-          if (isSQLite(knex) || isOracle(knex) || isMssql(knex)) {
+          if (
+            isSQLite(knex) ||
+            isOracle(knex) ||
+            isMssql(knex) ||
+            isCockroachDB(knex)
+          ) {
             return;
           }
 
-          await expect(
-            knex.transaction(
-              async (trx) => {
-                await trx(tableName).insert({ id: 1, value: 1 });
-              },
-              { readOnly: true }
-            )
-          ).to.be.rejected;
+          const trx = await knex.transaction({ readOnly: true });
+          await expect(trx(tableName).insert({ id: 1, value: 1 })).to.be
+            .rejected;
         });
       });
     });
