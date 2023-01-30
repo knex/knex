@@ -150,9 +150,8 @@ describe('Additional', function () {
           await knex('accounts').truncate();
           await insertAccounts(knex, 'accounts');
 
-          const stream = knex
-            .raw('VALUES (1), (2), (3)')
-            .stream({ batchSize: 1 });
+          // We limit to only one row at a time, to keep the cursor open
+          const stream = knex('accounts').stream({ highWaterMark: 1 });
 
           // eslint-disable-next-line no-unused-vars
           for await (const _ of stream) {
