@@ -1096,6 +1096,30 @@ describe('OracleDb SchemaBuilder', function () {
     }).to.throw(TypeError);
   });
 
+  it('allows adding default json objects when the column is json', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('user', function (t) {
+        t.json('preferences').defaultTo({}).notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      'alter table "user" add "preferences" varchar2(4000) default \'{}\' not null check ("preferences" is json)'
+    );
+  });
+
+  it('allows adding default jsonb objects when the column is json', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('user', function (t) {
+        t.jsonb('preferences').defaultTo({}).notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      'alter table "user" add "preferences" varchar2(4000) default \'{}\' not null check ("preferences" is json)'
+    );
+  });
+
   it('is possible to set raw statements in defaultTo, #146', function () {
     tableSql = client
       .schemaBuilder()
