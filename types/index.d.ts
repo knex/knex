@@ -2336,11 +2336,11 @@ export declare namespace Knex {
     dropViewIfExists(viewName: string): SchemaBuilder;
     dropMaterializedView(viewName: string): SchemaBuilder;
     dropMaterializedViewIfExists(viewName: string): SchemaBuilder;
-    renameView(oldViewName: string, newViewName: string): Promise<void>;
+    renameView(oldViewName: string, newViewName: string): SchemaBuilder;
     view(
       viewName: string,
       callback: (viewBuilder: AlterViewBuilder) => any
-    ): Promise<void>;
+    ): SchemaBuilder;
     alterView(
       viewName: string,
       callback: (tableBuilder: AlterViewBuilder) => any
@@ -2370,7 +2370,7 @@ export declare namespace Knex {
     table(
       tableName: string,
       callback: (tableBuilder: AlterTableBuilder) => any
-    ): Promise<void>;
+    ): SchemaBuilder;
     dropTableIfExists(tableName: string): SchemaBuilder;
 
     // Schema
@@ -2507,7 +2507,7 @@ export declare namespace Knex {
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
     unique(
-      columnNames: readonly (string | Raw)[],
+      columnNames: string | readonly (string | Raw)[],
       options?: Readonly<{
         indexName?: string;
         storageEngineIndexType?: string;
@@ -2518,7 +2518,7 @@ export declare namespace Knex {
     ): TableBuilder;
     /** @deprecated */
     unique(
-      columnNames: readonly (string | Raw)[],
+      columnNames: string | readonly (string | Raw)[],
       indexName?: string
     ): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
