@@ -182,18 +182,32 @@ describe('Migrations', function () {
             });
           });
 
-          it('should create a migrations lock table', function () {
-            return knex.schema
-              .hasTable('knex_migrations_lock')
-              .then(function (exists) {
-                expect(exists).to.equal(true);
+          it('should return 0 if migrations table isnt present', async function () {
+            await knex.schema.dropTableIfExists('knex_migrations');
+            const migrationsTableExists = await knex.schema.hasTable(
+              'knex_migrations'
+            );
+            expect(migrationsTableExists).to.equal(false);
 
-                return knex.schema
-                  .hasColumn('knex_migrations_lock', 'is_locked')
-                  .then(function (exists) {
-                    expect(exists).to.equal(true);
-                  });
-              });
+            const migrationLevel = await knex.migrate.status({
+              directory: 'test/integration2/migrate/test',
+            });
+
+            expect(migrationLevel).to.equal(0);
+          });
+
+          it('should return 0 if locks table isnt present', async function () {
+            await knex.schema.dropTableIfExists('knex_migrations_lock');
+            const locksTableExists = await knex.schema.hasTable(
+              'knex_migrations_lock'
+            );
+            expect(locksTableExists).to.equal(false);
+
+            const migrationLevel = await knex.migrate.status({
+              directory: 'test/integration2/migrate/test',
+            });
+
+            expect(migrationLevel).to.equal(0);
           });
 
           it('should return 0 if code matches DB', function () {
