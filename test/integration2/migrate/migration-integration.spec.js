@@ -81,6 +81,20 @@ describe('Migrations', function () {
             });
         });
 
+        it.only('should not fail alter-table-ignore-case-sensitive', async () => {
+          return knex.migrate
+            .latest({
+              directory:
+                'test/integration2/migrate/alter-table-ignore-case-sensitive',
+            })
+            .then(() => {
+              return knex.migrate.rollback({
+                directory:
+                  'test/integration2/migrate/alter-table-ignore-case-sensitive',
+              });
+            });
+        });
+
         if (isPostgreSQL(knex)) {
           it('should not fail drop-and-recreate-column operation when using promise chain and schema', () => {
             return knex.migrate
