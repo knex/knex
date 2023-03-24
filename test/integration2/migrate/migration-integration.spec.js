@@ -81,7 +81,7 @@ describe('Migrations', function () {
             });
         });
 
-        it.only('should not fail alter-table-ignore-case-sensitive', async () => {
+        it('should not fail alter-table-ignore-case-sensitive', async () => {
           return knex.migrate
             .latest({
               directory:
