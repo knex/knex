@@ -98,6 +98,28 @@ const knex = require('knex')({
 ```
 ::: 
 
+
+::: info Better-SQLite3
+With the Better-SQLite3 adapter, you can use `options.nativeBinding` to specify the location of the adapter's compiled C++ addon. This can be useful when your build system does a lot of transformation/relocation of files.
+
+Example use:
+
+```js
+const knex = require('knex')({
+  client: 'better-sqlite3',
+  connection: {
+    filename: ":memory:",
+    options: {
+      nativeBinding: "/path/to/better_sqlite3.node",
+    },
+  },
+});
+```
+
+For more information, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
+
+:::
+
 ::: info MSSQL
 When you use the MSSQL client, you can define a `mapBinding` function to define your own logic for mapping from knex query parameters to `tedious` types. 
 Returning undefined from the function will fallback to the default mapping.
