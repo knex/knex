@@ -3055,6 +3055,7 @@ export declare namespace Knex {
     filename: string;
     options?: {
       nativeBinding?: string;
+      readonly?: boolean;
     };
   }
 

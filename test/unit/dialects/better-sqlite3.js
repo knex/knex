@@ -39,4 +39,35 @@ describe('better-sqlite3 unit tests', () => {
       expect(result.code).to.equal('MODULE_NOT_FOUND');
     });
   });
+
+  describe('readonly', () => {
+    it('should initialize the DB with the passed-in `readonly` option', async () => {
+      const knexInstance = knex({
+        client: 'better-sqlite3',
+        useNullAsDefault: true,
+        connection: {
+          filename: __dirname + '/../test.sqlite3',
+          options: {
+            readonly: true,
+          },
+        },
+      });
+
+      const connection = await knexInstance.client.acquireConnection();
+      expect(connection.readonly).to.equal(true);
+    });
+
+    it('should fall back on `readonly` = `false`', async () => {
+      const knexInstance = knex({
+        client: 'better-sqlite3',
+        useNullAsDefault: true,
+        connection: {
+          filename: __dirname + '/../test.sqlite3',
+        },
+      });
+
+      const connection = await knexInstance.client.acquireConnection();
+      expect(connection.readonly).to.equal(false);
+    });
+  });
 });
