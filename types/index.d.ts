@@ -788,6 +788,11 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
+    increment(
+      columns: {
+        [column in keyof TRecord]: number
+      }
+    ): QueryBuilder<TRecord, number>;
 
     decrement(
       columnName: keyof TRecord,
