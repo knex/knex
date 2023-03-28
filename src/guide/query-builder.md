@@ -1392,6 +1392,18 @@ knex('accounts')
   .hintComment('NO_ICP(accounts)')
 ```
 
+### comment
+
+**.comment(comment)**
+
+Prepend comment to the sql query using the syntax `/* ... */`. Some characters are forbidden such as `/*`, `*/` and `?`.
+
+```js
+knex('users')
+  .where('id', '=', 1)
+  .comment('Get user by id')
+```
+
 ### clone
 
 **.clone()**
