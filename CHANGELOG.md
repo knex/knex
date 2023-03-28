@@ -1,18 +1,18 @@
 # Master (Unreleased)
 
-# 2.4.2 - 22 January, 2022
+# 2.4.2 - 22 January, 2023
 
 ### Bug fixes
 
 - CLI: Fix incorrent EOL causing errors on Linux #5455
 
-# 2.4.1 - 18 January, 2022
+# 2.4.1 - 18 January, 2023
 
 ### Bug fixes
 
 - PostgreSQL: Fix Malformed array literal 2.4.0 Regression #5439
 
-# 2.4.0 - 06 January, 2022
+# 2.4.0 - 06 January, 2023
 
 ### New features:
 
