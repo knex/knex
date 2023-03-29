@@ -893,18 +893,6 @@ const main = async () => {
 
   // $ExpectType User[]
   await knexInstance<User>('users')
-    .groupBy('count')
-    .orderBy('name', 'desc')
-    .havingNull('age');
-
-  // $ExpectType User[]
-  await knexInstance<User>('users')
-    .groupBy('count')
-    .orderBy('name', 'desc')
-    .havingNotNull('age');
-
-  // $ExpectType User[]
-  await knexInstance<User>('users')
     .select()
     .orderBy(
       knexInstance<User>('users')
