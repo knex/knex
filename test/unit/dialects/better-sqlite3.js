@@ -66,6 +66,23 @@ describe('better-sqlite3 unit tests', () => {
       expect(connection.readonly).to.equal(true);
     });
 
+    it('should prevent writing to the DB', async () => {
+      const knexInstance = knex({
+        client: 'better-sqlite3',
+        useNullAsDefault: true,
+        connection: {
+          filename: __dirname + '/../test.sqlite3',
+          options: {
+            readonly: true,
+          },
+        },
+      });
+
+      await expect(
+        knexInstance.raw('create table shouldFail (x integer)')
+      ).to.eventually.be.rejectedWith('attempt to write a readonly database');
+    });
+
     it('should fall back on `readonly` = `false`', async () => {
       const knexInstance = knex({
         client: 'better-sqlite3',
