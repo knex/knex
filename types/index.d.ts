@@ -2302,6 +2302,7 @@ export declare namespace Knex {
     userParams?: Record<string, any>;
     doNotRejectOnRollback?: boolean;
     connection?: any;
+    readOnly?: boolean;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any[]>
