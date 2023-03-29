@@ -123,7 +123,7 @@
 - Fix orWhereJsonPath clause [#5022](https://github.com/knex/knex/issues/5022)
 - Subquery in on clause missing parenthesis [#5049](https://github.com/knex/knex/issues/5049)
 - Rework Union Wrapping [#5030](https://github.com/knex/knex/issues/5030)
-- Oracle: Fix batch inserts with DEFAULT values with OracleDB #2592 [#5037](https://github.com/knex/knex/issues/5037)
+- Oracle: Fix batch inserts with DEFAULT values with OracleDB [#2592](https://github.com/knex/knex/issues/#2592) [#5037](https://github.com/knex/knex/issues/5037)
 
 **Typings**
 
@@ -376,7 +376,7 @@
 **New features**
 
 - SQLite: Add support for file open flags [#4446](https://github.com/knex/knex/issues/4446)
-- Add .cjs extension to Seeder.js to support Node ESM #4381 [#4382](https://github.com/knex/knex/issues/4382)
+- Add .cjs extension to Seeder.js to support Node ESM [#4381](https://github.com/knex/knex/issues/#4381) [#4382](https://github.com/knex/knex/issues/4382)
 
 **Bug fixes**
 
@@ -457,7 +457,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Throw error if the array passed to insert is empty [#4289](https://github.com/knex/knex/issues/4289)
 - Events: introduce queryContext on query-error [#4301](https://github.com/knex/knex/issues/4301)
 - CLI: Use UTC timestamp for new migrations [#4245](https://github.com/knex/knex/issues/4245)
-- MSSQL: Replace MSSQL dialect with Tedious.js implementation #2857 [#4281](https://github.com/knex/knex/issues/4281)
+- MSSQL: Replace MSSQL dialect with Tedious.js implementation [#2857](https://github.com/knex/knex/issues/#2857) [#4281](https://github.com/knex/knex/issues/4281)
 - MSSQL: Use "nvarchar(max)" for ".json()" [#4278](https://github.com/knex/knex/issues/4278)
 - MSSQL: Schema builder - add predictable constraint names for default values [#4319](https://github.com/knex/knex/issues/4319)
 - MSSQL: Schema builder - attempt to drop default constraints when changing default value on columns [#4321](https://github.com/knex/knex/issues/4321)
@@ -495,8 +495,8 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 - Drop global Knex.raw [#4180](https://github.com/knex/knex/issues/4180)
 - Stop using legacy url.parse API [#3702](https://github.com/knex/knex/issues/3702)
-- Various internal refactorings #4175 #4177 #4178 [#4192](https://github.com/knex/knex/issues/4192)
-- Refactor to classes #4190 #4191 #4193 #4210 [#4253](https://github.com/knex/knex/issues/4253)
+- Various internal refactorings [#4175](https://github.com/knex/knex/issues/#4175) [#4177](https://github.com/knex/knex/issues/#4177) [#4178](https://github.com/knex/knex/issues/#4178) [#4192](https://github.com/knex/knex/issues/4192)
+- Refactor to classes [#4190](https://github.com/knex/knex/issues/#4190) [#4191](https://github.com/knex/knex/issues/#4191) [#4193](https://github.com/knex/knex/issues/#4193) [#4210](https://github.com/knex/knex/issues/#4210) [#4253](https://github.com/knex/knex/issues/4253)
 - Move transaction type tests to TSD [#4208](https://github.com/knex/knex/issues/4208)
 - Clean up destroy logic [#4248](https://github.com/knex/knex/issues/4248)
 - Colorize code snippets in readme files [#4234](https://github.com/knex/knex/issues/4234)
@@ -538,7 +538,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Typings**
 
-- Add "after" and "first" to columnBuilder types #3549 [#4169](https://github.com/knex/knex/issues/4169)
+- Add "after" and "first" to columnBuilder types [#3549](https://github.com/knex/knex/issues/#3549) [#4169](https://github.com/knex/knex/issues/4169)
 
 **Test / internal changes**
 
@@ -588,7 +588,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Test / internal changes**
 
-- Move TS tests to tsd (WIP) #4109 [#4110](https://github.com/knex/knex/issues/4110)
+- Move TS tests to tsd (WIP) [#4109](https://github.com/knex/knex/issues/#4109) [#4110](https://github.com/knex/knex/issues/4110)
 
 ### 0.21.12 - 02 November, 2020
 
@@ -756,7 +756,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Test / internal changes**
 
-- Update dependencies. Explicitly support Node.js 14 #3825 [#3830](https://github.com/knex/knex/issues/3830)
+- Update dependencies. Explicitly support Node.js 14 [#3825](https://github.com/knex/knex/issues/#3825) [#3830](https://github.com/knex/knex/issues/3830)
 
 ### 0.21.0 - 18 April, 2020
 
@@ -938,7 +938,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Test / internal changes**
 
-- Use more efficient algorithm for generating internal ids #3595 [#3596](https://github.com/knex/knex/issues/3596)
+- Use more efficient algorithm for generating internal ids [#3595](https://github.com/knex/knex/issues/#3595) [#3596](https://github.com/knex/knex/issues/3596)
 - Use Buffer.alloc() instead of deprecated constructor [#3574](https://github.com/knex/knex/issues/3574)
 
 ### 0.20.4 - 08 December, 2019
@@ -952,7 +952,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 - Add missing methods to client type [#3565](https://github.com/knex/knex/issues/3565)
 - Fix queryContext function defintion [#3562](https://github.com/knex/knex/issues/3562)
-- Fix QueryBuilder.extend this type #3526 [#3528](https://github.com/knex/knex/issues/3528)
+- Fix QueryBuilder.extend this type [#3526](https://github.com/knex/knex/issues/#3526) [#3528](https://github.com/knex/knex/issues/3528)
 
 **Test / internal changes**
 
@@ -1052,7 +1052,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 - MSSQL: Escape column ids correctly in all cases (reported by Snyk Security Research Team) [#3382](https://github.com/knex/knex/issues/3382)
 - SQLite: Fix handling of multiline SQL in SQLite3 schema [#3411](https://github.com/knex/knex/issues/3411)
-- Fix concurrent child transactions failing #2213 [#3440](https://github.com/knex/knex/issues/3440)
+- Fix concurrent child transactions failing [#2213](https://github.com/knex/knex/issues/#2213) [#3440](https://github.com/knex/knex/issues/3440)
 
 **Typings**
 
@@ -1186,7 +1186,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 - Drop support for Node.js 6 [#3227](https://github.com/knex/knex/issues/3227)
 - Remove Babel [#3227](https://github.com/knex/knex/issues/3227)
-- Remove Bluebird #3290 #3287 #3285 #3267 #3266 [#3263](https://github.com/knex/knex/issues/3263)
+- Remove Bluebird [#3290](https://github.com/knex/knex/issues/#3290) [#3287](https://github.com/knex/knex/issues/#3287) [#3285](https://github.com/knex/knex/issues/#3285) [#3267](https://github.com/knex/knex/issues/#3267) [#3266](https://github.com/knex/knex/issues/#3266) [#3263](https://github.com/knex/knex/issues/3263)
 - Fix comments that were modified by find & replace [#3308](https://github.com/knex/knex/issues/3308)
 
 **Typings**
@@ -1288,7 +1288,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 **New features**
 
 - Boolean param for rollback() to rollback all migrations [#2968](https://github.com/knex/knex/issues/2968)
-- seed:run print the file name of the failing seed #2972 [#2973](https://github.com/knex/knex/issues/2973)
+- seed:run print the file name of the failing seed [#2972](https://github.com/knex/knex/issues/#2972) [#2973](https://github.com/knex/knex/issues/2973)
 - verbose option to CLI commands [#2887](https://github.com/knex/knex/issues/2887)
 - add intersect() [#3023](https://github.com/knex/knex/issues/3023)
 - Improved format for TS stubs [#3080](https://github.com/knex/knex/issues/3080)
@@ -1352,7 +1352,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **New features**
 
-- Support passing explicit connection to query builder (#2817)
+- Support passing explicit connection to query builder ([#2817](https://github.com/knex/knex/issues/#2817))
 - Introduced abstraction for getting migrations to make migration bundling easier [#2775](https://github.com/knex/knex/issues/2775)
 - Allow timestamp with timezone on mssql databases [#2724](https://github.com/knex/knex/issues/2724)
 - Allow specifying multiple migration directories [#2735](https://github.com/knex/knex/issues/2735)
@@ -1362,7 +1362,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Added `whereColumn` and the associated `not` / `and` / `or` methods for using columns on the right side of a where clause [#2837](https://github.com/knex/knex/issues/2837)
 - Added `whereRecursive` method to make self-referential CTEs possible [#2889](https://github.com/knex/knex/issues/2889)
 - Added support for named unique, primary and foreign keys to SQLite3 [#2840](https://github.com/knex/knex/issues/2840)
-- Added support for generating new migration and seed files without knexfile #2884 #2905 [#2935](https://github.com/knex/knex/issues/2935)
+- Added support for generating new migration and seed files without knexfile [#2884](https://github.com/knex/knex/issues/#2884) [#2905](https://github.com/knex/knex/issues/#2905) [#2935](https://github.com/knex/knex/issues/2935)
 - Added support for multiple columns in `.orderBy()` [#2881](https://github.com/knex/knex/issues/2881)
 - Added option of `existingType` to `.enum()` method to support repeated use of enums [#2719](https://github.com/knex/knex/issues/2719)
 - Added option to pass `indexType` for MySQL dialect [#2890](https://github.com/knex/knex/issues/2890)
@@ -1393,9 +1393,9 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 **Test / internal changes**
 
 - Add tests for multiple union arguments with callbacks and builders [#2749](https://github.com/knex/knex/issues/2749)
-- Update dependencies #2772 #2810 #2842 #2848 #2893 [#2904](https://github.com/knex/knex/issues/2904)
+- Update dependencies [#2772](https://github.com/knex/knex/issues/#2772) [#2810](https://github.com/knex/knex/issues/#2810) [#2842](https://github.com/knex/knex/issues/#2842) [#2848](https://github.com/knex/knex/issues/#2848) [#2893](https://github.com/knex/knex/issues/#2893) [#2904](https://github.com/knex/knex/issues/2904)
 - Separate migration generator [#2786](https://github.com/knex/knex/issues/2786)
-- Do not postprocess internal queries in Migrator #2914 [#2934](https://github.com/knex/knex/issues/2934)
+- Do not postprocess internal queries in Migrator [#2914](https://github.com/knex/knex/issues/#2914) [#2934](https://github.com/knex/knex/issues/2934)
 - Use Babel 7 [#2813](https://github.com/knex/knex/issues/2813)
 - Introduce LGTM.com badge [#2755](https://github.com/knex/knex/issues/2755)
 - Cleanup based on analysis by https://lgtm.com [#2870](https://github.com/knex/knex/issues/2870)
@@ -1409,13 +1409,13 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Other Changes**
 
-- THIS RELEASE WAS UNPUBLISHED FROM NPM BECAUSE IT HAD BROKEN MIGRATIONS USING `postprocessResponse` FEATURE (#2644)
+- THIS RELEASE WAS UNPUBLISHED FROM NPM BECAUSE IT HAD BROKEN MIGRATIONS USING `postprocessResponse` FEATURE ([#2644](https://github.com/knex/knex/issues/#2644))
 
 ### 0.15.2 - 19 Jul, 2018
 
 **Other Changes**
 
-- Rolled back changes introduced by #2542, in favor of opt-in behavior by adding a precision option in `date` / `timestamp` / `datetime` / `knex.fn.now` (#2715, #2721)
+- Rolled back changes introduced by [#2542](https://github.com/knex/knex/issues/#2542), in favor of opt-in behavior by adding a precision option in `date` / `timestamp` / `datetime` / `knex.fn.now` ([#2715](https://github.com/knex/knex/issues/#2715), [#2721](https://github.com/knex/knex/issues/#2721))
 
 ### 0.15.1 - 12 Jul, 2018
 
@@ -1427,18 +1427,18 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Breaking changes**
 
-- Stop executing tests on Node 4 and 5. #2451 (not supported anymore)
+- Stop executing tests on Node 4 and 5. [#2451](https://github.com/knex/knex/issues/#2451) (not supported anymore)
 - `json` data type is no longer converted to `text` within a schema builder migration for MySQL databases (note that JSON data type is only supported for MySQL 5.7.8+) [#2635](https://github.com/knex/knex/issues/2635)
 - Removed WebSQL dialect [#2461](https://github.com/knex/knex/issues/2461)
 - Drop mariadb support [#2681](https://github.com/knex/knex/issues/2681)
-- Primary Key for Migration Lock Table #2569. This shouldn't affect to old loc tables, but if you like to have your locktable to have primary key, delete the old table and it will be recreated when migrations are ran next time.
+- Primary Key for Migration Lock Table [#2569](https://github.com/knex/knex/issues/#2569). This shouldn't affect to old loc tables, but if you like to have your locktable to have primary key, delete the old table and it will be recreated when migrations are ran next time.
 - Ensure knex.destroy() returns a bluebird promise [#2589](https://github.com/knex/knex/issues/2589)
 - Increment floats [#2614](https://github.com/knex/knex/issues/2614)
-- Testing removal of 'skim' #2520, Now rows are not converted to plain js objects, returned row objects might have changed type with oracle, mssql, mysql and sqlite3
+- Testing removal of 'skim' [#2520](https://github.com/knex/knex/issues/#2520), Now rows are not converted to plain js objects, returned row objects might have changed type with oracle, mssql, mysql and sqlite3
 - Drop support for strong-oracle [#2487](https://github.com/knex/knex/issues/2487)
 - Timeout errors doesn't silently ignore the passed errors anymore [#2626](https://github.com/knex/knex/issues/2626)
 - Removed WebSQL dialect [#2647](https://github.com/knex/knex/issues/2647)
-- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instaed of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
+- Various fixes to mssql dialect to make it compatible with other dialects [#2653](https://github.com/knex/knex/issues/#2653), Unique constraint now allow multiple null values, float type is now float instaed of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
 
 **Bug fixes**
 
@@ -1452,8 +1452,8 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 **New features**
 
 - Create timestamp columns with microsecond precision on MySQL 5.6 and newer [#2542](https://github.com/knex/knex/issues/2542)
-- Allow storing stacktrace, where builder is initialized to be able trace back where certain query was created #2500 [#2505](https://github.com/knex/knex/issues/2505)
-- Added 'ref' function #2509, no need for knex.raw('??', ['id']) anymore, one can do knex.ref('id')
+- Allow storing stacktrace, where builder is initialized to be able trace back where certain query was created [#2500](https://github.com/knex/knex/issues/#2500) [#2505](https://github.com/knex/knex/issues/2505)
+- Added 'ref' function [#2509](https://github.com/knex/knex/issues/#2509), no need for knex.raw('??', ['id']) anymore, one can do knex.ref('id')
 - Support postgresql connection uri protocol [#2609](https://github.com/knex/knex/issues/2609)
 - Add support for native enums on Postgres [#2632](https://github.com/knex/knex/issues/2632)
 - Allow overwriting log functions [#2625](https://github.com/knex/knex/issues/2625)
@@ -1470,7 +1470,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Bug fixes**
 
-- Restored functionality of query event #2566 (#2549)
+- Restored functionality of query event [#2566](https://github.com/knex/knex/issues/#2566) ([#2549](https://github.com/knex/knex/issues/#2549))
 
 ### 0.14.5 - 8 Apr, 2018
 
@@ -1480,8 +1480,8 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **New features**
 
-- Support passing DB schema name for migrations #2499 [#2559](https://github.com/knex/knex/issues/2559)
-- add clearOrder method #2360 [#2553](https://github.com/knex/knex/issues/2553)
+- Support passing DB schema name for migrations [#2499](https://github.com/knex/knex/issues/#2499) [#2559](https://github.com/knex/knex/issues/2559)
+- add clearOrder method [#2360](https://github.com/knex/knex/issues/#2360) [#2553](https://github.com/knex/knex/issues/2553)
 - Added knexTxId to query events and debug calls [#2476](https://github.com/knex/knex/issues/2476)
 - Support multi-column `whereIn` with query [#1390](https://github.com/knex/knex/issues/1390)
 - Added error if chaining update/insert/etc with first() [#2506](https://github.com/knex/knex/issues/2506)
@@ -1498,23 +1498,23 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Bug fixes**
 
-- containsUndefined only validate plain objects. Fixes #1898 (#2468)
-- Add warning when using .returning() in sqlite3. Fixes #1660 (#2471)
-- Throw an error if .update() results in an empty sql (#2472)
-- Removed unnecessary createTableIfNotExist and replaced with createTable (#2473)
+- containsUndefined only validate plain objects. Fixes [#1898](https://github.com/knex/knex/issues/#1898) ([#2468](https://github.com/knex/knex/issues/#2468))
+- Add warning when using .returning() in sqlite3. Fixes [#1660](https://github.com/knex/knex/issues/#1660) ([#2471](https://github.com/knex/knex/issues/#2471))
+- Throw an error if .update() results in an empty sql ([#2472](https://github.com/knex/knex/issues/#2472))
+- Removed unnecessary createTableIfNotExist and replaced with createTable ([#2473](https://github.com/knex/knex/issues/#2473))
 
 **New features**
 
-- Allow calling lock procedures (such as forUpdate) outside of transaction. Fixes #2403. (#2475)
-- Added test and documentation for Event 'start' (#2488)
+- Allow calling lock procedures (such as forUpdate) outside of transaction. Fixes [#2403](https://github.com/knex/knex/issues/#2403). ([#2475](https://github.com/knex/knex/issues/#2475))
+- Added test and documentation for Event 'start' ([#2488](https://github.com/knex/knex/issues/#2488))
 
 **Test / internal changes**
 
 - Added stress test, which uses TCP proxy to simulate flaky connection [#2460](https://github.com/knex/knex/issues/2460)
-- Removed old docker tests, new stress test setup (#2474)
-- Removed unused property \_\_cid on the base client (#2481)
-- Changed rm to rimraf in 'npm run dev' (#2483)
-- Changed babel preset and use latest node as target when running dev (#2484)
+- Removed old docker tests, new stress test setup ([#2474](https://github.com/knex/knex/issues/#2474))
+- Removed unused property \_\_cid on the base client ([#2481](https://github.com/knex/knex/issues/#2481))
+- Changed rm to rimraf in 'npm run dev' ([#2483](https://github.com/knex/knex/issues/#2483))
+- Changed babel preset and use latest node as target when running dev ([#2484](https://github.com/knex/knex/issues/#2484))
 
 ### 0.14.3 - 8 Feb, 2018
 
@@ -1524,7 +1524,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Fixed mysql issue where add columns failed if using both after and collate [#2432](https://github.com/knex/knex/issues/2432)
 - CLI sets exit-code 1 if the command supplied was not parseable [#2358](https://github.com/knex/knex/issues/2358)
 - Set toNative() to be not enumerable [#2388](https://github.com/knex/knex/issues/2388)
-- Use wrapIdentifier in columnInfo. fixes #2402 [#2405](https://github.com/knex/knex/issues/2405)
+- Use wrapIdentifier in columnInfo. fixes [#2402](https://github.com/knex/knex/issues/#2402) [#2405](https://github.com/knex/knex/issues/2405)
 - Fixed a bug when using .returning (OUTPUT) in an update query with joins in MSSQL [#2399](https://github.com/knex/knex/issues/2399)
 - Better error message when running migrations fail before even starting run migrations [#2373](https://github.com/knex/knex/issues/2373)
 - Read oracle's UV_THREADPOOL_SIZE env variable correctly [#2372](https://github.com/knex/knex/issues/2372)
@@ -1647,7 +1647,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Other Changes**
 
-- Support custom foreign key names #1311, [#1726](https://github.com/knex/knex/issues/1726)
+- Support custom foreign key names [#1311](https://github.com/knex/knex/issues/[#1311](https://github.com/knex/knex/issues/#1311)), [#1726](https://github.com/knex/knex/issues/1726)
 - Fixed named bindings to work with queries containing `:`-chars [#1890](https://github.com/knex/knex/issues/1890)
 - Exposed more promise functions [#1896](https://github.com/knex/knex/issues/1896)
 - Pass rollback errors to transaction promise in mssql [#1885](https://github.com/knex/knex/issues/1885)
@@ -1659,24 +1659,24 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - External authentication capability when using oracledb driver [#1716](https://github.com/knex/knex/issues/1716)
 - Fixed MSSQL incorect query build when locks are used [#1707](https://github.com/knex/knex/issues/1707)
 - Allow to use `first` method as aliased select [#1784](https://github.com/knex/knex/issues/1784)
-- Alter column for nullability, type and default value #46, [#1759](https://github.com/knex/knex/issues/1759)
+- Alter column for nullability, type and default value [#46](https://github.com/knex/knex/issues/#46), [#1759](https://github.com/knex/knex/issues/1759)
 - Add more having* methods / join clause on* methods [#1674](https://github.com/knex/knex/issues/1674)
-- Compatibility fixes and cleanups #1788, #1792, #1794, #1814, #1857, [#1649](https://github.com/knex/knex/issues/1649)
+- Compatibility fixes and cleanups [#1788](https://github.com/knex/knex/issues/#1788), [#1792](https://github.com/knex/knex/issues/#1792), [#1794](https://github.com/knex/knex/issues/#1794), [#1814](https://github.com/knex/knex/issues/#1814), [#1857](https://github.com/knex/knex/issues/#1857), [#1649](https://github.com/knex/knex/issues/1649)
 
 ### 0.12.6 - 19 Oct, 2016
 
-- Address warnings mentioned in #1388 (#1740)
-- Remove postinstall script (#1746)
+- Address warnings mentioned in [#1388](https://github.com/knex/knex/issues/#1388) ([#1740](https://github.com/knex/knex/issues/#1740))
+- Remove postinstall script ([#1746](https://github.com/knex/knex/issues/#1746))
 
 ### 0.12.5 - 12 Oct, 2016
 
 - Fix broken 0.12.4 build (removed from npm)
-- Fix #1733, #920, incorrect postgres array bindings
+- Fix [#1733](https://github.com/knex/knex/issues/#1733), [#920](https://github.com/knex/knex/issues/#920), incorrect postgres array bindings
 
 ### 0.12.3 - 9 Oct, 2016
 
-- Fix #1703, #1694 - connections should be returned to pool if acquireConnectionTimeout is triggered
-- Fix #1710 regression in postgres array escaping
+- Fix [#1703](https://github.com/knex/knex/issues/#1703), [#1694](https://github.com/knex/knex/issues/#1694) - connections should be returned to pool if acquireConnectionTimeout is triggered
+- Fix [#1710](https://github.com/knex/knex/issues/#1710) regression in postgres array escaping
 
 ### 0.12.2 - 27 Sep, 2016
 
@@ -1697,9 +1697,9 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Remove documentation files from main repo
 - Fix broken behavior on WebSQL build, [#1638](https://github.com/knex/knex/issues/1638)
 - Oracle id sequence now handles manual inserts, [#906](https://github.com/knex/knex/issues/906)
-- Cleanup PG escaping, fix #1602, [#1548](https://github.com/knex/knex/issues/1548)
+- Cleanup PG escaping, fix [#1602](https://github.com/knex/knex/issues/#1602), [#1548](https://github.com/knex/knex/issues/1548)
 - Added [`with`](#Builder-with) to builder for [common table expressions](https://www.postgresql.org/docs/9.4/static/queries-with.html), [#1599](https://github.com/knex/knex/issues/1599)
-- Fix #1619, pluck with explicit column names
+- Fix [#1619](https://github.com/knex/knex/issues/#1619), pluck with explicit column names
 - Switching back to [generic-pool](https://github.com/coopernurse/node-pool) for pooling resource management
 - Removed index.html, please direct all PR's for docs against the files in [knex/documentation](https://github.com/knex/documentation)
 
@@ -1732,7 +1732,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Better bigint support. (MSSQL) [#1445](https://github.com/knex/knex/issues/1445)
 - More consistent handling of `undefined` values in `QueryBuilder#where` and `Raw`. [#1459](https://github.com/knex/knex/issues/1459)
 - Fix Webpack build. [#1447](https://github.com/knex/knex/issues/1447)
-- Fix code that triggered Bluebird warnings. #1460, [#1489](https://github.com/knex/knex/issues/1489)
+- Fix code that triggered Bluebird warnings. [#1460](https://github.com/knex/knex/issues/#1460), [#1489](https://github.com/knex/knex/issues/1489)
 - Fix `ping` function. (Oracle) [#1486](https://github.com/knex/knex/issues/1486)
 - Fix `columnInfo`. (MSSQL) [#1464](https://github.com/knex/knex/issues/1464)
 - Fix `ColumnCompiler#binary`. (MSSQL) [#1464](https://github.com/knex/knex/issues/1464)
@@ -1781,7 +1781,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 **Other Changes**
 
 - Collate for columns. (MySQL) [#1147](https://github.com/knex/knex/issues/1147)
-- Add `QueryBuilder#timeout`, `Raw#timeout`. #1201 [#1260](https://github.com/knex/knex/issues/1260)
+- Add `QueryBuilder#timeout`, `Raw#timeout`. [#1201](https://github.com/knex/knex/issues/#1201) [#1260](https://github.com/knex/knex/issues/1260)
 - Exit with error code when appropriate. [#1238](https://github.com/knex/knex/issues/1238)
 - MSSQL connection accepts `host` as an alias for `server` in accordance with other dialects. [#1239](https://github.com/knex/knex/issues/1239)
 - Add `query-response` event. [#1231](https://github.com/knex/knex/issues/1231)
@@ -1806,7 +1806,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Breaking changes**
 
-- `insert` and `update` now ignore `undefined` values. Back compatibility is provided through the option `useNullAsDefault`. #1174, [#1043](https://github.com/knex/knex/issues/1043)
+- `insert` and `update` now ignore `undefined` values. Back compatibility is provided through the option `useNullAsDefault`. [#1174](https://github.com/knex/knex/issues/#1174), [#1043](https://github.com/knex/knex/issues/1043)
 
 **Other Changes**
 
@@ -1814,8 +1814,8 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Add [`schema.jsonb`](#Schema-jsonb). Deprecated `schema.json(column, true)`. [#991](https://github.com/knex/knex/issues/991)
 - Support binding identifiers with `??`. [#1103](https://github.com/knex/knex/issues/1103)
 - Restore `query` event when triggered by transactions. [#855](https://github.com/knex/knex/issues/855)
-- Correct question mark escaping in rendered queries. #519, [#1058](https://github.com/knex/knex/issues/1058)
-- Add per-dialect escaping, allowing quotes to be escaped correctly. #886, [#1095](https://github.com/knex/knex/issues/1095)
+- Correct question mark escaping in rendered queries. [#519](https://github.com/knex/knex/issues/#519), [#1058](https://github.com/knex/knex/issues/1058)
+- Add per-dialect escaping, allowing quotes to be escaped correctly. [#886](https://github.com/knex/knex/issues/#886), [#1095](https://github.com/knex/knex/issues/1095)
 - Add MSSQL support. [#1090](https://github.com/knex/knex/issues/1090)
 - Add migration locking. [#1094](https://github.com/knex/knex/issues/1094)
 - Allow column aliases to contain `.`. [#1181](https://github.com/knex/knex/issues/1181)
@@ -1824,7 +1824,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Global `query-error` event. [#1163](https://github.com/knex/knex/issues/1163)
 - Add `batchInsert`. [#1182](https://github.com/knex/knex/issues/1182)
 - Better support for Mysql2 dialect options. [#980](https://github.com/knex/knex/issues/980)
-- Support for `acquireConnectionTimeout` default 60 seconds preventing #1040 from happening. [#1177](https://github.com/knex/knex/issues/1177)
+- Support for `acquireConnectionTimeout` default 60 seconds preventing [#1040](https://github.com/knex/knex/issues/#1040) from happening. [#1177](https://github.com/knex/knex/issues/1177)
 - Fixed constraint name escaping when dropping a constraint. [#1177](https://github.com/knex/knex/issues/1177)
 - Show also `.raw` queries in debug output. [#1169](https://github.com/knex/knex/issues/1169)
 - Support for `cli` to use basic configuration without specific environment set. [#1101](https://github.com/knex/knex/issues/1101)
@@ -1845,7 +1845,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.8.6 - May 20, 2015
 
-- Fix for several transaction / migration issues, #832, #833, #834, [#835](https://github.com/knex/knex/issues/835)
+- Fix for several transaction / migration issues, [#832](https://github.com/knex/knex/issues/#832), [#833](https://github.com/knex/knex/issues/#833), [#834](https://github.com/knex/knex/issues/#834), [#835](https://github.com/knex/knex/issues/835)
 
 ### 0.8.5 - May 14, 2015
 
@@ -1865,7 +1865,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.8.1 - May 1, 2015
 
-- Warn rather than error when implicit commits wipe out savepoints in mysql / mariadb, #805.
+- Warn rather than error when implicit commits wipe out savepoints in mysql / mariadb, [#805](https://github.com/knex/knex/issues/#805).
 - Fix for incorrect seed config reference, [#804](https://github.com/knex/knex/issues/804)
 
 ### 0.8.0 - Apr 30, 2015
@@ -1884,7 +1884,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 **Major Changes**
 
-- Transactions are immediately invoked as A+ promises, #470 (this is a feature and should not actually break anything in practice)
+- Transactions are immediately invoked as A+ promises, [#470](https://github.com/knex/knex/issues/#470) (this is a feature and should not actually break anything in practice)
 - Heavy refactoring internal APIs (public APIs should not be affected)
 
 **Other Changes**
@@ -1892,27 +1892,27 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Allow mysql2 to use non-default port, [#588](https://github.com/knex/knex/issues/588)
 - Support creating & dropping extensions in PostgreSQL, [#540](https://github.com/knex/knex/issues/540)
 - CLI support for knexfiles that do not provide environment keys, [#527](https://github.com/knex/knex/issues/527)
-- Added sqlite3 dialect version of whereRaw/andWhereRaw (#477)
+- Added sqlite3 dialect version of whereRaw/andWhereRaw ([#477](https://github.com/knex/knex/issues/#477))
 
 ### 0.7.5 - Mar 9, 2015
 
-- Fix bug in validateMigrationList, (#697)
+- Fix bug in validateMigrationList, ([#697](https://github.com/knex/knex/issues/#697))
 
 ### 0.7.4 - Feb 25, 2015
 
 - Fix incorrect order of query parameters when using subqueries, [#704](https://github.com/knex/knex/issues/704)
-- Properly handle limit 0, (#655)
+- Properly handle limit 0, ([#655](https://github.com/knex/knex/issues/#655))
 - Apply promise args from then instead of [explicitly passing](https://github.com/petkaantonov/bluebird/issues/482).
-- Respect union parameter as last argument (#660).
-- Added sqlite3 dialect version of whereRaw/andWhereRaw (#477).
-- Fix SQLite dropColumn doesn't work for last column (#544).
-- Add POSIX operator support for Postgres (#562)
-- Sample seed files now correctly (#391)
+- Respect union parameter as last argument ([#660](https://github.com/knex/knex/issues/#660)).
+- Added sqlite3 dialect version of whereRaw/andWhereRaw ([#477](https://github.com/knex/knex/issues/#477)).
+- Fix SQLite dropColumn doesn't work for last column ([#544](https://github.com/knex/knex/issues/#544)).
+- Add POSIX operator support for Postgres ([#562](https://github.com/knex/knex/issues/#562))
+- Sample seed files now correctly ([#391](https://github.com/knex/knex/issues/#391))
 
 ### 0.7.3 - Oct 3, 2014
 
 - Support for `join(table, rawOrBuilder)` syntax.
-- Fix for regression in PostgreSQL connection (#516)
+- Fix for regression in PostgreSQL connection ([#516](https://github.com/knex/knex/issues/#516))
 
 ### 0.7.2 - Oct 1, 2014
 
@@ -1951,26 +1951,26 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.6.22 - July 10, 2014
 
-- Bug fix for properly binding postgresql streaming queries, (#363)
+- Bug fix for properly binding postgresql streaming queries, ([#363](https://github.com/knex/knex/issues/#363))
 
 ### 0.6.21 - July 9, 2014
 
-- Bug fix for raw queries not being transaction context aware, (#351).
-- Properly forward stream errors in sqlite3 runner, (#359)
+- Bug fix for raw queries not being transaction context aware, ([#351](https://github.com/knex/knex/issues/#351)).
+- Properly forward stream errors in sqlite3 runner, ([#359](https://github.com/knex/knex/issues/#359))
 
 ### 0.6.20 - June 30, 2014
 
-- Allow case insensitive operators in sql clauses, (#344)
+- Allow case insensitive operators in sql clauses, ([#344](https://github.com/knex/knex/issues/#344))
 
 ### 0.6.19 - June 27, 2014
 
-- Add `groupByRaw` / `orderByRaw` methods, better support for raw statements in group / order (#282).
-- Support more config options for node-mysql2 dialect (#341).
-- CLI help text fix, (#342)
+- Add `groupByRaw` / `orderByRaw` methods, better support for raw statements in group / order ([#282](https://github.com/knex/knex/issues/#282)).
+- Support more config options for node-mysql2 dialect ([#341](https://github.com/knex/knex/issues/#341)).
+- CLI help text fix, ([#342](https://github.com/knex/knex/issues/#342))
 
 ### 0.6.18 - June 25, 2014
 
-- Patch for the method, calling without a handler should return the stream, not a promise (#337)
+- Patch for the method, calling without a handler should return the stream, not a promise ([#337](https://github.com/knex/knex/issues/#337))
 
 ### 0.6.17 - June 23, 2014
 
@@ -1978,8 +1978,8 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.6.16 - June 18, 2014
 
-- Increment / decrement returns the number of affectedRows (#330).
-- Allow --cwd option flag to be passed to CLI tool (#326)
+- Increment / decrement returns the number of affectedRows ([#330](https://github.com/knex/knex/issues/#330)).
+- Allow --cwd option flag to be passed to CLI tool ([#326](https://github.com/knex/knex/issues/#326))
 
 ### 0.6.15 - June 14, 2014
 
@@ -1991,8 +1991,8 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.6.13 - June 12, 2014
 
-- Fix regression with onUpdate / onDelete in PostgreSQL, (#308).
-- Add missing `Promise` require to knex.js, unit test for knex.destroy (#314)
+- Fix regression with onUpdate / onDelete in PostgreSQL, ([#308](https://github.com/knex/knex/issues/#308)).
+- Add missing `Promise` require to knex.js, unit test for knex.destroy ([#314](https://github.com/knex/knex/issues/#314))
 
 ### 0.6.12 - June 10, 2014
 
@@ -2035,14 +2035,14 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.6.3 - June 6, 2014
 
-- Schema methods on transaction object are now transaction aware (#301).
-- Fix for resolved value from transactions, (#298).
+- Schema methods on transaction object are now transaction aware ([#301](https://github.com/knex/knex/issues/#301)).
+- Fix for resolved value from transactions, ([#298](https://github.com/knex/knex/issues/#298)).
 - Undefined columns are not added to builder
 
 ### 0.6.2 - June 4, 2014
 
-- Fix regression in raw query output, (#297).
-- Fix regression in "pluck" method (#296).
+- Fix regression in raw query output, ([#297](https://github.com/knex/knex/issues/#297)).
+- Fix regression in "pluck" method ([#296](https://github.com/knex/knex/issues/#296)).
 - Document [first](#Builder-first) method
 
 ### 0.6.1 - June 4, 2014
@@ -2060,8 +2060,8 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Queries are more composable, may be injected in various points throughout the builder.
 - Added [streaming](#Interfaces-Streams) interface
 - Deprecated 5 argument [join](#Builder-join) in favor of additional join methods.
-- The wrapValue function to allow for array column operations in PostgreSQL (#287).
-- An explicit connection can be passed for any query (#56).
+- The wrapValue function to allow for array column operations in PostgreSQL ([#287](https://github.com/knex/knex/issues/#287)).
+- An explicit connection can be passed for any query ([#56](https://github.com/knex/knex/issues/#56)).
 - Drop column support for sqlite3
 - All schema actions are run sequentially on the same connection if chained.
 - Schema actions can now be wrapped in a transaction
@@ -2072,7 +2072,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.5.15 - June 4, 2014
 
-- Dropped indexes feature now functions correctly, (#278)
+- Dropped indexes feature now functions correctly, ([#278](https://github.com/knex/knex/issues/#278))
 
 ### 0.5.14 - May 6, 2014
 
@@ -2080,19 +2080,19 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.5.13 - April 2, 2014
 
-- Fix regression in array bindings for postgresql (#228)
+- Fix regression in array bindings for postgresql ([#228](https://github.com/knex/knex/issues/#228))
 
 ### 0.5.12 - Mar 31, 2014
 
-- Add more operators for where clauses, including && (#226)
+- Add more operators for where clauses, including && ([#226](https://github.com/knex/knex/issues/#226))
 
 ### 0.5.11 - Mar 25, 2014
 
-- `.where(col, 'is', null)` or `.where(col, 'is not', null)` are not supported (#221).
-- Case insensitive `where` operators now allowed (#212).
-- Fix bug in increment/decrement truncating to an integer (#210).
-- Disconnected connections are now properly handled & removed from the pool (#206).
-- Internal tweaks to binding concatenations for performance (#207)
+- `.where(col, 'is', null)` or `.where(col, 'is not', null)` are not supported ([#221](https://github.com/knex/knex/issues/#221)).
+- Case insensitive `where` operators now allowed ([#212](https://github.com/knex/knex/issues/#212)).
+- Fix bug in increment/decrement truncating to an integer ([#210](https://github.com/knex/knex/issues/#210)).
+- Disconnected connections are now properly handled & removed from the pool ([#206](https://github.com/knex/knex/issues/#206)).
+- Internal tweaks to binding concatenations for performance ([#207](https://github.com/knex/knex/issues/#207))
 
 ### 0.5.10 - Mar 19, 2014
 
@@ -2100,7 +2100,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.5.9 - Mar 18, 2014
 
-- Remove error'ed connections from the connection pool (#206), added support for node-postgres-pure (pg.js) (#200)
+- Remove error'ed connections from the connection pool ([#206](https://github.com/knex/knex/issues/#206)), added support for node-postgres-pure (pg.js) ([#200](https://github.com/knex/knex/issues/#200))
 
 ### 0.5.8 - Feb 27, 2014
 
@@ -2108,24 +2108,24 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.5.7 - Feb 18, 2014
 
-- Fix for a null limit / offset breaking query chain (#182)
+- Fix for a null limit / offset breaking query chain ([#182](https://github.com/knex/knex/issues/#182))
 
 ### 0.5.6 - Feb 5, 2014
 
-- Bump bluebird dependency to ~1.0.0, fixing regression in Bluebird 1.0.2 (#176)
+- Bump bluebird dependency to ~1.0.0, fixing regression in Bluebird 1.0.2 ([#176](https://github.com/knex/knex/issues/#176))
 
 ### 0.5.5 - Jan 28, 2014
 
-- Fix for the exit code on the migrations cli (#151).
-- The `init` method in `knex.migrate` now uses `this.config` if one isn't passed in (#156)
+- Fix for the exit code on the migrations cli ([#151](https://github.com/knex/knex/issues/#151)).
+- The `init` method in `knex.migrate` now uses `this.config` if one isn't passed in ([#156](https://github.com/knex/knex/issues/#156))
 
 ### 0.5.4 - Jan 7, 2014
 
-- Fix for using raw statements in defaultTo schema builder methods (#146)
+- Fix for using raw statements in defaultTo schema builder methods ([#146](https://github.com/knex/knex/issues/#146))
 
 ### 0.5.3 - Jan 2, 2014
 
-- Fix for incorrectly formed sql when aggregates are used with columns (#144)
+- Fix for incorrectly formed sql when aggregates are used with columns ([#144](https://github.com/knex/knex/issues/#144))
 
 ### 0.5.2 - Dec 18, 2013
 
@@ -2133,24 +2133,24 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.5.1 - Dec 12, 2013
 
-- The [returning](#Builder-returning) in PostgreSQL may now accept \* or an array of columns to return. If either of these are passed, the response will be an array of objects rather than an array of values. Updates may also now use a `returning` value. (#132)
-- Added `bigint` and `bigserial` type to PostgreSQL. (#111)
-- Fix for the [specificType](#Schema-specificType) schema call (#118)
-- Several fixes for migrations, including migration file path fixes, passing a Promise constructor to the migration `up` and `down` methods, allowing the "knex" module to be used globally, file ordering on migrations, and other small improvements. (#112-115, #125, #135)
+- The [returning](#Builder-returning) in PostgreSQL may now accept \* or an array of columns to return. If either of these are passed, the response will be an array of objects rather than an array of values. Updates may also now use a `returning` value. ([#132](https://github.com/knex/knex/issues/#132))
+- Added `bigint` and `bigserial` type to PostgreSQL. ([#111](https://github.com/knex/knex/issues/#111))
+- Fix for the [specificType](#Schema-specificType) schema call ([#118](https://github.com/knex/knex/issues/#118))
+- Several fixes for migrations, including migration file path fixes, passing a Promise constructor to the migration `up` and `down` methods, allowing the "knex" module to be used globally, file ordering on migrations, and other small improvements. ([#112](https://github.com/knex/knex/issues/#112)-115, [#125](https://github.com/knex/knex/issues/#125), [#135](https://github.com/knex/knex/issues/#135))
 
 ### 0.5.0 - Nov 25, 2013
 
 - Initial pass at a [migration](#Migrations) api.
-- Aggregate methods are no longer aliased as "aggregate", but may now be aliased and have more than one aggregate in a query (#108, #110).
-- Adding bigint and bigserial to PostgreSQL (#111).
-- Bugfix on increment/decrement values (#100).
-- Bugfix with having method (#107).
+- Aggregate methods are no longer aliased as "aggregate", but may now be aliased and have more than one aggregate in a query ([#108](https://github.com/knex/knex/issues/#108), [#110](https://github.com/knex/knex/issues/#110)).
+- Adding bigint and bigserial to PostgreSQL ([#111](https://github.com/knex/knex/issues/#111)).
+- Bugfix on increment/decrement values ([#100](https://github.com/knex/knex/issues/#100)).
+- Bugfix with having method ([#107](https://github.com/knex/knex/issues/#107)).
 - Switched from when.js to [bluebird](https://github.com/petkaantonov/bluebird) for promise implementation, with shim for backward compatibility.
 - Switched from underscore to lodash, for semver reliability
 
 ### 0.4.13 - Oct 31, 2013
 
-- Fix for aggregate methods on toString and clone, (#98)
+- Fix for aggregate methods on toString and clone, ([#98](https://github.com/knex/knex/issues/#98))
 
 ### 0.4.12 - Oct 29, 2013
 
@@ -2162,20 +2162,20 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.4.10 - Oct 14, 2013
 
-- Added [forUpdate](#Builder-forUpdate) and [forShare](#Builder-forShare) for select modes in transactions. (#84)
-- Fix bug where current query chain type is not copied on [clone](#Builder-clone). (#90)
-- Charset and collate are now added as methods on the schema builder. (#89)
+- Added [forUpdate](#Builder-forUpdate) and [forShare](#Builder-forShare) for select modes in transactions. ([#84](https://github.com/knex/knex/issues/#84))
+- Fix bug where current query chain type is not copied on [clone](#Builder-clone). ([#90](https://github.com/knex/knex/issues/#90))
+- Charset and collate are now added as methods on the schema builder. ([#89](https://github.com/knex/knex/issues/#89))
 - Added `into` as an alias of [from](#Builder-from), for builder syntax of: `insert(value).into(tableName)`
-- Internal pool fixes. (#90)
+- Internal pool fixes. ([#90](https://github.com/knex/knex/issues/#90))
 
 ### 0.4.9 - Oct 7, 2013
 
-- Fix for documentation of [hasColumn](#Schema-hasColumn), ensure that `hasColumn` works with MySQL (#87).
+- Fix for documentation of [hasColumn](#Schema-hasColumn), ensure that `hasColumn` works with MySQL ([#87](https://github.com/knex/knex/issues/#87)).
 - More cleanup of error messages, showing the original error message concatenated with the sql and bindings
 
 ### 0.4.8 - Oct 2, 2013
 
-- Connections are no longer pushed back into the pool if they never existed to begin with (#85)
+- Connections are no longer pushed back into the pool if they never existed to begin with ([#85](https://github.com/knex/knex/issues/#85))
 
 ### 0.4.7 - Sep 27, 2013
 
@@ -2183,11 +2183,11 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.4.6 - Sep 25, 2013
 
-- Standardizing handling of errors for easier debugging, as noted in (#39)
+- Standardizing handling of errors for easier debugging, as noted in ([#39](https://github.com/knex/knex/issues/#39))
 
 ### 0.4.5 - Sep 24, 2013
 
-- Fix for hasTable always returning true in MySQL (#82), fix where sql queries were duplicated with multiple calls on toSql with the schema builder
+- Fix for hasTable always returning true in MySQL ([#82](https://github.com/knex/knex/issues/#82)), fix where sql queries were duplicated with multiple calls on toSql with the schema builder
 
 ### 0.4.4 - Sep 22, 2013
 
@@ -2203,7 +2203,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.4.1 - Sep 16, 2013
 
-- Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by Andri Möll, fix for clients not being properly released from the pool #70, fix for where("foo", "<>", null) doing an "IS NULL" statement
+- Cleanup from the 0.4.0 release, fix a potential exploit in "where" clauses pointed out by Andri Möll, fix for clients not being properly released from the pool [#70](https://github.com/knex/knex/issues/#70), fix for where("foo", "<>", null) doing an "IS NULL" statement
 
 ### 0.4.0 - Sep 13, 2013
 
@@ -2217,19 +2217,19 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.2.6 - Aug 29, 2013
 
-- Reject the transaction promise if the transaction "commit" fails, (#50)
+- Reject the transaction promise if the transaction "commit" fails, ([#50](https://github.com/knex/knex/issues/#50))
 
 ### 0.2.5 - Aug 25, 2013
 
-- Fix error if a callback isn't specified for exec, (#49)
+- Fix error if a callback isn't specified for exec, ([#49](https://github.com/knex/knex/issues/#49))
 
 ### 0.2.4 - Aug 22, 2013
 
-- Fix SQLite3 delete not returning affected row count, (#45)
+- Fix SQLite3 delete not returning affected row count, ([#45](https://github.com/knex/knex/issues/#45))
 
 ### 0.2.3 - Aug 22, 2013
 
-- Fix insert with default values in PostgreSQL and SQLite3, (#44)
+- Fix insert with default values in PostgreSQL and SQLite3, ([#44](https://github.com/knex/knex/issues/#44))
 
 ### 0.2.2 - Aug 20, 2013
 
@@ -2244,12 +2244,12 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 **Breaking changes**
 
 - [hasTable](#Schema-hasTable) now returns a boolean rather than a failed promise.
-- Changed syntax for insert in postgresql, where the `id` is not assumed on inserts (#18). The second parameter of [insert](#Builder-insert) is now required to return an array of insert id's for the last insert.
+- Changed syntax for insert in postgresql, where the `id` is not assumed on inserts ([#18](https://github.com/knex/knex/issues/#18)). The second parameter of [insert](#Builder-insert) is now required to return an array of insert id's for the last insert.
 - The [timestamp](#Schema-timestamp) method on the schema builder now uses a `dateTime` rather than a `timestamp`
 
 ### 0.1.8 - July 7, 2013
 
-- Somehow missing the != operator. Using _.find rather than _.where in getCommandsByName(#22)
+- Somehow missing the != operator. Using _.find rather than _.where in getCommandsByName([#22](https://github.com/knex/knex/issues/#22))
 
 ### 0.1.7 - June 12, 2013
 
@@ -2261,7 +2261,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.1.5 - June 9, 2013
 
-- Added the ability to specify beforeCreate and beforeDestroy hooks on the initialize's options.pool to perform any necessary database setup/teardown on connections before use (#14). where and having may now accept Knex.Raw instances, for consistency (#15). Added an orHaving method to the builder. The ability to specify bindings on Raw queries has been removed
+- Added the ability to specify beforeCreate and beforeDestroy hooks on the initialize's options.pool to perform any necessary database setup/teardown on connections before use ([#14](https://github.com/knex/knex/issues/#14)). where and having may now accept Knex.Raw instances, for consistency ([#15](https://github.com/knex/knex/issues/#15)). Added an orHaving method to the builder. The ability to specify bindings on Raw queries has been removed
 
 ### 0.1.4 - May 22, 2013
 
@@ -2269,11 +2269,11 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### 0.1.3 - May 18, 2013
 
-- Enabling table aliases (#11). Fix for issues with transactions not functioning (#12)
+- Enabling table aliases ([#11](https://github.com/knex/knex/issues/#11)). Fix for issues with transactions not functioning ([#12](https://github.com/knex/knex/issues/#12))
 
 ### 0.1.2 - May 15, 2013
 
-- Bug fixes for groupBy (#7). Mysql using collation, charset config settings in createTable. Added engine on schemaBuilder specifier (#6). Other doc fixes, tests
+- Bug fixes for groupBy ([#7](https://github.com/knex/knex/issues/#7)). Mysql using collation, charset config settings in createTable. Added engine on schemaBuilder specifier ([#6](https://github.com/knex/knex/issues/#6)). Other doc fixes, tests
 
 ### 0.1.1 - May 14, 2013
 
