@@ -268,10 +268,10 @@ algoliasearch@^4.0.0:
     "@algolia/requester-node-http" "4.13.0"
     "@algolia/transporter" "4.13.0"
 
-colorette@2.0.16:
-  version "2.0.16"
-  resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.16.tgz#713b9af84fdb000139f04546bd4a93f62a5085da"
-  integrity sha512-hUewv7oMjCp+wkBv5Rm0v87eJhq4woh5rSR+42YSQJKecCqgIqNkZ6lAlQms/BwHPJA5NKMRlpxPRv0n8HQW6g==
+colorette@2.0.19:
+  version "2.0.19"
+  resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.19.tgz#cdf044f47ad41a0f4b56b3a0d5b4e6e1a2d5a798"
+  integrity sha512-3tlv/dIP7FWvj3BsbHrGLJ6l/oKh1O3TcgBqMn+yyCagOxc23fyzDS6HypQbgxWbkpDnf52p1LuR4eWDQ/K9WQ==
 
 commander@^9.1.0:
   version "9.2.0"
@@ -470,12 +470,12 @@ is-core-module@^2.8.1:
   dependencies:
     has "^1.0.3"
 
-knex@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-2.0.0.tgz#84296ced7ef27e0f3b954302ac7d9da67c28b5d3"
-  integrity sha512-LchC8/GLfreMz8d4kCwh/ymXttsoJG8zO1O0AJBjnxdyr2oT/k2ik77hP1PpZkZH9mDQrq6WsQcIu18Pnqppzg==
+knex@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-2.4.0.tgz#7d33cc36f320cdac98741010544b4c6a98b8b19e"
+  integrity sha512-i0GWwqYp1Hs2yvc2rlDO6nzzkLhwdyOZKRdsMTB8ZxOs2IXQyL5rBjSbS1krowCh6V65T4X9CJaKtuIfkaPGSA==
   dependencies:
-    colorette "2.0.16"
+    colorette "2.0.19"
     commander "^9.1.0"
     debug "4.3.4"
     escalade "^3.1.1"
