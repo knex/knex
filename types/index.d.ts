@@ -729,6 +729,8 @@ export declare namespace Knex {
     havingNotIn: HavingRange<TRecord, TResult>;
     andHavingNotIn: HavingRange<TRecord, TResult>;
     orHavingNotIn: HavingRange<TRecord, TResult>;
+    havingNull: HavingNull<TRecord, TResult>;
+    havingNotNull: HavingNull<TRecord, TResult>;
 
     // Clear
     clearSelect(): QueryBuilder<
@@ -2010,6 +2012,11 @@ export declare namespace Knex {
       TRecord,
       TResult
     >;
+  }
+
+  interface HavingNull<TRecord extends {} = any, TResult = unknown[]> {
+    (columnName: keyof TRecord): QueryBuilder<TRecord, TResult>;
+    (columnName: string): QueryBuilder<TRecord, TResult>;
   }
 
   // commons
