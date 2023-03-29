@@ -29,8 +29,6 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
-      const unionCols = ['last_name', 'phone'];
-
       before(async () => {
         knex = logger(getKnexForDb(db));
 
