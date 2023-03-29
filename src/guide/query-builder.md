@@ -436,7 +436,7 @@ knex.withSchema('public')
 
 **.jsonExtract(column|builder|raw|array[], path, [alias], [singleValue])**
 
-Extract a value from a json column given a JsonPath. An alias can be specified. The singleValue booleancan be used to specify, with Oracle or MSSQL, if the value returned by the function is a single value or an array/object value.An array of arrays can be used to specify multiple extractions with one call to this function.
+Extract a value from a json column given a JsonPath. An alias can be specified. The singleValue boolean can be used to specify, with Oracle or MSSQL, if the value returned by the function is a single value or an array/object value. An array of arrays can be used to specify multiple extractions with one call to this function.
 
 ```js
 knex('accounts')
@@ -482,7 +482,7 @@ knex('cities')
 
 **.jsonSet(column|builder|raw, path, value, [alias])**
 
-Return a json value/object/array where a given value is set at the given JsonPath. Value can be single value or json object. If a value already exists at the given place, the value is replaced.Not supported by Redshift and versions before Oracle 21c.
+Return a json value/object/array where a given value is set at the given JsonPath. Value can be single value or json object. If a value already exists at the given place, the value is replaced. Not supported by Redshift and versions before Oracle 21c.
 
 ```js
 knex('accounts')
@@ -501,7 +501,7 @@ knex('accounts')
 
 **.jsonInsert(column|builder|raw, path, value, [alias])**
 
-Return a json value/object/array where a given value is inserted at the given JsonPath. Value can be single value or json object. If a value exists at the given path, the value is not replaced.Not supported by Redshift and versions before Oracle 21c.
+Return a json value/object/array where a given value is inserted at the given JsonPath. Value can be single value or json object. If a value exists at the given path, the value is not replaced. Not supported by Redshift and versions before Oracle 21c.
 
 ```js
 knex('accounts')
@@ -528,7 +528,7 @@ knex('accounts')
 
 **.jsonRemove(column|builder|raw, path, [alias])**
 
-Return a json value/object/array where a given value is removed at the given JsonPath.Not supported by Redshift and versions before Oracle 21c.
+Return a json value/object/array where a given value is removed at the given JsonPath. Not supported by Redshift and versions before Oracle 21c.
 
 ```js
 knex('accounts')
