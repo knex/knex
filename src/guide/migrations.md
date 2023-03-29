@@ -176,23 +176,21 @@ module.exports = {
 };
 ```
 
-you can also export an async function from the knexfile. This is useful when you need to fetch credentials from a secure location like vault
+You can also use an async function to get connection details for your configuration. This is useful when you need to fetch credentials from a secure location like vault.
 
 ```js
-async function fetchConfiguration() {
+const getPassword = async () => {
   // TODO: implement me
-  return {
-    client: 'pg',
-    connection: { user: 'me', password: 'my_pass' }
-  }
+  return 'my_pass'
 }
 
-module.exports = async () => {
-  const configuration = await fetchConfiguration();
-  return {
-    ...configuration,
-    migrations: {}
-  }
+module.exports = {
+  client: 'pg',
+  connection: async () => {
+    const password = await getPassword()
+    return { user: 'me', password }
+  },
+  migrations: {}
 };
 ```
 
