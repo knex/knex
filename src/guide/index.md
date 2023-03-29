@@ -307,7 +307,7 @@ const customUserParam = knexWithParams
 
 ### debug
 
-Passing a `debug: true` flag on your initialization object will turn on [debugging](builder#debug) for all queries.
+Passing a `debug: true` flag on your initialization object will turn on [debugging](query-builder#debug) for all queries.
 
 ### asyncStackTraces
 
@@ -418,7 +418,7 @@ const knex = require('knex')({
 
 ### postProcessResponse
 
-Hook for modifying returned rows, before passing them forward to user. One can do for example snake\_case -> camelCase conversion for returned columns with this hook. The `queryContext` is only available if configured for a query builder instance via [queryContext](builder#querycontext).
+Hook for modifying returned rows, before passing them forward to user. One can do for example snake\_case -> camelCase conversion for returned columns with this hook. The `queryContext` is only available if configured for a query builder instance via [queryContext](query-builder#querycontext).
 
 ```js
 const knex = require('knex')({
@@ -442,7 +442,7 @@ Knex supports transforming identifier names automatically to quoted versions for
 
 With `wrapIdentifier` one may override the way how identifiers are transformed. It can be used to override default functionality and for example to help doing `camelCase` -> `snake_case` conversion.
 
-Conversion function `wrapIdentifier(value, dialectImpl, context): string` gets each part of the identifier as a single `value`, the original conversion function from the dialect implementation and the `queryContext`, which is only available if configured for a query builder instance via [builder.queryContext](builder-querycontext), and for schema builder instances via [schema.queryContext](schema-builder#querycontext) or [table.queryContext](schema-builder#querycontext-1). For example, with the query builder, `knex('table').withSchema('foo').select('table.field as otherName').where('id', 1)` will call `wrapIdentifier` converter for following values `'table'`, `'foo'`, `'table'`, `'field'`, `'otherName'` and `'id'`.
+Conversion function `wrapIdentifier(value, dialectImpl, context): string` gets each part of the identifier as a single `value`, the original conversion function from the dialect implementation and the `queryContext`, which is only available if configured for a query builder instance via [builder.queryContext](schema-builder.md#querycontext), and for schema builder instances via [schema.queryContext](schema-builder#querycontext) or [table.queryContext](schema-builder#querycontext-1). For example, with the query builder, `knex('table').withSchema('foo').select('table.field as otherName').where('id', 1)` will call `wrapIdentifier` converter for following values `'table'`, `'foo'`, `'table'`, `'field'`, `'otherName'` and `'id'`.
 
 ```js
 const knex = require('knex')({

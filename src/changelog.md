@@ -1,5 +1,85 @@
 ## Changelog
 
+### 2.4.2 - 22 January, 2023
+
+**Bug fixes**
+- CLI: Fix incorrent EOL causing errors on Linux #5455
+
+### 2.4.1 - 18 January, 2023
+
+**Bug fixes**
+- Fix Postgres Malformed array literal 2.4.0 Regression - #5439
+
+### 2.4.0 - 6 January, 2023
+
+**New features**
+- Support partial unique indexes #5316
+- Make compiling SQL in error message optional #5282
+
+**Bug fixes**
+- Insert array into json column #5321
+- Fix unexpected max acquire-timeout #5377
+- Fix: orWhereJson #5361
+- MySQL: Add assertion for basic where clause not to be object or array #1227
+- SQLite: Fix changing the default value of a boolean column in SQLite #5319
+
+**Typings**
+- add missing type for 'expirationChecker' on PgConnectionConfig #5334
+
+### 2.3.0 - 31 August, 2022
+
+**New features**
+- PostgreSQL: Explicit jsonb support for custom pg clients #5201
+- SQLite: Support returning with sqlite3 and better-sqlite3 #5285
+- MSSQL: Implement mapBinding mssql dialect option #5292
+
+**Typings**
+- Update types for TS 4.8 #5279
+- Fix typo #5267
+- Fix WhereJsonObject withCompositeTableType #5306
+- Fix AnalyticFunction type #5304
+- Infer specific column value type in aggregations #5297
+
+### 2.2.0 - 18 July, 2022
+
+**New features**
+- Inline primary key creation for postgres flavours #5233
+- SQLite: Add warning for undefined connection file #5223
+- MSSQL: Add JSON parameter support for connection #5200
+
+**Bug fixes**
+- PostgreSQL: add primaryKey option for uuid #5212
+
+**Typings**
+- Add promisable and better types #5222
+- Update raw query bind parameter type #5208
+
+### 2.1.0 - 26 May, 2022
+
+**New features**
+- Improve bundling experience to safely import dialects while using static paths #5142
+- Implement extendable builders #5041
+- PostgreSQL: Refresh materialized view concurrently #5166
+
+**Bug fixes**
+- Use correct paths in package.json browser field #5174
+- MariaDB: Fix 'NULL' returned instead of NULL on MariaDB 10.2.6+ #5181
+- MySQL: fix hasColumn Error (hasColumn ('a_id') is true, but hasColumn('a_Id') is false) #5148
+- MSSQL: Fix .hasTable result when using .withSchema #5176
+- Oracle: correctly INSERTS Buffer #4869
+
+**Typings**
+- Update type definitions for pg connection #5139
+
+### 2.0.0 - 21 April, 2022
+
+**Breaking changes**
+- Restore sqlite3 package #5136
+
+**Test / internal changes**
+- Migrate Husky from 4 to 7 #5137
+- Migrate Jake to 10.8.5 #5138
+
 ### 1.0.7 - 13 March, 2022  
 
 **Bug fixes**
