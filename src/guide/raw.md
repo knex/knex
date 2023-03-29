@@ -121,7 +121,7 @@ knex.select('e.lastname', 'e.salary', subcolumn)
   .whereRaw('dept_no = e.dept_no')
 ```
 
-Note that the example above be achieved more easily using the [as](#Builder-as) method.
+Note that the example above be achieved more easily using the [as](/guide/query-builder#as) method.
 
 ```js
 const subcolumn = knex.avg('salary')

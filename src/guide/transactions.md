@@ -5,7 +5,7 @@ Transactions are an important feature of relational databases, as they allow cor
 Transactions are handled by passing a handler function into `knex.transaction`. The handler function accepts a single argument, an object which may be used in two ways:
 
 1.  As the "promise aware" knex connection
-2.  As an object passed into a query with [](#Builder-transacting)and eventually call commit or rollback.
+2.  As an object passed into a query with [transacting](/guide/query-builder#transacting) and eventually call commit or rollback.
 
 Consider these two examples:
 

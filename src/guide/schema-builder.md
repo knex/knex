@@ -280,7 +280,7 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'")
 
 **knex.schema.queryContext(context)**
 
-Allows configuring a context to be passed to the [wrapIdentifier](#Installation-wrap-identifier) hook. The context can be any kind of value and will be passed to `wrapIdentifier` without modification.
+Allows configuring a context to be passed to the [wrapIdentifier](/guide/#wrapidentifier) hook. The context can be any kind of value and will be passed to `wrapIdentifier` without modification.
 
 ```js
 knex.schema.queryContext({ foo: 'bar' })
@@ -290,7 +290,7 @@ knex.schema.queryContext({ foo: 'bar' })
   })
 ```
 
-The context configured will be passed to `wrapIdentifier` for each identifier that needs to be formatted, including the table and column names. However, a different context can be set for the column names via [table.queryContext](#Schema-table-queryContext).
+The context configured will be passed to `wrapIdentifier` for each identifier that needs to be formatted, including the table and column names. However, a different context can be set for the column names via [table.queryContext](/guide/query-builder#querycontext).
 
 Calling `queryContext` with no arguments will return any context configured for the schema builder instance.
 
@@ -718,7 +718,7 @@ knex.schema.alterTable('job', function(t) {
 ```
 
 ::: info
-If you want to chain primary() while creating new column you can use [primary](#Schema-column-primary)
+If you want to chain primary() while creating new column you can use [primary](#primary-1)
 :::
 
 ### unique
@@ -743,7 +743,7 @@ knex.schema.alterTable('job', function(t) {
 ```
 
 ::: info
-If you want to chain unique() while creating new column you can use [unique](#Schema-column-unique)
+If you want to chain unique() while creating new column you can use [unique](#unique-1)
 :::
 
 ### foreign
@@ -789,7 +789,7 @@ Drops the primary key constraint on a table. Defaults to tablename\_pkey unless 
 
 **table.queryContext(context)**
 
-Allows configuring a context to be passed to the [wrapIdentifier](#Installation-wrap-identifier) hook for formatting table builder identifiers. The context can be any kind of value and will be passed to `wrapIdentifier` without modification.
+Allows configuring a context to be passed to the [wrapIdentifier](/guide/#wrapidentifier) hook for formatting table builder identifiers. The context can be any kind of value and will be passed to `wrapIdentifier` without modification.
 
 ```js
 knex.schema.table('users', function (table) {
@@ -799,7 +799,7 @@ knex.schema.table('users', function (table) {
 })
 ```
 
-This method also enables overwriting the context configured for a schema builder instance via [schema.queryContext](#Schema-queryContext):
+This method also enables overwriting the context configured for a schema builder instance via [schema.queryContext](/guide/schema-builder#querycontext):
 
 ```js
 knex.schema.queryContext('schema context')
@@ -871,7 +871,7 @@ knex.schema.table('users', function (table) {
 ```
 
 ::: info
-If you want to create primary constraint on existing column use [primary](#Schema-table-primary)
+If you want to create primary constraint on existing column use [primary](#primary)
 :::
 
 ### unique
@@ -887,7 +887,7 @@ knex.schema.table('users', function (table) {
 ```
 
 ::: info
-If you want to create unique constraint on existing column use [unique](#Schema-table-unique)
+If you want to create unique constraint on existing column use [unique](#unique)
 :::
 
 ### references

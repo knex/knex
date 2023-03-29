@@ -727,7 +727,7 @@ knex.select('*')
 
 **.insert(data, [returning], [options])**
 
-Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#Builder-returning)
+Creates an insert query, taking either a hash of properties to be inserted into the row, or an array of inserts, to be executed as a single insert command. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#returning)
 
 ```js
 // Returns [1] in "mysql", "sqlite", "oracle"; 
@@ -892,7 +892,7 @@ knex('tableName')
   })
 ```
 
-**For PostgreSQL/SQLite databases only**, it is also possible to add [a WHERE clause](#Builder-wheres) to conditionally update only the matching rows:
+**For PostgreSQL/SQLite databases only**, it is also possible to add [a WHERE clause](#where) to conditionally update only the matching rows:
 
 ```js
 const timestamp = Date.now();
@@ -915,7 +915,7 @@ knex('tableName')
 
 **.upsert(data, [returning], [options])**
 
-Implemented for the CockroachDB. Creates an upsert query, taking either a hash of properties to be inserted into the row, or an array of upserts, to be executed as a single upsert command. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#Builder-returning)
+Implemented for the CockroachDB. Creates an upsert query, taking either a hash of properties to be inserted into the row, or an array of upserts, to be executed as a single upsert command. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#returning)
 
 ```js
 // insert new row with unique index on title column
@@ -939,7 +939,7 @@ knex('coords').upsert([{x: 20}, {y: 30}, {x: 10, y: 20}])
 **.update(data, [returning], [options])**
 **.update(key, value, [returning], [options])**
 
-Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](#Builder-returning)
+Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](#returning)
 
 ```js
 knex('books')
@@ -1695,7 +1695,7 @@ Allows for mixing in additional options as defined by database client specific l
 
 **.queryContext(context)**
 
-Allows for configuring a context to be passed to the [wrapIdentifier](#Installation-wrap-identifier) and [postProcessResponse](#Installation-post-process-response) hooks:
+Allows for configuring a context to be passed to the [wrapIdentifier](/guide/#wrapidentifier) and [postProcessResponse](/guide/#postprocessresponse) hooks:
 
 ```js
     knex('accounts as a1')
@@ -1703,7 +1703,7 @@ Allows for configuring a context to be passed to the [wrapIdentifier](#Installat
       .select(['a1.email', 'a2.email'])
 ```
 
-The context can be any kind of value and will be passed to the hooks without modification. However, note that **objects will be shallow-cloned** when a query builder instance is [cloned](#Builder-clone), which means that they will contain all the properties of the original object but will not be the same object reference. This allows modifying the context for the cloned query builder instance.
+The context can be any kind of value and will be passed to the hooks without modification. However, note that **objects will be shallow-cloned** when a query builder instance is [cloned](#clone), which means that they will contain all the properties of the original object but will not be the same object reference. This allows modifying the context for the cloned query builder instance.
 
 Calling `queryContext` with no arguments will return any context configured for the query builder instance.
 

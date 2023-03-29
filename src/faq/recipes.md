@@ -220,7 +220,7 @@ migrate()
 
 ## Manually Closing Streams
 
-When using Knex's [stream interface](http://knexjs.org/#Interfaces-Streams), you can typically just `pipe` the return stream to any writable stream. However, with [`HTTPIncomingMessage`](http://nodejs.org/api/http.html#http_http_incomingmessage), you'll need to take special care to handle aborted requests.
+When using Knex's [stream interface](/guide/interfaces#streams), you can typically just `pipe` the return stream to any writable stream. However, with [`HTTPIncomingMessage`](http://nodejs.org/api/http.html#http_http_incomingmessage), you'll need to take special care to handle aborted requests.
 
 An `HTTPIncomingMessage` object is typically called `request`. This is the first argument in `'request'` events emitted on `http.Server` instances. [Express's `req`](http://expressjs.com/4x/api.html#request) implements a compatible interface and Hapi exposes this object on [its request objects](http://hapijs.com/api#request-object) as `request.raw.req`. 
 

@@ -5,13 +5,13 @@ A collection of utilities that the knex library provides for convenience.
 ## batchInsert
 **knex.batchInsert(tableName)**
 
-The `batchInsert` utility will insert a batch of rows wrapped inside a transaction _(which is automatically created unless explicitly given a transaction using [transacting](#Builder-transacting))_, at a given `chunkSize`.
+The `batchInsert` utility will insert a batch of rows wrapped inside a transaction _(which is automatically created unless explicitly given a transaction using [transacting](/guide/query-builder#transacting))_, at a given `chunkSize`.
 
 It's primarily designed to be used when you have thousands of rows to insert into a table.
 
 By default, the `chunkSize` is set to 1000.
 
-BatchInsert also allows for [returning values](#Builder-returning) and supplying transactions using [transacting](#Builder-transacting).
+BatchInsert also allows for [returning values](/guide/query-builder#returning) and supplying transactions using [transacting](/guide/query-builder#transacting).
 
 ```js
 const rows = [{/*...*/}, {/*...*/}];
