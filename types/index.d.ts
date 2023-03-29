@@ -732,7 +732,6 @@ export declare namespace Knex {
     havingNull: HavingNull<TRecord, TResult>;
     havingNotNull: HavingNull<TRecord, TResult>;
 
-
     // Clear
     clearSelect(): QueryBuilder<
       TRecord,
