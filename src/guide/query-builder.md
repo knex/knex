@@ -635,6 +635,26 @@ knex.select('*')
   )
 ```
 
+If you want to apply `orderBy`, `groupBy`, `limit`, `offset` or `having` to inputs of the union you need to use `knex.union` as a base statement. If you don't do this, those clauses will get appended to the end of the union.
+
+```js
+// example showing how clauses get appended to the end of the query
+knex('users')
+  .select('id', 'name')
+  .groupBy('id')
+  .union(
+    knex('invitations')
+      .select('id', 'name')
+      .orderBy('expires_at')
+  )
+
+knex.union([
+  knex('users').select('id', 'name').groupBy('id'),
+  knex('invitations').select('id', 'name').orderBy('expires_at')
+])
+```
+[before](https://michaelavila.com/knex-querylab/?query=NYOwpgHgFA5ArgZzAJwTAlAOiQGzAYwBdYBLAExgBoACGEAQwFswNMBzZAezgAcAhAJ6kKWOCBKcQUUJFIgAbiUL1CEkGiy4CxGOSq0GzVp2RkUg2JB4lkYBAH0VGdEA) and [after](https://michaelavila.com/knex-querylab/?query=NYOwpgHgdAriCWB7EAKA2qSKDkMDOYATntgJRQEA2YAxgC47wAm2ANAATYgCGAtmGSgBzQohgAHAEIBPRi1IdMERiABu8OtzpIQJclVoNszNpx79BiQkyIyckcfEJg8AfS1kAuqSA)
+
 ### unionAll
 
 **.unionAll([\*queries], [wrap])**
