@@ -251,7 +251,8 @@
     ],
     "exclude": [
       "lib/dialects/oracle",
-      "lib/dialects/oracledb"
+      "lib/dialects/oracledb",
+      "test/**/*.spec.js"
     ]
   },
   "tsd": {
