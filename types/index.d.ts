@@ -2733,6 +2733,7 @@ export declare namespace Knex {
     asyncStackTraces?: boolean;
     log?: Logger;
     compileSqlOnError?: boolean;
+    fetchAsString?: string[];
   }
 
   type StaticConnectionConfig =
