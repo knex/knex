@@ -4,6 +4,7 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const { expect } = chai;
 const { FileTestHelper } = require('cli-testlab');
+const sinon = require('sinon');
 
 const equal = require('assert').equal;
 const fs = require('fs');
@@ -524,6 +525,117 @@ describe('Migrations', function () {
                 });
               })
             );
+          });
+        });
+
+        describe('knex.migrate.latest - lifecycle hooks', function () {
+          afterEach(() => {
+            return knex.migrate.rollback(
+              { directory: 'test/integration2/migrate/test' },
+              true
+            );
+          });
+
+          describe('beforeAll', () => {
+            it('runs before the migrations batch', async function () {
+              let beforeCount;
+              await knex.migrate.latest({
+                directory: 'test/integration2/migrate/test',
+                beforeAll: async (knexOrTrx) => {
+                  const data = await knexOrTrx('knex_migrations').select('*');
+                  beforeCount = data.length;
+                },
+              });
+
+              const data = await knex('knex_migrations').select('*');
+              expect(data.length).to.equal(beforeCount + 2);
+            });
+          });
+
+          describe('afterAll', () => {
+            it('runs after the migrations batch', async function () {
+              let afterCount;
+              await knex.migrate.latest({
+                directory: 'test/integration2/migrate/test',
+                afterAll: async (knexOrTrx) => {
+                  const data = await knexOrTrx('knex_migrations').select('*');
+                  afterCount = data.length;
+                },
+              });
+
+              const data = await knex('knex_migrations').select('*');
+              expect(data.length).to.equal(afterCount);
+            });
+          });
+
+          describe('beforeEach', () => {
+            it('runs before each migration', async function () {
+              const tableExistenceChecks = [];
+              const beforeEach = sinon.stub().callsFake(async (trx) => {
+                const hasFirstTestTable = await trx.schema.hasTable(
+                  'migration_test_1'
+                );
+                const hasSecondTestTable = await trx.schema.hasTable(
+                  'migration_test_2'
+                );
+                tableExistenceChecks.push({
+                  hasFirstTestTable,
+                  hasSecondTestTable,
+                });
+              });
+
+              await knex.migrate.latest({
+                directory: 'test/integration2/migrate/test',
+                beforeEach,
+              });
+
+              expect(beforeEach.callCount).to.equal(2);
+              expect(tableExistenceChecks).to.deep.equal([
+                {
+                  hasFirstTestTable: false,
+                  hasSecondTestTable: false,
+                },
+                {
+                  hasFirstTestTable: true,
+                  hasSecondTestTable: false,
+                },
+              ]);
+            });
+          });
+
+          describe('afterEach', () => {
+            it('runs after each migration', async function () {
+              const tableExistenceChecks = [];
+              const afterEach = sinon.stub().callsFake(async (trx) => {
+                const hasFirstTestTable = await trx.schema.hasTable(
+                  'migration_test_1'
+                );
+                const hasSecondTestTable = await trx.schema.hasTable(
+                  'migration_test_2'
+                );
+                tableExistenceChecks.push({
+                  hasFirstTestTable,
+                  hasSecondTestTable,
+                });
+              });
+
+              await knex.migrate.latest({
+                directory: 'test/integration2/migrate/test',
+                afterEach,
+              });
+
+              expect(afterEach.callCount).to.equal(2);
+              expect(tableExistenceChecks).to.deep.equal([
+                {
+                  hasFirstTestTable: true,
+                  hasSecondTestTable: false,
+                },
+                {
+                  hasFirstTestTable: true,
+                  hasSecondTestTable: true,
+                },
+              ]);
+            });
           });
         });
 
