@@ -597,6 +597,7 @@ export declare namespace Knex {
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
     column: Select<TRecord, TResult>;
+    comment: Comment<TRecord, TResult>;
     hintComment: HintComment<TRecord, TResult>;
     from: Table<TRecord, TResult>;
     fromRaw: Table<TRecord, TResult>;
@@ -1351,6 +1352,10 @@ export declare namespace Knex {
       path: string,
       alias?: string
     ): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface Comment<TRecord extends {} = any, TResult = any> {
+    (comment: string): QueryBuilder<TRecord, TResult>;
   }
 
   interface HintComment<TRecord extends {} = any, TResult = any> {
