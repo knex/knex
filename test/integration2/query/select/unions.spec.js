@@ -25,12 +25,10 @@ const {
 } = require('../../util/knex-instance-provider');
 const logger = require('../../../integration/logger');
 
-describe('unions', function () {
+describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]', function () {
   getAllDbs().forEach((db) => {
     describe(db, () => {
       let knex;
-      const unionCols = ['last_name', 'phone'];
-
       before(async () => {
         knex = logger(getKnexForDb(db));
 
@@ -59,128 +57,267 @@ describe('unions', function () {
         await knex.destroy();
       });
 
-      it('handles unions with a callback', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union(function () {
-            this.select(unionCols).from('accounts').where('id', 2);
+      describe('.union()', () => {
+        before(async function () {
+          await knex.schema.createTable('union_test', function (t) {
+            t.integer('id');
+            t.integer('test_col_1');
+            t.integer('test_col_2');
+            t.integer('test_col_3');
           });
-      });
+        });
 
-      it('handles unions with an array of callbacks', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union([
-            function () {
-              this.select(unionCols).from('accounts').where('id', 2);
+        beforeEach(async function () {
+          await knex('union_test').insert([
+            {
+              id: 1,
+              test_col_1: 1,
+              test_col_2: 2,
+              test_col_3: 1,
             },
-            function () {
-              this.select(unionCols).from('accounts').where('id', 3);
+            {
+              id: 2,
+              test_col_1: 2,
+              test_col_2: 3,
+              test_col_3: 1,
+            },
+            {
+              id: 3,
+              test_col_1: 2,
+              test_col_2: 3,
+              test_col_3: 2,
+            },
+            {
+              id: 4,
+              test_col_1: 1,
+              test_col_2: 2,
+              test_col_3: 2,
+            },
+            {
+              id: 5,
+              test_col_1: 1,
+              test_col_2: 2,
+              test_col_3: 1,
             },
           ]);
-      });
+        });
 
-      it('handles unions with a list of callbacks', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union(
-            function () {
-              this.select(unionCols).from('accounts').where('id', 2);
-            },
-            function () {
-              this.select(unionCols).from('accounts').where('id', 3);
-            }
-          );
-      });
+        after(async function () {
+          await knex.schema.dropTable('union_test');
+        });
 
-      it('handles unions with an array of builders', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union([
-            knex.select(unionCols).from('accounts').where('id', 2),
-            knex.select(unionCols).from('accounts').where('id', 3),
-          ]);
-      });
+        it('handles unions with a callback', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .union(function () {
+              this.select('*').from('union_test').where('test_col_2', 2);
+            })
+            .then(function (result) {
+              expect(result.length).to.equal(3);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [1, 4, 5]
+              );
+            });
+        });
 
-      it('handles unions with a list of builders', async () => {
-        await knex('accounts')
-          .select(unionCols)
-          .where('id', '=', 1)
-          .union(
-            knex.select(unionCols).from('accounts').where('id', 2),
-            knex.select(unionCols).from('accounts').where('id', 3)
-          );
-      });
-
-      it('handles unions with a raw query', async () => {
-        await knex('union_raw_test')
-          .select('*')
-          .where('id', '=', 1)
-          .union(
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              2,
+        it('handles unions with an array of callbacks', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .union([
+              function () {
+                this.select('*').from('union_test').where('test_col_2', 2);
+              },
+              function () {
+                this.select('*').from('union_test').where('test_col_3', 1);
+              },
             ])
-          );
-      });
+            .then(function (result) {
+              expect(result.length).to.equal(4);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [1, 2, 4, 5]
+              );
+            });
+        });
 
-      it('handles unions with an array raw queries', async () => {
-        await knex('union_raw_test')
-          .select('*')
-          .where('id', '=', 1)
-          .union([
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              2,
-            ]),
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              3,
-            ]),
-          ]);
-      });
+        it('handles unions with a list of callbacks', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
 
-      it('handles unions with a list of raw queries', async () => {
-        await knex('union_raw_test')
-          .select('*')
-          .where('id', '=', 1)
-          .union(
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              2,
-            ]),
-            knex.raw('select * from ?? where ?? = ?', [
-              'union_raw_test',
-              'id',
-              3,
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .union(
+              function () {
+                this.select('*').from('union_test').where('test_col_2', 2);
+              },
+              function () {
+                this.select('*').from('union_test').where('test_col_3', 1);
+              }
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(4);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [1, 2, 4, 5]
+              );
+            });
+        });
+
+        it('handles unions with an array of builders', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .union([
+              knex.select('*').from('union_test').where('test_col_2', 2),
+              knex.select('*').from('union_test').where('test_col_3', 1),
             ])
-          );
-      });
+            .then(function (result) {
+              expect(result.length).to.equal(4);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [1, 2, 4, 5]
+              );
+            });
+        });
 
-      it('handles nested unions with limit', async function () {
-        if (!isPostgreSQL(knex)) {
-          return this.skip();
-        }
-        const results = await knex('accounts')
-          .select('last_name')
-          .unionAll(function () {
-            this.select('last_name').from('accounts');
-          })
-          .first();
-        expect(results).to.eql({
-          last_name: 'User',
+        it('handles unions with a list of builders', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .union(
+              knex.select('*').from('union_test').where('test_col_2', 2),
+              knex.select('*').from('union_test').where('test_col_3', 1)
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(4);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [1, 2, 4, 5]
+              );
+            });
+        });
+
+        it('handles unions with a raw query', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 2)
+            .union(
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_test',
+                'test_col_2',
+                3,
+              ])
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(2);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [2, 3]
+              );
+            });
+        });
+
+        it('handles unions with an array raw queries', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .union([
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_test',
+                'test_col_2',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_test',
+                'test_col_3',
+                1,
+              ]),
+            ])
+            .then(function (result) {
+              expect(result.length).to.equal(4);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [1, 2, 4, 5]
+              );
+            });
+        });
+
+        it('handles unions with a list of raw queries', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('union_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .union(
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_test',
+                'test_col_2',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'union_test',
+                'test_col_3',
+                1,
+              ])
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(4);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [1, 2, 4, 5]
+              );
+            });
         });
       });
 
-      describe('unions with wrapped queries', () => {
+      describe('.unionAll()', () => {
+        it('handles nested unions with limit', async function () {
+          if (!isPostgreSQL(knex)) {
+            return this.skip();
+          }
+          const results = await knex('accounts')
+            .select('last_name')
+            .unionAll(function () {
+              this.select('last_name').from('accounts');
+            })
+            .first();
+          expect(results).to.eql({
+            last_name: 'User',
+          });
+        });
+
         it('nested unions with group by in subqueries and limit and orderby', async function () {
           if (!isPostgreSQL(knex) && !isMysql(knex)) {
             return this.skip();
@@ -505,7 +642,7 @@ describe('unions', function () {
         });
       });
 
-      describe('intersects', function () {
+      describe('.intersect()', function () {
         before(async function () {
           await knex.schema.createTable('intersect_test', function (t) {
             t.integer('id');
@@ -792,6 +929,251 @@ describe('unions', function () {
                 knex,
                 result.map((r) => r.id),
                 [1, 5]
+              );
+            });
+        });
+      });
+
+      describe('.except()', function () {
+        before(async function () {
+          await knex.schema.createTable('except_test', function (t) {
+            t.integer('id');
+            t.integer('test_col_1');
+            t.integer('test_col_2');
+            t.integer('test_col_3');
+          });
+        });
+
+        beforeEach(async function () {
+          await knex('except_test').insert([
+            {
+              id: 1,
+              test_col_1: 1,
+              test_col_2: 2,
+              test_col_3: 1,
+            },
+            {
+              id: 2,
+              test_col_1: 2,
+              test_col_2: 3,
+              test_col_3: 1,
+            },
+            {
+              id: 3,
+              test_col_1: 2,
+              test_col_2: 3,
+              test_col_3: 2,
+            },
+            {
+              id: 4,
+              test_col_1: 2,
+              test_col_2: 2,
+              test_col_3: 2,
+            },
+            {
+              id: 5,
+              test_col_1: 1,
+              test_col_2: 3,
+              test_col_3: 3,
+            },
+          ]);
+        });
+
+        after(async function () {
+          await knex.schema.dropTable('except_test');
+        });
+
+        it('handles excepts with a callback', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .except(function () {
+              this.select('*').from('except_test').where('test_col_2', 2);
+            })
+            .then(function (result) {
+              expect(result.length).to.equal(1);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [5]
+              );
+            });
+        });
+
+        it('handles excepts with an array of callbacks', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .except([
+              function () {
+                this.select('*').from('except_test').where('test_col_2', 2);
+              },
+              function () {
+                this.select('*').from('except_test').where('test_col_3', 1);
+              },
+            ])
+            .then(function (result) {
+              expect(result.length).to.equal(1);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [5]
+              );
+            });
+        });
+
+        it('handles excepts with a list of callbacks', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .except(
+              function () {
+                this.select('*').from('except_test').where('test_col_2', 2);
+              },
+              function () {
+                this.select('*').from('except_test').where('test_col_3', 1);
+              }
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(1);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [5]
+              );
+            });
+        });
+
+        it('handles excepts with an array of builders', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .except([
+              knex.select('*').from('except_test').where('test_col_2', 2),
+              knex.select('*').from('except_test').where('test_col_3', 1),
+            ])
+            .then(function (result) {
+              expect(result.length).to.equal(1);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [5]
+              );
+            });
+        });
+
+        it('handles excepts with a list of builders', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .except(
+              knex.select('*').from('except_test').where('test_col_2', 2),
+              knex.select('*').from('except_test').where('test_col_3', 1)
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(1);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [5]
+              );
+            });
+        });
+
+        it('handles excepts with a raw query', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 2)
+            .except(
+              knex.raw('select * from ?? where ?? = ?', [
+                'except_test',
+                'test_col_2',
+                3,
+              ])
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(1);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [4]
+              );
+            });
+        });
+
+        it('handles excepts with an array raw queries', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .except([
+              knex.raw('select * from ?? where ?? = ?', [
+                'except_test',
+                'test_col_2',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'except_test',
+                'test_col_3',
+                1,
+              ]),
+            ])
+            .then(function (result) {
+              expect(result.length).to.equal(1);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                [5]
+              );
+            });
+        });
+
+        it('handles excepts with a list of raw queries', async function () {
+          if (!isPostgreSQL(knex) && !isMysql(knex)) {
+            return this.skip();
+          }
+          await knex('except_test')
+            .select('*')
+            .where('test_col_1', '=', 1)
+            .except(
+              knex.raw('select * from ?? where ?? = ?', [
+                'except_test',
+                'test_col_2',
+                2,
+              ]),
+              knex.raw('select * from ?? where ?? = ?', [
+                'except_test',
+                'test_col_3',
+                3,
+              ])
+            )
+            .then(function (result) {
+              expect(result.length).to.equal(0);
+              assertNumberArray(
+                knex,
+                result.map((r) => r.id),
+                []
               );
             });
         });

@@ -1197,7 +1197,7 @@ const main = async () => {
   // $ExpectType Dict<any>
   await knexInstance.first().min('age').from<User>('users');
 
-  // $ExpectType ({ a: string | Date; } & { b: string | Date; })[]
+  // $ExpectType ({ a: Date; } & { b: Date; })[]
   await knexInstance<Ticket>('tickets')
     .min('at', {as: 'a'})
     .max('at', {as: 'b'});

@@ -10,6 +10,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,7 +29,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.2.0
+        uses: actions/setup-node@v3.6.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}

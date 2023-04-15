@@ -218,7 +218,7 @@ function invoke() {
     .action(async (name) => {
       try {
         const opts = commander.opts();
-        const instance = await initKnex(env, opts, true);  // Skip config check, we don't really care about client when creating migrations
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating migrations
         const ext = getMigrationExtension(env, opts);
         const configOverrides = { extension: ext };
 
@@ -233,7 +233,7 @@ function invoke() {
             success(color.green(`Created Migration: ${name}`));
           })
           .catch(exit);
-      } catch(err) {
+      } catch (err) {
         exit(err);
       }
     });
@@ -397,7 +397,8 @@ function invoke() {
         }
 
         if (opts.timestampFilenamePrefix) {
-          configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
+          configOverrides.timestampFilenamePrefix =
+            opts.timestampFilenamePrefix;
         }
 
         instance.seed
@@ -406,9 +407,9 @@ function invoke() {
             success(color.green(`Created seed file: ${name}`));
           })
           .catch(exit);
-      } catch(err) {
+      } catch (err) {
         exit(err);
-      }   
+      }
     });
 
   commander
