@@ -61,7 +61,7 @@
     "prepublishOnly": "npm run format:check-difference && npm run lint && npm run clean && npm run build"
   },
   "dependencies": {
-    "colorette": "2.0.19",
+    "colorette": "2.0.20",
     "commander": "^10.0.0",
     "debug": "4.3.4",
     "escalade": "^3.1.1",
