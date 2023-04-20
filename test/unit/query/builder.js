@@ -3238,22 +3238,22 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .orderBy(['email', { column: 'age', order: 'desc' }]),
+        .orderBy(['email', { column: 'age', order: 'desc' }, 3]),
       {
         mysql: {
-          sql: 'select * from `users` order by `email` asc, `age` desc',
+          sql: 'select * from `users` order by `email` asc, `age` desc, 3 asc',
           bindings: [],
         },
         mssql: {
-          sql: 'select * from [users] order by [email] asc, [age] desc',
+          sql: 'select * from [users] order by [email] asc, [age] desc, 3 asc',
           bindings: [],
         },
         pg: {
-          sql: 'select * from "users" order by "email" asc, "age" desc',
+          sql: 'select * from "users" order by "email" asc, "age" desc, 3 asc',
           bindings: [],
         },
         'pg-redshift': {
-          sql: 'select * from "users" order by "email" asc, "age" desc',
+          sql: 'select * from "users" order by "email" asc, "age" desc, 3 asc',
           bindings: [],
         },
       }
