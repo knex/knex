@@ -3455,6 +3455,27 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('multiple numeric order bys, with and without arrays', () => {
+    testsql(qb().select('*').from('users').orderBy([2, 4]).orderBy(7), {
+      mysql: {
+        sql: 'select * from `users` order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+    });
+  });
+
   it('havings', () => {
     testsql(qb().select('*').from('users').having('email', '>', 1), {
       mysql: 'select * from `users` having `email` > ?',
@@ -9448,28 +9469,23 @@ describe('QueryBuilder', () => {
         .comment('Added comment 2'),
       {
         mysql: {
-          sql:
-            '/* Added comment 1 */ /* Added comment 2 */ select * from `testtable`',
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from `testtable`',
           bindings: [],
         },
         oracledb: {
-          sql:
-            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
           bindings: [],
         },
         mssql: {
-          sql:
-            '/* Added comment 1 */ /* Added comment 2 */ select * from [testtable]',
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from [testtable]',
           bindings: [],
         },
         pg: {
-          sql:
-            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
           bindings: [],
         },
         'pg-redshift': {
-          sql:
-            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
           bindings: [],
         },
       }
@@ -9478,33 +9494,28 @@ describe('QueryBuilder', () => {
 
   it('#1982 (2) - should throw error on non string', () => {
     try {
-      testsql(
-        qb()
-          .from('testtable')
-          .comment({ prop: 'val' }),
-        {
-          mysql: {
-            sql: '',
-            bindings: [],
-          },
-          oracledb: {
-            sql: '',
-            bindings: [],
-          },
-          mssql: {
-            sql: '',
-            bindings: [],
-          },
-          pg: {
-            sql: '',
-            bindings: [],
-          },
-          'pg-redshift': {
-            sql: '',
-            bindings: [],
-          },
-        }
-      );
+      testsql(qb().from('testtable').comment({ prop: 'val' }), {
+        mysql: {
+          sql: '',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '',
+          bindings: [],
+        },
+        mssql: {
+          sql: '',
+          bindings: [],
+        },
+        pg: {
+          sql: '',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '',
+          bindings: [],
+        },
+      });
       expect(true).to.equal(
         false,
         'Expected to throw error in compilation about non-string'
@@ -9516,33 +9527,28 @@ describe('QueryBuilder', () => {
 
   it('#1982 (3) - should throw error when there is subcomments', () => {
     try {
-      testsql(
-        qb()
-          .from('testtable')
-          .comment('/* Hello world'),
-        {
-          mysql: {
-            sql: '',
-            bindings: [],
-          },
-          oracledb: {
-            sql: '',
-            bindings: [],
-          },
-          mssql: {
-            sql: '',
-            bindings: [],
-          },
-          pg: {
-            sql: '',
-            bindings: [],
-          },
-          'pg-redshift': {
-            sql: '',
-            bindings: [],
-          },
-        }
-      );
+      testsql(qb().from('testtable').comment('/* Hello world'), {
+        mysql: {
+          sql: '',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '',
+          bindings: [],
+        },
+        mssql: {
+          sql: '',
+          bindings: [],
+        },
+        pg: {
+          sql: '',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '',
+          bindings: [],
+        },
+      });
       expect(true).to.equal(
         false,
         'Expected to throw error in compilation about non-string'
@@ -9554,33 +9560,28 @@ describe('QueryBuilder', () => {
 
   it('#1982 (4) - should throw error when there is question mark', () => {
     try {
-      testsql(
-        qb()
-          .from('testtable')
-          .comment('?'),
-        {
-          mysql: {
-            sql: '',
-            bindings: [],
-          },
-          oracledb: {
-            sql: '',
-            bindings: [],
-          },
-          mssql: {
-            sql: '',
-            bindings: [],
-          },
-          pg: {
-            sql: '',
-            bindings: [],
-          },
-          'pg-redshift': {
-            sql: '',
-            bindings: [],
-          },
-        }
-      );
+      testsql(qb().from('testtable').comment('?'), {
+        mysql: {
+          sql: '',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '',
+          bindings: [],
+        },
+        mssql: {
+          sql: '',
+          bindings: [],
+        },
+        pg: {
+          sql: '',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '',
+          bindings: [],
+        },
+      });
       expect(true).to.equal(
         false,
         'Expected to throw error in compilation about non-string'
