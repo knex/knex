@@ -804,6 +804,11 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
+    decrement(
+      columns: {
+        [column in keyof TRecord]: number
+      }
+    ): QueryBuilder<TRecord, number>;
 
     // Analytics
     rank: AnalyticFunction<TRecord, TResult>;
