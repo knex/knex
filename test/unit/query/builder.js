@@ -2740,6 +2740,266 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('excepts', () => {
+    const chain = qb()
+      .select('*')
+      .from('users')
+      .where('id', '=', 1)
+      .except(function () {
+        this.select('*').from('users').where('id', '=', 2);
+      });
+
+    testsql(chain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      oracledb: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2],
+      },
+    });
+
+    const multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        function () {
+          this.select('*').from('users').where({ id: 2 });
+        },
+        function () {
+          this.select('*').from('users').where({ id: 3 });
+        }
+      );
+    testsql(multipleArgumentsChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      oracledb: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except([
+        function () {
+          this.select('*').from('users').where({ id: 2 });
+        },
+        function () {
+          this.select('*').from('users').where({ id: 3 });
+        },
+      ]);
+    testsql(arrayChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      oracledb: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
+  it('wraps excepts', () => {
+    const wrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where('id', 'in', function () {
+        this.table('users')
+          .max('id')
+          .except(function () {
+            this.table('users').min('id');
+          }, true);
+      });
+    testsql(wrappedChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] in (select max([id]) from [users] except (select min([id]) from [users]))',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") except (select min("id") from "users"))',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") except (select min("id") from "users"))',
+        bindings: [],
+      },
+    });
+
+    // worthwhile since we're playing games with the 'wrap' specification with arguments
+    const multipleArgumentsWrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        function () {
+          this.select('*').from('users').where({ id: 2 });
+        },
+        function () {
+          this.select('*').from('users').where({ id: 3 });
+        },
+        true
+      );
+    testsql(multipleArgumentsWrappedChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except (select * from [users] where [id] = ?) except (select * from [users] where [id] = ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const arrayWrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        [
+          function () {
+            this.select('*').from('users').where({ id: 2 });
+          },
+          function () {
+            this.select('*').from('users').where({ id: 3 });
+          },
+        ],
+        true
+      );
+    testsql(arrayWrappedChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except (select * from [users] where [id] = ?) except (select * from [users] where [id] = ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
+  it('multiple excepts', () => {
+    const chain = qb()
+      .select('*')
+      .from('users')
+      .where('id', '=', 1)
+      .except(qb().select('*').from('users').where('id', '=', 2))
+      .except(function () {
+        this.select('*').from('users').where('id', '=', 3);
+      });
+    testsql(chain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except([
+        qb().select('*').from('users').where({ id: 2 }),
+        raw('select * from users where id = ?', [3]),
+      ]);
+    testsql(arrayChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        qb().select('*').from('users').where({ id: 2 }),
+        raw('select * from users where id = ?', [3])
+      );
+    testsql(multipleArgumentsChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
   it('sub select where ins', () => {
     testsql(
       qb()
@@ -9178,6 +9438,156 @@ describe('QueryBuilder', () => {
         },
       }
     );
+  });
+
+  it('#1982 - should allow query comments in querybuilder', () => {
+    testsql(
+      qb()
+        .from('testtable')
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+      {
+        mysql: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from `testtable`',
+          bindings: [],
+        },
+        oracledb: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+        mssql: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from [testtable]',
+          bindings: [],
+        },
+        pg: {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql:
+            '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('#1982 (2) - should throw error on non string', () => {
+    try {
+      testsql(
+        qb()
+          .from('testtable')
+          .comment({ prop: 'val' }),
+        {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+          oracledb: {
+            sql: '',
+            bindings: [],
+          },
+          mssql: {
+            sql: '',
+            bindings: [],
+          },
+          pg: {
+            sql: '',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: '',
+            bindings: [],
+          },
+        }
+      );
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Comment must be a string');
+    }
+  });
+
+  it('#1982 (3) - should throw error when there is subcomments', () => {
+    try {
+      testsql(
+        qb()
+          .from('testtable')
+          .comment('/* Hello world'),
+        {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+          oracledb: {
+            sql: '',
+            bindings: [],
+          },
+          mssql: {
+            sql: '',
+            bindings: [],
+          },
+          pg: {
+            sql: '',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: '',
+            bindings: [],
+          },
+        }
+      );
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Cannot include /*, */, ? in comment');
+    }
+  });
+
+  it('#1982 (4) - should throw error when there is question mark', () => {
+    try {
+      testsql(
+        qb()
+          .from('testtable')
+          .comment('?'),
+        {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+          oracledb: {
+            sql: '',
+            bindings: [],
+          },
+          mssql: {
+            sql: '',
+            bindings: [],
+          },
+          pg: {
+            sql: '',
+            bindings: [],
+          },
+          'pg-redshift': {
+            sql: '',
+            bindings: [],
+          },
+        }
+      );
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Cannot include /*, */, ? in comment');
+    }
   });
 
   it('#4199 - allows hint comments in subqueries', () => {
