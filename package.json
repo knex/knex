@@ -132,7 +132,7 @@
     "oracledb": "^5.4.0",
     "pg": "^8.8.0",
     "pg-query-stream": "^4.2.4",
-    "prettier": "2.8.7",
+    "prettier": "2.8.8",
     "rimraf": "^3.0.2",
     "sinon": "^15.0.1",
     "sinon-chai": "^3.7.0",
