@@ -13,6 +13,12 @@ module.exports = function (config) {
 
     this.beforeEach(() => {
       configWorkingCopy = _.cloneDeep(config);
+      if (config.connection && config.connection.password) {
+        Object.defineProperty(configWorkingCopy.connection, 'password', {
+          enumerable: false,
+          value: config.connection.password,
+        });
+      }
       configWorkingCopy.pool.min = 1;
       configWorkingCopy.pool.max = 2;
       providerInvocationCount = 0;
