@@ -810,5 +810,24 @@ module.exports = function (knex) {
         // closed it. (Ex: this was the case for OracleDB before fixing #3721)
       });
     });
+
+    it('exposes baseExecutionPromise', async () => {
+      let committed = false;
+      await knex.transaction(async (trx1) => {
+        expect(trx1.baseExecutionPromise).to.equal(trx1.executionPromise);
+        await trx1.transaction(async (trx2) => {
+          expect(trx2.baseExecutionPromise).to.equal(trx1.executionPromise);
+          await trx2.transaction(async (trx3) => {
+            expect(trx3.baseExecutionPromise).to.equal(trx1.executionPromise);
+            trx3.baseExecutionPromise.then(() => {
+              committed = true;
+            });
+          });
+          expect(committed).to.be.false;
+        });
+        expect(committed).to.be.false;
+      });
+      expect(committed).to.be.true;
+    });
   });
 };
