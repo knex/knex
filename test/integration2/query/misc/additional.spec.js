@@ -35,6 +35,7 @@ const {
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const sinon = require('sinon');
+const { setHiddenProperty } = require('../../../../lib/util/security');
 
 describe('Additional', function () {
   getAllDbs().forEach((db) => {
@@ -991,10 +992,10 @@ describe('Additional', function () {
             knex.client.config.connection &&
             knex.client.config.connection.password
           ) {
-            Object.defineProperty(knexConfig.connection, 'password', {
-              enumerable: false,
-              value: knex.client.config.connection.password,
-            });
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
           }
 
           knexConfig.pool.min = 0;
@@ -1118,10 +1119,10 @@ describe('Additional', function () {
             knex.client.config.connection &&
             knex.client.config.connection.password
           ) {
-            Object.defineProperty(knexConfig.connection, 'password', {
-              enumerable: false,
-              value: knex.client.config.connection.password,
-            });
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
           }
 
           knexConfig.pool.min = 0;
