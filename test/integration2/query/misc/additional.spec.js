@@ -1426,10 +1426,11 @@ describe('Additional', function () {
         it('should not leak passwords when logged', async function () {
           const query = knex('test_table_two').select('*');
           const fakeLog = util.inspect(query, { depth: null });
+
+          // These passwords come from `scripts/docker-compose.yml`
           const passwordMatches = fakeLog.match(
             /(knextest|testpassword|S0meVeryHardPassword|testrootpassword)/g
           );
-
           expect(passwordMatches).to.be.null;
         });
       });
