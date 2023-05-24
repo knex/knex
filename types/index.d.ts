@@ -3221,7 +3221,7 @@ export declare namespace Knex {
     valueForUndefined: any;
     formatter(builder: any): any;
     queryBuilder(): QueryBuilder;
-    queryCompiler(builder: any): any;
+    queryCompiler(builder: any, formatter: any): any;
     schemaBuilder(): SchemaBuilder;
     schemaCompiler(builder: SchemaBuilder): any;
     tableBuilder(
