@@ -128,7 +128,7 @@ describe('Additional', function () {
           });
         });
 
-        it('should close the connection when a stream query iteration errors', async function () {
+        it('should release the connection when a stream query iteration errors', async function () {
           const spy = sinon.spy(knex.client, 'releaseConnection');
 
           const stream = knex.raw('VALUES (1), (2), (3)').stream();
@@ -144,6 +144,26 @@ describe('Additional', function () {
 
           expect(spy).to.have.been.called;
           spy.restore();
+        });
+
+        it('should close the db connection when prematurely closing a stream', async function () {
+          await knex('accounts').truncate();
+          await insertAccounts(knex, 'accounts');
+
+          // We limit to only one row at a time, to keep the cursor open
+          const stream = knex('accounts').stream({ highWaterMark: 1 });
+
+          // eslint-disable-next-line no-unused-vars
+          for await (const _ of stream) {
+            stream.destroy();
+            break;
+          }
+
+          await new Promise((res) => setTimeout(res, 50));
+
+          // Will timeout if the connection is in the pool, but not closed
+          this.timeout(1000);
+          await knex('accounts').limit(1);
         });
 
         it('should process response done through a stream', async () => {
