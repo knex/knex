@@ -2410,7 +2410,7 @@ export declare namespace Knex {
     raw(statement: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
     toString(): string;
-    toSQL(): Sql;
+    toSQL(): Sql[];
   }
 
   interface TableBuilder {
