@@ -171,7 +171,8 @@
     "querybuilder",
     "build",
     "db",
-    "database"
+    "database",
+    "snowflake"
   ],
   "author": {
     "name": "Tim Griesser",
