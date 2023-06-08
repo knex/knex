@@ -5,8 +5,8 @@ const isModuleType = require('../../../../lib/migrations/util/is-module-type.js'
 require('../../../util/chai-setup');
 
 describe('isModuleType', () => {
-  const getFile = (package, filename) =>
-    path.resolve(__dirname, `test/${package}/${filename}`);
+  const getFile = (package_, filename) =>
+    path.resolve(__dirname, `test/${package_}/${filename}`);
 
   it('should return false with type=commonjs and a .js file', async () => {
     expect(await isModuleType(getFile('commonjs', 'test.js'))).to.be.false;
