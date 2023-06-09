@@ -16,6 +16,5 @@ jobs:
                           registry-url: https://registry.npmjs.org
                   - name: publish
                     run: npm publish --access public
-                    working-directory: knex
                     env: 
                         NODE_AUTH_TOKEN: ${{secrets.NPM_SECRET}}
