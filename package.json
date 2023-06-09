@@ -1,5 +1,5 @@
 {
-  "name": "knex-with-snowflake",
+  "name": "@anil2507/knex-with-snowflake",
   "version": "2.4.2",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex",
@@ -154,7 +154,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/knex/knex.git"
+    "url": "git://github.com/anil-2507/knex"
   },
   "homepage": "https://knex.github.io/documentation/",
   "keywords": [
@@ -175,8 +175,8 @@
     "snowflake"
   ],
   "author": {
-    "name": "Tim Griesser",
-    "web": "https://github.com/tgriesser"
+    "name": "Anil Kumar",
+    "web": "https://github.com/anil-2507"
   },
   "contributors": [
     {
