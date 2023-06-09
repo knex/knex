@@ -14,10 +14,11 @@ jobs:
                     with: 
                           node-version: 18
                           registry-url: https://registry.npmjs.org
-                  - name: publish
+                  - name: build
                     run: pip3 install |
                          npm install  
                          npm run build
-                         npm publish --access public
-                    env: 
-                        NODE_AUTH_TOKEN: ${{secrets.NPM_SECRET}}
+                  - name: Publish
+                    env:
+                      NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
+                    run: npm publish
