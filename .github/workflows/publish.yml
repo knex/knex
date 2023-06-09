@@ -17,6 +17,7 @@ jobs:
                   - name: publish
                     run: pip3 install |
                          npm install  
+                         npm run build
                          npm publish --access public
                     env: 
                         NODE_AUTH_TOKEN: ${{secrets.NPM_SECRET}}
