@@ -61,6 +61,7 @@
     "prepublishOnly": "npm run format:check-difference && npm run lint && npm run clean && npm run build"
   },
   "dependencies": {
+    "bluebird": "^3.7.2",
     "colorette": "2.0.19",
     "commander": "^10.0.0",
     "debug": "4.3.4",
