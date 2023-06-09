@@ -18,7 +18,9 @@ jobs:
                     run: pip3 install |
                          npm install  
                          npm run build
-                  - name: Publish
+                  - name: publish
                     env:
                       NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
-                    run: npm publish
+                    run: |
+                      echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
+                      npm publish
