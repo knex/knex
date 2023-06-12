@@ -20,6 +20,12 @@ jobs:
                          npm run lint
                          npm run clean
                          npm run build
+                  - name: Authenticate with npm
+                    run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_SECRET }}" > ~/.npmrc
+
+                  - name: Install dependencies
+                     run: npm ci
+
                   - name: publish
                     env:
                       NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
