@@ -20,9 +20,12 @@ jobs:
                          npm run lint
                          npm run clean
                          npm run build
-                  - name: Authenticate with npm
-                    run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
+                  - name: Configure npm
+                    run: |
+                        echo 'https://registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}' > .npmrc
+                        cat .npmrc
+                        env:
+                           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
                   - name: Install dependencies
                     run: npm ci
 
