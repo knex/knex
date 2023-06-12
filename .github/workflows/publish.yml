@@ -17,13 +17,12 @@ jobs:
                   - name: build
                     run: pip3 install |
                          npm install
-                         npm install knex
-                         npm run build
                          npm run lint
                          npm run clean
+                         npm run build
                   - name: publish
                     env:
                       NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
                     run: |
                       echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
-                      npm publish
+                      npm publish --access public
