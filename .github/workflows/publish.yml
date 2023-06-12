@@ -24,7 +24,7 @@ jobs:
                     run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_SECRET }}" > ~/.npmrc
 
                   - name: Install dependencies
-                     run: npm ci
+                    run: npm ci
 
                   - name: publish
                     env:
