@@ -1,5 +1,5 @@
 {
-  "name": "@anil-2507/knex-with-snowflake",
+  "name": "knex-with-snowflake",
   "version": "2.4.2",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex",
