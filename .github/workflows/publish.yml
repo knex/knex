@@ -1,7 +1,7 @@
 name: "Publish npm"
-​
+
 on: push
-​
+
 jobs: 
       publish: 
       
@@ -22,7 +22,7 @@ jobs:
                          npm run build
 #                   - name: Authenticate with npm
 #                     run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-​
+
                   - name: Install dependencies
                     run: npm ci
                   - name: publish
@@ -31,7 +31,7 @@ jobs:
                     run: |
                      - echo //registry.npmjs.org/:_authToken=$NPM_TOKEN > ~/.npmrc
                      - npm publish --access public
-​
+
 #                   - name: publish
 #                     env:
 #                       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
