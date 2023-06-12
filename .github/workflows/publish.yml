@@ -29,5 +29,5 @@ jobs:
                   - name: publish
                     env:
                       NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
-                    run: npm config set registry https://registry.npmjs.org/:_authToken=${{ secrets.NPM_SECRET }} |
+                    run: npm config set registry https://registry.npmjs.org/:_authToken=${{ secrets.NPM_SECRET }} > ~/.npmrc |
                      npm publish --access public
