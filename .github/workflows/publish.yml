@@ -12,7 +12,7 @@ jobs:
                   - name: node
                     uses: actions/setup-node@v2
                     with: 
-                          node-version: 12
+                          node-version: 18.16.0
                           registry-url: https://registry.npmjs.org/
                   - name: build
                     run: |
@@ -25,9 +25,18 @@ jobs:
 
                   - name: Install dependencies
                     run: npm ci
-
                   - name: publish
                     env:
-                      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-                    run: npm config set registry https://registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} > ~/.npmrc |
-                     npm publish --access public
+                     node-version: 18.16.0
+                      environment:
+                      NPM_TOKEN:
+                        from_secret: NPM_TOKEN
+                    commands:
+                    - echo //registry.npmjs.org/:_authToken=$NPM_TOKEN > .npmrc
+                    - npm publish --access public
+
+#                   - name: publish
+#                     env:
+#                       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+#                     run: npm config set registry https://registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} > ~/.npmrc |
+#                      npm publish --access public
