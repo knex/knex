@@ -13,15 +13,15 @@ jobs:
                     uses: actions/setup-node@v2
                     with: 
                           node-version: 12
-                          registry-url: https://registry.npmjs.org
+                          registry-url: https://registry.npmjs.org/
                   - name: build
                     run: |
                          npm install
                          npm run lint
                          npm run clean
                          npm run build
-                  - name: Authenticate with npm
-                    run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+#                   - name: Authenticate with npm
+#                     run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
                   - name: Install dependencies
                     run: npm ci
