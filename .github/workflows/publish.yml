@@ -28,12 +28,9 @@ jobs:
                   - name: publish
                     env:
                      node-version: 18.16.0
-                      environment:
-                      NPM_TOKEN:
-                        from_secret: NPM_TOKEN
-                    commands:
-                    - echo //registry.npmjs.org/:_authToken=$NPM_TOKEN > .npmrc
-                    - npm publish --access public
+                    run: |
+                     - echo //registry.npmjs.org/:_authToken=$NPM_TOKEN > .npmrc
+                     - npm publish --access public
 
 #                   - name: publish
 #                     env:
