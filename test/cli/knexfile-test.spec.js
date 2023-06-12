@@ -1,8 +1,10 @@
 'use strict';
 
 const path = require('path');
+const tildify = require('tildify');
 
 const { FileTestHelper, execCommand } = require('cli-testlab');
+const color = require('colorette');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -92,42 +94,42 @@ module.exports = {
           );
         });
 
-        // it("changes the process's cwd to the directory that contains the knexfile", () => {
-        //   const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
-        //   const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
+        it("changes the process's cwd to the directory that contains the knexfile", () => {
+          const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
+          const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
 
-        //   return execCommand(
-        //     `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
-        //     {
-        //       expectedOutput: `Working directory changed to ${color.magenta(
-        //         expectedCWD
-        //       )}`,
-        //     }
-        //   );
-        // });
+          return execCommand(
+            `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
+            {
+              expectedOutput: `Working directory changed to ${color.magenta(
+                expectedCWD
+              )}`,
+            }
+          );
+        });
 
         // This addresses the issue that was reported here:
         //
         //   https://github.com/knex/knex/issues/3660
         //
-        // context(
-        //   'and the knexfile itself resolves paths relative to process.cwd()',
-        //   function () {
-        //     it("changes the process's cwd to the directory that contains the knexfile before opening the knexfile", () => {
-        //       const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
-        //       const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
+        context(
+          'and the knexfile itself resolves paths relative to process.cwd()',
+          function () {
+            it("changes the process's cwd to the directory that contains the knexfile before opening the knexfile", () => {
+              const knexfile = 'test/jake-util/knexfile-relative/knexfile.js';
+              const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
 
-        //       return execCommand(
-        //         `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
-        //         {
-        //           expectedOutput: `Working directory changed to ${color.magenta(
-        //             expectedCWD
-        //           )}`,
-        //         }
-        //       );
-        //     });
-        //   }
-        // );
+              return execCommand(
+                `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
+                {
+                  expectedOutput: `Working directory changed to ${color.magenta(
+                    expectedCWD
+                  )}`,
+                }
+              );
+            });
+          }
+        );
 
         // FYI: This is only true because the Knex CLI changes the CWD to
         //      the directory of the knexfile.
