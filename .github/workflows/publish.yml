@@ -15,8 +15,7 @@ jobs:
                           node-version: 18.16.0
                           registry-url: https://registry.npmjs.org
                   - name: build
-                    run: pip help install |
-                         pip3 install
+                    run: |
                          npm install
                          npm run lint
                          npm run clean
