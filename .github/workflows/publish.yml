@@ -1,39 +1,33 @@
-name: "Publish npm"
+name: Node.js Package
 
-on: push
+on:
+  release:
+    types: [created]
 
-jobs: 
-      publish: 
-      
-              runs-on: ubuntu-latest
-              steps: 
-                  - name: checkout
-                    uses: actions/checkout@v2
-                  - name: node
-                    uses: actions/setup-node@v2
-                    with: 
-                          node-version: 18.16.0
-                          registry-url: https://registry.npmjs.org/
-                  - name: build
-                    run: |
-                         npm install
-                         npm run lint
-                         npm run clean
-                         npm run build
-#                   - name: Authenticate with npm
-#                     run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm ci
+      - run: npm test
 
-                  - name: Install dependencies
-                    run: npm ci
-                  - name: publish
-                    env:
-                     node-version: 18.16.0
-                    run: |
-                     - echo //registry.npmjs.org/:_authToken=$NPM_TOKEN > ~/.npmrc
-                     - npm publish --access public
-
-#                   - name: publish
-#                     env:
-#                       NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-#                     run: npm config set registry https://registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} > ~/.npmrc |
-#                      npm publish --access public
+  publish-gpr:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://npm.knex-with-snowflake.github.com/
+      - run: npm ci
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
