@@ -21,7 +21,7 @@ jobs:
                          npm run clean
                          npm run build
                   - name: Authenticate with npm
-                    run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_SECRET }}" > ~/.npmrc
+                    run: echo "https://registry.npmjs.org/:_authToken=\${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
                   - name: Install dependencies
                     run: npm ci
@@ -29,5 +29,5 @@ jobs:
                   - name: publish
                     env:
                       NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
-                    run: npm config set registry https://registry.npmjs.org/:_authToken=${{ secrets.NPM_SECRET }} > ~/.npmrc |
+                    run: npm config set registry https://registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} > ~/.npmrc |
                      npm publish --access public
