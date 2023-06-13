@@ -59,21 +59,21 @@ function main(cliCommand) {
     }
 
     // Get paths of .js files to ignore
-    const jsFilesToIgnore = tsFiles.map((filepath) => {
-      // Cuts off `${libDirectory}/`
-      const relativeTsPath = filepath.slice(libDirectory.length + 1);
-      // Swaps .ts for .js file ending
-      const relativeJsPath =
-        relativeTsPath.slice(0, relativeTsPath.length - 3) + '.js';
-      // Always use POSIX-style path separators - .gitignore requires it
-      return relativeJsPath.split(path.sep).join(path.posix.sep);
-    });
-    const jsFilesToIgnoreString = jsFilesToIgnore.join('\n');
-    const libGitignorePath = path.join(libDirectory, '.gitignore');
-    fs.writeFileSync(
-      libGitignorePath,
-      gitignoreHeader + jsFilesToIgnoreString + '\n'
-    );
+    // const jsFilesToIgnore = tsFiles.map((filepath) => {
+    //   // Cuts off `${libDirectory}/`
+    //   const relativeTsPath = filepath.slice(libDirectory.length + 1);
+    //   // Swaps .ts for .js file ending
+    //   const relativeJsPath =
+    //     relativeTsPath.slice(0, relativeTsPath.length - 3) + '.js';
+    //   // Always use POSIX-style path separators - .gitignore requires it
+    //   return relativeJsPath.split(path.sep).join(path.posix.sep);
+    // });
+    // const jsFilesToIgnoreString = jsFilesToIgnore.join('\n');
+    // const libGitignorePath = path.join(libDirectory, '.gitignore');
+    // fs.writeFileSync(
+    //   libGitignorePath,
+    //   gitignoreHeader + jsFilesToIgnoreString + '\n'
+    // );
     console.log('DONE');
   } else if (['help', '--help', '-h', undefined].includes(cliCommand)) {
     console.log(helpText);
