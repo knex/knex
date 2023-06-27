@@ -1,6 +1,7 @@
 'use strict';
 const path = require('path');
 const expect = require('chai').expect;
+const fs = require('fs');
 const knex = require('../../../knex');
 
 describe('better-sqlite3 unit tests', () => {
@@ -50,12 +51,19 @@ describe('better-sqlite3 unit tests', () => {
   });
 
   describe('readonly', () => {
+    const dbPath = path.resolve(__dirname, '../test.sqlite3');
+
+    before(() => {
+      // Read-only access requires the DB file to exist.
+      fs.writeFileSync(dbPath, '');
+    });
+
     it('should initialize the DB with the passed-in `readonly` option', async () => {
       const knexInstance = knex({
         client: 'better-sqlite3',
         useNullAsDefault: true,
         connection: {
-          filename: __dirname + '/../test.sqlite3',
+          filename: dbPath,
           options: {
             readonly: true,
           },
@@ -71,7 +79,7 @@ describe('better-sqlite3 unit tests', () => {
         client: 'better-sqlite3',
         useNullAsDefault: true,
         connection: {
-          filename: __dirname + '/../test.sqlite3',
+          filename: dbPath,
           options: {
             readonly: true,
           },
@@ -88,7 +96,7 @@ describe('better-sqlite3 unit tests', () => {
         client: 'better-sqlite3',
         useNullAsDefault: true,
         connection: {
-          filename: __dirname + '/../test.sqlite3',
+          filename: dbPath,
         },
       });
 
