@@ -2647,6 +2647,7 @@ export declare namespace Knex {
       constraintName?: string
     ): ColumnBuilder;
     checkRegex(regex: string, constraintName?: string): ColumnBuilder;
+    collate(collation: string): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
