@@ -1592,6 +1592,423 @@ describe('Selects', function () {
           });
         });
       });
+
+      describe('cast tests', () => {
+        it('should cast values', async () => {
+          const casts = [
+            knex.castDouble(knex.ref('logins'), 'aliasDouble'),
+            knex.castChar('S', 1, 'aliasChar'),
+            knex.castJson('{"test": 12}', 'aliasJson'),
+            knex.castJsonb('{"test": 12}', 'aliasJsonb'),
+            knex.castReal('5.5', 'aliasReal'),
+            knex.castInt(knex.ref('logins'), 'aliasInt'),
+            knex.castBigint(knex.ref('logins'), 'aliasBigInt'),
+            knex.castBinary('binary', 'aliasBinary'),
+          ];
+          if (!isMysql(knex)) {
+            casts.push(knex.castText(knex.ref('about'), 'aliasText'));
+          }
+          await knex
+            .select(casts)
+            .from('accounts')
+            .testSql(function (tester) {
+              const aliasBinary = Buffer.from('binary', 'utf-8');
+              tester(
+                'pg',
+                'select cast("logins" as double precision) as "aliasDouble", cast(? as char(1)) as "aliasChar", ' +
+                  'cast(? as json) as "aliasJson", cast(? as jsonb) as "aliasJsonb", cast(? as real) as "aliasReal", ' +
+                  'cast("logins" as integer) as "aliasInt", cast("logins" as bigint) as "aliasBigInt", cast(? as bytea) ' +
+                  'as "aliasBinary", cast("about" as text) as "aliasText" from "accounts"',
+                ['S', '{"test": 12}', '{"test": 12}', '5.5', 'binary'],
+                [
+                  {
+                    aliasBigInt: '1',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '1',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '3',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 3,
+                    aliasInt: 3,
+                    aliasJson: {
+                      test: 12,
+                    },
+                    aliasJsonb: {
+                      test: 12,
+                    },
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                ]
+              );
+              tester(
+                'mysql',
+                'select cast(`logins` as double) as `aliasDouble`, cast(? as char(1)) as `aliasChar`, cast(? as json) ' +
+                  'as `aliasJson`, cast(? as json) as `aliasJsonb`, cast(? as real) as `aliasReal`, cast(`logins` as ' +
+                  'unsigned) as `aliasInt`, cast(`logins` as unsigned) as `aliasBigInt`, cast(? as binary) as `aliasBinary` from `accounts`',
+                ['S', '{"test": 12}', '{"test": 12}', '5.5', 'binary'],
+                [
+                  {
+                    aliasBigInt: 1,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                  {
+                    aliasBigInt: 1,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                  {
+                    aliasBigInt: 3,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 3,
+                    aliasInt: 3,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                  },
+                ]
+              );
+              tester(
+                'sqlite3',
+                'select cast(`logins` as float) as `aliasDouble`, cast(? as char(1)) as `aliasChar`, cast(? as text) as ' +
+                  '`aliasJson`, cast(? as text) as `aliasJsonb`, cast(? as float) as `aliasReal`, cast(`logins` as integer) ' +
+                  'as `aliasInt`, cast(`logins` as undefined) as `aliasBigInt`, cast(? as blob) as `aliasBinary`, cast' +
+                  '(`about` as text) as `aliasText` from `accounts`',
+                ['S', '{"test": 12}', '{"test": 12}', '5.5', 'binary'],
+                [
+                  {
+                    aliasBigInt: 1,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: 1,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: 2,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: 3,
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 3,
+                    aliasInt: 3,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                ]
+              );
+              tester(
+                'mssql',
+                'select cast([logins] as float) as [aliasDouble], cast(? as char(1)) as [aliasChar], cast(? as ' +
+                  'nvarchar(max)) as [aliasJson], cast(? as nvarchar(max)) as [aliasJsonb], cast(? as float) as ' +
+                  '[aliasReal], cast([logins] as int) as [aliasInt], cast([logins] as bigint) as [aliasBigInt], ' +
+                  'cast(? as varbinary(max)) as [aliasBinary], cast([about] as nvarchar(max)) as [aliasText] from [accounts]',
+                ['S', '{"test": 12}', '{"test": 12}', '5.5', 'binary'],
+                [
+                  {
+                    aliasBigInt: '1',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '1',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 1,
+                    aliasInt: 1,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                  {
+                    aliasBigInt: '2',
+                    aliasBinary: aliasBinary,
+                    aliasChar: 'S',
+                    aliasDouble: 2,
+                    aliasInt: 2,
+                    aliasJson: '{"test": 12}',
+                    aliasJsonb: '{"test": 12}',
+                    aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
+                  },
+                ]
+              );
+            });
+        });
+      });
     });
   });
 });

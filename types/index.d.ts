@@ -2405,6 +2405,17 @@ export declare namespace Knex {
     dropSchemaIfExists(schemaName: string, cascade?: boolean): SchemaBuilder;
     withSchema(schemaName: string): SchemaBuilder;
 
+    // Cast
+    castText(value: Value, alias: string): SchemaBuilder;
+    castDouble(value: Value, alias: string): SchemaBuilder;
+    castChar(value: Value, length: number, alias: string): SchemaBuilder;
+    castJson(value: Value, alias: string): SchemaBuilder;
+    castJsonb(value: Value, alias: string): SchemaBuilder;
+    castReal(value: Value, alias: string): SchemaBuilder;
+    castInt(value: Value, alias: string): SchemaBuilder;
+    castBigint(value: Value, alias: string): SchemaBuilder;
+    castBinary(value: Value, alias: string): SchemaBuilder;
+
     // Others
     hasColumn(tableName: string, columnName: string): Promise<boolean>;
     raw(statement: string): SchemaBuilder;
@@ -3238,6 +3249,7 @@ export declare namespace Knex {
     runner(builder: any): any;
     transaction(container: any, config: any, outerTx: any): Transaction;
     raw(...args: any[]): any;
+    castText(...args: any[]): any;
     ref(...args: any[]): Ref<any, any>;
     query(connection: any, obj: any): any;
     stream(connection: any, obj: any, stream: any, options: any): any;
