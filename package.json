@@ -129,7 +129,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^3.2.0",
     "nyc": "^15.1.0",
-    "oracledb": "^5.4.0",
+    "oracledb": "^6.0.2",
     "pg": "^8.8.0",
     "pg-query-stream": "^4.2.4",
     "prettier": "2.8.7",
