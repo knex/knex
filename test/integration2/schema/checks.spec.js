@@ -65,7 +65,7 @@ describe('Checks', () => {
             tester(
               ['pg', 'pg-redshift', 'cockroachdb'],
               [
-                'create table "check_test" ("col1" varchar(255), "col2" varchar(255), check ("col1" = "col2"))',
+                'create table "check_test" ("col1" varchar, "col2" varchar, check ("col1" = "col2"))',
               ]
             );
             tester(
@@ -155,7 +155,7 @@ describe('Checks', () => {
             tester(
               ['pg', 'pg-redshift', 'cockroachdb'],
               [
-                'create table "check_test" ("animal" varchar(255) check ("animal" in (\'dog\',\'cat\')))',
+                'create table "check_test" ("animal" varchar check ("animal" in (\'dog\',\'cat\')))',
               ]
             );
             tester('oracledb', [
@@ -186,7 +186,7 @@ describe('Checks', () => {
             tester(
               ['pg', 'pg-redshift', 'cockroachdb'],
               [
-                'create table "check_test" ("animal" varchar(255) check ("animal" not in (\'dog\',\'cat\')))',
+                'create table "check_test" ("animal" varchar check ("animal" not in (\'dog\',\'cat\')))',
               ]
             );
             tester('oracledb', [
@@ -275,7 +275,7 @@ describe('Checks', () => {
             tester(
               ['pg', 'pg-redshift', 'cockroachdb'],
               [
-                'create table "check_test" ("year" varchar(255) check (length("year") = 4))',
+                'create table "check_test" ("year" varchar check (length("year") = 4))',
               ]
             );
             tester('oracledb', [
@@ -308,7 +308,7 @@ describe('Checks', () => {
             tester(
               ['pg', 'pg-redshift', 'cockroachdb'],
               [
-                'create table "check_test" ("date" varchar(255) check ("date" ~ \'[0-9]{2}-[0-9]{2}-[0-9]{4}\'))',
+                'create table "check_test" ("date" varchar check ("date" ~ \'[0-9]{2}-[0-9]{2}-[0-9]{4}\'))',
               ]
             );
             tester('oracledb', [

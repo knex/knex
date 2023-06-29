@@ -403,9 +403,13 @@ describe('SQLite SchemaBuilder', function () {
       })
       .toSQL();
 
-    equal(1, tableSql.length);
+    equal(2, tableSql.length);
     equal(
       tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), primary key (`foo`))'
+    );
+    equal(
+      tableSql[1].sql,
       'create table `users` (`foo` varchar(255), primary key (`foo`))'
     );
   });

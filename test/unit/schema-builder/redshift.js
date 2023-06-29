@@ -23,7 +23,7 @@ describe('Redshift SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'create table "users" ("key" char(36), "id" integer identity(1,1) primary key not null, "email" varchar(255))'
+      'create table "users" ("key" char(36), "id" integer identity(1,1) primary key not null, "email" varchar)'
     );
   });
 
@@ -71,7 +71,7 @@ describe('Redshift SchemaBuilder', function () {
       'alter table "users" add column "id" integer identity(1,1) primary key not null'
     );
     expect(tableSql[1].sql).to.equal(
-      'alter table "users" add column "email" varchar(255)'
+      'alter table "users" add column "email" varchar'
     );
   });
 
@@ -436,7 +436,7 @@ describe('Redshift SchemaBuilder', function () {
       .toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'create table "users" ("name" varchar(255) not null, "foo" varchar(255))'
+      'create table "users" ("name" varchar not null, "foo" varchar)'
     );
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add constraint "users_pkey" primary key ("name")'
@@ -502,9 +502,7 @@ describe('Redshift SchemaBuilder', function () {
       })
       .toSQL();
     equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal(
-      'create table "users" ("email" varchar(255))'
-    );
+    expect(tableSql[0].sql).to.equal('create table "users" ("email" varchar)');
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add constraint "users_email_unique" unique ("email")'
     );
@@ -555,7 +553,7 @@ describe('Redshift SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "foo" varchar(255)'
+      'alter table "users" add column "foo" varchar'
     );
   });
 
@@ -975,10 +973,10 @@ describe('Redshift SchemaBuilder', function () {
 
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "test1" varchar(255)'
+      'alter table "users" add column "test1" varchar'
     );
     expect(tableSql[1].sql).to.equal(
-      'alter table "users" add column "test2" varchar(255) not null'
+      'alter table "users" add column "test2" varchar not null'
     );
 
     tableSql = client
@@ -991,10 +989,10 @@ describe('Redshift SchemaBuilder', function () {
       .toSQL();
 
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "test1" varchar(255) not null'
+      'alter table "users" add column "test1" varchar not null'
     );
     expect(tableSql[1].sql).to.equal(
-      'alter table "users" add column "test2" varchar(255) not null'
+      'alter table "users" add column "test2" varchar not null'
     );
     expect(tableSql[2].sql).to.equal(
       'alter table "users" add constraint "testconstraintname" primary key ("test1", "test2")'
@@ -1008,7 +1006,7 @@ describe('Redshift SchemaBuilder', function () {
       .toSQL();
 
     expect(tableSql[0].sql).to.equal(
-      'create table "users" ("test" varchar(255) not null)'
+      'create table "users" ("test" varchar not null)'
     );
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add constraint "testconstraintname" primary key ("test")'
@@ -1048,7 +1046,7 @@ describe('Redshift SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "animal" varchar(255) check ("animal" in (\'cat\',\'dog\'))'
+        'alter table "user" add column "animal" varchar check ("animal" in (\'cat\',\'dog\'))'
       );
     });
 
@@ -1060,7 +1058,7 @@ describe('Redshift SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "animal" varchar(255) check ("animal" not in (\'cat\',\'dog\'))'
+        'alter table "user" add column "animal" varchar check ("animal" not in (\'cat\',\'dog\'))'
       );
     });
 
@@ -1111,7 +1109,7 @@ describe('Redshift SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "phone" varchar(255) check (length("phone") = 8)'
+        'alter table "user" add column "phone" varchar check (length("phone") = 8)'
       );
     });
 
@@ -1123,7 +1121,7 @@ describe('Redshift SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "phone" varchar(255) check ("phone" ~ \'[0-9]{8}\')'
+        'alter table "user" add column "phone" varchar check ("phone" ~ \'[0-9]{8}\')'
       );
     });
 

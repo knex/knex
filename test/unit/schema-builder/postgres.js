@@ -143,7 +143,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'create table "users" ("key" uuid, "id" serial primary key, "email" varchar(255))'
+      'create table "users" ("key" uuid, "id" serial primary key, "email" varchar)'
     );
   });
 
@@ -209,7 +209,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "id" serial primary key, add column "email" varchar(255)'
+      'alter table "users" add column "id" serial primary key, add column "email" varchar'
     );
   });
 
@@ -230,7 +230,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       'alter table "users" alter column "foo" drop not null'
     );
     expect(tableSql[2].sql).to.equal(
-      'alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))'
+      'alter table "users" alter column "foo" type varchar using ("foo"::varchar)'
     );
     expect(tableSql[3].sql).to.equal(
       'alter table "users" alter column "foo" set default \'foo\''
@@ -262,7 +262,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       'alter table "users" alter column "foo" drop default'
     );
     expect(tableSql[1].sql).to.equal(
-      'alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))'
+      'alter table "users" alter column "foo" type varchar using ("foo"::varchar)'
     );
     expect(tableSql[2].sql).to.equal(
       'alter table "users" alter column "foo" set default \'foo\''
@@ -285,7 +285,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       'alter table "users" alter column "foo" drop not null'
     );
     expect(tableSql[2].sql).to.equal(
-      'alter table "users" alter column "foo" type varchar(255) using ("foo"::varchar(255))'
+      'alter table "users" alter column "foo" type varchar using ("foo"::varchar)'
     );
     expect(tableSql[3].sql).to.equal(
       'alter table "users" alter column "foo" set default \'foo\''
@@ -795,9 +795,10 @@ describe('PostgreSQL SchemaBuilder', function () {
         table.string('name').primary();
       })
       .toSQL();
-    equal(1, tableSql.length);
-    expect(tableSql[0].sql).to.equal(
-      'create table "users" ("name" varchar(255), constraint "users_pkey" primary key ("name"))'
+    equal(2, tableSql.length);
+    expect(tableSql[0].sql).to.equal('create table "users" ("name" varchar)');
+    expect(tableSql[1].sql).to.equal(
+      'alter table "users" add constraint "users_pkey" primary key ("name")'
     );
   });
 
@@ -907,9 +908,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       })
       .toSQL();
     equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal(
-      'create table "users" ("email" varchar(255))'
-    );
+    expect(tableSql[0].sql).to.equal('create table "users" ("email" varchar)');
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add constraint "users_email_unique" unique ("email")'
     );
@@ -966,7 +965,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "name" varchar(255)'
+      'alter table "users" add column "name" varchar'
     );
     expect(tableSql[1].sql).to.equal(
       'create index "users_name_index" on "users" ("name")'
@@ -995,7 +994,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "name" varchar(255)'
+      'alter table "users" add column "name" varchar'
     );
     expect(tableSql[1].sql).to.equal(
       'create index "baz" on "users" using gist ("name")'
@@ -1011,7 +1010,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(2, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "name" varchar(255)'
+      'alter table "users" add column "name" varchar'
     );
     expect(tableSql[1].sql).to.equal(
       'create index "users_name_index" on "users" using gist ("name")'
@@ -1187,7 +1186,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'alter table "users" add column "foo" varchar(255)'
+      'alter table "users" add column "foo" varchar'
     );
   });
 
@@ -2110,7 +2109,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       })
       .toSQL();
     expect(tableSql[0].sql).to.equal(
-      'create table "inheriteeTable" ("username" varchar(255)) inherits ("inheritedTable")'
+      'create table "inheriteeTable" ("username" varchar) inherits ("inheritedTable")'
     );
   });
 
@@ -2137,7 +2136,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'create table "users" ("test1" varchar(255), "test2" varchar(255), constraint "testconstraintname" primary key ("test1", "test2"))'
+      'create table "users" ("test1" varchar, "test2" varchar, constraint "testconstraintname" primary key ("test1", "test2"))'
     );
 
     tableSql = client
@@ -2163,7 +2162,7 @@ describe('PostgreSQL SchemaBuilder', function () {
 
       equal(2, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'alter table "users" add column "test" varchar(255)'
+        'alter table "users" add column "test" varchar'
       );
       expect(tableSql[1].sql).to.equal(
         'alter table "users" add constraint "users_pkey" primary key ("test")'
@@ -2179,7 +2178,7 @@ describe('PostgreSQL SchemaBuilder', function () {
 
       equal(2, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'alter table "users" add column "test" varchar(255)'
+        'alter table "users" add column "test" varchar'
       );
       expect(tableSql[1].sql).to.equal(
         'alter table "users" add constraint "testname" primary key ("test")'
@@ -2219,6 +2218,21 @@ describe('PostgreSQL SchemaBuilder', function () {
 
     after(function () {
       client.config.wrapIdentifier = originalWrapIdentifier;
+    });
+
+    it('should test varchar length', function () {
+      const tableSql = client
+        .schemaBuilder()
+        .queryContext('schema context')
+        .createTable('users', function (table) {
+          table.string('description');
+          table.string('email', 30);
+        })
+        .toSQL();
+
+      expect(tableSql[0].sql).to.equal(
+        'create table "users" ("description" varchar, "email" varchar(30))'
+      );
     });
 
     it('SchemaCompiler passes queryContext to wrapIdentifier via TableCompiler', function () {
@@ -2340,7 +2354,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "animal" varchar(255) check ("animal" in (\'cat\',\'dog\'))'
+        'alter table "user" add column "animal" varchar check ("animal" in (\'cat\',\'dog\'))'
       );
     });
 
@@ -2352,7 +2366,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "animal" varchar(255) check ("animal" not in (\'cat\',\'dog\'))'
+        'alter table "user" add column "animal" varchar check ("animal" not in (\'cat\',\'dog\'))'
       );
     });
 
@@ -2403,7 +2417,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "phone" varchar(255) check (length("phone") = 8)'
+        'alter table "user" add column "phone" varchar check (length("phone") = 8)'
       );
     });
 
@@ -2415,7 +2429,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         })
         .toSQL();
       expect(tableSql[0].sql).to.equal(
-        'alter table "user" add column "phone" varchar(255) check ("phone" ~ \'[0-9]{8}\')'
+        'alter table "user" add column "phone" varchar check ("phone" ~ \'[0-9]{8}\')'
       );
     });
 

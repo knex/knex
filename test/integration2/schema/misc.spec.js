@@ -761,7 +761,7 @@ describe('Schema (misc)', () => {
               tester(
                 ['pg', 'cockroachdb'],
                 [
-                  'create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)',
+                  'create table "test_table_one" ("id" bigserial primary key, "first_name" varchar, "last_name" varchar, "email" varchar null, "logins" integer default \'1\', "balance" real default \'0\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)',
                   'comment on table "test_table_one" is \'A table comment.\'',
                   'comment on column "test_table_one"."logins" is NULL',
                   'comment on column "test_table_one"."about" is \'A comment.\'',
@@ -1454,7 +1454,7 @@ describe('Schema (misc)', () => {
               tester(
                 ['pg', 'cockroachdb'],
                 [
-                  'create table "10_test_table" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\')',
+                  'create table "10_test_table" ("id" bigserial primary key, "first_name" varchar, "last_name" varchar, "email" varchar null, "logins" integer default \'1\')',
                   'comment on column "10_test_table"."logins" is NULL',
                   'create index "10_test_table_first_name_index" on "10_test_table" ("first_name")',
                   'alter table "10_test_table" add constraint "10_test_table_email_unique" unique ("email")',
