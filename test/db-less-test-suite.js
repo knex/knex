@@ -10,6 +10,7 @@ describe('Util Tests', function () {
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
+  require('./unit/util/security');
 });
 
 describe('Query Building Tests', function () {

@@ -1,6 +1,7 @@
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
+const util = require('util');
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 chai.use(require('sinon-chai'));
@@ -34,6 +35,7 @@ const {
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const sinon = require('sinon');
+const { setHiddenProperty } = require('../../../../lib/util/security');
 
 describe('Additional', function () {
   getAllDbs().forEach((db) => {
@@ -1006,6 +1008,16 @@ describe('Additional', function () {
           // To make this test easier, I'm changing the pool settings to max 1.
           // Also setting acquireTimeoutMillis to lower as not to wait the default time
           const knexConfig = _.cloneDeep(knex.client.config);
+          if (
+            knex.client.config.connection &&
+            knex.client.config.connection.password
+          ) {
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
+          }
+
           knexConfig.pool.min = 0;
           knexConfig.pool.max = 1;
           knexConfig.pool.acquireTimeoutMillis = 100;
@@ -1123,6 +1135,16 @@ describe('Additional', function () {
           // To make this test easier, I'm changing the pool settings to max 1.
           // Also setting acquireTimeoutMillis to lower as not to wait the default time
           const knexConfig = _.cloneDeep(knex.client.config);
+          if (
+            knex.client.config.connection &&
+            knex.client.config.connection.password
+          ) {
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
+          }
+
           knexConfig.pool.min = 0;
           knexConfig.pool.max = 2;
           knexConfig.pool.acquireTimeoutMillis = 100;
@@ -1419,6 +1441,17 @@ describe('Additional', function () {
             knexDb.initialize();
             expect(knexDb.client.pool.destroyed).to.equal(false);
           });
+        });
+
+        it('should not leak passwords when logged', async function () {
+          const query = knex('test_table_two').select('*');
+          const fakeLog = util.inspect(query, { depth: null });
+
+          // These passwords come from `scripts/docker-compose.yml`
+          const passwordMatches = fakeLog.match(
+            /(knextest|testpassword|S0meVeryHardPassword|testrootpassword)/g
+          );
+          expect(passwordMatches).to.be.null;
         });
       });
     });
