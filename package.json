@@ -70,7 +70,7 @@
     "getopts": "2.3.0",
     "interpret": "^2.2.0",
     "lodash": "^4.17.21",
-    "pg-connection-string": "2.5.0",
+    "pg-connection-string": "2.6.1",
     "rechoir": "^0.8.0",
     "resolve-from": "^5.0.0",
     "tarn": "^3.0.2",
