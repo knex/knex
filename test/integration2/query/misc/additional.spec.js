@@ -392,6 +392,25 @@ describe('Additional', function () {
           expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
         });
 
+        it('should allow using .fn-methods to generate a uuid with select', async function () {
+          const uuid = await knex.select(knex.raw(knex.fn.uuid() + ' as uuid'));
+          expect(uuid[0].uuid).to.match(
+            /^[0-9A-F]{8}-[0-9A-F]{4}-[1-5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+          );
+        });
+
+        it('should allow using .fn-methods to be a default value', async function () {
+          await knex.schema.dropTableIfExists('default_uuid_table');
+          await knex.schema.createTable('default_uuid_table', (t) => {
+            t.uuid('uuid').defaultTo(knex.fn.uuid());
+          });
+          await knex('default_uuid_table').insert({});
+          const uuid = await knex('default_uuid_table').select('uuid');
+          expect(uuid[0].uuid).to.match(
+            /^[0-9A-F]{8}-[0-9A-F]{4}-[1-5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+          );
+        });
+
         it('should allow using .fn-methods to convert uuid to binary', function () {
           const originalUuid = '6c825dc9-c98f-37ab-b01b-416294811a84';
           const binary = knex.fn.uuidToBin(originalUuid);
