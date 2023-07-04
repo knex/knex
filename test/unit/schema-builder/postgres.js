@@ -973,7 +973,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
-  it('adding index with an index type', function () {
+  it('adding index with a storage engine index type', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
@@ -986,7 +986,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
-  it('adding index with an index type fluently', function () {
+  it('adding index with a storage engine index type fluently', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
@@ -1002,11 +1002,11 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
-  it('adding index with an index type and default name fluently', function () {
+  it('adding index with a storage engine index type and default name fluently', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
-        table.string('name').index(null, { indexType: 'gist' });
+        table.string('name').index(null, { storageEngineIndexType: 'gist' });
       })
       .toSQL();
     equal(2, tableSql.length);
@@ -1033,12 +1033,27 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
-  it('adding index with an index type and a predicate', function () {
+  it('adding unique index using index method', function () {
     tableSql = client
       .schemaBuilder()
       .table('users', function (table) {
         table.index(['foo', 'bar'], 'baz', {
-          indexType: 'gist',
+          indexType: 'unique',
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "baz" on "users" ("foo", "bar")'
+    );
+  });
+
+  it('adding index with a storage engine index type and a predicate', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          storageEngineIndexType: 'gist',
           predicate: client.queryBuilder().whereRaw('email = "foo@bar"'),
         });
       })
