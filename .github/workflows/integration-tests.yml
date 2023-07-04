@@ -46,6 +46,11 @@ jobs:
               "${{ matrix.database-type }}"
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
+      # https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-1.html#es2020-and-nodejs-1417-as-minimum-runtime-requirements
+      - name: Run npm install typescript@5.0.4 if Node 12.x
+        run: npm install typescript@5.0.4
+        if: matrix.node-version == '12.x'
+
       - name: Run npm install
         run: npm install
 
@@ -112,7 +117,11 @@ jobs:
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
-      
+
+      - name: Run npm install typescript@5.0.4 if Node 12.x
+        run: npm install typescript@5.0.4
+        if: matrix.node-version == '12.x'
+
       - name: Test npm git dependency
         shell: bash
         run: |
