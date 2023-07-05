@@ -234,6 +234,7 @@
     "CHANGELOG.md",
     "CONTRIBUTING.md",
     "knex.js",
+    "knex.mjs",
     "LICENSE",
     "README.md",
     "UPGRADING.md"
