@@ -394,19 +394,31 @@ describe('Additional', function () {
 
         it('should allow using .fn.uuid to create raw statements', function () {
           const expectedStatement = {
-            [drivers.MsSQL]: "(NEWID())",
-            [drivers.MySQL]: "(UUID())",
-            [drivers.MySQL2]: "(UUID())",
-            [drivers.Oracle]: "(random_uuid())",
-            [drivers.PostgreSQL]: "(gen_random_uuid())",
-            [drivers.PgNative]: "(gen_random_uuid())",
-            [drivers.SQLite]: "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
-            [drivers.CockroachDB]: "(gen_random_uuid())",
-            [drivers.BetterSQLite3]: "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
+            [drivers.MsSQL]: '(NEWID())',
+            [drivers.MySQL]: '(UUID())',
+            [drivers.MySQL2]: '(UUID())',
+            [drivers.Oracle]: '(random_uuid())',
+            oracle: '(random_uuid())',
+            [drivers.PostgreSQL]: '(gen_random_uuid())',
+            [drivers.PgNative]: '(gen_random_uuid())',
+            [drivers.SQLite]:
+              "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
+            [drivers.CockroachDB]: '(gen_random_uuid())',
+            [drivers.BetterSQLite3]:
+              "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
           };
 
           expect(knex.fn.uuid().prototype === knex.raw().prototype);
-          expect(knex.fn.uuid().toQuery()).to.equal(expectedStatement[knex.client.driverName]);
+
+          if (isRedshift()) {
+            expect(() => knex.fn.uuid().toQuery()).to.throw(
+              `${knex.client.driverName} does not have a uuid function`
+            );
+          } else {
+            expect(knex.fn.uuid().toQuery()).to.equal(
+              expectedStatement[knex.client.driverName]
+            );
+          }
         });
 
         it('should allow using .fn-methods to generate a uuid with select', async function () {
