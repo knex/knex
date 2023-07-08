@@ -21,7 +21,7 @@ The migration CLI accepts the following general command-line options. You can vi
 - `--migrations-table-name`: Set the migration table name
 - `--migrations-directory`: Set the migrations directory
 - `--env`: environment, default: `process.env.NODE_ENV || development`
-- `--esm`: [Enables ESM module interoperability](#esm-interop)
+- `--esm`: [Enables ESM module interoperability](#ecmascript-modules-esm-interoperability)
 - `--help`: Display help text for a particular command and exit.
 
 Migrations use a **knexfile**, which specify various configuration settings for the module. To create a new knexfile, run the following:
