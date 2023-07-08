@@ -34,12 +34,12 @@ jobs:
           always-auth: false
           node-version: ${{ matrix.node-version }}
 
+      - name: Run npm install mysql2@3.2.0 and typescript@5.0.4 if Node 12.x
+        run: npm install mysql2@3.2.0 typescript@5.0.4
+        if: matrix.node-version == '12.x'
+
       - name: Run npm install
         run: npm install
-
-      - name: Run npm install mysql2@3.2.0 if Node 12.x
-        run: npm install mysql2@3.2.0
-        if: matrix.node-version == '12.x'
 
       - run: npm run build
 
