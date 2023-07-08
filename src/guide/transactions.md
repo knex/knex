@@ -221,6 +221,8 @@ trx2.isCompleted(); // true
 
 You can check the property `knex.isTransaction` to see if the current knex instance you are working with is a transaction.
 
+## Transaction Modes
+
 In case you need to specify an isolation level for your transaction, you can use a config parameter `isolationLevel`. Not supported by oracle and sqlite, options are `read uncommitted`, `read committed`, `repeatable read`, `snapshot` (mssql only), `serializable`.
 
 ```ts
@@ -232,4 +234,12 @@ await knex(tableName).insert({ id: 1, value: 1 });
 const result2 = await trx(tableName).select();
 await trx.commit();
 // result1 may or may not deep equal result2 depending on isolation level
+```
+
+You may also set the transaction mode as `read only` using the `readOnly` config parameter. It is currently only supported on mysql, postgres, and redshift.
+
+```ts
+const trx = await knex.transaction({ readOnly: true });
+// 💥 Cannot `INSERT` while inside a `READ ONLY` transaction
+const result = await trx(tableName).insert({ id: 1, foo: 'bar' });
 ```
