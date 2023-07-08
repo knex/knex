@@ -596,6 +596,14 @@ Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling
 If useBinaryUuid is true, binary(16) is used. See uuidToBin function to convert uuid in binary before inserting and binToUuid to convert binary uuid to uuid.
 If primaryKey is true, then for PostgreSQL the field will be configured as `uuid primary key`, for CockroackDB an additional `default gen_random_uuid()` is set on the type.
 
+You may set the default value to the uuid helper function. Not supported by Redshift.
+
+```js
+knex.schema.createTable(tblName, (table) => {
+  table.uuid('uuidColumn').defaultTo(knex.fn.uuid());
+});
+```
+
 ### geometry
 
 **table.geometry(name)**

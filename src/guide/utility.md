@@ -39,6 +39,16 @@ Return the current timestamp with a precision (optional)
 table.datetime('some_time', { precision: 6 }).defaultTo(knex.fn.now(6))
 ```
 
+## uuid
+
+**knex.fn.uuid()**
+
+Return a uuid generation function. Not supported by Redshift
+
+```js
+table.uuid('uuid').defaultTo(knex.fn.uuid())
+```
+
 ## uuidToBin
 
 **knex.fn.uuidToBin(uuid)**
