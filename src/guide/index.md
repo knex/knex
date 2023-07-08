@@ -116,6 +116,20 @@ const knex = require('knex')({
 });
 ```
 
+Additionally, you can open the database in read-only mode using `options.readonly`:
+
+```js
+const knex = require('knex')({
+  client: 'better-sqlite3',
+  connection: {
+    filename: "/path/to/db.sqlite3",
+    options: {
+      readonly: true,
+    },
+  },
+});
+```
+
 For more information, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
 
 :::
