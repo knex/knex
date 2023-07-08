@@ -980,6 +980,19 @@ knex('books')
   )
 ```
 
+### updateFrom
+
+**.updateFrom(tableName)**
+
+Can be used to define in PostgreSQL an update statement with explicit 'from' syntax which can be referenced in 'where' conditions.
+
+```js
+knex('accounts')
+  .update({ enabled: false })
+  .updateFrom('clients')
+  .where('accounts.id', '=', 'clients.id')
+  .where('clients.active', '=', false)
+
 ### del / delete
 
 **.del([returning], [options])**
