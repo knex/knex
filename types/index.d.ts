@@ -3192,6 +3192,7 @@ export declare namespace Knex {
 
   interface FunctionHelper {
     now(precision?: number): Raw;
+    uuid(): Raw;
     uuidToBin(uuid: string, ordered?: boolean): Buffer;
     binToUuid(bin: Buffer, ordered?: boolean): string;
   }
