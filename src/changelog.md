@@ -1,6 +1,6 @@
 ## Changelog
 
-# 2.5.0 - 08 July, 2023
+### 2.5.0 - 08 July, 2023
 
 **New features**
 
