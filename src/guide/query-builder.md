@@ -992,6 +992,7 @@ knex('accounts')
   .updateFrom('clients')
   .where('accounts.id', '=', 'clients.id')
   .where('clients.active', '=', false)
+```
 
 ### del / delete
 
