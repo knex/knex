@@ -891,9 +891,9 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `test_default_table` default values',
+              'insert into `test_default_table` default values returning `id`',
               [],
-              [1]
+              [{ id: 1 }]
             );
             tester(
               'oracledb',
@@ -944,9 +944,9 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `test_default_table2` default values',
+              'insert into `test_default_table2` default values returning `id`',
               [],
-              [1]
+              [{ id: 1 }]
             );
             tester(
               'oracledb',
