@@ -60,6 +60,29 @@ const pg = require('knex')({
 ```
 :::
 
+When using the PostgreSQL driver, another usage pattern for instantiating the Knex configuration object could be to use a `connection: {}` object details to specify various flags such as enabling SSL, a connection string, and individual connection configuration fields all in the same object. Consider the following example:
+
+::: info PostgreSQL
+If `connectionString` is highest priority to use. If left unspecified then connection details will be determined using the individual connection fields (`host`, `port`, etc), and finally an SSL configuration will be enabled based on a truthy value of `config["DB_SSL"]` which will also accept self-signed certificates.
+
+```js
+const pg = require('knex')({
+  client: 'pg',
+  connection: {
+    connectionString: config.DATABASE_URL,
+    host: config["DB_HOST"],
+    port: config["DB_PORT"],
+    user: config["DB_USER"],
+    database: config["DB_NAME"],
+    password: config["DB_PASSWORD"],
+    ssl: config["DB_SSL"] ? { rejectUnauthorized: false } : false,
+  }
+});
+```
+:::
+
+The following are SQLite usage patterns for instantiating the Knex configuration object:
+
 ::: info SQLite3 or Better-SQLite3
 When you use the SQLite3 or Better-SQLite3 adapter, there is a filename required, not a network connection. For example:
 
