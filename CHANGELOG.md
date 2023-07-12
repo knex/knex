@@ -5,7 +5,6 @@
 ### Bug fixes
 
 - Fix Linting #5455 - #5460
--
 
 # 2.5.0 - 08 July, 2023
 
