@@ -1151,6 +1151,8 @@ export declare namespace Knex {
 
     onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
 
+    updateFrom: Table<TRecord, TResult>;
+
     del(
       returning: '*',
       options?: DMLOptions
@@ -2410,7 +2412,7 @@ export declare namespace Knex {
     raw(statement: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
     toString(): string;
-    toSQL(): Sql;
+    toSQL(): Sql[];
   }
 
   interface TableBuilder {
@@ -3190,6 +3192,7 @@ export declare namespace Knex {
 
   interface FunctionHelper {
     now(precision?: number): Raw;
+    uuid(): Raw;
     uuidToBin(uuid: string, ordered?: boolean): Buffer;
     binToUuid(bin: Buffer, ordered?: boolean): string;
   }

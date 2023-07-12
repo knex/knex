@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.7.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
@@ -108,7 +108,7 @@ jobs:
         with: { fetch-depth: 1 }
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.7.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
