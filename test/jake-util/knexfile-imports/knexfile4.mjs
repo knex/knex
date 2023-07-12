@@ -7,17 +7,17 @@ export default async () => {
       ? '../knexfile-esm-module/knexfile'
       : '../knexfile-esm-module/knexfile.js'
   );
-  return ({
+  return {
     ...config,
     migrations: {
       directory: './mjs/migrations',
-      extension: "mjs",
-      loadExtensions: ['.mjs']
+      extension: 'mjs',
+      loadExtensions: ['.mjs'],
     },
     seeds: {
       directory: './mjs/seeds',
-      extension: "mjs",
-      loadExtensions: ['.mjs']
-    }
-  })
-}
+      extension: 'mjs',
+      loadExtensions: ['.mjs'],
+    },
+  };
+};

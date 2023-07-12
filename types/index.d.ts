@@ -566,7 +566,9 @@ export declare namespace Knex {
 
   interface OnConflictQueryBuilder<TRecord extends {}, TResult> {
     ignore(): QueryBuilder<TRecord, TResult>;
-    merge(mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]): QueryBuilder<TRecord, TResult>;
+    merge(
+      mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]
+    ): QueryBuilder<TRecord, TResult>;
     merge(
       data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>
     ): QueryBuilder<TRecord, TResult>;
@@ -790,11 +792,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
-    increment(
-      columns: {
-        [column in keyof TRecord]: number
-      }
-    ): QueryBuilder<TRecord, number>;
+    increment(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     decrement(
       columnName: keyof TRecord,
@@ -804,11 +804,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
-    decrement(
-      columns: {
-        [column in keyof TRecord]: number
-      }
-    ): QueryBuilder<TRecord, number>;
+    decrement(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     // Analytics
     rank: AnalyticFunction<TRecord, TResult>;
@@ -1778,7 +1776,10 @@ export declare namespace Knex {
   }
 
   interface WhereJsonObject<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<TRecord, TResult>;
+    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
@@ -2920,7 +2921,7 @@ export declare namespace Knex {
       multiSubnetFailover?: boolean;
       packetSize?: number;
       trustServerCertificate?: boolean;
-      mapBinding?: (value: any) => ({ value: any, type: any } | undefined);
+      mapBinding?: (value: any) => { value: any; type: any } | undefined;
     }>;
     pool?: Readonly<{
       min?: number;

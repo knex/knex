@@ -1,5 +1,4 @@
 ---
-
 name: CI
 
 on:
@@ -22,7 +21,17 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [18.x, 16.x, 14.x, 12.x]
-        database-type: [postgres, pgnative, mysql, mssql, sqlite3, cockroachdb, better-sqlite3, oracledb]
+        database-type:
+          [
+            postgres,
+            pgnative,
+            mysql,
+            mssql,
+            sqlite3,
+            cockroachdb,
+            better-sqlite3,
+            oracledb,
+          ]
 
     steps:
       - name: Checkout Repository
@@ -112,7 +121,7 @@ jobs:
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
-      
+
       - name: Test npm git dependency
         shell: bash
         run: |

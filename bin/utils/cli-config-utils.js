@@ -179,7 +179,9 @@ function findUpModulePath(cwd, packageName) {
         modulePackage.main || 'index.js'
       );
     }
-  } catch (e) {}
+  } catch (e) {
+    /* empty */
+  }
 }
 
 function findUpConfig(cwd, name, extensions) {
