@@ -566,7 +566,9 @@ export declare namespace Knex {
 
   interface OnConflictQueryBuilder<TRecord extends {}, TResult> {
     ignore(): QueryBuilder<TRecord, TResult>;
-    merge(mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]): QueryBuilder<TRecord, TResult>;
+    merge(
+      mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]
+    ): QueryBuilder<TRecord, TResult>;
     merge(
       data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>
     ): QueryBuilder<TRecord, TResult>;
@@ -790,11 +792,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
-    increment(
-      columns: {
-        [column in keyof TRecord]: number
-      }
-    ): QueryBuilder<TRecord, number>;
+    increment(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     decrement(
       columnName: keyof TRecord,
@@ -804,11 +804,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
-    decrement(
-      columns: {
-        [column in keyof TRecord]: number
-      }
-    ): QueryBuilder<TRecord, number>;
+    decrement(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     // Analytics
     rank: AnalyticFunction<TRecord, TResult>;
@@ -3195,6 +3193,7 @@ export declare namespace Knex {
 
   interface FunctionHelper {
     now(precision?: number): Raw;
+    uuid(): Raw;
     uuidToBin(uuid: string, ordered?: boolean): Buffer;
     binToUuid(bin: Buffer, ordered?: boolean): string;
   }

@@ -1,5 +1,41 @@
 # Master (Unreleased)
 
+# 2.5.0 - 08 July, 2023
+
+### New features
+
+- Add uuid helper function (#5617)
+- Add `nativeBindings` option to `better-sqlite3` options (#5461)
+- Add QueryBuilder#updateFrom (#5386)
+- Add readonly transaction access mode (#5445)
+- Add readonly option to Better-SQLite3 (#5530)
+- Add EXCEPT as a valid keyword (#5357)
+- Add ability to prepend query comments (#5289)
+- Add fetchAsString option (#5484)
+
+### Bug fixes
+
+- Avoid password leaks on query logs (#5559)
+- Add knex.mjs to files in package.json (#5518)
+- Handle numeric array elements in .orderBy() (#5551)
+- Attach error handler early enough (#5552)
+- Fix Returning \* in Oracle (#5598)
+- Fix indexType option in `Postgres` (#5601)
+- Add mjs extension type (#5616)
+- Use implicit check on json fields for OracleDB (#5478)
+- Fix when manually close source stream (#5466)
+- Fix case sensitive issue with get table (#5509)
+
+### Typings
+
+- Add Object syntax overload to increment method (#5512)
+- Add object syntax overload to decrement method (#5555)
+- Fix typing for toSql (#5594)
+- Add ResolveTableType for `.merge()` (#5605)
+- Add missing types for havingNull and havingNotNull (#5529)
+- Add collate to the columnbuilder interface (#5568)
+- TableBuilder methods return the SchemaBuilder. (#5486)
+
 # 2.4.2 - 22 January, 2023
 
 ### Bug fixes
