@@ -8,7 +8,7 @@
     "node": ">=12"
   },
   "scripts": {
-    "build": "npm run build:gitignore && npm run build:ts",
+    "build": "npm run build:gitignore && npm run build:ts && npm run format",
     "clean": "node scripts/clean.js",
     "build:ts": "tsc",
     "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
