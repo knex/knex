@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.5.1 - 12 July, 2023
+
+**Bug fixes**
+
+- Fix Linting [#5455](https://github.com/knex/knex/issues/5460) - [#5460](https://github.com/knex/knex/issues/5460)
+
 ### 2.5.0 - 08 July, 2023
 
 **New features**
