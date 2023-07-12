@@ -9,8 +9,8 @@ permissions:
 jobs:
   build:
     permissions:
-      checks: write  # for coverallsapp/github-action to create new checks
-      contents: read  # for actions/checkout to fetch code
+      checks: write # for coverallsapp/github-action to create new checks
+      contents: read # for actions/checkout to fetch code
     runs-on: ubuntu-latest
 
     name: Coverage
