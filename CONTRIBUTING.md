@@ -1,6 +1,6 @@
 ## How to contribute to Knex.js
 
-- Make changes in the `/lib` directory. 
+- Make changes in the `/lib` directory.
 
 - Before sending a pull request for a feature or bug fix, be sure to have
   [tests](https://github.com/knex/knex/tree/master/test). Every pull request that changes the queries should have

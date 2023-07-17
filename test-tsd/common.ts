@@ -1,4 +1,4 @@
-import type { Knex } from "../types";
+import type { Knex } from '../types';
 
 export const clientConfig: Knex.Config = {
   client: 'sqlite3',
@@ -33,4 +33,3 @@ export interface Ticket {
   to: string;
   at: Date;
 }
-

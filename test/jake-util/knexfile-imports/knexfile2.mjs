@@ -1,11 +1,12 @@
-
-/** 
+/**
  * CASE: 'Unexpected token 'export'
  * can't import ../knexfile-esm-package/knexfile.js as ESM Module
  * because package.json is not type 'module'
  */
 export default async () => {
-  const { default: config } = await import('../knexfile-esm-package/knexfile.js');
+  const { default: config } = await import(
+    '../knexfile-esm-package/knexfile.js'
+  );
   return {
     ...config,
     migrations: {
@@ -15,6 +16,6 @@ export default async () => {
     seeds: {
       ...config.seeds,
       directory: './mjs/seeds',
-    }
+    },
   };
-}
+};

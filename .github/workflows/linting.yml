@@ -1,5 +1,4 @@
 ---
-
 name: Linting and Types
 
 on:
@@ -37,7 +36,8 @@ jobs:
       - name: Run npm install
         run: npm install
 
+      - name: Run format:check
+        run: npm run format:check
+
       - name: Run lint:everything
         run: npm run lint:everything
-        env:
-          CI: true

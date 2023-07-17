@@ -139,7 +139,9 @@ function invoke() {
       path.dirname(env.modulePath),
       'package.json'
     ));
-  } catch (e) {}
+  } catch (e) {
+    /* empty */
+  }
 
   const cliVersion = [
     color.blue('Knex CLI version:'),
