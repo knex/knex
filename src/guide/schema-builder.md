@@ -942,7 +942,7 @@ column.defaultTo('value', { constraintName: 'df_table_value' });
 
 **column.unsigned()**
 
-Specifies an integer as unsigned. No-op if this is chained off of a non-integer field.
+Specifies a number as unsigned. Only for numeric values.
 
 ### notNullable
 
