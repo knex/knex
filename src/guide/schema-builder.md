@@ -516,6 +516,10 @@ table.timestamp('created_at', { useTz: true });
 
 Adds created\_at and updated\_at columns on the database, setting each to datetime types. When true is passed as the first argument a timestamp type is used instead. Both columns default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the .timestamps() only have seconds precision, to get better precision use the .datetime or .timestamp methods directly with precision. If useCamelCase is true, the name of columns are createdAt and updatedAt.
 
+::: info
+PostgreSQL `updated_at` field will not automatically be updated. Please see this [issue](https://github.com/knex/knex/issues/1928 "issue") for details
+:::
+
 ### dropTimestamps
 
 **table.dropTimestamps([useCamelCase])**
