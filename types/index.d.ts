@@ -566,7 +566,9 @@ export declare namespace Knex {
 
   interface OnConflictQueryBuilder<TRecord extends {}, TResult> {
     ignore(): QueryBuilder<TRecord, TResult>;
-    merge(mergeColumns?: (keyof TRecord)[]): QueryBuilder<TRecord, TResult>;
+    merge(
+      mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]
+    ): QueryBuilder<TRecord, TResult>;
     merge(
       data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>
     ): QueryBuilder<TRecord, TResult>;
@@ -790,11 +792,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
-    increment(
-      columns: {
-        [column in keyof TRecord]: number
-      }
-    ): QueryBuilder<TRecord, number>;
+    increment(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     decrement(
       columnName: keyof TRecord,
@@ -804,6 +804,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
+    decrement(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     // Analytics
     rank: AnalyticFunction<TRecord, TResult>;
@@ -1145,6 +1148,8 @@ export declare namespace Knex {
     onConflict(raw: Raw): OnConflictQueryBuilder<TRecord, TResult>;
 
     onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
+
+    updateFrom: Table<TRecord, TResult>;
 
     del(
       returning: '*',
@@ -1771,7 +1776,10 @@ export declare namespace Knex {
   }
 
   interface WhereJsonObject<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<TRecord, TResult>;
+    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
@@ -2405,7 +2413,7 @@ export declare namespace Knex {
     raw(statement: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
     toString(): string;
-    toSQL(): Sql;
+    toSQL(): Sql[];
   }
 
   interface TableBuilder {
@@ -2642,6 +2650,7 @@ export declare namespace Knex {
       constraintName?: string
     ): ColumnBuilder;
     checkRegex(regex: string, constraintName?: string): ColumnBuilder;
+    collate(collation: string): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
@@ -2912,7 +2921,7 @@ export declare namespace Knex {
       multiSubnetFailover?: boolean;
       packetSize?: number;
       trustServerCertificate?: boolean;
-      mapBinding?: (value: any) => ({ value: any, type: any } | undefined);
+      mapBinding?: (value: any) => { value: any; type: any } | undefined;
     }>;
     pool?: Readonly<{
       min?: number;
@@ -3071,6 +3080,7 @@ export declare namespace Knex {
     filename: string;
     options?: {
       nativeBinding?: string;
+      readonly?: boolean;
     };
   }
 
@@ -3183,6 +3193,7 @@ export declare namespace Knex {
 
   interface FunctionHelper {
     now(precision?: number): Raw;
+    uuid(): Raw;
     uuidToBin(uuid: string, ordered?: boolean): Buffer;
     binToUuid(bin: Buffer, ordered?: boolean): string;
   }

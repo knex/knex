@@ -81,7 +81,7 @@ let lastCounters = _.cloneDeep(counters);
 
 setInterval(() => {
   const reqsPerSec = {};
-  for (let key of Object.keys(counters)) {
+  for (const key of Object.keys(counters)) {
     reqsPerSec[key] = {
       queries: (counters[key].queries - lastCounters[key].queries) / 2,
       results: (counters[key].results - lastCounters[key].results) / 2,
@@ -106,7 +106,7 @@ async function killConnectionsPg(client) {
 }
 
 async function killConnectionsMyslq(client) {
-  const [rows, colDefs] = await client.raw(`SHOW FULL PROCESSLIST`);
+  const [rows] = await client.raw(`SHOW FULL PROCESSLIST`);
   await Promise.all(rows.map((row) => client.raw(`KILL ${row.Id}`)));
 }
 
@@ -119,6 +119,7 @@ async function main() {
   async function loopQueries(prefix, query) {
     const queries = () => [...Array(50).fill(query)];
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         await Promise.all(queries());
@@ -133,7 +134,9 @@ async function main() {
       await rp.delete({
         url: `${toxicli.host}/proxies/${serviceName}`,
       });
-    } catch (err) {}
+    } catch (err) {
+      /* empty */
+    }
 
     const proxy = await toxicli.createProxy({
       name: serviceName,
@@ -188,6 +191,7 @@ async function main() {
 
   setInterval(recreateProxies, 2000);
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await delay(20); // kill everything every quite often from server side
     try {

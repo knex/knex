@@ -868,7 +868,7 @@ describe('Selects', function () {
           .comment('Integration Comment')
           .select('first_name', 'email')
           .limit(1)
-          .then(function(results) {
+          .then(function (results) {
             expect(results).to.have.length(1);
           });
       });

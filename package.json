@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "2.4.2",
+  "version": "2.5.1",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex",
   "types": "types/index.d.ts",
@@ -8,18 +8,20 @@
     "node": ">=12"
   },
   "scripts": {
-    "build": "npm run build:gitignore && npm run build:ts",
+    "build": "npm run build:gitignore && npm run build:ts && npm run format",
     "clean": "node scripts/clean.js",
     "build:ts": "tsc",
     "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
-    "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
-    "format:check-difference": "prettier --list-different \"{lib,bin,scripts,test}/**/*.js\"",
+    "format": "prettier --write --list-different .",
+    "format:check": "prettier --list-different .",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=lcov",
-    "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\" \"bin/**/*.js\"",
+    "lint": "eslint --cache '**/*.js'",
+    "lint:fix": "eslint --cache --fix '**/*.js'",
     "lint:types": "tsd && dtslint types",
-    "lint:everything": "npm run lint:types && npm run lint",
+    "lint:everything": "npm run lint && npm run lint:types",
+    "lint:fix:everything": "npm run lint:fix && npm run lint:types",
     "test:unit": "npm run test:unit-only && npm run test:cli",
     "test:unit-only": "mocha --exit -t 10000 --config test/mocha-unit-config-test.js",
     "test:db": "mocha --exit -t 10000 --config test/mocha-integration-config-test.js",
@@ -58,7 +60,7 @@
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
     "prepare": "husky install && npm run clean && npm run build",
-    "prepublishOnly": "npm run format:check-difference && npm run lint && npm run clean && npm run build"
+    "prepublishOnly": "npm run format:check && npm run lint:everything && npm run clean && npm run build"
   },
   "dependencies": {
     "colorette": "2.0.19",
@@ -70,7 +72,7 @@
     "getopts": "2.3.0",
     "interpret": "^2.2.0",
     "lodash": "^4.17.21",
-    "pg-connection-string": "2.5.0",
+    "pg-connection-string": "2.6.1",
     "rechoir": "^0.8.0",
     "resolve-from": "^5.0.0",
     "tarn": "^3.0.2",
@@ -100,13 +102,12 @@
     }
   },
   "lint-staged": {
-    "*.{js,json}": [
-      "prettier --write"
-    ]
+    "*": "prettier --ignore-unknown --write",
+    "*.js": "eslint --cache --fix"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
-    "@types/node": "^18.7.14",
+    "@types/node": "^20.4.0",
     "better-sqlite3": "^7.6.2",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
@@ -144,7 +145,7 @@
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.9.1",
     "tsd": "^0.28.1",
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "buildDependencies": [
     "rimraf"
@@ -234,6 +235,7 @@
     "CHANGELOG.md",
     "CONTRIBUTING.md",
     "knex.js",
+    "knex.mjs",
     "LICENSE",
     "README.md",
     "UPGRADING.md"

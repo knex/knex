@@ -1,5 +1,4 @@
 ---
-
 name: Unit Tests
 
 on:
@@ -29,13 +28,17 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.7.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
 
       - name: Run npm install
         run: npm install
+
+      - name: Run npm install mysql2@3.2.0 if Node 12.x
+        run: npm install mysql2@3.2.0
+        if: matrix.node-version == '12.x'
 
       - run: npm run build
 

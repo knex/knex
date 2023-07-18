@@ -5,6 +5,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
 const knex = require('../../../knex');
+const FunctionHelper = require('../../../lib/knex-builder/FunctionHelper');
 const client = new Oracle_Client({ client: 'oracledb', version: '18.0' });
 
 describe('OracleDb SchemaBuilder', function () {
@@ -1047,6 +1048,13 @@ describe('OracleDb SchemaBuilder', function () {
 
     expect(tableSql.length).to.equal(1);
     expect(tableSql[0].sql).to.equal('alter table "users" add "foo" raw(16)');
+  });
+
+  it('should allow using .fn.uuid to create raw statements', function () {
+    // Integration tests doesnt cover for oracle
+    const helperFunctions = new FunctionHelper(client);
+
+    expect(helperFunctions.uuid().toQuery()).to.equal('(random_uuid())');
   });
 
   it('test set comment', function () {

@@ -1,5 +1,4 @@
 ---
-
 name: Linting and Types
 
 on:
@@ -29,7 +28,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.7.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
@@ -37,7 +36,8 @@ jobs:
       - name: Run npm install
         run: npm install
 
+      - name: Run format:check
+        run: npm run format:check
+
       - name: Run lint:everything
         run: npm run lint:everything
-        env:
-          CI: true

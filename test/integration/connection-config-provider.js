@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 const _ = require('lodash');
 const makeKnex = require('../../knex');
+const { setHiddenProperty } = require('../../lib/util/security');
 
 module.exports = function (config) {
   describe('Connection configuration provider', function () {
@@ -13,6 +14,9 @@ module.exports = function (config) {
 
     this.beforeEach(() => {
       configWorkingCopy = _.cloneDeep(config);
+      if (config.connection && config.connection.password) {
+        setHiddenProperty(configWorkingCopy.connection, config.connection);
+      }
       configWorkingCopy.pool.min = 1;
       configWorkingCopy.pool.max = 2;
       providerInvocationCount = 0;

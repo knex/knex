@@ -1,8 +1,7 @@
 ---
-
 name: Coverage
 
-on: ["push", "pull_request"]
+on: ['push', 'pull_request']
 
 permissions:
   contents: read
@@ -10,8 +9,8 @@ permissions:
 jobs:
   build:
     permissions:
-      checks: write  # for coverallsapp/github-action to create new checks
-      contents: read  # for actions/checkout to fetch code
+      checks: write # for coverallsapp/github-action to create new checks
+      contents: read # for actions/checkout to fetch code
     runs-on: ubuntu-latest
 
     name: Coverage
@@ -28,7 +27,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.7.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
@@ -48,7 +47,7 @@ jobs:
         run: npm run test:coverage  || true
         env:
           CI: true
-          DB: "postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb"
+          DB: 'postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb'
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Databases
