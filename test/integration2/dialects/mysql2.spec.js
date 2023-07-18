@@ -98,6 +98,7 @@ describe('MySQL dialect', () => {
 
           // This is the step that should NOT modify the `config` object
           const knex = require('../../../lib/index')(config);
+          knex.destroy();
 
           const connection = mysql.createConnection(config.connection);
           connection.connect(function (err) {
