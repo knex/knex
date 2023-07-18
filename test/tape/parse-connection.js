@@ -311,3 +311,27 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
     }
   );
 });
+
+test('support MSSQL JSON parameters for config object', function (t) {
+  t.plan(1);
+  t.deepLooseEqual(
+    parseConnection(
+      'mssql://user:password@host/database?domain=testDomain&options={"instanceName": "TestInstance001", "readOnlyIntent": true}'
+    ),
+
+    {
+      client: 'mssql',
+      connection: {
+        server: 'host',
+        user: 'user',
+        password: 'password',
+        database: 'database',
+        domain: 'testDomain',
+        options: {
+          instanceName: 'TestInstance001',
+          readOnlyIntent: true,
+        },
+      },
+    }
+  );
+});

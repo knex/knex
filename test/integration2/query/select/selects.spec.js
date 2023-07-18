@@ -863,6 +863,16 @@ describe('Selects', function () {
         });
       });
 
+      it('#1982 - Allow comments in db', async function () {
+        await knex('accounts')
+          .comment('Integration Comment')
+          .select('first_name', 'email')
+          .limit(1)
+          .then(function (results) {
+            expect(results).to.have.length(1);
+          });
+      });
+
       describe('recursive CTE support', function () {
         before(async function () {
           await knex.schema.dropTableIfExists('rcte');

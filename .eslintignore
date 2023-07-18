@@ -1,3 +1,4 @@
+node_modules
 *.stub
 #
 lib/migrations/util/import-file.js

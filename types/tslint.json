@@ -11,6 +11,8 @@
     "no-unnecessary-qualifier": false,
     "strict-export-declare-modifiers": false,
     "only-arrow-functions": false,
-    "interface-over-type-literal": false
+    "interface-over-type-literal": false,
+    "space-before-function-paren": false,
+    "no-redundant-jsdoc": false
   }
 }

@@ -11,17 +11,21 @@ const knexInstance = knex(clientConfig);
 declare module '../types' {
   namespace Knex {
     interface QueryBuilder {
-      customSelect<TRecord, TResult>(
+      customSelect<TRecord extends {}, TResult>(
         value: number
-      ): Knex.QueryBuilder<TRecord, TResult>;
+      ): Promise<Knex.QueryBuilder<TRecord, TResult>>;
     }
   }
 }
 
 knex.QueryBuilder.extend('customSelect', function (value: number) {
-  return this.select(this.client.raw(`${value} as value`));
+  return new Promise((r) =>
+    r(this.select(this.client.raw(`${value} as value`)))
+  );
 });
 
 const main = async () => {
-  expectType<number[]>(await knexInstance('users').customSelect<any, number[]>(42));
+  expectType<number[]>(
+    await await knexInstance('users').customSelect<any, number[]>(42)
+  );
 };

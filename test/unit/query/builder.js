@@ -2740,6 +2740,266 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('excepts', () => {
+    const chain = qb()
+      .select('*')
+      .from('users')
+      .where('id', '=', 1)
+      .except(function () {
+        this.select('*').from('users').where('id', '=', 2);
+      });
+
+    testsql(chain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      oracledb: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2],
+      },
+    });
+
+    const multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        function () {
+          this.select('*').from('users').where({ id: 2 });
+        },
+        function () {
+          this.select('*').from('users').where({ id: 3 });
+        }
+      );
+    testsql(multipleArgumentsChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      oracledb: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except([
+        function () {
+          this.select('*').from('users').where({ id: 2 });
+        },
+        function () {
+          this.select('*').from('users').where({ id: 3 });
+        },
+      ]);
+    testsql(arrayChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      oracledb: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      sqlite3: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
+  it('wraps excepts', () => {
+    const wrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where('id', 'in', function () {
+        this.table('users')
+          .max('id')
+          .except(function () {
+            this.table('users').min('id');
+          }, true);
+      });
+    testsql(wrappedChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] in (select max([id]) from [users] except (select min([id]) from [users]))',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") except (select min("id") from "users"))',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" in ((select max("id") from "users") except (select min("id") from "users"))',
+        bindings: [],
+      },
+    });
+
+    // worthwhile since we're playing games with the 'wrap' specification with arguments
+    const multipleArgumentsWrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        function () {
+          this.select('*').from('users').where({ id: 2 });
+        },
+        function () {
+          this.select('*').from('users').where({ id: 3 });
+        },
+        true
+      );
+    testsql(multipleArgumentsWrappedChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except (select * from [users] where [id] = ?) except (select * from [users] where [id] = ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const arrayWrappedChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        [
+          function () {
+            this.select('*').from('users').where({ id: 2 });
+          },
+          function () {
+            this.select('*').from('users').where({ id: 3 });
+          },
+        ],
+        true
+      );
+    testsql(arrayWrappedChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except (select * from [users] where [id] = ?) except (select * from [users] where [id] = ?)',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: '(select * from "users" where "id" = ?) except (select * from "users" where "id" = ?) except (select * from "users" where "id" = ?)',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
+  it('multiple excepts', () => {
+    const chain = qb()
+      .select('*')
+      .from('users')
+      .where('id', '=', 1)
+      .except(qb().select('*').from('users').where('id', '=', 2))
+      .except(function () {
+        this.select('*').from('users').where('id', '=', 3);
+      });
+    testsql(chain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from [users] where [id] = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from "users" where "id" = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const arrayChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except([
+        qb().select('*').from('users').where({ id: 2 }),
+        raw('select * from users where id = ?', [3]),
+      ]);
+    testsql(arrayChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+
+    const multipleArgumentsChain = qb()
+      .select('*')
+      .from('users')
+      .where({ id: 1 })
+      .except(
+        qb().select('*').from('users').where({ id: 2 }),
+        raw('select * from users where id = ?', [3])
+      );
+    testsql(multipleArgumentsChain, {
+      mssql: {
+        sql: 'select * from [users] where [id] = ? except select * from [users] where [id] = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" = ? except select * from "users" where "id" = ? except select * from users where id = ?',
+        bindings: [1, 2, 3],
+      },
+    });
+  });
+
   it('sub select where ins', () => {
     testsql(
       qb()
@@ -2978,22 +3238,22 @@ describe('QueryBuilder', () => {
       qb()
         .select('*')
         .from('users')
-        .orderBy(['email', { column: 'age', order: 'desc' }]),
+        .orderBy(['email', { column: 'age', order: 'desc' }, 3]),
       {
         mysql: {
-          sql: 'select * from `users` order by `email` asc, `age` desc',
+          sql: 'select * from `users` order by `email` asc, `age` desc, 3 asc',
           bindings: [],
         },
         mssql: {
-          sql: 'select * from [users] order by [email] asc, [age] desc',
+          sql: 'select * from [users] order by [email] asc, [age] desc, 3 asc',
           bindings: [],
         },
         pg: {
-          sql: 'select * from "users" order by "email" asc, "age" desc',
+          sql: 'select * from "users" order by "email" asc, "age" desc, 3 asc',
           bindings: [],
         },
         'pg-redshift': {
-          sql: 'select * from "users" order by "email" asc, "age" desc',
+          sql: 'select * from "users" order by "email" asc, "age" desc, 3 asc',
           bindings: [],
         },
       }
@@ -3193,6 +3453,27 @@ describe('QueryBuilder', () => {
         },
       }
     );
+  });
+
+  it('multiple numeric order bys, with and without arrays', () => {
+    testsql(qb().select('*').from('users').orderBy([2, 4]).orderBy(7), {
+      mysql: {
+        sql: 'select * from `users` order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'select * from [users] order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+      pg: {
+        sql: 'select * from "users" order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" order by 2 asc, 4 asc, 7 asc',
+        bindings: [],
+      },
+    });
   });
 
   it('havings', () => {
@@ -5793,6 +6074,22 @@ describe('QueryBuilder', () => {
       {
         pg: {
           sql: 'update only "users" set "email" = ?, "name" = ? where "id" = ?',
+          bindings: ['foo', 'bar', 1],
+        },
+      }
+    );
+  });
+
+  it('update from table', () => {
+    testsql(
+      qb()
+        .update({ email: 'foo', name: 'bar' })
+        .table('users')
+        .updateFrom('others')
+        .where('id', '=', 1),
+      {
+        pg: {
+          sql: 'update "users" set "email" = ?, "name" = ? from "others" where "id" = ?',
           bindings: ['foo', 'bar', 1],
         },
       }
@@ -9180,6 +9477,136 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('#1982 - should allow query comments in querybuilder', () => {
+    testsql(
+      qb()
+        .from('testtable')
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+      {
+        mysql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from `testtable`',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+        mssql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from [testtable]',
+          bindings: [],
+        },
+        pg: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ select * from "testtable"',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('#1982 (2) - should throw error on non string', () => {
+    try {
+      testsql(qb().from('testtable').comment({ prop: 'val' }), {
+        mysql: {
+          sql: '',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '',
+          bindings: [],
+        },
+        mssql: {
+          sql: '',
+          bindings: [],
+        },
+        pg: {
+          sql: '',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '',
+          bindings: [],
+        },
+      });
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Comment must be a string');
+    }
+  });
+
+  it('#1982 (3) - should throw error when there is subcomments', () => {
+    try {
+      testsql(qb().from('testtable').comment('/* Hello world'), {
+        mysql: {
+          sql: '',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '',
+          bindings: [],
+        },
+        mssql: {
+          sql: '',
+          bindings: [],
+        },
+        pg: {
+          sql: '',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '',
+          bindings: [],
+        },
+      });
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Cannot include /*, */, ? in comment');
+    }
+  });
+
+  it('#1982 (4) - should throw error when there is question mark', () => {
+    try {
+      testsql(qb().from('testtable').comment('?'), {
+        mysql: {
+          sql: '',
+          bindings: [],
+        },
+        oracledb: {
+          sql: '',
+          bindings: [],
+        },
+        mssql: {
+          sql: '',
+          bindings: [],
+        },
+        pg: {
+          sql: '',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: '',
+          bindings: [],
+        },
+      });
+      expect(true).to.equal(
+        false,
+        'Expected to throw error in compilation about non-string'
+      );
+    } catch (error) {
+      expect(error.message).to.contain('Cannot include /*, */, ? in comment');
+    }
+  });
+
   it('#4199 - allows hint comments in subqueries', () => {
     testsql(
       qb()
@@ -9304,18 +9731,27 @@ describe('QueryBuilder', () => {
           .from('accounts')
           .where({ Login: ['1', '2', '3', void 0] }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
           .from('accounts')
           .where({ Login: { Test: '123', Value: void 0 } }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
           .from('accounts')
           .where({ Login: ['1', ['2', [void 0]]] }),
         undefinedColumns: ['Login'],
+        clientError: {
+          mysql: 'The values in where clause must not be object or array.',
+        },
       },
       {
         builder: qb()
@@ -9329,10 +9765,6 @@ describe('QueryBuilder', () => {
       try {
         //Must be present, but makes no difference since it throws.
         testsql(builder, {
-          mysql: {
-            sql: '',
-            bindings: [],
-          },
           oracledb: {
             sql: '',
             bindings: [],
@@ -9350,16 +9782,35 @@ describe('QueryBuilder', () => {
             bindings: [],
           },
         });
-        expect(true).to.equal(
-          false,
-          'Expected to throw error in compilation about undefined bindings.'
-        );
+        throw new Error('Should not reach this point');
       } catch (error) {
         expect(error.message).to.contain(
           'Undefined binding(s) detected when compiling ' +
             builder._method.toUpperCase() +
             `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
         ); //This test is not for asserting correct queries
+      }
+    });
+    qbuilders.forEach(({ builder, undefinedColumns, clientError }) => {
+      try {
+        //Must be present, but makes no difference since it throws.
+        testsql(builder, {
+          mysql: {
+            sql: '',
+            bindings: [],
+          },
+        });
+        throw new Error('Should not reach this point');
+      } catch (error) {
+        if (clientError && clientError.mysql) {
+          expect(error.message).to.contain(clientError.mysql);
+        } else {
+          expect(error.message).to.contain(
+            'Undefined binding(s) detected when compiling ' +
+              builder._method.toUpperCase() +
+              `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
+          ); //This test is not for asserting correct queries
+        }
       }
     });
   });
@@ -11023,31 +11474,32 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonPath('address', '$.street.number', '>', 5),
+            .whereJsonPath('address', '$.street.number', '>', 5)
+            .orWhereJsonPath('address', '$.street.number', '<', 8),
           {
             pg: {
-              sql: 'select * from "users" where jsonb_path_query_first("address", ?)::int > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from "users" where jsonb_path_query_first("address", ?)::int > ? or jsonb_path_query_first("address", ?)::int < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             mysql: {
-              sql: 'select * from `users` where json_extract(`address`, ?) > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from `users` where json_extract(`address`, ?) > ? or json_extract(`address`, ?) < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             mssql: {
-              sql: 'select * from [users] where JSON_VALUE([address], ?) > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from [users] where JSON_VALUE([address], ?) > ? or JSON_VALUE([address], ?) < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             oracledb: {
-              sql: 'select * from "users" where json_value("address", \'$.street.number\') > ?',
-              bindings: [5],
+              sql: 'select * from "users" where json_value("address", \'$.street.number\') > ? or json_value("address", \'$.street.number\') < ?',
+              bindings: [5, 8],
             },
             sqlite3: {
-              sql: 'select * from `users` where json_extract(`address`, ?) > ?',
-              bindings: ['$.street.number', 5],
+              sql: 'select * from `users` where json_extract(`address`, ?) > ? or json_extract(`address`, ?) < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             cockroachdb: {
-              sql: 'select * from "users" where json_extract_path("address", ?, ?)::int > ?',
-              bindings: ['street', 'number', 5],
+              sql: 'select * from "users" where json_extract_path("address", ?, ?)::int > ? or json_extract_path("address", ?, ?)::int < ?',
+              bindings: ['street', 'number', 5, 'street', 'number', 8],
             },
           }
         );
@@ -11058,19 +11510,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonSupersetOf('address', { test: 'value' }),
+            .whereJsonSupersetOf('address', { test: 'value' })
+            .orWhereJsonSupersetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where json_contains(`address`,?)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where json_contains(`address`,?) or json_contains(`address`,?)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );
@@ -11078,19 +11531,23 @@ describe('QueryBuilder', () => {
 
       it('where a json column is a superset of value', async function () {
         testsql(
-          qb().select().from('users').whereJsonSupersetOf('address', 'test'),
+          qb()
+            .select()
+            .from('users')
+            .whereJsonSupersetOf('address', 'test')
+            .orWhereJsonSupersetOf('address', 'test2'),
           {
             pg: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['test'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['test', 'test2'],
             },
             mysql: {
-              sql: 'select * from `users` where json_contains(`address`,?)',
-              bindings: ['test'],
+              sql: 'select * from `users` where json_contains(`address`,?) or json_contains(`address`,?)',
+              bindings: ['test', 'test2'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where "address" @> ?',
-              bindings: ['test'],
+              sql: 'select * from "users" where "address" @> ? or "address" @> ?',
+              bindings: ['test', 'test2'],
             },
           }
         );
@@ -11101,19 +11558,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonNotSupersetOf('address', { test: 'value' }),
+            .whereJsonNotSupersetOf('address', { test: 'value' })
+            .orWhereJsonNotSupersetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where not "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" @> ? or not "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where not json_contains(`address`,?)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where not json_contains(`address`,?) or not json_contains(`address`,?)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where not "address" @> ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" @> ? or not "address" @> ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );
@@ -11124,19 +11582,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonSubsetOf('address', { test: 'value' }),
+            .whereJsonSubsetOf('address', { test: 'value' })
+            .orWhereJsonSubsetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" <@ ? or "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where json_contains(?,`address`)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where json_contains(?,`address`) or json_contains(?,`address`)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where "address" <@ ? or "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );
@@ -11147,19 +11606,20 @@ describe('QueryBuilder', () => {
           qb()
             .select()
             .from('users')
-            .whereJsonNotSubsetOf('address', { test: 'value' }),
+            .whereJsonNotSubsetOf('address', { test: 'value' })
+            .orWhereJsonNotSubsetOf('address', { test: 'value2' }),
           {
             pg: {
-              sql: 'select * from "users" where not "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" <@ ? or not "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             mysql: {
-              sql: 'select * from `users` where not json_contains(?,`address`)',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from `users` where not json_contains(?,`address`) or not json_contains(?,`address`)',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
             cockroachdb: {
-              sql: 'select * from "users" where not "address" <@ ?',
-              bindings: ['{"test":"value"}'],
+              sql: 'select * from "users" where not "address" <@ ? or not "address" <@ ?',
+              bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
         );
