@@ -222,6 +222,21 @@ module.exports = {
 };
 ```
 
+### Custom migration name
+
+You may provide a custom migration name to be used in place of the default option.
+
+```js
+module.exports = {
+  client: 'pg',
+  migrations: {
+    getNewMigrationName: (name) => {
+      return `${+new Date()}-${name}.js`;
+    }
+  }
+};
+```
+
 ### Generated migration extension
 
 You can control extension of generated migrations.
