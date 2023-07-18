@@ -723,6 +723,40 @@ knex.select('*')
   )
 ```
 
+### except
+
+**.except([\*queries], [wrap])**
+
+Creates an except query, taking an array or a list of callbacks, builders, or raw statements to build the except statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses. The except method is unsupported on MySQL.
+
+```js
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .except(function() {
+    this.select('*').from('users').whereNull('first_name')
+  })
+
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .except([
+    knex.select('*').from('users').whereNull('first_name')
+  ])
+
+knex.select('*')
+  .from('users')
+  .whereNull('last_name')
+  .except(
+    knex.raw(
+      'select * from users where first_name is null'
+    ),
+    knex.raw(
+      'select * from users where email is null'
+    )
+  )
+```
+
 ### insert
 
 **.insert(data, [returning], [options])**
