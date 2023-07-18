@@ -550,7 +550,7 @@ Seed and migration files need to follow Knex conventions
  * Same as with the CommonJS modules
  * You will need to export a "seed" named function.
  * */
-export function seed(next) {
+export function seed(knex) {
   // ... seed logic here
 }
 
