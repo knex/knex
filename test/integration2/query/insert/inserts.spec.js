@@ -31,7 +31,10 @@ const {
   createTestTableTwo,
   createDataType,
 } = require('../../../util/tableCreatorHelper');
-const { assertNumber } = require('../../../util/assertHelper');
+const {
+  assertNumber,
+  assertJsonEquals,
+} = require('../../../util/assertHelper');
 
 describe('Inserts', function () {
   getAllDbs().forEach((db) => {
@@ -1982,7 +1985,7 @@ describe('Inserts', function () {
         expect(row3 && row3.name).to.equal('AFTER');
       });
 
-      it('update values on conflit with "where" condition and partial unique index #4590', async function () {
+      it('update values on conflict with "where" condition and partial unique index #4590', async function () {
         if (!isPostgreSQL(knex) && !isSQLite(knex)) {
           return this.skip();
         }
@@ -2097,6 +2100,205 @@ describe('Inserts', function () {
               assertNumber(knex, results[0].logins, 1);
               // cleanup to prevent needs for too much changes to other tests
               return trx('accounts').delete().where('id', results[0].id);
+            });
+        });
+      });
+
+      it('should insert arrays into postgres array columns #5365', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        await knex.schema.dropTableIfExists('redirect_array');
+        await knex.schema.createTable('redirect_array', (table) => {
+          table.increments();
+          table.string('name');
+          table.specificType('redirect_urls', 'text ARRAY');
+        });
+
+        await knex('redirect_array')
+          .insert(
+            {
+              name: 'knex',
+              redirect_urls: [
+                'https://knexjs.org/',
+                'https://knexjs.org/guide/',
+              ],
+            },
+            'id'
+          )
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'insert into "redirect_array" ("name", "redirect_urls") values (?, ?) returning "id"',
+              ['knex', ['https://knexjs.org/', 'https://knexjs.org/guide/']],
+              [{ id: 1 }]
+            );
+          });
+      });
+
+      it('insert json object to json column', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+        const tableName = 'json';
+        const jsonObject = {
+          foo: {
+            bar: 'baz',
+          },
+        };
+
+        await knex.schema.dropTableIfExists(tableName);
+        await knex.schema.createTable(tableName, (table) => {
+          table.increments();
+          table.string('name');
+          table.jsonb('content');
+        });
+
+        await knex(tableName)
+          .insert(
+            {
+              name: 'json_object',
+              content: jsonObject,
+            },
+            'id'
+          )
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              `insert into "${tableName}" ("content", "name") values (?, ?) returning "id"`,
+              [JSON.stringify(jsonObject), 'json_object']
+            );
+          })
+          .then(([insertResult]) =>
+            knex(tableName).where('id', insertResult.id)
+          )
+          .then((result) => {
+            expect(result.length).to.equal(1);
+            assertJsonEquals(result[0].content, jsonObject);
+          });
+      });
+
+      it('insert number array to integer ARRAY column', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+        const tableName = 'integer_array';
+        const integerArrayContent = [1, 2, 3, 42, -100];
+
+        await knex.schema.dropTableIfExists(tableName);
+        await knex.schema.createTable(tableName, (table) => {
+          table.increments();
+          table.string('name');
+          table.specificType('content', 'integer ARRAY');
+        });
+
+        await knex(tableName)
+          .insert(
+            {
+              name: 'integer_array',
+              content: integerArrayContent,
+            },
+            'id'
+          )
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              `insert into "${tableName}" ("content", "name") values (?, ?) returning "id"`,
+              [integerArrayContent, 'integer_array']
+            );
+          })
+          .then(([insertResult]) =>
+            knex(tableName).where('id', insertResult.id)
+          )
+          .then((result) => {
+            expect(result.length).to.equal(1);
+            assertJsonEquals(result[0].content, integerArrayContent);
+          });
+      });
+
+      describe('text array', () => {
+        const tableName = 'text_array';
+
+        beforeEach(async () => {
+          if (!isPostgreSQL(knex)) {
+            return true;
+          }
+          await knex.schema.dropTableIfExists(tableName);
+          await knex.schema.createTable(tableName, (table) => {
+            table.increments();
+            table.string('name');
+            table.specificType('content', 'text ARRAY');
+          });
+        });
+
+        it('#5365 should insert string array to text ARRAY column', async function () {
+          if (!isPostgreSQL(knex)) {
+            return this.skip();
+          }
+
+          const stringArrayContent = ['SOME TEXT', 'SOME OTHER TEXT'];
+
+          await knex(tableName)
+            .insert(
+              {
+                name: 'array_of_string',
+                content: stringArrayContent,
+              },
+              'id'
+            )
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                `insert into "${tableName}" ("content", "name") values (?, ?) returning "id"`,
+                [stringArrayContent, 'array_of_string'],
+                [{ id: 1 }]
+              );
+            })
+            .then(([insertResult]) =>
+              knex(tableName).where('id', insertResult.id)
+            )
+            .then((result) => {
+              expect(result.length).to.equal(1);
+              expect(result[0].content).to.deep.equal(stringArrayContent);
+            });
+        });
+
+        it(`#5430 should insert data to text array column if it's an array of object`, async function () {
+          if (!isPostgreSQL(knex)) {
+            return this.skip();
+          }
+
+          const arrayOfObject = [
+            {
+              foo: {
+                bar: 'baz',
+              },
+            },
+          ];
+
+          await knex(tableName)
+            .insert(
+              {
+                name: 'array_of_object',
+                content: arrayOfObject,
+              },
+              'id'
+            )
+            .testSql(function (tester) {
+              tester(
+                'pg',
+                `insert into "${tableName}" ("content", "name") values (?, ?) returning "id"`,
+                [arrayOfObject, 'array_of_object'],
+                [{ id: 1 }]
+              );
+            })
+            .then(([insertResult]) =>
+              knex(tableName).where('id', insertResult.id)
+            )
+            .then((result) => {
+              expect(result.length).to.equal(1);
+              assertJsonEquals(result[0].content, arrayOfObject);
             });
         });
       });

@@ -5,6 +5,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
 const knex = require('../../../knex');
+const FunctionHelper = require('../../../lib/knex-builder/FunctionHelper');
 const client = new Oracle_Client({ client: 'oracledb' });
 
 describe('OracleDb SchemaBuilder', function () {
@@ -1048,6 +1049,13 @@ describe('OracleDb SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal('alter table "users" add "foo" raw(16)');
   });
 
+  it('should allow using .fn.uuid to create raw statements', function () {
+    // Integration tests doesnt cover for oracle
+    const helperFunctions = new FunctionHelper(client);
+
+    expect(helperFunctions.uuid().toQuery()).to.equal('(random_uuid())');
+  });
+
   it('test set comment', function () {
     tableSql = client
       .schemaBuilder()
@@ -1094,6 +1102,30 @@ describe('OracleDb SchemaBuilder', function () {
         })
         .toSQL();
     }).to.throw(TypeError);
+  });
+
+  it('allows adding default json objects when the column is json', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('user', function (t) {
+        t.json('preferences').defaultTo({}).notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      'alter table "user" add "preferences" varchar2(4000) default \'{}\' not null check ("preferences" is json)'
+    );
+  });
+
+  it('allows adding default jsonb objects when the column is json', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('user', function (t) {
+        t.jsonb('preferences').defaultTo({}).notNullable();
+      })
+      .toSQL();
+    expect(tableSql[0].sql).to.equal(
+      'alter table "user" add "preferences" varchar2(4000) default \'{}\' not null check ("preferences" is json)'
+    );
   });
 
   it('is possible to set raw statements in defaultTo, #146', function () {

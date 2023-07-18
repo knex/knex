@@ -6,6 +6,7 @@ const knexSqlite = Knex({
   connection: ':memory:',
 });
 
+// eslint-disable-next-line no-unused-vars
 const knexMysql = Knex({
   client: 'mysql2',
 });

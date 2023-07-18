@@ -10,6 +10,7 @@ describe('Util Tests', function () {
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
+  require('./unit/util/security');
 });
 
 describe('Query Building Tests', function () {
@@ -44,6 +45,14 @@ if (config.mssql) {
 
 if (config.postgres) {
   require('./unit/dialects/postgres');
+}
+
+if (config.mysql) {
+  require('./unit/dialects/mysql');
+}
+
+if (config['better-sqlite3']) {
+  require('./unit/dialects/better-sqlite3');
 }
 
 describe('CLI tests', function () {

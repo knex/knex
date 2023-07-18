@@ -1659,6 +1659,43 @@ describe('Schema (misc)', () => {
             expect(results).to.not.be.empty;
           });
         });
+
+        describe('supports partial unique indexes - postgres, sqlite, and mssql', function () {
+          it('allows creating a unique index with predicate', async function () {
+            if (!(isPostgreSQL(knex) || isMssql(knex) || isSQLite(knex))) {
+              return this.skip();
+            }
+
+            await knex.schema.table('test_table_one', function (t) {
+              t.unique('email', {
+                indexName: 'email_idx',
+                predicate: knex.whereNotNull('email'),
+              });
+            });
+          });
+
+          it('actually stores the predicate in the Postgres server', async function () {
+            if (!isPostgreSQL(knex)) {
+              return this.skip();
+            }
+            await knex.schema.table('test_table_one', function (t) {
+              t.unique('email', {
+                indexName: 'email_idx_2',
+                predicate: knex.whereNotNull('email'),
+              });
+            });
+            const results = await knex
+              .from('pg_class')
+              .innerJoin('pg_index', 'pg_index.indexrelid', 'pg_class.oid')
+              .where({
+                relname: 'email_idx_2',
+                indisvalid: true,
+                indisunique: true,
+              })
+              .whereNotNull('indpred');
+            expect(results).to.not.be.empty;
+          });
+        });
       });
 
       describe('hasTable', () => {

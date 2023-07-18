@@ -1,5 +1,4 @@
 ---
-
 name: CI
 
 on:
@@ -10,6 +9,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +21,17 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [18.x, 16.x, 14.x, 12.x]
-        database-type: [postgres, pgnative, mysql, mssql, sqlite3, cockroachdb, better-sqlite3, oracledb]
+        database-type:
+          [
+            postgres,
+            pgnative,
+            mysql,
+            mssql,
+            sqlite3,
+            cockroachdb,
+            better-sqlite3,
+            oracledb,
+          ]
 
     steps:
       - name: Checkout Repository
@@ -28,7 +40,7 @@ jobs:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.7.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
@@ -105,11 +117,11 @@ jobs:
         with: { fetch-depth: 1 }
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.7.0
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
-      
+
       - name: Test npm git dependency
         shell: bash
         run: |
