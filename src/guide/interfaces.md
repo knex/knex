@@ -109,7 +109,8 @@ Streams are a powerful way of piping data through as it comes in, rather than al
 
 **.stream([options], [callback])**
 
-If called with a callback, the callback is passed the stream and a promise is returned. Otherwise, the readable stream is returned.
+If called with a callback, the callback is passed the stream and a promise is returned. Otherwise, the readable stream is returned.  
+When the stream is consumed as an [iterator](https://nodejs.org/api/stream.html#readablesymbolasynciterator), if the loop terminates with a `break`, `return`, or a `throw`, the stream will be destroyed. In other terms, iterating over a stream will consume the stream fully.
 
 ```js
 // Retrieve the stream:
@@ -125,6 +126,17 @@ const stream = knex.select('*')
   .from('users')
   .stream({highWaterMark: 5});
 stream.pipe(writableStream);
+```
+
+```js
+// Use as an iterator
+const stream = knex.select('*')
+  .from('users')
+  .stream();
+
+for await (const row of stream) {
+  /* ... */
+}
 ```
 
 ```js
