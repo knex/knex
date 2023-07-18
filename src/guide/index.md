@@ -589,3 +589,14 @@ declare module 'knex/types/tables' {
   }
 }
 ```
+
+When TypeScript is configured to use a modern module resolution setting (`node16`, `nodenext`, etc.), the compiler expects that the declared module name ends with a `.js` file type. You will need to declare your inferred types as follows instead:
+
+```ts
+// The trailing `.js` is required by the TypeScript compiler in certain configs:
+declare module 'knex/types/tables.js' { // <----- Different module path!!!
+  interface Tables {
+    // ...
+  }
+}
+```
