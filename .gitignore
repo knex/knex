@@ -12,6 +12,7 @@ test.sqlite3
 npm-debug.log
 tmp
 knex-*.tgz
+.eslintcache
 
 # Testing for the knex cli:
 bin/migrations-folder

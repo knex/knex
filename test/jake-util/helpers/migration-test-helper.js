@@ -2,7 +2,7 @@
 
 const os = require('os');
 const fs = require('fs');
-const child_process = require("child_process");
+const child_process = require('child_process');
 const rimrafSync = require('rimraf').sync;
 
 function assertExec(cmd, desc) {
@@ -11,9 +11,7 @@ function assertExec(cmd, desc) {
     let stderr = '';
     let stdout = '';
     const bin = child_process.exec(cmd);
-    bin.on('error', (msg, code) =>
-      reject(Error(desc + ' FAIL. ' + stderr))
-    );
+    bin.on('error', (msg, code) => reject(Error(desc + ' FAIL. ' + stderr)));
     bin.on('cmdEnd', (cmd) => resolve({ cmd, stdout, stderr }));
     bin.on('stdout', (data) => (stdout += data.toString()));
     bin.on('stderr', (data) => (stderr += data.toString()));

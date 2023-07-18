@@ -6,4 +6,4 @@ function up(knex) {
 function down(knex) {
   return knex.schema.dropTable('xyz');
 }
-module.exports = { up, down }
+module.exports = { up, down };

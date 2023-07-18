@@ -66,9 +66,9 @@ describe('Oracle', () => {
       const sql = compiler.insert();
       expect(sql.sql).to.eql(
         'begin execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
-        '(:1, :2, :3, :4)\' using ?, ?, ?, ?; ' +
-        'execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
-        '(:1, DEFAULT, DEFAULT, DEFAULT)\' using ?;end;'
+          "(:1, :2, :3, :4)' using ?, ?, ?, ?; " +
+          'execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
+          "(:1, DEFAULT, DEFAULT, DEFAULT)' using ?;end;"
       );
     });
   });

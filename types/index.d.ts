@@ -566,7 +566,9 @@ export declare namespace Knex {
 
   interface OnConflictQueryBuilder<TRecord extends {}, TResult> {
     ignore(): QueryBuilder<TRecord, TResult>;
-    merge(mergeColumns?: (keyof TRecord)[]): QueryBuilder<TRecord, TResult>;
+    merge(
+      mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]
+    ): QueryBuilder<TRecord, TResult>;
     merge(
       data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>
     ): QueryBuilder<TRecord, TResult>;
@@ -597,6 +599,7 @@ export declare namespace Knex {
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
     column: Select<TRecord, TResult>;
+    comment: Comment<TRecord, TResult>;
     hintComment: HintComment<TRecord, TResult>;
     from: Table<TRecord, TResult>;
     fromRaw: Table<TRecord, TResult>;
@@ -708,12 +711,11 @@ export declare namespace Knex {
     // Partition by
     partitionBy: PartitionBy<TRecord, TResult>;
 
-    // Intersect
-    intersect: Intersect<TRecord, TResult>;
-
-    // Union
+    // Unions
     union: Union<TRecord, TResult>;
     unionAll: Union<TRecord, TResult>;
+    intersect: Intersect<TRecord, TResult>;
+    except: Except<TRecord, TResult>;
 
     // Having
     having: Having<TRecord, TResult>;
@@ -729,6 +731,8 @@ export declare namespace Knex {
     havingNotIn: HavingRange<TRecord, TResult>;
     andHavingNotIn: HavingRange<TRecord, TResult>;
     orHavingNotIn: HavingRange<TRecord, TResult>;
+    havingNull: HavingNull<TRecord, TResult>;
+    havingNotNull: HavingNull<TRecord, TResult>;
 
     // Clear
     clearSelect(): QueryBuilder<
@@ -788,6 +792,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
+    increment(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     decrement(
       columnName: keyof TRecord,
@@ -797,6 +804,9 @@ export declare namespace Knex {
       columnName: string,
       amount?: number
     ): QueryBuilder<TRecord, number>;
+    decrement(columns: {
+      [column in keyof TRecord]: number;
+    }): QueryBuilder<TRecord, number>;
 
     // Analytics
     rank: AnalyticFunction<TRecord, TResult>;
@@ -1139,6 +1149,8 @@ export declare namespace Knex {
 
     onConflict(): OnConflictQueryBuilder<TRecord, TResult>;
 
+    updateFrom: Table<TRecord, TResult>;
+
     del(
       returning: '*',
       options?: DMLOptions
@@ -1351,6 +1363,10 @@ export declare namespace Knex {
       path: string,
       alias?: string
     ): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface Comment<TRecord extends {} = any, TResult = any> {
+    (comment: string): QueryBuilder<TRecord, TResult>;
   }
 
   interface HintComment<TRecord extends {} = any, TResult = any> {
@@ -1760,7 +1776,10 @@ export declare namespace Knex {
   }
 
   interface WhereJsonObject<TRecord extends {} = any, TResult = unknown[]> {
-    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<TRecord, TResult>;
+    (columnName: keyof ResolveTableType<TRecord>, value: any): QueryBuilder<
+      TRecord,
+      TResult
+    >;
   }
 
   interface WhereJsonPath<TRecord extends {} = any, TResult = unknown[]> {
@@ -1976,6 +1995,9 @@ export declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
   }
 
+  interface Except<TRecord extends {} = any, TResult = unknown[]>
+    extends Intersect<TRecord, TResult> {}
+
   interface Union<TRecord extends {} = any, TResult = unknown[]>
     extends Intersect<TRecord, TResult> {}
 
@@ -2005,6 +2027,11 @@ export declare namespace Knex {
       TRecord,
       TResult
     >;
+  }
+
+  interface HavingNull<TRecord extends {} = any, TResult = unknown[]> {
+    (columnName: keyof TRecord): QueryBuilder<TRecord, TResult>;
+    (columnName: string): QueryBuilder<TRecord, TResult>;
   }
 
   // commons
@@ -2290,6 +2317,7 @@ export declare namespace Knex {
     userParams?: Record<string, any>;
     doNotRejectOnRollback?: boolean;
     connection?: any;
+    readOnly?: boolean;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any[]>
@@ -2336,11 +2364,11 @@ export declare namespace Knex {
     dropViewIfExists(viewName: string): SchemaBuilder;
     dropMaterializedView(viewName: string): SchemaBuilder;
     dropMaterializedViewIfExists(viewName: string): SchemaBuilder;
-    renameView(oldViewName: string, newViewName: string): Promise<void>;
+    renameView(oldViewName: string, newViewName: string): SchemaBuilder;
     view(
       viewName: string,
       callback: (viewBuilder: AlterViewBuilder) => any
-    ): Promise<void>;
+    ): SchemaBuilder;
     alterView(
       viewName: string,
       callback: (tableBuilder: AlterViewBuilder) => any
@@ -2370,7 +2398,7 @@ export declare namespace Knex {
     table(
       tableName: string,
       callback: (tableBuilder: AlterTableBuilder) => any
-    ): Promise<void>;
+    ): SchemaBuilder;
     dropTableIfExists(tableName: string): SchemaBuilder;
 
     // Schema
@@ -2385,7 +2413,7 @@ export declare namespace Knex {
     raw(statement: string): SchemaBuilder;
     queryContext(context: any): SchemaBuilder;
     toString(): string;
-    toSQL(): Sql;
+    toSQL(): Sql[];
   }
 
   interface TableBuilder {
@@ -2507,17 +2535,18 @@ export declare namespace Knex {
     setNullable(column: string): TableBuilder;
     dropNullable(column: string): TableBuilder;
     unique(
-      columnNames: readonly (string | Raw)[],
+      columnNames: string | readonly (string | Raw)[],
       options?: Readonly<{
         indexName?: string;
         storageEngineIndexType?: string;
         deferrable?: deferrableType;
         useConstraint?: boolean;
+        predicate?: QueryBuilder;
       }>
     ): TableBuilder;
     /** @deprecated */
     unique(
-      columnNames: readonly (string | Raw)[],
+      columnNames: string | readonly (string | Raw)[],
       indexName?: string
     ): TableBuilder;
     foreign(column: string, foreignKeyName?: string): ForeignConstraintBuilder;
@@ -2621,6 +2650,7 @@ export declare namespace Knex {
       constraintName?: string
     ): ColumnBuilder;
     checkRegex(regex: string, constraintName?: string): ColumnBuilder;
+    collate(collation: string): ColumnBuilder;
   }
 
   interface ForeignConstraintBuilder {
@@ -2716,6 +2746,8 @@ export declare namespace Knex {
     searchPath?: string | readonly string[];
     asyncStackTraces?: boolean;
     log?: Logger;
+    compileSqlOnError?: boolean;
+    fetchAsString?: string[];
   }
 
   type StaticConnectionConfig =
@@ -2728,6 +2760,7 @@ export declare namespace Knex {
     | PgConnectionConfig
     | RedshiftConnectionConfig
     | Sqlite3ConnectionConfig
+    | BetterSqlite3ConnectionConfig
     | SocketConnectionConfig;
 
   type ConnectionConfigProvider =
@@ -2888,7 +2921,7 @@ export declare namespace Knex {
       multiSubnetFailover?: boolean;
       packetSize?: number;
       trustServerCertificate?: boolean;
-      mapBinding?: (value: any) => ({ value: any, type: any } | undefined);
+      mapBinding?: (value: any) => { value: any; type: any } | undefined;
     }>;
     pool?: Readonly<{
       min?: number;
@@ -3023,6 +3056,7 @@ export declare namespace Knex {
     connectionTimeoutMillis?: number;
     types?: PgCustomTypesConfig;
     options?: string;
+    expirationChecker?(): boolean;
   }
 
   type PgGetTypeParser = (oid: number, format: string) => any;
@@ -3039,6 +3073,15 @@ export declare namespace Knex {
     flags?: string[];
     debug?: boolean;
     expirationChecker?(): boolean;
+  }
+
+  /** Used with `better-sqlite3` adapter */
+  interface BetterSqlite3ConnectionConfig {
+    filename: string;
+    options?: {
+      nativeBinding?: string;
+      readonly?: boolean;
+    };
   }
 
   interface SocketConnectionConfig {
@@ -3150,6 +3193,7 @@ export declare namespace Knex {
 
   interface FunctionHelper {
     now(precision?: number): Raw;
+    uuid(): Raw;
     uuidToBin(uuid: string, ordered?: boolean): Buffer;
     binToUuid(bin: Buffer, ordered?: boolean): string;
   }

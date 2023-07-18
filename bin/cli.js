@@ -85,7 +85,7 @@ async function initKnex(env, opts, useDefaultClientIfNotSpecified) {
 }
 
 function invoke() {
-  const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
+  const filetypes = ['js', 'mjs', 'coffee', 'ts', 'eg', 'ls'];
 
   const cwd = argv.knexfile
     ? path.dirname(path.resolve(argv.knexfile))
@@ -139,7 +139,9 @@ function invoke() {
       path.dirname(env.modulePath),
       'package.json'
     ));
-  } catch (e) {}
+  } catch (e) {
+    /* empty */
+  }
 
   const cliVersion = [
     color.blue('Knex CLI version:'),
@@ -218,7 +220,7 @@ function invoke() {
     .action(async (name) => {
       try {
         const opts = commander.opts();
-        const instance = await initKnex(env, opts, true);  // Skip config check, we don't really care about client when creating migrations
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating migrations
         const ext = getMigrationExtension(env, opts);
         const configOverrides = { extension: ext };
 
@@ -233,7 +235,7 @@ function invoke() {
             success(color.green(`Created Migration: ${name}`));
           })
           .catch(exit);
-      } catch(err) {
+      } catch (err) {
         exit(err);
       }
     });
@@ -397,7 +399,8 @@ function invoke() {
         }
 
         if (opts.timestampFilenamePrefix) {
-          configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
+          configOverrides.timestampFilenamePrefix =
+            opts.timestampFilenamePrefix;
         }
 
         instance.seed
@@ -406,9 +409,9 @@ function invoke() {
             success(color.green(`Created seed file: ${name}`));
           })
           .catch(exit);
-      } catch(err) {
+      } catch (err) {
         exit(err);
-      }   
+      }
     });
 
   commander
