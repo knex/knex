@@ -85,6 +85,10 @@ function getGuideSidebar() {
       text: 'Migrations',
       link: '/guide/migrations'
     },
+    {
+      text: 'Extending',
+      link: '/guide/extending'
+    }
   ]
 }
 function getFaqSidebar() {
