@@ -2118,7 +2118,7 @@ export declare namespace Knex {
     <TResult2 = TResult>(value: Value): Raw<TResult2>;
     <TResult2 = TResult>(
       sql: string,
-      ...bindings: readonly RawBinding[]
+      binding: RawBinding
     ): Raw<TResult2>;
     <TResult2 = TResult>(
       sql: string,
