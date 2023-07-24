@@ -6,15 +6,13 @@
 //                 Shrey Jain <https://github.com/shreyjain1994>
 // TypeScript Version: 4.1
 
-import tarn = require('tarn');
-import events = require('events');
-import stream = require('stream');
-import ResultTypes = require('./result');
+import type { EventEmitter } from 'events';
+import type { Duplex, PassThrough, Stream } from 'stream';
+import type { Pool } from 'tarn';
+import type { ConnectionOptions } from 'tls';
 
-import { Tables } from './tables';
-
-import { ConnectionOptions } from 'tls';
-import { Stream } from 'stream';
+import type { Registry } from './result';
+import type { Tables } from './tables';
 
 // # Generic type-level utilities
 
@@ -376,7 +374,7 @@ interface DMLOptions {
 
 export interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>,
-    events.EventEmitter {
+    EventEmitter {
   <TTable extends Knex.TableNames>(
     tableName: TTable,
     options?: TableOptions
@@ -770,12 +768,12 @@ export declare namespace Knex {
     count: AsymmetricAggregation<
       TRecord,
       TResult,
-      Lookup<ResultTypes.Registry, 'Count', number | string>
+      Lookup<Registry, 'Count', number | string>
     >;
     countDistinct: AsymmetricAggregation<
       TRecord,
       TResult,
-      Lookup<ResultTypes.Registry, 'Count', number | string>
+      Lookup<Registry, 'Count', number | string>
     >;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
@@ -2105,7 +2103,7 @@ export declare namespace Knex {
   // Raw
 
   interface Raw<TResult = any>
-    extends events.EventEmitter,
+    extends EventEmitter,
       ChainableInterface<ResolveResult<TResult>> {
     timeout(ms: number, options?: { cancel?: boolean }): Raw<TResult>;
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
@@ -2290,18 +2288,18 @@ export declare namespace Knex {
     connection(connection: any): this;
     debug(enabled: boolean): this;
     transacting(trx: Transaction): this;
-    stream(handler: (readable: stream.PassThrough) => any): Promise<any>;
+    stream(handler: (readable: PassThrough) => any): Promise<any>;
     stream(
       options: Readonly<{ [key: string]: any }>,
-      handler: (readable: stream.PassThrough) => any
+      handler: (readable: PassThrough) => any
     ): Promise<any>;
     stream(
       options?: Readonly<{ [key: string]: any }>
-    ): stream.PassThrough & AsyncIterable<ArrayMember<T>>;
+    ): PassThrough & AsyncIterable<ArrayMember<T>>;
     pipe<T extends NodeJS.WritableStream>(
       writable: T,
       options?: Readonly<{ [key: string]: any }>
-    ): stream.PassThrough;
+    ): PassThrough;
     asCallback(callback: Function): Promise<T>;
   }
 
@@ -3045,7 +3043,7 @@ export declare namespace Knex {
     host?: string;
     connectionString?: string;
     keepAlive?: boolean;
-    stream?: stream.Duplex;
+    stream?: Duplex;
     statement_timeout?: false | number;
     parseInputDatesAsUTC?: boolean;
     ssl?: boolean | ConnectionOptions;
@@ -3210,7 +3208,7 @@ export declare namespace Knex {
     constraintName?: string;
   }
 
-  class Client extends events.EventEmitter {
+  class Client extends EventEmitter {
     constructor(config: Config);
     config: Config;
     dialect: string;
@@ -3260,7 +3258,7 @@ export declare namespace Knex {
     };
     getPoolSettings(poolConfig: any): any;
     initializePool(config?: {}): void;
-    pool: tarn.Pool<any> | undefined;
+    pool: Pool<any> | undefined;
     acquireConnection(): any;
     releaseConnection(connection: any): any;
     destroy(callback: any): any;
