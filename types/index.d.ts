@@ -3045,7 +3045,7 @@ export declare namespace Knex {
     host?: string;
     connectionString?: string;
     keepAlive?: boolean;
-    stream?: stream.Duplex;
+    stream?: () => stream.Duplex | stream.Duplex | undefined;
     statement_timeout?: false | number;
     parseInputDatesAsUTC?: boolean;
     ssl?: boolean | ConnectionOptions;
