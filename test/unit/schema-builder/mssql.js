@@ -703,6 +703,19 @@ describe('MSSQL SchemaBuilder', function () {
 
     tableSql = client
       .schemaBuilder()
+      .withSchema('schema1')
+      .table('users', function () {
+        this.foreign('foo_id').references('id').on('orders');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [schema1].[users] ADD CONSTRAINT [users_foo_id_foreign] FOREIGN KEY ([foo_id]) REFERENCES [schema1].[orders] ([id])'
+    );
+
+    tableSql = client
+      .schemaBuilder()
       .table('users', function () {
         this.integer('foo_id').references('id').on('orders');
       })

@@ -454,6 +454,17 @@ describe('Redshift SchemaBuilder', function () {
     expect(tableSql[1].sql).to.equal(
       'alter table "accounts" add constraint "accounts_account_id_foreign" foreign key ("account_id") references "users" ("id")'
     );
+
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('schema1')
+      .createTable('accounts', function (table) {
+        table.integer('account_id').references('users.id');
+      })
+      .toSQL();
+    expect(tableSql[1].sql).to.equal(
+      'alter table "schema1"."accounts" add constraint "accounts_account_id_foreign" foreign key ("account_id") references "schema1"."users" ("id")'
+    );
   });
 
   it('adds foreign key with onUpdate and onDelete', function () {
