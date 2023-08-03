@@ -381,6 +381,11 @@ describe('knex', () => {
         expect(trx.userParams).to.deep.equal({
           userParam: '451',
         });
+        await trx.transaction(async (trx2) => {
+          expect(trx2.userParams).to.deep.equal({
+            userParam: '451',
+          });
+        });
       });
 
       knex.destroy();
