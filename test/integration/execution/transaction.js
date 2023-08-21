@@ -395,6 +395,27 @@ module.exports = function (knex) {
         });
     });
 
+    it('should execute functions after transaction', function () {
+      let change1 = false;
+      let change2 = false;
+      return knex
+        .transaction(function (trx) {
+          trx.addFunctionOnAfterTransaction(async () => {
+            change1 = true;
+          });
+          trx.addFunctionOnAfterTransaction(async () => {
+            change2 = true;
+          });
+          trx.debugging = true;
+          return Promise.resolve(null);
+        })
+        .then(function (result) {
+          expect(result).to.equal(null);
+          expect(change1).to.be.true;
+          expect(change2).to.be.true;
+        });
+    });
+
     it('does not reject promise when rolling back a transaction', async () => {
       const trxProvider = knex.transactionProvider();
       const trx = await trxProvider();
