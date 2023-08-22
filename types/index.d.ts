@@ -2116,10 +2116,7 @@ export declare namespace Knex {
 
   interface RawBuilder<TRecord extends {} = any, TResult = any> {
     <TResult2 = TResult>(value: Value): Raw<TResult2>;
-    <TResult2 = TResult>(
-      sql: string,
-      binding: RawBinding
-    ): Raw<TResult2>;
+    <TResult2 = TResult>(sql: string, binding: RawBinding): Raw<TResult2>;
     <TResult2 = TResult>(
       sql: string,
       bindings: readonly RawBinding[] | ValueDict
@@ -2324,6 +2321,7 @@ export declare namespace Knex {
     extends Knex<TRecord, TResult> {
     executionPromise: Promise<TResult>;
     isCompleted: () => boolean;
+    addFunctionOnAfterTransaction: (cb: Promise<void>) => void;
 
     query<TRecord extends {} = any, TResult = void>(
       conn: any,
