@@ -1495,7 +1495,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Drop support for strong-oracle #2487
 - Timeout errors doesn't silently ignore the passed errors anymore #2626
 - Removed WebSQL dialect #2647
-- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instaed of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
+- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instead of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
 
 ### Bug fixes:
 
