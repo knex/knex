@@ -134,7 +134,7 @@
     "pg": "^8.8.0",
     "pg-query-stream": "^4.2.4",
     "prettier": "2.8.7",
-    "rimraf": "^3.0.2",
+    "rimraf": "^5.0.4",
     "sinon": "^15.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
