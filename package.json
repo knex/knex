@@ -17,7 +17,7 @@
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=lcov",
-    "lint": "eslint --cache '**/*.js'",
+    "lint": "eslint --cache **/*.js",
     "lint:fix": "eslint --cache --fix '**/*.js'",
     "lint:types": "tsd && dtslint types",
     "lint:everything": "npm run lint && npm run lint:types",
