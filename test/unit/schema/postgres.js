@@ -1318,16 +1318,15 @@ describe('PostgreSQL SchemaBuilder', function() {
   });
 
   it('should warn on disallowed method', function() {
-    tableSql = client
-      .schemaBuilder()
-      .createTable('users', function(t) {
-        t.string('username');
-        t.engine('myISAM');
-      })
-      .toSQL();
-    expect(tableSql[0].sql).to.equal(
-      'create table "users" ("username" varchar(255))'
-    );
+    expect(() => {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function(t) {
+          t.string('username');
+          t.engine('myISAM');
+        })
+        .toSQL();
+    }).to.throw('Knex only supports engine statement with mysql');
   });
 
   it('#1430 - .primary & .dropPrimary takes columns and constraintName', function() {

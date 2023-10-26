@@ -364,7 +364,7 @@ module.exports = function(knex) {
       it('accepts the table name, and a "container" function', function() {
         return knex.schema
           .createTable('test_table_one', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) table.engine('InnoDB');
             table.comment('A table comment.');
             table.bigIncrements('id');
             table.string('first_name').index();
@@ -438,7 +438,9 @@ module.exports = function(knex) {
       it('is possible to set the db engine with the table.engine', function() {
         return knex.schema
           .createTable('test_table_two', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.engine('InnoDB');
+            }
             table.increments();
             table.integer('account_id');
             if (knex.client.driverName === 'oracledb') {
@@ -454,9 +456,6 @@ module.exports = function(knex) {
             tester('mysql', [
               'create table `test_table_two` (`id` int unsigned not null auto_increment primary key, `account_id` int, `details` text, `status` tinyint) default character set utf8 engine = InnoDB',
             ]);
-            tester('mssql', [
-              'CREATE TABLE [test_table_two] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)',
-            ]);
           });
       });
 
@@ -465,7 +464,9 @@ module.exports = function(knex) {
         const defaultDetails = { b: { d: 20 } };
         return knex.schema
           .createTable('test_table_three', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.engine('InnoDB');
+            }
             table
               .integer('main')
               .notNullable()
@@ -533,7 +534,9 @@ module.exports = function(knex) {
       it('handles numeric length correctly', function() {
         return knex.schema
           .createTable('test_table_numerics', function(table) {
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.engine('InnoDB');
+            }
             table.integer('integer_column', 5);
             table.tinyint('tinyint_column', 5);
             table.smallint('smallint_column', 5);
@@ -737,9 +740,11 @@ module.exports = function(knex) {
       it('is possible to set the table collation with table.charset and table.collate', function() {
         return knex.schema
           .createTable('charset_collate_test', function(table) {
-            table.charset('latin1');
-            table.collate('latin1_general_ci');
-            table.engine('InnoDB');
+            if (/mysql/i.test(knex.client.driverName)) {
+              table.charset('latin1');
+              table.collate('latin1_general_ci');
+              table.engine('InnoDB');
+            }
             table.increments();
             table.integer('account_id');
             table.text('details');
@@ -1047,6 +1052,25 @@ module.exports = function(knex) {
             .then(function(exists) {
               expect(exists).to.equal(true);
             });
+        });
+
+        describe('sqlite only', function() {
+          if (
+            !knex ||
+            !knex.client ||
+            !/sqlite3/i.test(knex.client.driverName)
+          ) {
+            return Promise.resolve();
+          }
+
+          it('checks whether a column exists without being case sensitive, resolving with a boolean', async () => {
+            const exists = await knex.schema.hasColumn(
+              'accounts',
+              'FIRST_NAME'
+            );
+
+            expect(exists).to.equal(true);
+          });
         });
       });
 
@@ -1381,6 +1405,85 @@ module.exports = function(knex) {
                 });
             });
           }
+        });
+
+        context('when table is created using raw create table', function() {
+          beforeEach(async function() {
+            await knex.schema.raw(`create table TEST(
+              "i0" integer,
+              'i1' integer,
+              [i2] integer,
+              \`i3\` integer,
+              i4 integer,
+              I5 integer,
+              unique(i4, i5),
+              constraint i0 primary key([i3], "i4"),
+              unique([i2]),
+              foreign key (i1) references bar ("i3")
+            )`);
+          });
+
+          afterEach(function() {
+            return knex.schema.dropTable('TEST');
+          });
+
+          const getCreateTableExpr = async () =>
+            (await knex.schema.raw(
+              'select name, sql from sqlite_master where type = "table" and name = "TEST"'
+            ))[0].sql;
+
+          const dropCol = (colName) =>
+            knex.schema.alterTable('TEST', function(tbl) {
+              return tbl.dropColumn(colName);
+            });
+
+          const hasCol = (colName) => knex.schema.hasColumn('TEST', colName);
+
+          it('drops the column', async function() {
+            await dropCol('i0');
+            expect(await hasCol('i0')).to.equal(false);
+            // Constraint i0 should be unaffected:
+            expect(await getCreateTableExpr()).to.equal(
+              "CREATE TABLE TEST('i1' integer, [i2] integer, `i3` integer, i4 " +
+                'integer, I5 integer, unique(i4, i5), constraint i0 primary ' +
+                'key([i3], "i4"), unique([i2]), foreign key (i1) references bar ' +
+                '("i3") )'
+            );
+            await dropCol('i1');
+            expect(await hasCol('i1')).to.equal(false);
+            // Foreign key on i1 should also be dropped:
+            expect(await getCreateTableExpr()).to.equal(
+              'CREATE TABLE TEST([i2] integer, `i3` integer, i4 integer, I5 integer, ' +
+                'unique(i4, i5), constraint i0 primary key([i3], "i4"), unique([i2]))'
+            );
+            await dropCol('i2');
+            expect(await hasCol('i2')).to.equal(false);
+            expect(await getCreateTableExpr()).to.equal(
+              'CREATE TABLE TEST(`i3` integer, i4 integer, I5 integer, ' +
+                'unique(i4, i5), constraint i0 primary key([i3], "i4"))'
+            );
+            await dropCol('i3');
+            expect(await hasCol('i3')).to.equal(false);
+            expect(await getCreateTableExpr()).to.equal(
+              'CREATE TABLE TEST(i4 integer, I5 integer, unique(i4, i5))'
+            );
+            await dropCol('i4');
+            expect(await hasCol('i4')).to.equal(false);
+            expect(await getCreateTableExpr()).to.equal(
+              'CREATE TABLE TEST(I5 integer)'
+            );
+            let lastColDeletionError;
+            await knex.schema
+              .alterTable('TEST', function(tbl) {
+                return tbl.dropColumn('i5');
+              })
+              .catch((e) => {
+                lastColDeletionError = e;
+              });
+            expect(lastColDeletionError.message).to.eql(
+              'Unable to drop last column from table'
+            );
+          });
         });
       }
     });

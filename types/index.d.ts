@@ -8,6 +8,7 @@
 
 /// <reference types="node" />
 
+import tarn = require('tarn');
 import events = require('events');
 import stream = require('stream');
 import ResultTypes = require('./result');
@@ -48,7 +49,7 @@ type UnionToIntersection<U> = (U extends any
   ? I
   : never;
 
-type ComparisionOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
+type ComparisonOperator = '=' | '>' | '>=' | '<' | '<=' | '<>';
 
 // If T is an array, get the type of member, else fall back to never
 type ArrayMember<T> = T extends (infer M)[] ? M : never;
@@ -96,7 +97,7 @@ type DeferredKeySelection<
   TKeys extends string,
   // Changes how the resolution should behave if TKeys is never.
   // If true, then we assume that some keys were selected, and if TKeys is never, we will fall back to any.
-  // If false, and TKeys is never, then we select TBase in its entirity
+  // If false, and TKeys is never, then we select TBase in its entirety
   THasSelect extends true | false = false,
   // Mapping of aliases <key in result> -> <key in TBase>
   TAliasMapping extends {} = {},
@@ -313,10 +314,17 @@ type Dict<T = any> = { [k: string]: T; };
 
 type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
+type TableOptions = PgTableOptions;
+
+interface PgTableOptions {
+  only?: boolean;
+}
+
 interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>, events.EventEmitter {
   <TRecord2 = TRecord, TResult2 = DeferredKeySelection<TRecord2, never>[]>(
-    tableName?: Knex.TableDescriptor | Knex.AliasDict
+    tableName?: Knex.TableDescriptor | Knex.AliasDict,
+    options?: TableOptions
   ): Knex.QueryBuilder<TRecord2, TResult2>;
   VERSION: string;
   __knex__: string;
@@ -401,7 +409,7 @@ declare namespace Knex {
   // QueryInterface
   //
 
-  interface QueryInterface<TRecord extends {} = any, TResult = any[]> {
+  interface QueryInterface<TRecord extends {} = any, TResult = any> {
     select: Select<TRecord, TResult>;
     as: As<TRecord, TResult>;
     columns: Select<TRecord, TResult>;
@@ -513,8 +521,8 @@ declare namespace Knex {
     limit(limit: number): QueryBuilder<TRecord, TResult>;
 
     // Aggregation
-    count: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
-    countDistinct: AssymetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    count: AsymmetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
+    countDistinct: AsymmetricAggregation<TRecord, TResult, Lookup<ResultTypes.Registry, "Count", number | string>>;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
     sum: TypePreservingAggregation<TRecord, TResult>;
@@ -863,19 +871,22 @@ declare namespace Knex {
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      tableName: TableDescriptor | AliasDict
+      tableName: TableDescriptor | AliasDict,
+      options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      callback: Function
+      callback: Function,
+      options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
       TRecord2 = unknown,
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      raw: Raw
+      raw: Raw,
+      options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
   }
 
@@ -1046,7 +1057,7 @@ declare namespace Knex {
 
     <T extends keyof TRecord>(
       columnName: T,
-      operator: ComparisionOperator,
+      operator: ComparisonOperator,
       value: TRecord[T] | null
     ): QueryBuilder<TRecord, TResult>;
     (columnName: string, operator: string, value: Value | null): QueryBuilder<
@@ -1056,7 +1067,7 @@ declare namespace Knex {
 
     <T extends keyof TRecord, TRecordInner, TResultInner>(
       columnName: T,
-      operator: ComparisionOperator,
+      operator: ComparisonOperator,
       value: QueryBuilder<TRecordInner, TResultInner>
     ): QueryBuilder<TRecord, TResult>;
     <TRecordInner, TResultInner>(
@@ -1140,11 +1151,11 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
   }
 
-  // Note: Attempting to unify AssymetricAggregation & TypePreservingAggregation
+  // Note: Attempting to unify AsymmetricAggregation & TypePreservingAggregation
   // by extracting out a common base interface will not work because order of overloads
   // is significant.
 
-  interface AssymetricAggregation<TRecord = any, TResult = unknown[], TValue = any> {
+  interface AsymmetricAggregation<TRecord = any, TResult = unknown[], TValue = any> {
     <TResult2 = AggregationQueryResult<TResult, Dict<TValue>>>(
       ...columnNames: (keyof TRecord)[]
     ): QueryBuilder<TRecord, TResult2>;
@@ -1197,15 +1208,18 @@ declare namespace Knex {
     (
       columnDefs: Array<string | { column: string; order?: string }>
     ): QueryBuilder<TRecord, TResult>;
+    <TRecordInner, TResultInner>(
+      subQueryBuilder: QueryBuilder<TRecordInner, TResultInner>
+    ): QueryBuilder<TRecord, TResult>;
   }
 
   interface Intersect<TRecord = any, TResult = unknown[]> {
     (
-      callback: MaybeArray<QueryCallback | QueryBuilder<TRecord, any> | Raw>,
+      callback: MaybeArray<QueryCallback | QueryBuilder<TRecord> | Raw>,
       wrap?: boolean
     ): QueryBuilder<TRecord, TResult>;
     (
-      ...callbacks: (QueryCallback | Raw | QueryBuilder<TRecord, any>)[]
+      ...callbacks: (QueryCallback | Raw | QueryBuilder<TRecord>)[]
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -1218,7 +1232,7 @@ declare namespace Knex {
     <K1 extends keyof TRecord, K2 extends keyof TRecord>(
       tableName: string,
       column1: K1,
-      operator: ComparisionOperator,
+      operator: ComparisonOperator,
       column2: K2
     ): QueryBuilder<TRecord, TResult>;
     (
@@ -1292,7 +1306,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult2>;
   }
 
-  type RawBinding = Value | QueryBuilder<any, any>;
+  type RawBinding = Value | QueryBuilder;
 
   interface RawQueryBuilder<TRecord = any, TResult = unknown[]> {
     <TResult2 = TResult>(
@@ -1317,6 +1331,7 @@ declare namespace Knex {
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
+    queryContext(): any;
   }
 
   interface RawBuilder<TRecord extends {} = any, TResult = any> {
@@ -1351,10 +1366,11 @@ declare namespace Knex {
 
   interface QueryBuilder<
     TRecord extends {} = any,
-    TResult = SafePartial<TRecord>[]
+    TResult = any
   >
     extends QueryInterface<TRecord, TResult>,
       ChainableInterface<ResolveResult<TResult>> {
+    client: Client;
     or: QueryBuilder<TRecord, TResult>;
     not: QueryBuilder<TRecord, TResult>;
     and: QueryBuilder<TRecord, TResult>;
@@ -1376,6 +1392,7 @@ declare namespace Knex {
     on(event: string, callback: Function): QueryBuilder<TRecord, TResult>;
 
     queryContext(context: any): QueryBuilder<TRecord, TResult>;
+    queryContext(): any;
 
     clone(): QueryBuilder<TRecord, TResult>;
     timeout(ms: number, options?: {cancel?: boolean}): QueryBuilder<TRecord, TResult>;
@@ -1398,7 +1415,25 @@ declare namespace Knex {
   // Chainable interface
   //
 
-  interface ChainableInterface<T = any> extends Promise<T> {
+  type ExposedPromiseKeys =
+    | "then"
+    | "bind"
+    | "catch"
+    | "finally"
+    | "asCallback"
+    | "spread"
+    | "map"
+    | "reduce"
+    | "thenReturn"
+    | "return"
+    | "yield"
+    | "ensure"
+    | "reflect"
+    | "get"
+    | "mapSeries"
+    | "delay";
+
+  interface ChainableInterface<T = any> extends Pick<Promise<T>, keyof Promise<T> & ExposedPromiseKeys> {
     toQuery(): string;
     options(options: { [key: string]: any }): this;
     connection(connection: any): this;
@@ -1515,7 +1550,7 @@ declare namespace Knex {
     specificType(columnName: string, type: string): ColumnBuilder;
     primary(columnNames: string[], constraintName?: string): TableBuilder;
     index(
-      columnNames: (string | Raw)[],
+      columnNames: string | (string | Raw)[],
       indexName?: string,
       indexType?: string
     ): TableBuilder;
@@ -1528,28 +1563,19 @@ declare namespace Knex {
     dropForeign(columnNames: string[], foreignKeyName?: string): TableBuilder;
     dropUnique(columnNames: (string | Raw)[], indexName?: string): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
-    dropIndex(columnNames: (string | Raw)[], indexName?: string): TableBuilder;
+    dropIndex(columnNames: string | (string | Raw)[], indexName?: string): TableBuilder;
     dropTimestamps(): ColumnBuilder;
     queryContext(context: any): TableBuilder;
   }
 
-  interface CreateTableBuilder extends TableBuilder {}
-
-  interface MySqlTableBuilder extends CreateTableBuilder {
+  interface CreateTableBuilder extends TableBuilder {
     engine(val: string): CreateTableBuilder;
     charset(val: string): CreateTableBuilder;
     collate(val: string): CreateTableBuilder;
-  }
-
-  interface PostgreSqlTableBuilder extends CreateTableBuilder {
     inherits(val: string): CreateTableBuilder;
   }
 
   interface AlterTableBuilder extends TableBuilder {}
-
-  interface MySqlAlterTableBuilder extends AlterTableBuilder {}
-
-  interface PostgreSqlAlterTableBuilder extends AlterTableBuilder {}
 
   interface ColumnBuilder {
     index(indexName?: string): ColumnBuilder;
@@ -1601,20 +1627,12 @@ declare namespace Knex {
     nullable: boolean;
   }
 
-  interface Config {
+  interface Config<SV extends {} = any> {
     debug?: boolean;
     client?: string | typeof Client;
     dialect?: string;
     version?: string;
-    connection?:
-      | string
-      | ConnectionConfig
-      | MariaSqlConnectionConfig
-      | MySqlConnectionConfig
-      | MsSqlConnectionConfig
-      | OracleDbConnectionConfig
-      | Sqlite3ConnectionConfig
-      | SocketConnectionConfig;
+    connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
@@ -1623,13 +1641,28 @@ declare namespace Knex {
       origImpl: (value: string) => string,
       queryContext: any
     ) => string;
-    seeds?: SeedsConfig;
+    seeds?: SeedsConfig<SV>;
     acquireConnectionTimeout?: number;
     useNullAsDefault?: boolean;
     searchPath?: string | string[];
     asyncStackTraces?: boolean;
     log?: Logger;
   }
+
+  type StaticConnectionConfig =
+    | ConnectionConfig
+    | MariaSqlConnectionConfig
+    | MySqlConnectionConfig
+    | MsSqlConnectionConfig
+    | OracleDbConnectionConfig
+    | PgConnectionConfig
+    | RedshiftConnectionConfig
+    | Sqlite3ConnectionConfig
+    | SocketConnectionConfig;
+
+  type ConnectionConfigProvider  = SyncConnectionConfigProvider | AsyncConnectionConfigProvider;
+  type SyncConnectionConfigProvider  = () => StaticConnectionConfig;
+  type AsyncConnectionConfigProvider  = () => Promise<StaticConnectionConfig>;
 
   interface ConnectionConfig {
     host: string;
@@ -1655,6 +1688,7 @@ declare namespace Knex {
     requestTimeout?: number;
     stream?: boolean;
     parseJSON?: boolean;
+    expirationChecker?(): boolean;
     options?: {
       encrypt?: boolean;
       instanceName?: string;
@@ -1702,6 +1736,7 @@ declare namespace Knex {
     read_default_group?: string;
     charset?: string;
     streamHWM?: number;
+    expirationChecker?(): boolean;
   }
 
   interface MariaSslConfiguration {
@@ -1711,6 +1746,7 @@ declare namespace Knex {
     capath?: string;
     cipher?: string;
     rejectUnauthorized?: boolean;
+    expirationChecker?(): boolean;
   }
 
   // Config object for mysql: https://github.com/mysqljs/mysql#connection-options
@@ -1738,6 +1774,7 @@ declare namespace Knex {
     flags?: string;
     ssl?: string | MariaSslConfiguration;
     decimalNumbers?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface OracleDbConnectionConfig {
@@ -1750,12 +1787,31 @@ declare namespace Knex {
     debug?: boolean;
     requestTimeout?: number;
     connectString?: string;
+    expirationChecker?(): boolean;
   }
+
+  // Config object for pg: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pg/index.d.ts
+  interface PgConnectionConfig {
+    user?: string;
+    database?: string;
+    password?: string;
+    port?: number;
+    host?: string;
+    connectionString?: string;
+    keepAlive?: boolean;
+    stream?: stream.Duplex;
+    statement_timeout?: false | number;
+    connectionTimeoutMillis?: number;
+    keepAliveInitialDelayMillis?: number;
+  }
+
+  type RedshiftConnectionConfig = PgConnectionConfig;
 
   /** Used with SQLite3 adapter */
   interface Sqlite3ConnectionConfig {
     filename: string;
     debug?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface SocketConnectionConfig {
@@ -1764,13 +1820,12 @@ declare namespace Knex {
     password: string;
     database: string;
     debug?: boolean;
+    expirationChecker?(): boolean;
   }
 
   interface PoolConfig {
     name?: string;
-    create?: Function;
     afterCreate?: Function;
-    destroy?: Function;
     min?: number;
     max?: number;
     refreshIdle?: boolean;
@@ -1778,8 +1833,7 @@ declare namespace Knex {
     reapIntervalMillis?: number;
     returnToHead?: boolean;
     priorityRange?: number;
-    validate?: Function;
-    log?: boolean;
+    log?: (message: string, logLevel: string) => void;
 
     // generic-pool v3 configs
     maxWaitingClients?: number;
@@ -1793,12 +1847,13 @@ declare namespace Knex {
     Promise?: any;
   }
 
-  type LogFn = (message: string) => void;
+  type LogFn = (message: any) => void;
 
   interface Logger {
     warn?: LogFn;
     error?: LogFn;
     debug?: LogFn;
+    inspectionDepth?: number;
     deprecate?: (method: string, alternative: string) => void;
   }
 
@@ -1810,14 +1865,18 @@ declare namespace Knex {
     tableName?: string;
     schemaName?: string;
     disableTransactions?: boolean;
+    disableMigrationsListValidation?: boolean;
     sortDirsSeparately?: boolean;
     loadExtensions?: string[];
     migrationSource?: any;
   }
 
-  interface SeedsConfig {
+  interface SeedsConfig<V extends {} = any> {
     directory?: string;
+    extension?: string;
+    loadExtensions?: string[];
     stub?: string;
+    variables?: V;
   }
 
   interface Migrator {
@@ -1829,6 +1888,7 @@ declare namespace Knex {
     list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfig): Promise<any>;
     down(config?: MigratorConfig): Promise<any>;
+    forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
   interface SeederConfig {
@@ -1841,7 +1901,7 @@ declare namespace Knex {
   class Seeder {
     constructor(knex: Knex);
     setConfig(config: SeederConfig): SeederConfig;
-    run(config?: SeederConfig): Promise<string[]>;
+    run(config?: SeederConfig): Promise<[string[]]>;
     make(name: string, config?: SeederConfig): Promise<string>;
   }
 
@@ -1870,13 +1930,56 @@ declare namespace Knex {
     acquireRawConnection(): Promise<any>;
     destroyRawConnection(connection: any): Promise<void>;
     validateConnection(connection: any): Promise<boolean>;
+    logger: Logger;
+    version?: string;
+    connectionConfigProvider: any;
+    connectionConfigExpirationChecker: null | (() => boolean);
+    valueForUndefined: any;
+    formatter(builder: any): any;
+    queryBuilder(): QueryBuilder;
+    queryCompiler(builder: any): any;
+    schemaBuilder(): SchemaBuilder;
+    schemaCompiler(builder: SchemaBuilder): any;
+    tableBuilder(type: any, tableName: any, fn: any): TableBuilder;
+    tableCompiler(tableBuilder: any): any;
+    columnBuilder(tableBuilder: any, type: any, args: any): ColumnBuilder;
+    columnCompiler(tableBuilder: any, columnBuilder: any): any;
+    runner(builder: any): any;
+    transaction(container: any, config: any, outerTx: any): Transaction;
+    raw(...args: any[]): any;
+    ref(...args: any[]): Ref<any, any>;
+    query(connection: any, obj: any): any;
+    stream(connection: any, obj: any, stream: any, options: any): any;
+    prepBindings(bindings: any): any;
+    positionBindings(sql: any): any;
+    postProcessResponse(resp: any, queryContext: any): any;
+    wrapIdentifier(value: any, queryContext: any): any;
+    customWrapIdentifier(value: any, origImpl: any, queryContext: any): any;
+    wrapIdentifierImpl(value: any): string;
+    initializeDriver(): void;
+    driver: any;
+    poolDefaults(): {
+        min: number;
+        max: number;
+        propagateCreateError: boolean;
+    };
+    getPoolSettings(poolConfig: any): any;
+    initializePool(config?: {}): void;
+    pool: tarn.Pool<any> | undefined;
+    acquireConnection(): any;
+    releaseConnection(connection: any): any;
+    destroy(callback: any): any;
+    database(): any;
+    canCancelQuery: boolean;
+    assertCanCancelQuery(): void;
+    cancelQuery(): void;
   }
 
   class QueryBuilder {
     static extend(
       methodName: string,
       fn: <TRecord extends {} = any, TResult = unknown[]>(
-        this: Knex<TRecord, TResult>,
+        this: QueryBuilder<TRecord, TResult>,
         ...args: any[]
       ) => QueryBuilder<TRecord, TResult>
     ): void;

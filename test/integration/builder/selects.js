@@ -782,6 +782,57 @@ module.exports = function(knex) {
       ]);
     });
 
+    it('supports "distinct on"', async function() {
+      const builder = knex('accounts')
+        .select('email', 'logins')
+        .distinctOn('id')
+        .orderBy('id');
+      if (knex.client.driverName !== 'pg') {
+        let error;
+        try {
+          await builder;
+        } catch (e) {
+          error = e;
+        }
+        expect(error.message).to.eql('.distinctOn() is currently only supported on PostgreSQL');
+        return;
+      } 
+      return builder
+        .testSql(function(tester) {
+          tester(
+            'pg',
+            'select distinct on ("id") "email", "logins" from "accounts" order by "id" asc',
+            [],
+            [
+              {
+                email: 'test@example.com',
+                logins: 1,
+              },
+              {
+                email: 'test2@example.com',
+                logins: 1,
+              },
+              {
+                email: 'test3@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test4@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test5@example.com',
+                logins: 2,
+              },
+              {
+                email: 'test6@example.com',
+                logins: 2,
+              },
+            ]
+          );
+        });
+    });
+
     it('does "orWhere" cases', function() {
       return knex('accounts')
         .where('id', 1)
@@ -1379,6 +1430,39 @@ module.exports = function(knex) {
             throw err;
         }
       }
+    });
+
+    it('select from subquery', async function() {
+      const subquery = knex.from('accounts').whereBetween('id', [3, 5]);
+      return knex
+        .pluck('id')
+        .orderBy('id')
+        .from(subquery)
+        .then(
+          (rows) => {
+            expect(rows).to.deep.equal([3, 4, 5]);
+            expect(knex.client.driverName).to.oneOf(['sqlite3', 'oracledb']);
+          },
+          (e) => {
+            switch (knex.client.driverName) {
+              case 'mysql':
+              case 'mysql2':
+                expect(e.errno).to.equal(1248);
+                break;
+              case 'pg':
+                expect(e.message).to.contain('must have an alias');
+                break;
+
+              case 'mssql':
+                expect(e.message).to.contain(
+                  "Incorrect syntax near the keyword 'order'"
+                );
+                break;
+              default:
+                throw e;
+            }
+          }
+        );
     });
   });
 };

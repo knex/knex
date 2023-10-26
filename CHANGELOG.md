@@ -1,5 +1,105 @@
 # Master (Unreleased)
 
+# 0.20.4 - 08 December, 2019
+
+### Bug fixes:
+
+- Fix debug logger messing up queries with % #3566
+- Make logger methods mutually consistent #3567
+
+### Typings:
+
+- Add missing methods to client type #3565
+- Fix queryContext function defintion #3562
+- Fix QueryBuilder.extend this type #3526 #3528
+
+### Test / internal changes:
+
+- Remove bluebird.using #3552
+
+# 0.20.3 - 27 November, 2019
+
+### New features:
+
+- MSSQL, MySQL: Add connection string qs to connection params #3547
+
+### Bug fixes:
+
+- Oracle: Fix issue retrieving BLOB from database #3545
+- PostgreSQL: Timeout for postgresql use cancel instead of terminate #3518
+- Make sure CLI works for namespaced knex packages #2539
+
+### Typings:
+
+- Lift up dialect specific methods in the CreateTableBuilder #3532
+- Add client property to QueryBuilder type #3541
+- Support 'only' option #3551
+
+# 0.20.2 - 14 November, 2019
+
+### New features:
+
+- Add support for distinct on for postgres #3513
+
+### Bug fixes:
+
+- Make sqlite3 hasColumn case insensitive #3435
+
+### Typings:
+
+- Fix PoolConfig typing #3505
+- Expand SeedsConfig types #3531
+- Make the default type parameters of QueryBuilder less strict #3520
+- Fix regression in older version of node when Promise#finally was not available #3507
+
+# 0.20.1 - 29 October, 2019
+
+### New features:
+
+- Declare drivers as optional peerDependencies #3081
+- Dynamic connection configuration resolution #3497
+
+### Bug fixes:
+
+- Wrap subQuery with parenthesis when it appears as table name #3496
+- Fix Oracle error codes #3498
+
+### Typings:
+
+- Add interface for PG Connection object #3372
+- Gracefully handle global promise pollution #3502
+
+# 0.20.0 - 25 October, 2019
+
+### New features:
+
+- orderBy accepts QueryBuilder #3491
+- Add validation in `.offset()` #2908
+- disable_migrations_list_validation feature #3448
+
+### Bug fixes:
+
+- Fix oracledb driver v4 support #3480
+- Fix some issues around seed and migration generation #3479
+- Fix bugs in replacement logic used when dropping columns in SQLite #3476
+
+### Typings:
+
+- Add types to the Migrator interface #3459
+- Fix typings of index and dropIndex TableBuilder methods #3486
+- Fixes types for Seeder#run #3438
+
+### Test / internal changes:
+
+- Execute CI on Node.js 13
+- Bluebird: remove usage of `return`, `reflect`, `fromCallback` methods #3483
+- Bluebird: remove Bluebird.bind #3477
+- Bluebird: use util.promisify instead of Bluebird.promisify #3470
+- Bluebird: remove Bluebird.each #3471
+- Bluebird: remove Bluebird.map and Bluebird.mapSeries #3474
+- Bluebird: replace Bluebird.map with Promise.all #3469
+- Update badges #3482
+
 # 0.19.5 - 06 October, 2019
 
 ### New features:

@@ -27,6 +27,9 @@ const knex2 = Knex({
     ...clientConfig,
     log: {
         debug(msg: string) {}
+    },
+    pool: {
+      log: (msg: string, level: string) => {}
     }
 });
 
@@ -77,6 +80,7 @@ type _T7 = ExtendsWitness<
 >;
 type _T8 = ExtendsWitness<Knex.QueryBuilder<User, number[]>, Knex.QueryBuilder>;
 type _T9 = ExtendsWitness<Knex.QueryBuilder<any, any[]>, Knex.QueryBuilder>;
+type _T10 = ExtendsWitness<Knex.QueryBuilder<User, number>, Knex.QueryBuilder>;
 
 const main = async () => {
   // # Select:
@@ -85,7 +89,7 @@ const main = async () => {
   await knex('users');
 
   // $ExpectType number[]
-  const x = await knex('users').customSelect<any, number[]>(42);
+  await knex('users').customSelect<any, number[]>(42);
 
   // This test (others similar to it) may seem useless but they are needed
   // to test for left-to-right inference issues eg: #3260
@@ -491,6 +495,16 @@ const main = async () => {
     .groupByRaw('count')
     .orderBy('name', 'desc')
     .havingRaw('age > ?', [10]);
+
+  // $ExpectType User[]
+  await knex<User>('users')
+    .select()
+    .orderBy(
+      knex<User>('users')
+        .select('u.id')
+        .from('users as u')
+        .where('users.id', 'u.id')
+    );
 
   // $ExpectType Dict<string | number>[]
   await knex<User>('users').count();
@@ -1303,12 +1317,23 @@ const main = async () => {
       directory: 'lib/seeds'
   });
 
-  // $ExpectType string[]
+  // $ExpectType [string[]]
   await knex.seed.run();
 
-  // $ExpectType string[]
+  // $ExpectType [string[]]
   await knex.seed.run({
       extension: 'ts',
       directory: 'lib/seeds'
   });
+
+  // $ExpectType any[]
+  await knex('users', { only: true });
+
+  // $ExpectType any[]
+  await knex
+    .select('*')
+    .from('users', { only: true });
+
+  // $ExpectType any
+  knex.queryBuilder().queryContext();
 };

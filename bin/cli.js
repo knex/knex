@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /* eslint no-console:0, no-var:0 */
 const Liftoff = require('liftoff');
-const Bluebird = require('bluebird');
 const interpret = require('interpret');
 const path = require('path');
 const tildify = require('tildify');
 const commander = require('commander');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
-const fs = Bluebird.promisifyAll(require('fs'));
+const fs = require('fs');
+const { promisify } = require('util');
 const cliPkg = require('../package');
 const {
   mkConfigObj,
@@ -18,10 +18,16 @@ const {
   success,
   checkLocalModule,
   getMigrationExtension,
+  getSeedExtension,
   getStubPath,
 } = require('./utils/cli-config-utils');
-const { DEFAULT_EXT } = require('./utils/constants');
+
 const { listMigrations } = require('./utils/migrationsLister');
+
+const fsPromised = {
+  readFile: promisify(fs.readFile),
+  writeFile: promisify(fs.writeFile),
+};
 
 function initKnex(env, opts) {
   checkLocalModule(env);
@@ -123,15 +129,15 @@ function invoke(env) {
       }
       checkLocalModule(env);
       const stubPath = `./knexfile.${type}`;
-      pending = fs
-        .readFileAsync(
+      pending = fsPromised
+        .readFile(
           path.dirname(env.modulePath) +
             '/lib/migrate/stub/knexfile-' +
             type +
             '.stub'
         )
         .then((code) => {
-          return fs.writeFileAsync(stubPath, code);
+          return fsPromised.writeFile(stubPath, code);
         })
         .then(() => {
           success(color.green(`Created ${stubPath}`));
@@ -157,7 +163,7 @@ function invoke(env) {
       const ext = getMigrationExtension(env, opts);
       const configOverrides = { extension: ext };
 
-      const stub = getStubPath(env, opts);
+      const stub = getStubPath('migrations', env, opts);
       if (stub) {
         configOverrides.stub = stub;
       }
@@ -292,17 +298,23 @@ function invoke(env) {
       `-x [${filetypes.join('|')}]`,
       'Specify the stub extension (default js)'
     )
+    .option(
+      `--stub [<relative/path/from/knexfile>|<name>]`,
+      'Specify the seed stub to use. If using <name> the file must be located in config.seeds.directory'
+    )
     .action((name) => {
       const opts = commander.opts();
       opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
       const instance = initKnex(env, opts);
-      const ext = (
-        argv.x ||
-        env.configuration.ext ||
-        DEFAULT_EXT
-      ).toLowerCase();
+      const ext = getSeedExtension(env, opts);
+      const configOverrides = { extension: ext };
+      const stub = getStubPath('seeds', env, opts);
+      if (stub) {
+        configOverrides.stub = stub;
+      }
+
       pending = instance.seed
-        .make(name, { extension: ext })
+        .make(name, configOverrides)
         .then((name) => {
           success(color.green(`Created seed file: ${name}`));
         })
@@ -331,7 +343,7 @@ function invoke(env) {
 
   commander.parse(process.argv);
 
-  Bluebird.resolve(pending).then(() => {
+  Promise.resolve(pending).then(() => {
     commander.outputHelp();
     exit('Unknown command-line options, exiting');
   });
@@ -341,6 +353,7 @@ const cli = new Liftoff({
   name: 'knex',
   extensions: interpret.jsVariants,
   v8flags: require('v8flags'),
+  moduleName: require('../package.json').name,
 });
 
 cli.on('require', function(name) {

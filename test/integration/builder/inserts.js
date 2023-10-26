@@ -5,6 +5,7 @@
 const uuid = require('uuid');
 const _ = require('lodash');
 const bluebird = require('bluebird');
+const sinon = require('sinon');
 
 module.exports = function(knex) {
   describe('Inserts', function() {
@@ -762,7 +763,7 @@ module.exports = function(knex) {
         })
         .then(
           function() {
-            // No errors happen in sqlite3 or mysql, which dont have native support
+            // No errors happen in sqlite3 or mysql, which don't have native support
             // for the uuid type.
             if (
               knex.client.driverName === 'pg' ||
@@ -1147,11 +1148,13 @@ module.exports = function(knex) {
           });
       });
 
-      it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', function() {
+      it('#1880 - Duplicate keys in batchInsert should not throw unhandled exception', async function() {
         if (/redshift/i.test(knex.client.driverName)) {
           return;
         }
-        return new bluebird(function(resolve, reject) {
+        const fn = sinon.stub();
+        process.on('unhandledRejection', fn);
+        await new bluebird(function(resolve, reject) {
           return knex.schema
             .dropTableIfExists('batchInsertDuplicateKey')
             .then(function() {
@@ -1182,6 +1185,8 @@ module.exports = function(knex) {
               resolve(error);
             });
         }).timeout(10000);
+        expect(fn).have.not.been.called;
+        process.removeListener('unhandledRejection', fn);
       });
 
       it('knex.batchInsert with specified transaction', function() {
