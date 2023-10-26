@@ -1,8 +1,8 @@
 /* eslint-disable no-undef */
-/* eslint-disable no-console */
 
 const os = require('os');
 const fs = require('fs');
+const child_process = require('child_process');
 const rimrafSync = require('rimraf').sync;
 
 function assertExec(cmd, desc) {
@@ -10,15 +10,11 @@ function assertExec(cmd, desc) {
   return new Promise((resolve, reject) => {
     let stderr = '';
     let stdout = '';
-    // console.log(`Executing: ${cmd}`);
-    const bin = jake.createExec([cmd]);
-    bin.addListener('error', (msg, code) =>
-      reject(Error(desc + ' FAIL. ' + stderr))
-    );
-    bin.addListener('cmdEnd', (cmd) => resolve({ cmd, stdout, stderr }));
-    bin.addListener('stdout', (data) => (stdout += data.toString()));
-    bin.addListener('stderr', (data) => (stderr += data.toString()));
-    bin.run();
+    const bin = child_process.exec(cmd);
+    bin.on('error', (msg, code) => reject(Error(desc + ' FAIL. ' + stderr)));
+    bin.on('cmdEnd', (cmd) => resolve({ cmd, stdout, stderr }));
+    bin.on('stdout', (data) => (stdout += data.toString()));
+    bin.on('stderr', (data) => (stderr += data.toString()));
   });
 }
 
@@ -26,16 +22,14 @@ function assertExecError(cmd, desc) {
   desc = desc || 'Run ' + cmd;
   return new Promise((resolve, reject) => {
     let stderr = '';
-    // console.log(`Executing: ${cmd}`);
-    const bin = jake.createExec([cmd]);
-    bin.addListener('error', (msg, code) => {
+    const bin = child_process.exec(cmd);
+    bin.on('error', (msg, code) => {
       resolve(stderr);
     });
-    bin.addListener('cmdEnd', () => {
+    bin.on('cmdEnd', () => {
       throw new Error('Error was expected, but none thrown');
     });
-    bin.addListener('stderr', (data) => (stderr += data.toString()));
-    bin.run();
+    bin.on('stderr', (data) => (stderr += data.toString()));
   });
 }
 

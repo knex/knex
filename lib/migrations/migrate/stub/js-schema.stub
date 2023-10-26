@@ -1,0 +1,22 @@
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.up = function({schema}) {
+  <% if (d.tableName) { %>
+  return schema.createTable("<%= d.tableName %>", function(t) {
+    t.increments();
+    t.timestamp();
+  });
+  <% } %>
+};
+
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function({schema}) {
+  <% if (d.tableName) { %>
+  return schema.dropTable("<%= d.tableName %>");
+  <% } %>
+};

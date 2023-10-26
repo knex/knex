@@ -1,0 +1,23 @@
+
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+export const up = async (knex) => {
+  <% if (d.tableName) { %>
+  await knex.schema.createTable("<%= d.tableName %>", function(t) {
+    t.increments();
+    t.timestamp();
+  });
+  <% } %>
+};
+
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+export const down = async (knex) => {
+  <% if (d.tableName) { %>
+  await knex.schema.dropTable("<%= d.tableName %>");
+  <% } %>
+};

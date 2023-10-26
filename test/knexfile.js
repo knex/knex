@@ -9,11 +9,14 @@ const _ = require('lodash');
 
 // excluding redshift, oracle, and mssql dialects from default integrations test
 const testIntegrationDialects = (
-  process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
-).match(/\w+/g);
+  process.env.DB ||
+  'sqlite3 postgres pgnative mysql mysql2 mssql oracledb cockroachdb better-sqlite3'
+).match(/[\w-]+/g);
+
+console.log(`ENV DB: ${process.env.DB}`);
 
 const pool = {
-  afterCreate: function(connection, callback) {
+  afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
     callback(null, connection);
   },
@@ -23,17 +26,28 @@ const poolSqlite = {
   min: 0,
   max: 1,
   acquireTimeoutMillis: 1000,
-  afterCreate: function(connection, callback) {
+  afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
+    connection.run('PRAGMA foreign_keys = ON', callback);
+  },
+};
+
+const poolBetterSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function (connection, callback) {
+    assert.ok(typeof connection.__knexUid !== 'undefined');
+    connection.prepare('PRAGMA foreign_keys = ON').run();
     callback(null, connection);
   },
 };
 
 const mysqlPool = _.extend({}, pool, {
-  afterCreate: function(connection, callback) {
+  afterCreate: function (connection, callback) {
     promisify(connection.query)
       .call(connection, "SET sql_mode='TRADITIONAL';", [])
-      .then(function() {
+      .then(function () {
         callback(null, connection);
       });
   },
@@ -106,6 +120,36 @@ const testConfigs = {
     seeds,
   },
 
+  cockroachdb: {
+    client: 'cockroachdb',
+    connection: testConfig.cockroachdb || {
+      adapter: 'cockroachdb',
+      port: 26257,
+      host: 'localhost',
+      database: 'test',
+      user: 'root',
+      password: undefined,
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  pgnative: {
+    client: 'pgnative',
+    connection: testConfig.pgnative || {
+      adapter: 'postgresql',
+      port: 25433,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
   redshift: {
     client: 'redshift',
     connection: testConfig.redshift || {
@@ -131,6 +175,16 @@ const testConfigs = {
     seeds,
   },
 
+  'better-sqlite3': {
+    client: 'better-sqlite3',
+    connection: testConfig.sqlite3 || {
+      filename: __dirname + '/test.sqlite3',
+    },
+    pool: poolBetterSqlite,
+    migrations,
+    seeds,
+  },
+
   mssql: {
     client: 'mssql',
     connection: testConfig.mssql || {
@@ -149,7 +203,7 @@ const testConfigs = {
 // export only copy the specified dialects
 module.exports = _.reduce(
   testIntegrationDialects,
-  function(res, dialectName) {
+  function (res, dialectName) {
     res[dialectName] = testConfigs[dialectName];
     return res;
   },

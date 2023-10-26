@@ -1,65 +1,50 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
-const { resolveClientNameWithAliases } = require('../../lib/helpers');
-const fs = require('fs');
+const { resolveClientNameWithAliases } = require('../../lib/util/helpers');
 const path = require('path');
+const escalade = require('escalade/sync');
 const tildify = require('tildify');
 const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 
-function mkConfigObj(opts) {
-  if (!opts.client) {
-    const path = resolveDefaultKnexfilePath();
-    throw new Error(
-      `No default configuration file '${path}' found and no commandline connection parameters passed`
-    );
+function parseConfigObj(opts) {
+  const config = { migrations: {} };
+
+  if (opts.client) {
+    config.client = opts.client;
   }
 
+  if (opts.connection) {
+    config.connection = opts.connection;
+  }
+
+  if (opts.migrationsDirectory) {
+    config.migrations.directory = opts.migrationsDirectory;
+  }
+
+  if (opts.migrationsTableName) {
+    config.migrations.tableName = opts.migrationsTableName;
+  }
+
+  return config;
+}
+
+function mkConfigObj(opts) {
   const envName = opts.env || process.env.NODE_ENV || 'development';
   const resolvedClientName = resolveClientNameWithAliases(opts.client);
   const useNullAsDefault = resolvedClientName === 'sqlite3';
+  const parsedConfig = parseConfigObj(opts);
+
   return {
     ext: DEFAULT_EXT,
     [envName]: {
+      ...parsedConfig,
       useNullAsDefault,
-      client: opts.client,
-      connection: opts.connection,
-      migrations: {
-        directory: opts.migrationsDirectory,
-        tableName: opts.migrationsTableName || DEFAULT_TABLE_NAME,
-      },
+      tableName: parsedConfig.tableName || DEFAULT_TABLE_NAME,
     },
   };
 }
 
-function resolveKnexFilePath() {
-  const jsPath = resolveDefaultKnexfilePath('js');
-  if (fs.existsSync(jsPath)) {
-    return {
-      path: jsPath,
-      extension: 'js',
-    };
-  }
-
-  const tsPath = resolveDefaultKnexfilePath('ts');
-  if (fs.existsSync(tsPath)) {
-    return {
-      path: tsPath,
-      extension: 'ts',
-    };
-  }
-
-  console.warn(
-    `Failed to find configuration at default location of ${resolveDefaultKnexfilePath(
-      'js'
-    )}`
-  );
-}
-
-function resolveDefaultKnexfilePath(extension) {
-  return process.cwd() + `/knexfile.${extension}`;
-}
-
-function resolveEnvironmentConfig(opts, allConfigs) {
+function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
   const environment = opts.env || process.env.NODE_ENV || 'development';
   const result = allConfigs[environment] || allConfigs;
 
@@ -76,11 +61,20 @@ function resolveEnvironmentConfig(opts, allConfigs) {
     result.debug = argv.debug;
   }
 
+  // It is safe to assume that unless explicitly specified, we would want
+  // migrations, seeds etc. to be generated with same extension
+  if (configFilePath) {
+    result.ext = result.ext || path.extname(configFilePath).replace('.', '');
+  }
+
   return result;
 }
 
 function exit(text) {
   if (text instanceof Error) {
+    if (text.message) {
+      console.error(color.red(text.message));
+    }
     console.error(
       color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
     );
@@ -105,8 +99,20 @@ function checkLocalModule(env) {
   }
 }
 
+function checkConfigurationOptions(env, opts) {
+  if (!env.configPath && !opts.client) {
+    throw new Error(
+      `No configuration file found and no commandline connection parameters passed`
+    );
+  }
+}
+
 function getMigrationExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
+  const config = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
@@ -120,7 +126,11 @@ function getMigrationExtension(env, opts) {
 }
 
 function getSeedExtension(env, opts) {
-  const config = resolveEnvironmentConfig(opts, env.configuration);
+  const config = resolveEnvironmentConfig(
+    opts,
+    env.configuration,
+    env.configPath
+  );
 
   let ext = DEFAULT_EXT;
   if (argv.x) {
@@ -154,14 +164,49 @@ function getStubPath(configKey, env, opts) {
   return path.join(stubDirectory, stub);
 }
 
+function findUpModulePath(cwd, packageName) {
+  const modulePackagePath = escalade(cwd, (dir, names) => {
+    if (names.includes('package.json')) {
+      return 'package.json';
+    }
+    return false;
+  });
+  try {
+    const modulePackage = require(modulePackagePath);
+    if (modulePackage.name === packageName) {
+      return path.join(
+        path.dirname(modulePackagePath),
+        modulePackage.main || 'index.js'
+      );
+    }
+  } catch (e) {
+    /* empty */
+  }
+}
+
+function findUpConfig(cwd, name, extensions) {
+  return escalade(cwd, (dir, names) => {
+    for (const ext of extensions) {
+      const filename = `${name}.${ext}`;
+      if (names.includes(filename)) {
+        return filename;
+      }
+    }
+    return false;
+  });
+}
+
 module.exports = {
+  parseConfigObj,
   mkConfigObj,
-  resolveKnexFilePath,
   resolveEnvironmentConfig,
   exit,
   success,
   checkLocalModule,
+  checkConfigurationOptions,
   getSeedExtension,
   getMigrationExtension,
   getStubPath,
+  findUpModulePath,
+  findUpConfig,
 };

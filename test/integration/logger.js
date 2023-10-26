@@ -1,33 +1,28 @@
-/*global expect, d*/
-
 'use strict';
 
+const { expect } = require('chai');
 const _ = require('lodash');
+const { DRIVER_NAMES } = require('../../lib/constants');
+const { isObject } = require('../../lib/util/is');
 
-module.exports = function(knex) {
+const { TEST_TIMESTAMP, TEST_ID } = require('../util/constants');
+
+module.exports = function (knex) {
   const client = knex.client;
 
   // allowed driver name of a client
-  const allowedClients = [
-    'pg',
-    'mssql',
-    'mysql',
-    'mysql2',
-    'oracledb',
-    'pg-redshift',
-    'sqlite3',
-  ];
+  const allowedClients = Object.values(DRIVER_NAMES);
 
   function compareBindings(gotBindings, wantedBindings) {
     if (Array.isArray(wantedBindings)) {
-      wantedBindings.forEach(function(wantedBinding, index) {
+      wantedBindings.forEach(function (wantedBinding, index) {
         if (typeof wantedBinding === 'function') {
           expect(
             wantedBinding(gotBindings[index]),
             'binding cheker function failed got: ' + gotBindings
           ).to.equal(true);
         } else {
-          expect(wantedBinding).to.eql(gotBindings[index]);
+          expect(gotBindings[index]).to.eql(wantedBinding);
         }
       });
       expect(
@@ -42,7 +37,7 @@ module.exports = function(knex) {
   // Useful in cases where we want to just test the sql for both PG and SQLite3
   function testSqlTester(qb, driverName, statement, bindings, returnval) {
     if (Array.isArray(driverName)) {
-      driverName.forEach(function(val) {
+      driverName.forEach(function (val) {
         testSqlTester(qb, val, statement, bindings, returnval);
       });
     } else if (client.driverName === driverName) {
@@ -64,13 +59,21 @@ module.exports = function(knex) {
       }
       if (returnval !== undefined && returnval !== null) {
         const oldThen = qb.then;
-        qb.then = function() {
+        qb.then = function () {
           let promise = oldThen.apply(this, []);
-          promise = promise.then(function(resp) {
+          promise = promise.then(function (resp) {
             if (typeof returnval === 'function') {
               expect(!!returnval(resp)).to.equal(true);
             } else {
-              expect(stripDates(resp)).to.eql(returnval);
+              try {
+                expect(stripDates(resp)).to.eql(returnval);
+              } catch (err) {
+                console.log('Actual:');
+                console.log(JSON.stringify(resp));
+                console.log('Expected:');
+                console.log(JSON.stringify(returnval));
+                throw err;
+              }
             }
             return resp;
           });
@@ -90,13 +93,20 @@ module.exports = function(knex) {
   }
 
   function stripDates(resp) {
-    if (!_.isObject(resp[0])) return resp;
-    return _.map(resp, function(val) {
+    if (!isObject(resp[0])) return resp;
+    return _.map(resp, function (val) {
       return _.reduce(
         val,
-        function(memo, val, key) {
-          if (_.includes(['created_at', 'updated_at'], key)) {
-            memo[key] = d;
+        function (memo, val, key) {
+          if (
+            _.includes(
+              ['created_at', 'updated_at', 'createdAt', 'updatedAt'],
+              key
+            )
+          ) {
+            memo[key] = TEST_TIMESTAMP;
+          } else if (_.includes(['dummy_id'], key)) {
+            memo[key] = TEST_ID;
           } else {
             memo[key] = val;
           }
@@ -109,7 +119,7 @@ module.exports = function(knex) {
 
   function makeTestSQL(builder) {
     const tester = testSqlTester.bind(null, builder);
-    return function(handler) {
+    return function (handler) {
       handler(tester);
       return this;
     };
@@ -118,17 +128,17 @@ module.exports = function(knex) {
   const originalRaw = client.raw;
   const originalQueryBuilder = client.queryBuilder;
   const originalSchemaBuilder = client.schemaBuilder;
-  client.raw = function() {
+  client.raw = function () {
     const raw = originalRaw.apply(this, arguments);
     raw.testSql = makeTestSQL(raw);
     return raw;
   };
-  client.queryBuilder = function() {
+  client.queryBuilder = function () {
     const qb = originalQueryBuilder.apply(this, arguments);
     qb.testSql = makeTestSQL(qb);
     return qb;
   };
-  client.schemaBuilder = function() {
+  client.schemaBuilder = function () {
     const sb = originalSchemaBuilder.apply(this, arguments);
     sb.testSql = makeTestSQL(sb);
     return sb;

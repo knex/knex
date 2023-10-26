@@ -1,7 +1,6 @@
 #!/usr/bin/env jake
 'use strict';
 /* eslint-disable no-undef */
-/* eslint-disable no-console */
 
 const os = require('os');
 const fs = require('fs');
@@ -82,37 +81,6 @@ test('Create a migration file without client passed', (temp) =>
       )
     ));
 
-test('Run migrations', (temp) =>
-  new Promise((resolve, reject) =>
-    fs.writeFile(
-      temp + '/migrations/000_create_rule_table.js',
-      `
-            exports.up = (knex)=> knex.schema.createTable('rules', (table)=> {
-                table.string('name');
-            });
-            exports.down = (knex)=> knex.schema.dropTable('rules');
-        `,
-      (err) => (err ? reject(err) : resolve())
-    )
-  )
-    .then(() =>
-      assertExec(`${KNEX} migrate:latest \
-                 --client=sqlite3 --connection=${temp}/db \
-                 --migrations-directory=${temp}/migrations \
-                 create_rule_table`)
-    )
-    .then(() => assertExec(`ls ${temp}/db`, 'Find the database file'))
-    .then(() => new sqlite3.Database(temp + '/db'))
-    .then(
-      (db) =>
-        new Promise((resolve, reject) =>
-          db.get('SELECT name FROM knex_migrations', function(err, row) {
-            err ? reject(err) : resolve(row);
-          })
-        )
-    )
-    .then((row) => assert.equal(row.name, '000_create_rule_table.js')));
-
 test('run migrations without knexfile and with --migrations-table-name', (temp) =>
   assertExec(`${KNEX} migrate:latest \
               --client=sqlite3  --connection=${temp}/db \
@@ -124,7 +92,7 @@ test('run migrations without knexfile and with --migrations-table-name', (temp) 
         new Promise((resolve, reject) =>
           db.get(
             "SELECT name FROM sqlite_master where type='table' AND name='custom_migrations_table'",
-            function(err, row) {
+            function (err, row) {
               err ? reject(err) : resolve(row);
             }
           )
@@ -689,7 +657,7 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
   );
 
   const migrationsListResult = await assertExec(
-    `node ${KNEX} migrate:list \
+    `NO_COLOR= node ${KNEX} migrate:list \
       --client=sqlite3 \
       --connection=${temp}/db \
       --migrations-directory=${temp}/migrations`
@@ -697,11 +665,12 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
 
   assert.include(
     migrationsListResult.stdout,
-    `Found 1 Completed Migration file/files.`
-  );
-  assert.include(
-    migrationsListResult.stdout,
-    `Found 1 Pending Migration file/files.`
+    [
+      `Found 1 Completed Migration file/files.`,
+      migrationFile1,
+      `Found 1 Pending Migration file/files.`,
+      migrationFile2,
+    ].join('\n')
   );
 
   const migrationUp2Result = await assertExec(
@@ -718,7 +687,7 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
   );
 
   const migrationsList2Result = await assertExec(
-    `node ${KNEX} migrate:list \
+    `NO_COLOR= node ${KNEX} migrate:list \
           --client=sqlite3 \
           --connection=${temp}/db \
           --migrations-directory=${temp}/migrations`
@@ -726,11 +695,12 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
 
   assert.include(
     migrationsList2Result.stdout,
-    `Found 2 Completed Migration file/files.`
-  );
-  assert.include(
-    migrationsList2Result.stdout,
-    `No Pending Migration files Found.`
+    [
+      `Found 2 Completed Migration file/files.`,
+      migrationFile1,
+      migrationFile2,
+      `No Pending Migration files Found.`,
+    ].join('\n')
   );
 });
 

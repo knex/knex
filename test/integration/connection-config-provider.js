@@ -1,25 +1,29 @@
-/*global expect*/
-
 'use strict';
+
+const { expect } = require('chai');
 
 const _ = require('lodash');
 const makeKnex = require('../../knex');
+const { setHiddenProperty } = require('../../lib/util/security');
 
-module.exports = function(config) {
-  describe('Connection configuration provider', function() {
+module.exports = function (config) {
+  describe('Connection configuration provider', function () {
     let configWorkingCopy;
     let providerInvocationCount;
     let connectionConfigWorkingCopy;
 
     this.beforeEach(() => {
       configWorkingCopy = _.cloneDeep(config);
+      if (config.connection && config.connection.password) {
+        setHiddenProperty(configWorkingCopy.connection, config.connection);
+      }
       configWorkingCopy.pool.min = 1;
       configWorkingCopy.pool.max = 2;
       providerInvocationCount = 0;
       connectionConfigWorkingCopy = configWorkingCopy.connection;
     });
 
-    it('is not used when configuration is static', async function() {
+    it('is not used when configuration is static', async function () {
       return runTwoConcurrentTransactions(0);
     });
 

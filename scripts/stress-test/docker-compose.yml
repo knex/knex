@@ -4,21 +4,23 @@ services:
   toxiproxy:
     image: shopify/toxiproxy
     ports:
-      - "8474:8474"
-      - "23306:23306"
-      - "25432:25432"
-      - "21521:21521"
-      - "21433:21433"
+      - '8474:8474'
+      - '23306:23306'
+      - '25432:25432'
+      - '25433:25433'
+      - '21521:21521'
+      - '21433:21433'
     links:
-      - "mysql"
-      - "postgresql"
-      - "oracledbxe"
-      - "mssql"
+      - 'mysql'
+      - 'postgresql'
+      - 'pgnative'
+      - 'oracledb'
+      - 'mssql'
 
   mysql:
     image: mysql:5.7
     ports:
-      - "33306:3306"
+      - '33306:3306'
     environment:
       - TZ=UTC
       - MYSQL_ROOT_PASSWORD=mysqlrootpassword
@@ -26,22 +28,30 @@ services:
   postgresql:
     image: mdillon/postgis
     ports:
-      - "35432:5432"
+      - '35432:5432'
     environment:
       - POSTGRES_PASSWORD=postgresrootpassword
       - POSTGRES_USER=postgres
 
-  oracledbxe:
-    image: wnameless/oracle-xe-11g
+  pgnative:
+    image: mdillon/postgis
     ports:
-      - "31521:1521"
+      - '35433:5432'
+    environment:
+      - POSTGRES_PASSWORD=postgresrootpassword
+      - POSTGRES_USER=postgres
+
+  oracledb:
+    image: quillbuilduser/oracle-18-xe
+    ports:
+      - '31521:1521'
     environment:
       - ORACLE_ALLOW_REMOTE=true
 
   mssql:
     image: microsoft/mssql-server-linux:2017-latest
     ports:
-      - "31433:1433"
+      - '31433:1433'
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=S0meVeryHardPassword

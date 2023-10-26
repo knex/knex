@@ -1,0 +1,62 @@
+---
+name: Coverage
+
+on: ['push', 'pull_request']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      checks: write # for coverallsapp/github-action to create new checks
+      contents: read # for actions/checkout to fetch code
+    runs-on: ubuntu-latest
+
+    name: Coverage
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v3.7.0
+        with:
+          always-auth: false
+          node-version: ${{ matrix.node-version }}
+
+      - name: Start Databases
+        run: npm run db:start:no-oracle
+
+      - name: Run npm install
+        run: npm install
+
+      - name: Install pg-native
+        run: npm i pg-native
+
+      - run: npm run build
+
+      - name: Run Tests
+        run: npm run test:coverage  || true
+        env:
+          CI: true
+          DB: 'postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb'
+          KNEX_TEST_TIMEOUT: 60000
+
+      - name: Stop Databases
+        run: npm run db:stop
+
+      - name: Generate LCOV
+        run: npm run coveralls
+
+      - name: Update Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

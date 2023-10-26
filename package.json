@@ -1,58 +1,85 @@
 {
   "name": "knex",
-  "version": "0.20.4",
-  "description": "A batteries-included SQL query & schema builder for Postgres, MySQL and SQLite3 and the Browser",
-  "main": "knex.js",
+  "version": "3.0.0",
+  "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
+  "main": "knex",
   "types": "types/index.d.ts",
   "engines": {
-    "node": ">=8"
+    "node": ">=16"
   },
   "scripts": {
-    "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
-    "debug:test": "mocha --inspect-brk --exit -t 0 test/index.js",
+    "build": "npm run build:gitignore && npm run build:ts && npm run format",
+    "clean": "node scripts/clean.js",
+    "build:ts": "tsc",
+    "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
+    "format": "prettier --write --list-different .",
+    "format:check": "prettier --list-different .",
+    "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
-    "coveralls": "nyc report --reporter=text-lcov | coveralls",
-    "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\"",
-    "lint:types": "dtslint types",
-    "lint:everything": "npm run lint:types && npm run lint",
-    "test": "mocha --exit -t 10000 test/index.js && npm run test:tape && npm run test:cli",
-    "test:coverage": "nyc mocha --exit --check-leaks --globals __core-js_shared__ -t 10000 test/index.js && npm run test:tape && npm run test:cli",
+    "coveralls": "nyc report --reporter=lcov",
+    "lint": "eslint --cache **/*.js",
+    "lint:fix": "eslint --cache --fix '**/*.js'",
+    "lint:types": "tsd && dtslint types",
+    "lint:everything": "npm run lint && npm run lint:types",
+    "lint:fix:everything": "npm run lint:fix && npm run lint:types",
+    "test:unit": "npm run test:unit-only && npm run test:cli",
+    "test:unit-only": "mocha --exit -t 10000 --config test/mocha-unit-config-test.js",
+    "test:db": "mocha --exit -t 10000 --config test/mocha-integration-config-test.js",
+    "test:db:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
+    "test:db:no-oracle": "cross-env DB=\"mssql mysql mysql2 postgres sqlite3\" mocha --exit -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
+    "test": "mocha --exit -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
+    "test:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
     "test:everything": "npm run lint:everything && npm run test:coverage",
-    "test:sqlite": "cross-env DB=sqlite3 npm test",
+    "test:mssql": "cross-env DB=mssql npm run test:db",
+    "test:mysql": "cross-env DB=mysql npm run test:db",
+    "test:mysql2": "cross-env DB=mysql2 npm run test:db",
+    "test:oracledb": "cross-env DB=oracledb npm run test:db",
+    "test:sqlite": "cross-env DB=sqlite3 npm run test:db",
+    "test:better-sqlite3": "cross-env DB=better-sqlite3 npm run test:db",
+    "test:postgres": "cross-env DB=postgres npm run test:db",
+    "test:cockroachdb": "cross-env DB=cockroachdb npm run test:db",
+    "test:pgnative": "cross-env DB=pgnative npm run test:db",
     "test:tape": "node test/tape/index.js | tap-spec",
     "test:cli": "cross-env KNEX_PATH=../knex.js KNEX=bin/cli.js jake -f test/jake/Jakefile",
-    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledbxe postgres mssql; docker-compose -f scripts/docker-compose.yml up initmssqlknexdb waitmysql waitpostgres waitoracledbxe",
+    "db:start": "docker-compose -f scripts/docker-compose.yml up --build -d mysql oracledb postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres waitoracledb",
+    "db:start:no-oracle": "docker-compose -f scripts/docker-compose.yml up --build -d mysql postgres mssql cockroachdb pgnative && docker-compose -f scripts/docker-compose.yml up waitmssql waitmysql waitpostgres",
     "db:stop": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:postgres": "docker-compose -f scripts/docker-compose.yml up --build -d postgres && docker-compose -f scripts/docker-compose.yml up waitpostgres",
+    "db:stop:postgres": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:pgnative": "docker-compose -f scripts/docker-compose.yml up --build -d pgnative && docker-compose -f scripts/docker-compose.yml up waitpgnative",
+    "db:stop:pgnative": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:mysql": "docker-compose -f scripts/docker-compose.yml up --build -d mysql && docker-compose -f scripts/docker-compose.yml up waitmysql",
+    "db:stop:mysql": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:mssql": "docker-compose -f scripts/docker-compose.yml up --build -d mssql && docker-compose -f scripts/docker-compose.yml up waitmssql",
+    "db:stop:mssql": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:cockroachdb": "docker-compose -f scripts/docker-compose.yml up --build -d cockroachdb && docker-compose -f scripts/docker-compose.yml up waitcockroachdb",
+    "db:stop:cockroachdb": "docker-compose -f scripts/docker-compose.yml down",
+    "db:start:oracle": "docker-compose -f scripts/docker-compose.yml up --build -d oracledb && docker-compose -f scripts/docker-compose.yml up waitoracledb",
+    "db:stop:oracle": "docker-compose -f scripts/docker-compose.yml down",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
-    "stress:test": "node scripts/stress-test/knex-stress-test.js |  grep -A 5 -B 60 -- '- STATS '",
-    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
+    "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
+    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
+    "prepare": "husky install && npm run clean && npm run build",
+    "prepublishOnly": "npm run format:check && npm run lint:everything && npm run clean && npm run build"
   },
   "dependencies": {
-    "bluebird": "^3.7.1",
-    "colorette": "1.1.0",
-    "commander": "^4.0.1",
-    "debug": "4.1.1",
-    "getopts": "2.2.5",
-    "inherits": "~2.0.4",
-    "interpret": "^2.0.0",
-    "liftoff": "3.1.0",
-    "lodash": "^4.17.15",
-    "mkdirp": "^0.5.1",
-    "pg-connection-string": "2.1.0",
-    "tarn": "^2.0.0",
-    "tildify": "2.0.0",
-    "uuid": "^3.3.3",
-    "v8flags": "^3.1.3"
-  },
-  "peerDependencies": {
-    "mssql": "^5.1.0",
-    "mysql": "^2.17.1",
-    "mysql2": "^1.7.0",
-    "pg": "^7.12.1",
-    "sqlite3": "^4.1.0"
+    "colorette": "2.0.19",
+    "commander": "^10.0.0",
+    "debug": "4.3.4",
+    "escalade": "^3.1.1",
+    "esm": "^3.2.25",
+    "get-package-type": "^0.1.0",
+    "getopts": "2.3.0",
+    "interpret": "^2.2.0",
+    "lodash": "^4.17.21",
+    "pg-connection-string": "2.6.1",
+    "rechoir": "^0.8.0",
+    "resolve-from": "^5.0.0",
+    "tarn": "^3.0.2",
+    "tildify": "2.0.0"
   },
   "peerDependenciesMeta": {
-    "mssql": {
+    "tedious": {
       "optional": true
     },
     "mysql": {
@@ -64,50 +91,61 @@
     "pg": {
       "optional": true
     },
+    "pg-native": {
+      "optional": true
+    },
     "sqlite3": {
+      "optional": true
+    },
+    "better-sqlite3": {
       "optional": true
     }
   },
   "lint-staged": {
-    "*.{js,json}": [
-      "prettier --write",
-      "git add"
-    ]
+    "*": "prettier --ignore-unknown --write",
+    "*.js": "eslint --cache --fix"
   },
   "devDependencies": {
-    "@types/node": "^10.17.5",
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/node": "^20.4.0",
+    "better-sqlite3": "^7.6.2",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "chai-subset-in-order": "^3.1.0",
+    "cli-testlab": "^2.2.0",
+    "coveralls": "^3.1.1",
+    "cross-env": "^7.0.3",
+    "dtslint": "4.2.1",
+    "eslint": "^8.32.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-mocha-no-only": "^1.1.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
+    "jake": "^10.8.5",
     "JSONStream": "^1.3.5",
-    "chai": "^4.2.0",
-    "chai-subset-in-order": "^2.1.3",
-    "cli-testlab": "^1.8.0",
-    "coveralls": "^3.0.7",
-    "cross-env": "^6.0.3",
-    "dtslint": "^2.0.2",
-    "eslint": "^6.6.0",
-    "eslint-config-prettier": "^6.5.0",
-    "eslint-plugin-import": "^2.18.2",
-    "husky": "^3.0.9",
-    "jake": "^8.1.1",
-    "lint-staged": "^9.4.3",
-    "mocha": "^6.2.2",
-    "mock-fs": "^4.10.3",
-    "mssql": "^5.1.0",
-    "mysql": "^2.17.1",
-    "mysql2": "^2.0.0",
-    "nyc": "^14.1.1",
-    "pg": "^7.12.1",
-    "pg-query-stream": "^2.0.1",
-    "prettier": "1.18.2",
-    "rimraf": "^3.0.0",
-    "sinon": "^7.5.0",
-    "sinon-chai": "^3.3.0",
-    "source-map-support": "^0.5.16",
-    "sqlite3": "^4.1.0",
+    "lint-staged": "^13.0.0",
+    "mocha": "^10.0.0",
+    "mock-fs": "^5.1.4",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.2.0",
+    "nyc": "^15.1.0",
+    "oracledb": "^6.1.0",
+    "pg": "^8.8.0",
+    "pg-query-stream": "^4.2.4",
+    "prettier": "2.8.7",
+    "rimraf": "^3.0.2",
+    "sinon": "^15.0.1",
+    "sinon-chai": "^3.7.0",
+    "source-map-support": "^0.5.21",
+    "sqlite3": "^5.0.11",
     "tap-spec": "^5.0.0",
-    "tape": "^4.11.0",
+    "tape": "^5.6.0",
+    "tedious": "^14.4.0",
     "toxiproxy-node-client": "^2.0.6",
-    "typescript": "3.6.4",
-    "webpack-cli": "^3.3.10"
+    "ts-node": "^10.9.1",
+    "tsd": "^0.28.1",
+    "typescript": "5.0.4"
   },
   "buildDependencies": [
     "rimraf"
@@ -119,15 +157,22 @@
     "type": "git",
     "url": "git://github.com/knex/knex.git"
   },
-  "homepage": "https://knexjs.org",
+  "homepage": "https://knex.github.io/documentation/",
   "keywords": [
     "sql",
     "query",
     "postgresql",
+    "postgres",
     "mysql",
+    "cockroachdb",
     "sqlite3",
     "oracle",
-    "mssql"
+    "mssql",
+    "builder",
+    "querybuilder",
+    "build",
+    "db",
+    "database"
   ],
   "author": {
     "name": "Tim Griesser",
@@ -135,33 +180,40 @@
   },
   "contributors": [
     {
-      "name": "Simon Liden"
+      "name": "Mikael Lepisto"
     },
     {
-      "name": "Mikael Lepisto"
+      "name": "Igor Savin",
+      "web": "https://www.codeflashbacks.com"
+    },
+    {
+      "name": "Olivier Cavadenti"
+    },
+    {
+      "name": "Simon Liden"
     },
     {
       "name": "Paul Gaurab",
       "web": "https://lorefnon.tech"
     },
     {
-      "name": "Igor Savin",
-      "web": "https://www.codeflashbacks.com"
+      "name": "Brian Lauber",
+      "web": "https://briandamaged.org"
     }
   ],
   "browser": {
-    "./lib/migrate/Migrator.js": "./lib/util/noop.js",
+    "./lib/migrations/migrate/Migrator.js": "./lib/util/noop.js",
     "./lib/bin/cli.js": "./lib/util/noop.js",
-    "./lib/seed/Seeder.js": "./lib/util/noop.js",
-    "mssql": false,
-    "mssql/lib/base": false,
+    "./lib/migrations/seed/Seeder.js": "./lib/util/noop.js",
     "tedious": false,
     "mysql": false,
     "mysql2": false,
     "pg": false,
+    "pg-native": false,
     "pg-query-stream": false,
     "oracle": false,
     "sqlite3": false,
+    "better-sqlite3": false,
     "oracledb": false
   },
   "react-native": {
@@ -169,17 +221,24 @@
     "./lib/seed": "./lib/util/noop.js"
   },
   "files": [
-    "CONTRIBUTING.md",
-    "README.md",
     "bin/*",
-    "lib/*",
-    "lib/*",
-    "knex.js",
-    "LICENSE",
-    "CHANGELOG.md",
+    "lib/",
+    "lib/**/*.js",
+    "!lib/**/*.ts",
+    "!lib/**/*.d.ts",
+    "!lib/**/*.js.map",
+    "!lib/.gitignore",
     "scripts/*",
     "types/index.d.ts",
-    "types/result.d.ts"
+    "types/result.d.ts",
+    "types/tables.d.ts",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "knex.js",
+    "knex.mjs",
+    "LICENSE",
+    "README.md",
+    "UPGRADING.md"
   ],
   "license": "MIT",
   "tonicExampleFilename": "scripts/runkit-example.js",
@@ -188,11 +247,22 @@
     "lines": 84,
     "statements": 82,
     "functions": 83,
-    "branches": 69
+    "branches": 69,
+    "extension": [
+      ".js"
+    ],
+    "exclude": [
+      "lib/dialects/oracle",
+      "lib/dialects/oracledb",
+      "test/**/*.spec.js"
+    ]
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
+  "tsd": {
+    "directory": "test-tsd",
+    "compilerOptions": {
+      "esModuleInterop": false,
+      "module": "commonjs",
+      "target": "ES2017"
     }
   }
 }

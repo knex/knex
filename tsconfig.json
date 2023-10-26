@@ -1,0 +1,16 @@
+{
+  "extends": "@tsconfig/node12/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "declaration": false,
+    "rootDirs": ["lib"],
+    "importHelpers": false,
+    "sourceMap": true,
+    "baseUrl": "."
+  },
+  "include": ["lib/**/*.ts"],
+  "exclude": ["node_modules"]
+}

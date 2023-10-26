@@ -63,19 +63,32 @@ function expectContentMatchesStub(stubPath, globPath, fileHelper) {
   expect(content).equals(stubContent);
 }
 
+function getRootDir() {
+  return path.resolve(__dirname, '../jake-util');
+}
+
 function setupFileHelper() {
-  const fileHelper = new FileTestHelper(
-    path.resolve(__dirname, '../jake-util')
-  );
+  const fileHelper = new FileTestHelper(getRootDir());
   fileHelper.deleteFile('test.sqlite3');
   fileHelper.registerForCleanup('test.sqlite3');
 
   return fileHelper;
 }
 
+function createTable(db, ddl) {
+  return new Promise((resolve, reject) =>
+    db.exec(`create TABLE if not exists ${ddl};`, (err) => {
+      if (err) reject(err);
+      else resolve();
+    })
+  );
+}
+
 module.exports = {
   expectContentMatchesStub,
+  getRootDir,
   migrationStubOptionSetup,
   seedStubOptionSetup,
   setupFileHelper,
+  createTable,
 };
