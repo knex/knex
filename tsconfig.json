@@ -7,7 +7,6 @@
     "moduleResolution": "node",
     "declaration": false,
     "rootDirs": ["lib"],
-    "types": ["node"],
     "importHelpers": false,
     "sourceMap": true,
     "baseUrl": "."
