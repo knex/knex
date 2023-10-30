@@ -1,4 +1,5 @@
 {
+  "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
     "strict": true,
     "esModuleInterop": true,
