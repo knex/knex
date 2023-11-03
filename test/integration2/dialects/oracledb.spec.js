@@ -31,6 +31,35 @@ describe('Oracledb dialect', () => {
             });
           });
         });
+
+        describe('Version Detection', () => {
+          it('should correctly resolve the oracle database version on connection if not specified', async () => {
+            const client = knex.client;
+            const connection = await client.acquireConnection();
+            await client.releaseConnection(connection);
+
+            expect(client.version).to.match(/^\d+\.\d+$/);
+          });
+
+          it('should not attempt to dynamically resolve database version on connection if specified', async () => {
+            // Manually specifying a version number other than the one we use for testing.
+            const client = getKnexForDb('oracledb', { version: '12.2' }).client;
+            const connection = await client.acquireConnection();
+            await client.releaseConnection(connection);
+
+            expect(client.version).to.equal('12.2');
+          });
+
+          it('should dynamically resolve database version on connection if specified version is invalid', async () => {
+            const client = getKnexForDb('oracledb', {
+              version: 'not a good version number',
+            }).client;
+            const connection = await client.acquireConnection();
+            await client.releaseConnection(connection);
+
+            expect(client.version).to.match(/^\d+\.\d+$/);
+          });
+        });
       });
 
       describe('Client', () => {

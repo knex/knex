@@ -1,5 +1,18 @@
 # Master (Unreleased)
 
+# 3.0.0 - 6 October, 2023
+
+- Fix raw bindings typing (#5401)
+- Fix migrate:unlock when used with custom identifier wrapping. (#5353)
+- Fix driver options specified with .options() method being ignored for oracledb dialect (#5123)
+- Drop compatibility for Node < 16
+- Fix knex d.ts to work with mixed modules (#5659)
+- Fix Lexical error from "Instaed" to "Instead" (#5655)
+
+### Bug fixes
+
+- Fix Linting #5455 - #5460
+
 # 2.5.1 - 12 July, 2023
 
 ### Bug fixes
@@ -1495,7 +1508,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Drop support for strong-oracle #2487
 - Timeout errors doesn't silently ignore the passed errors anymore #2626
 - Removed WebSQL dialect #2647
-- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instaed of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
+- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instead of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
 
 ### Bug fixes:
 

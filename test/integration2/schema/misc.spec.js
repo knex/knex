@@ -789,7 +789,7 @@ describe('Schema (misc)', () => {
                 `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_one_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger "test_table_one_autoinc_trg"  BEFORE INSERT on "test_table_one"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_one_seq".nextval into :new."' || PK_NAME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_one"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
                 'comment on column "test_table_one"."logins" is \'\'',
                 'comment on column "test_table_one"."about" is \'A comment.\'',
-                'create index "NkZo/dGRI9O73/NE2fHo+35d4jk" on "test_table_one" ("first_name")',
+                'create index "test_table_one_first_name_index" on "test_table_one" ("first_name")',
                 'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
                 'create index "test_table_one_logins_index" on "test_table_one" ("logins")',
               ]);
@@ -833,7 +833,7 @@ describe('Schema (misc)', () => {
               tester('oracledb', [
                 `create table "test_table_timestamp" ("id" number(20, 0) not null primary key, "createdAt" timestamp with local time zone default CURRENT_TIMESTAMP not null, "updatedAt" timestamp with local time zone default CURRENT_TIMESTAMP not null)`,
                 `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_timestamp_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_typ` +
-                  `e = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_timestamp';  execute immediate ('create or replace trigger "gT8ntVvbOANQHra05aYo1kc6cCI"  BEFORE INSERT on` +
+                  `e = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_timestamp';  execute immediate ('create or replace trigger "test_table_timestamp_autoinc_trg"  BEFORE INSERT on` +
                   ` "test_table_timestamp"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_timestamp_seq".nextval into :new."' || PK_N` +
                   `AME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_timestamp"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
               ]);
@@ -1260,8 +1260,8 @@ describe('Schema (misc)', () => {
               ]);
               tester('oracledb', [
                 'create table "test_foreign_table_two" ("id" integer not null primary key, "fkey_two" integer, "fkey_three" integer, "fkey_four" integer)',
-                'DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE "test_foreign_table_two_seq"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'test_foreign_table_two\';  execute immediate (\'create or replace trigger "m6uvAnbUQqcHvfWTN5IAjip1/vk"  BEFORE INSERT on "test_foreign_table_two"  for each row  declare  checking number := 1;  begin    if (:new."\' || PK_NAME || \'" is null) then      while checking >= 1 loop        select "test_foreign_table_two_seq".nextval into :new."\' || PK_NAME || \'" from dual;        select count("\' || PK_NAME || \'") into checking from "test_foreign_table_two"        where "\' || PK_NAME || \'" = :new."\' || PK_NAME || \'";      end loop;    end if;  end;\'); END;',
-                'alter table "test_foreign_table_two" add constraint "q7TfvbIx3HUQbh+l+e5N+J+Guag" foreign key ("fkey_two") references "test_table_two" ("id")',
+                'DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE "test_foreign_table_two_seq"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'test_foreign_table_two\';  execute immediate (\'create or replace trigger "test_foreign_table_two_autoinc_trg"  BEFORE INSERT on "test_foreign_table_two"  for each row  declare  checking number := 1;  begin    if (:new."\' || PK_NAME || \'" is null) then      while checking >= 1 loop        select "test_foreign_table_two_seq".nextval into :new."\' || PK_NAME || \'" from dual;        select count("\' || PK_NAME || \'") into checking from "test_foreign_table_two"        where "\' || PK_NAME || \'" = :new."\' || PK_NAME || \'";      end loop;    end if;  end;\'); END;',
+                'alter table "test_foreign_table_two" add constraint "test_foreign_table_two_fkey_two_foreign" foreign key ("fkey_two") references "test_table_two" ("id")',
                 'alter table "test_foreign_table_two" add constraint "fk_fkey_three" foreign key ("fkey_three") references "test_table_two" ("id")',
                 'alter table "test_foreign_table_two" add constraint "fk_fkey_four" foreign key ("fkey_four") references "test_table_two" ("id")',
               ]);
@@ -1330,7 +1330,7 @@ describe('Schema (misc)', () => {
               ]);
               tester('oracledb', [
                 'create table "composite_key_test" ("column_a" integer, "column_b" integer, "details" clob, "status" smallint)',
-                'alter table "composite_key_test" add constraint "zYmMt0VQwlLZ20XnrMicXZ0ufZk" unique ("column_a", "column_b")',
+                'alter table "composite_key_test" add constraint "composite_key_test_column_a_column_b_unique" unique ("column_a", "column_b")',
               ]);
               tester('mssql', [
                 'CREATE TABLE [composite_key_test] ([column_a] int, [column_b] int, [details] nvarchar(max), [status] tinyint)',
@@ -1391,7 +1391,7 @@ describe('Schema (misc)', () => {
               ]);
               tester('oracledb', [
                 'create table "charset_collate_test" ("id" integer not null primary key, "account_id" integer, "details" clob, "status" smallint)',
-                'DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE "charset_collate_test_seq"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'charset_collate_test\';  execute immediate (\'create or replace trigger "x9C3VzXH9urIKnTjm32JM7OvYYQ"  BEFORE INSERT on "charset_collate_test"  for each row  declare  checking number := 1;  begin    if (:new."\' || PK_NAME || \'" is null) then      while checking >= 1 loop        select "charset_collate_test_seq".nextval into :new."\' || PK_NAME || \'" from dual;        select count("\' || PK_NAME || \'") into checking from "charset_collate_test"        where "\' || PK_NAME || \'" = :new."\' || PK_NAME || \'";      end loop;    end if;  end;\'); END;',
+                'DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE (\'CREATE SEQUENCE "charset_collate_test_seq"\');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = \'P\'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = \'charset_collate_test\';  execute immediate (\'create or replace trigger "charset_collate_test_autoinc_trg"  BEFORE INSERT on "charset_collate_test"  for each row  declare  checking number := 1;  begin    if (:new."\' || PK_NAME || \'" is null) then      while checking >= 1 loop        select "charset_collate_test_seq".nextval into :new."\' || PK_NAME || \'" from dual;        select count("\' || PK_NAME || \'") into checking from "charset_collate_test"        where "\' || PK_NAME || \'" = :new."\' || PK_NAME || \'";      end loop;    end if;  end;\'); END;',
               ]);
               tester('mssql', [
                 'CREATE TABLE [charset_collate_test] ([id] int identity(1,1) not null primary key, [account_id] int, [details] nvarchar(max), [status] tinyint)',

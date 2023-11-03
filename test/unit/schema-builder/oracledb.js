@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
 const knex = require('../../../knex');
 const FunctionHelper = require('../../../lib/knex-builder/FunctionHelper');
-const client = new Oracle_Client({ client: 'oracledb' });
+const client = new Oracle_Client({ client: 'oracledb', version: '18.0' });
 
 describe('OracleDb SchemaBuilder', function () {
   let tableSql;
@@ -59,6 +59,7 @@ describe('OracleDb SchemaBuilder', function () {
     before(function () {
       knexOracleDb = knex({
         client: 'oracledb',
+        version: '18.0',
         connection: {},
       });
     });
@@ -1143,7 +1144,7 @@ describe('OracleDb SchemaBuilder', function () {
   });
 
   it('allows dropping a unique compound index with too long generated name', function () {
-    tableSql = client
+    tableSql = new Oracle_Client({ client: 'oracledb', version: '12.0' })
       .schemaBuilder()
       .table('composite_key_test', function (t) {
         t.dropUnique(['column_a', 'column_b']);
