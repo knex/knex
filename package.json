@@ -60,6 +60,7 @@
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
     "prepare": "husky install && npm run clean && npm run build",
+    "postinstall": "tsc --outDir ./build",
     "prepublishOnly": "npm run format:check && npm run lint:everything && npm run clean && npm run build"
   },
   "dependencies": {
