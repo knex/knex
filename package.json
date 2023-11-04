@@ -17,9 +17,9 @@
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=lcov",
-    "lint": "eslint --cache '**/*.js'",
+    "lint": "eslint --cache",
     "lint:fix": "eslint --cache --fix '**/*.js'",
-    "lint:types": "tsd && dtslint types",
+    "lint:types": "tsd",
     "lint:everything": "npm run lint && npm run lint:types",
     "lint:fix:everything": "npm run lint:fix && npm run lint:types",
     "test:unit": "npm run test:unit-only && npm run test:cli",
@@ -60,8 +60,8 @@
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
     "prepare": "husky install && npm run clean && npm run build",
-    "postinstall": "tsc --outDir ./build",
-    "prepublishOnly": "npm run format:check && npm run lint:everything && npm run clean && npm run build"
+    "prepublishOnly": "npm run format:check && npm run lint:everything && npm run clean && npm run build",
+    "postinstall": "npm run format:check && npm run lint:everything && npm run clean && npm run build"
   },
   "dependencies": {
     "colorette": "2.0.19",
@@ -116,7 +116,8 @@
     "cli-testlab": "^2.2.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
-    "dtslint": "^4.2.1",
+    "dtslint": "4.2.1",
+    "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
@@ -145,7 +146,7 @@
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.9.1",
     "tsd": "^0.28.1",
-    "typescript": "^5.2.2"
+    "typescript": "5.2.2"
   },
   "buildDependencies": [
     "rimraf"
