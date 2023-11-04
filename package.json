@@ -61,7 +61,7 @@
     "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
     "prepare": "husky install && npm run clean && npm run build",
     "prepublishOnly": "npm run format:check && npm run lint:everything && npm run clean && npm run build",
-    "postinstall": "npm run format:check && npm run lint:everything && npm run clean && npm run build"
+    "postinstall": "npm run clean && npm run build"
   },
   "dependencies": {
     "colorette": "2.0.19",
