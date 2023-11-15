@@ -1,5 +1,18 @@
 # Master (Unreleased)
 
+# 3.0.0 - 6 October, 2023
+
+- Fix raw bindings typing (#5401)
+- Fix migrate:unlock when used with custom identifier wrapping. (#5353)
+- Fix driver options specified with .options() method being ignored for oracledb dialect (#5123)
+- Drop compatibility for Node < 16
+- Fix knex d.ts to work with mixed modules (#5659)
+- Fix Lexical error from "Instaed" to "Instead" (#5655)
+
+### Bug fixes
+
+- Fix Linting #5455 - #5460
+
 # 2.5.1 - 12 July, 2023
 
 ### Bug fixes
