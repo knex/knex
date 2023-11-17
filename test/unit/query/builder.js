@@ -11626,4 +11626,45 @@ describe('QueryBuilder', () => {
       });
     });
   });
+
+  describe('Upsert', () => {
+    function mysqlQb() {
+      return clients.mysql.queryBuilder();
+    }
+
+    const mysqlClient = {
+      mysql: clientsWithNullAsDefault.mysql,
+    };
+
+    it('one record upsert', () => {
+      testsql(
+        mysqlQb().from('users').upsert({ email: 'foo', name: 'taylor' }),
+        {
+          mysql: {
+            sql: 'replace into `users` (`email`, `name`) values (?, ?)',
+            bindings: ['foo', 'taylor'],
+          },
+        },
+        mysqlClient
+      );
+    });
+
+    it('multiple records upsert', () => {
+      testsql(
+        mysqlQb()
+          .from('users')
+          .upsert([
+            { email: 'foo', name: 'taylor' },
+            { email: 'bar', name: 'dayle' },
+          ]),
+        {
+          mysql: {
+            sql: 'replace into `users` (`email`, `name`) values (?, ?), (?, ?)',
+            bindings: ['foo', 'taylor', 'bar', 'dayle'],
+          },
+        },
+        mysqlClient
+      );
+    });
+  });
 });
