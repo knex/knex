@@ -640,6 +640,9 @@ describe('Additional', function () {
               tester('mysql', [
                 'show full fields from `accounts` where field = ?',
               ]);
+              tester('mysql2', [
+                'alter table `accounts` rename column `about` to `about_col`',
+              ]);
               tester('pg', [
                 'alter table "accounts" rename "about" to "about_col"',
               ]);
