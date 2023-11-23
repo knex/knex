@@ -561,7 +561,7 @@ declare namespace Knex {
   type ResolveTableType<
     TCompositeTableType,
     TScope extends TableInterfaceScope = 'base'
-  > = TCompositeTableType extends CompositeTableType<unknown>
+  > = TCompositeTableType extends CompositeTableType<{}>
     ? TCompositeTableType[TScope]
     : TCompositeTableType;
 
