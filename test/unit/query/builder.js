@@ -9508,6 +9508,55 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('#5738 - should allow query comments in querybuilder for insert statement', () => {
+    testsql(
+      qb()
+        .into('users')
+        .insert({ email: 'foo' })
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+
+      {
+        mysql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ insert into `users` (`email`) values (?)',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('#5738 - should allow query comments in querybuilder for update statement', () => {
+    testsql(
+      qb()
+        .from('users')
+        .update({ email: 'foo' })
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+      {
+        mysql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ update `users` set `email` = ?',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('#5738 - should allow query comments in querybuilder for delete statement', () => {
+    testsql(
+      qb()
+        .from('users')
+        .delete()
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+      {
+        mysql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ delete from `users`',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('#1982 (2) - should throw error on non string', () => {
     try {
       testsql(qb().from('testtable').comment({ prop: 'val' }), {
