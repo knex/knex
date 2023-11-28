@@ -311,6 +311,12 @@ describe('Where', function () {
         await knex('accounts').whereIn('id', [1, 2, 3]).select();
       });
 
+      it('handles "where in" raw cases', async () => {
+        await knex('accounts')
+          .whereIn(knex.raw('?', [9]), [1, 2, 3])
+          .select();
+      });
+
       it('handles "or where in" cases', async () => {
         await knex('accounts')
           .where('email', 'test1@example.com')
