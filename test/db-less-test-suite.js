@@ -10,6 +10,7 @@ describe('Util Tests', function () {
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
+  require('./unit/util/security');
 });
 
 describe('Query Building Tests', function () {
@@ -22,6 +23,7 @@ describe('Query Building Tests', function () {
   require('./unit/schema-builder/mysql')('mysql2');
   require('./unit/schema-builder/extensions');
   require('./unit/schema-builder/postgres');
+  require('./unit/schema-builder/cockroachdb');
   require('./unit/schema-builder/redshift');
   require('./unit/schema-builder/sqlite3');
   require('./unit/schema-builder/oracle');
@@ -43,6 +45,18 @@ if (config.mssql) {
 
 if (config.postgres) {
   require('./unit/dialects/postgres');
+}
+
+if (config.oracledb) {
+  require('./unit/dialects/oracledb');
+}
+
+if (config.mysql) {
+  require('./unit/dialects/mysql');
+}
+
+if (config['better-sqlite3']) {
+  require('./unit/dialects/better-sqlite3');
 }
 
 describe('CLI tests', function () {

@@ -7,14 +7,15 @@ const config = {
   useNullAsDefault: true,
   migrations: {
     extension: 'mjs',
-    loadExtensions: ['.mjs']
+    loadExtensions: ['.mjs'],
   },
   seeds: {
     extension: 'mjs',
-    loadExtensions: ['.mjs']
-  }
+    loadExtensions: ['.mjs'],
+  },
 };
 /** ignored by knex */
 export default config;
 /** Named exports: or knex won't find them */
-export const { client, connection, useNullAsDefault, migrations , seeds } = config;
+export const { client, connection, useNullAsDefault, migrations, seeds } =
+  config;

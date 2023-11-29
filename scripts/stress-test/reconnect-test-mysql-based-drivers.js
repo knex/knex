@@ -79,7 +79,7 @@ async function mysql2Query(sql) {
 
 const counters = {};
 function setMysqlQueryCounters(name) {
-  const counts = (counters[name] = { queries: 0, results: 0, errors: 0 });
+  counters[name] = { queries: 0, results: 0, errors: 0 };
 }
 setMysqlQueryCounters('mysql');
 setMysqlQueryCounters('mysql2');
@@ -91,7 +91,7 @@ let lastCounters = _.cloneDeep(counters);
 
 setInterval(() => {
   const reqsPerSec = {};
-  for (let key of Object.keys(counters)) {
+  for (const key of Object.keys(counters)) {
     reqsPerSec[key] = {
       queries: counters[key].queries - lastCounters[key].queries,
       results: counters[key].results - lastCounters[key].results,
@@ -117,7 +117,9 @@ async function main() {
       await rp.delete({
         url: `${toxicli.host}/proxies/${serviceName}`,
       });
-    } catch (err) {}
+    } catch (err) {
+      /* empty */
+    }
 
     const proxy = await toxicli.createProxy({
       name: serviceName,
@@ -154,6 +156,7 @@ async function main() {
   async function loopQueries(prefix, query) {
     const counts = counters[prefix];
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         counts.queries += 1;
@@ -174,6 +177,7 @@ async function main() {
   loopQueries('mysql2', () => mysql2Query('select 1'));
 
   // wait forever
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await delay(1000);
   }

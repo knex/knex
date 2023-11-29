@@ -1,0 +1,40 @@
+---
+name: Legacy Types Linting
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Legacy Types Linting
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          always-auth: false
+          node-version: ${{ matrix.node-version }}
+
+      - name: Run npm install
+        run: npm install
+
+      - name: Run lint:everything
+        run: npm run lint:types:legacy

@@ -19,7 +19,6 @@ If issue is about TypeScript definitions, tag @ lorefnon.
    database connection to MySQL or PostgreSQL, then single file example which initializes
    needed data and demonstrates the problem.
 
-
 # Feature discussion / request
 
 1. Explain what is your use case
@@ -28,14 +27,11 @@ If issue is about TypeScript definitions, tag @ lorefnon.
 
 3. Give some API proposal, how the feature should work
 
-
 # Missing / erroneus documentation
 
 Send issue to documentation repo, or fix it and send PR https://github.com/knex/documentation
-
 
 # Questions about how to use knex
 
 GitHub issues are for knex development. Please send questions how to use knex to
 Stack Overflow or ask about it in gitter chat.
-
