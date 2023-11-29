@@ -811,23 +811,26 @@ module.exports = function (knex) {
       });
     });
 
-    it('exposes baseExecutionPromise', async () => {
-      let committed = false;
+    it('exposes the parent transaction', async () => {
       await knex.transaction(async (trx1) => {
-        expect(trx1.baseExecutionPromise).to.equal(trx1.executionPromise);
+        expect(trx1.parentTransaction).to.equal(undefined);
+
         await trx1.transaction(async (trx2) => {
-          expect(trx2.baseExecutionPromise).to.equal(trx1.executionPromise);
-          await trx2.transaction(async (trx3) => {
-            expect(trx3.baseExecutionPromise).to.equal(trx1.executionPromise);
-            trx3.baseExecutionPromise.then(() => {
-              committed = true;
-            });
-          });
-          expect(committed).to.be.false;
+          expect(trx2.parentTransaction).to.equal(trx1);
         });
-        expect(committed).to.be.false;
+
+        await trx1.transaction(async (trx2) => {
+          expect(trx2.parentTransaction).to.equal(trx1);
+
+          await trx2.transaction(async (trx3) => {
+            expect(trx3.parentTransaction).to.equal(trx2);
+          });
+
+          await trx2.transaction(async (trx3) => {
+            expect(trx3.parentTransaction).to.equal(trx2);
+          });
+        });
       });
-      expect(committed).to.be.true;
     });
   });
 };
