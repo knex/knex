@@ -914,6 +914,20 @@ describe('Inserts', function () {
           });
       });
 
+      it('#5738 should handle insert with comments', async function () {
+        await knex('test_default_table')
+          .insert({}, 'id')
+          .comment('insert into test_default_table')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              '/* insert into test_default_table */ insert into `test_default_table` () values ()',
+              [],
+              [2]
+            );
+          });
+      });
+
       it('should handle empty arrays inserts', async function () {
         await knex.schema.createTable('test_default_table2', function (qb) {
           qb.increments().primary();
