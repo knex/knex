@@ -62,7 +62,25 @@ module.exports = function (knex) {
             [2],
             1
           );
-          tester('sqlite3', 'delete from `accounts` where `id` = ?', [2], 1);
+          tester(
+            'sqlite3',
+            'delete from `accounts` where `id` = ? returning *',
+            [2],
+            [
+              {
+                id: '2',
+                first_name: 'Test',
+                last_name: 'User',
+                email: 'test2@example.com',
+                logins: 1,
+                balance: 0,
+                about: 'Lorem ipsum Dolore labore incididunt enim.',
+                created_at: TEST_TIMESTAMP,
+                updated_at: TEST_TIMESTAMP,
+                phone: null,
+              },
+            ]
+          );
           tester('oracledb', 'delete from "accounts" where "id" = ?', [2], 1);
           tester(
             'mssql',
