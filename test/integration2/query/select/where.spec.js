@@ -639,6 +639,7 @@ describe('Where', function () {
 
         it("doesn't find data using whereLike when different case sensitivity", async () => {
           const result = await knex('accounts').whereLike('email', 'Test1%');
+          // sqlite only supports case-insensitive search
           if (isSQLite(knex)) {
             expect(result.length).to.equal(1);
             expect(result[0].email).to.equal('test1@example.com');
