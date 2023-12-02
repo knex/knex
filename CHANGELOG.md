@@ -1,5 +1,9 @@
 # Master (Unreleased)
 
+# 3.0.1 - 6 October, 2023
+
+- Build fix
+
 # 3.0.0 - 6 October, 2023
 
 - Fix raw bindings typing (#5401)
