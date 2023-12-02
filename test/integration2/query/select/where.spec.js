@@ -556,7 +556,14 @@ describe('Where', function () {
 
       describe('where like', async function () {
         beforeEach(function () {
-          if (!(isPostgreSQL(knex) || isMssql(knex) || isMysql(knex))) {
+          if (
+            !(
+              isPostgreSQL(knex) ||
+              isSQLite(knex) ||
+              isMssql(knex) ||
+              isMysql(knex)
+            )
+          ) {
             return this.skip();
           }
         });
@@ -632,7 +639,12 @@ describe('Where', function () {
 
         it("doesn't find data using whereLike when different case sensitivity", async () => {
           const result = await knex('accounts').whereLike('email', 'Test1%');
-          expect(result).to.deep.equal([]);
+          if (isSQLite(knex)) {
+            expect(result.length).to.equal(1);
+            expect(result[0].email).to.equal('test1@example.com');
+          } else {
+            expect(result).to.deep.equal([]);
+          }
         });
       });
 
