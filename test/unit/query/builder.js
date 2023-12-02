@@ -9520,6 +9520,55 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('#5738 - should allow query comments in querybuilder for insert statement', () => {
+    testsql(
+      qb()
+        .into('users')
+        .insert({ email: 'foo' })
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+
+      {
+        mysql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ insert into `users` (`email`) values (?)',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('#5738 - should allow query comments in querybuilder for update statement', () => {
+    testsql(
+      qb()
+        .from('users')
+        .update({ email: 'foo' })
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+      {
+        mysql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ update `users` set `email` = ?',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('#5738 - should allow query comments in querybuilder for delete statement', () => {
+    testsql(
+      qb()
+        .from('users')
+        .delete()
+        .comment('Added comment 1')
+        .comment('Added comment 2'),
+      {
+        mysql: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ delete from `users`',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('#1982 (2) - should throw error on non string', () => {
     try {
       testsql(qb().from('testtable').comment({ prop: 'val' }), {
@@ -11634,6 +11683,167 @@ describe('QueryBuilder', () => {
               bindings: ['{"test":"value"}', '{"test":"value2"}'],
             },
           }
+        );
+      });
+    });
+  });
+
+  describe('Upsert', () => {
+    function mysqlQb() {
+      return clients.mysql.queryBuilder();
+    }
+
+    const mysqlClient = {
+      mysql: clients.mysql,
+    };
+
+    const mysqlClientWithNullAsDefault = {
+      mysql: clientsWithNullAsDefault.mysql,
+    };
+
+    describe('toSQL method', () => {
+      it('upsert: one record with one field', () => {
+        testsql(
+          mysqlQb().from('users').upsert({ email: 'foo' }),
+          {
+            mysql: {
+              sql: 'replace into `users` (`email`) values (?)',
+              bindings: ['foo'],
+            },
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: multiple records with multiple fields', () => {
+        testsql(
+          mysqlQb()
+            .from('users')
+            .upsert([
+              { email: 'foo', name: 'taylor' },
+              { email: 'bar', name: 'dayle' },
+            ]),
+          {
+            mysql: {
+              sql: 'replace into `users` (`email`, `name`) values (?, ?), (?, ?)',
+              bindings: ['foo', 'taylor', 'bar', 'dayle'],
+            },
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: one record with returning', () => {
+        // check that returning doesn't break anything
+        testsql(
+          mysqlQb()
+            .from('users')
+            .upsert({ email: 'foo', name: 'taylor' }, 'id'),
+          {
+            mysql: {
+              sql: 'replace into `users` (`email`, `name`) values (?, ?)',
+              bindings: ['foo', 'taylor'],
+            },
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: one record with multiple returnings', () => {
+        // check that returning doesn't break anything
+        testsql(
+          mysqlQb()
+            .from('users')
+            .upsert({ email: 'foo', name: 'taylor' }, ['id', 'name']),
+          {
+            mysql: {
+              sql: 'replace into `users` (`email`, `name`) values (?, ?)',
+              bindings: ['foo', 'taylor'],
+            },
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: respects raw bindings', () => {
+        testsql(
+          mysqlQb()
+            .from('users')
+            .upsert({ email: raw('CURRENT TIMESTAMP'), name: 'taylor' }),
+          {
+            mysql: {
+              sql: 'replace into `users` (`email`, `name`) values (CURRENT TIMESTAMP, ?)',
+              bindings: ['taylor'],
+            },
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: empty query', () => {
+        testsql(
+          mysqlQb().from('users').upsert(),
+          {
+            mysql: {
+              sql: '',
+              bindings: [],
+            },
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: empty array', () => {
+        testsql(
+          mysqlQb().from('users').upsert([]),
+          {
+            mysql: {
+              sql: '',
+              bindings: [],
+            },
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: empty object in an array', () => {
+        testsql(
+          mysqlQb().from('users').upsert([{}]),
+          {
+            mysql: {
+              sql: 'replace into `users` () values ()',
+              bindings: [],
+            },
+          },
+          mysqlClient
+        );
+      });
+    });
+
+    describe('toQuery method', () => {
+      it('upsert: multiple records with missing fields and no nullAsDefault setting', () => {
+        testquery(
+          mysqlQb()
+            .from('users')
+            .upsert([{ email: 'foo' }, { name: 'dayle' }]),
+          {
+            mysql:
+              "replace into `users` (`email`, `name`) values ('foo', DEFAULT), (DEFAULT, 'dayle')",
+          },
+          mysqlClient
+        );
+      });
+
+      it('upsert: multiple records with missing fields and nullAsDefault setting is true', () => {
+        testquery(
+          mysqlQb()
+            .from('users')
+            .upsert([{ name: 'taylor' }, { email: 'bar' }]),
+          {
+            mysql:
+              "replace into `users` (`email`, `name`) values (NULL, 'taylor'), ('bar', NULL)",
+          },
+          mysqlClientWithNullAsDefault
         );
       });
     });

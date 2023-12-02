@@ -561,7 +561,7 @@ declare namespace Knex {
   type ResolveTableType<
     TCompositeTableType,
     TScope extends TableInterfaceScope = 'base'
-  > = TCompositeTableType extends CompositeTableType<unknown>
+  > = TCompositeTableType extends CompositeTableType<{}>
     ? TCompositeTableType[TScope]
     : TCompositeTableType;
 
@@ -734,6 +734,8 @@ declare namespace Knex {
     orHavingNotIn: HavingRange<TRecord, TResult>;
     havingNull: HavingNull<TRecord, TResult>;
     havingNotNull: HavingNull<TRecord, TResult>;
+    orHavingNull: HavingNull<TRecord, TResult>;
+    orHavingNotNull: HavingNull<TRecord, TResult>;
 
     // Clear
     clearSelect(): QueryBuilder<
@@ -2321,6 +2323,7 @@ declare namespace Knex {
   interface Transaction<TRecord extends {} = any, TResult = any[]>
     extends Knex<TRecord, TResult> {
     executionPromise: Promise<TResult>;
+    parentTransaction?: Transaction;
     isCompleted: () => boolean;
 
     query<TRecord extends {} = any, TResult = void>(
@@ -3043,7 +3046,7 @@ declare namespace Knex {
     host?: string;
     connectionString?: string;
     keepAlive?: boolean;
-    stream?: stream.Duplex;
+    stream?: () => stream.Duplex | stream.Duplex | undefined;
     statement_timeout?: false | number;
     parseInputDatesAsUTC?: boolean;
     ssl?: boolean | ConnectionOptions;
