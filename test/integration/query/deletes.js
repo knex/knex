@@ -68,7 +68,7 @@ module.exports = function (knex) {
             [2],
             [
               {
-                id: '2',
+                id: 2,
                 first_name: 'Test',
                 last_name: 'User',
                 email: 'test2@example.com',
