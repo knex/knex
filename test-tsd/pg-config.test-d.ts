@@ -11,7 +11,7 @@ expectAssignable<Knex.PgConnectionConfig>({
   host: '',
   connectionString: '',
   keepAlive: true,
-  stream: new stream.Duplex(),
+  stream: () => new stream.Duplex(),
   statement_timeout: false,
   parseInputDatesAsUTC: false,
   ssl: true,
