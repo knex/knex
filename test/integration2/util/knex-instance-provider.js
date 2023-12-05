@@ -1,8 +1,10 @@
+
 const { promisify } = require('util');
 const knex = require('../../../lib');
 
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
+const {cloneDeep} = require('lodash');
 
 const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
@@ -238,7 +240,7 @@ const testConfigs = {
 };
 
 function getDbTestConfig(db) {
-  return testConfigs[db];
+  return cloneDeep(testConfigs[db]);
 }
 
 function getKnexForDb(db, configOverrides = {}) {

@@ -82,43 +82,46 @@ describe('PostgreSQL & Cockroach DB', () => {
           });
 
           // cockroachdb doesn't support altering columns at this point in time? https://github.com/cockroachdb/cockroach/issues/49329
-          if (db !== Db.CockroachDB) {
-            it('if default datetime precision specified, it gets used when altering datetime/timestamp fields', async () => {
-              const tableName = 'default_datetime_precision_test_' + Date.now();
-              const colTimestamp = 'timestamp_field';
-              const colDatetime = 'datetime_field';
+          it('if default datetime precision specified, it gets used when altering datetime/timestamp fields', async () => {
+            if (db !== Db.CockroachDB) {
+              this.skip();
+              return;
+            }
 
-              const initialPrecision = 5;
+            const tableName = 'default_datetime_precision_test_' + Date.now();
+            const colTimestamp = 'timestamp_field';
+            const colDatetime = 'datetime_field';
 
-              await knex.schema.createTable(tableName, (table) => {
-                table.timestamp(colTimestamp, {
-                  precision: initialPrecision,
-                });
-                table.datetime(colDatetime, { precision: initialPrecision });
+            const initialPrecision = 5;
+
+            await knex.schema.createTable(tableName, (table) => {
+              table.timestamp(colTimestamp, {
+                precision: initialPrecision,
               });
-
-              const metaData = await checkColMetadata(tableName);
-              expect(metaData[colTimestamp]['datetime_precision']).to.eq(
-                initialPrecision
-              );
-              expect(metaData[colDatetime]['datetime_precision']).to.eq(
-                initialPrecision
-              );
-
-              await knex.schema.alterTable(tableName, (table) => {
-                table.timestamp(colTimestamp).alter();
-                table.datetime(colDatetime).alter();
-              });
-
-              const newMetaData = await checkColMetadata(tableName);
-              expect(newMetaData[colTimestamp]['datetime_precision']).to.eq(
-                CONFIGURED_DEFAULT_DATETIME_PRECISION
-              );
-              expect(newMetaData[colDatetime]['datetime_precision']).to.eq(
-                CONFIGURED_DEFAULT_DATETIME_PRECISION
-              );
+              table.datetime(colDatetime, { precision: initialPrecision });
             });
-          }
+
+            const metaData = await checkColMetadata(tableName);
+            expect(metaData[colTimestamp]['datetime_precision']).to.eq(
+              initialPrecision
+            );
+            expect(metaData[colDatetime]['datetime_precision']).to.eq(
+              initialPrecision
+            );
+
+            await knex.schema.alterTable(tableName, (table) => {
+              table.timestamp(colTimestamp).alter();
+              table.datetime(colDatetime).alter();
+            });
+
+            const newMetaData = await checkColMetadata(tableName);
+            expect(newMetaData[colTimestamp]['datetime_precision']).to.eq(
+              CONFIGURED_DEFAULT_DATETIME_PRECISION
+            );
+            expect(newMetaData[colDatetime]['datetime_precision']).to.eq(
+              CONFIGURED_DEFAULT_DATETIME_PRECISION
+            );
+          });
         });
       });
     });
