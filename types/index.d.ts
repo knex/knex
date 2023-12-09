@@ -1400,7 +1400,7 @@ declare namespace Knex {
       TRecord2 extends {} = {},
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      callback: Function,
+      callback: (this: QueryBuilder<TRecord2, TResult2>) => QueryBuilder<TRecord2, TResult2>,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
