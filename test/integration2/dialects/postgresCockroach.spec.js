@@ -82,7 +82,7 @@ describe('PostgreSQL & Cockroach DB', () => {
           });
 
           // cockroachdb doesn't support altering columns at this point in time? https://github.com/cockroachdb/cockroach/issues/49329
-          it('if default datetime precision specified, it gets used when altering datetime/timestamp fields', async () => {
+          it('if default datetime precision specified, it gets used when altering datetime/timestamp fields', async function () {
             if (db !== Db.CockroachDB) {
               this.skip();
               return;
