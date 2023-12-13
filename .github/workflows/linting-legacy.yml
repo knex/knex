@@ -1,5 +1,5 @@
 ---
-name: Unit Tests
+name: Legacy Types Linting
 
 on:
   push:
@@ -15,11 +15,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Unit Tests
+    name: Legacy Types Linting
 
     strategy:
       matrix:
-        node-version: [20.x, 18.x, 16.x]
+        node-version: [16.x]
 
     steps:
       - name: Checkout Repository
@@ -36,14 +36,5 @@ jobs:
       - name: Run npm install
         run: npm install
 
-      - name: Run npm install mysql2@3.2.0 if Node 12.x
-        run: npm install mysql2@3.2.0
-        if: matrix.node-version == '12.x'
-
-      - run: npm run build
-
-      - name: Run Tests
-        run: npm run test:unit
-        env:
-          CI: true
-          KNEX_TEST_TIMEOUT: 60000
+      - name: Run lint:everything
+        run: npm run lint:types:legacy

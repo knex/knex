@@ -13,8 +13,8 @@ import ResultTypes = require('./result');
 
 import { Tables } from './tables';
 
-import { ConnectionOptions } from 'tls';
 import { Stream } from 'stream';
+import { ConnectionOptions } from 'tls';
 
 // # Generic type-level utilities
 
@@ -374,7 +374,7 @@ interface DMLOptions {
   includeTriggerModifications?: boolean;
 }
 
-export interface Knex<TRecord extends {} = any, TResult = any[]>
+interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>,
     events.EventEmitter {
   <TTable extends Knex.TableNames>(
@@ -436,12 +436,13 @@ export interface Knex<TRecord extends {} = any, TResult = any[]>
   isTransaction?: boolean;
 }
 
-export declare function knex<TRecord extends {} = any, TResult = unknown[]>(
+declare function knex<TRecord extends {} = any, TResult = unknown[]>(
   config: Knex.Config | string
 ): Knex<TRecord, TResult>;
 
-export declare namespace knex {
-  class QueryBuilder {
+declare namespace knex {
+  export { knex, knex as default, Knex };
+  export class QueryBuilder {
     static extend(
       methodName: string,
       fn: <TRecord extends {} = any, TResult extends {} = unknown[]>(
@@ -456,25 +457,25 @@ export declare namespace knex {
     ): void;
   }
 
-  class TableBuilder {
+  export class TableBuilder {
     static extend<T = Knex.TableBuilder, B = Knex.TableBuilder>(
       methodName: string,
       fn: (this: T, ...args: any[]) => B
     ): void;
   }
-  class ViewBuilder {
+  export class ViewBuilder {
     static extend<T = Knex.ViewBuilder, B = Knex.ViewBuilder>(
       methodName: string,
       fn: (this: T, ...args: any[]) => B
     ): void;
   }
-  class SchemaBuilder {
+  export class SchemaBuilder {
     static extend<T = Knex.SchemaBuilder, B = Knex.SchemaBuilder>(
       methodName: string,
       fn: (this: T, ...args: any[]) => B
     ): void;
   }
-  class ColumnBuilder {
+  export class ColumnBuilder {
     static extend<T = Knex.ColumnBuilder, B = Knex.ColumnBuilder>(
       methodName: string,
       fn: (this: T, ...args: any[]) => B
@@ -486,7 +487,7 @@ export declare namespace knex {
   export const Client: typeof Knex.Client;
 }
 
-export declare namespace Knex {
+declare namespace Knex {
   //
   // Utility Types
   //
@@ -560,7 +561,7 @@ export declare namespace Knex {
   type ResolveTableType<
     TCompositeTableType,
     TScope extends TableInterfaceScope = 'base'
-  > = TCompositeTableType extends CompositeTableType<unknown>
+  > = TCompositeTableType extends CompositeTableType<{}>
     ? TCompositeTableType[TScope]
     : TCompositeTableType;
 
@@ -733,6 +734,8 @@ export declare namespace Knex {
     orHavingNotIn: HavingRange<TRecord, TResult>;
     havingNull: HavingNull<TRecord, TResult>;
     havingNotNull: HavingNull<TRecord, TResult>;
+    orHavingNull: HavingNull<TRecord, TResult>;
+    orHavingNotNull: HavingNull<TRecord, TResult>;
 
     // Clear
     clearSelect(): QueryBuilder<
@@ -2116,10 +2119,7 @@ export declare namespace Knex {
 
   interface RawBuilder<TRecord extends {} = any, TResult = any> {
     <TResult2 = TResult>(value: Value): Raw<TResult2>;
-    <TResult2 = TResult>(
-      sql: string,
-      binding: RawBinding
-    ): Raw<TResult2>;
+    <TResult2 = TResult>(sql: string, binding: RawBinding): Raw<TResult2>;
     <TResult2 = TResult>(
       sql: string,
       bindings: readonly RawBinding[] | ValueDict
@@ -2323,6 +2323,7 @@ export declare namespace Knex {
   interface Transaction<TRecord extends {} = any, TResult = any[]>
     extends Knex<TRecord, TResult> {
     executionPromise: Promise<TResult>;
+    parentTransaction?: Transaction;
     isCompleted: () => boolean;
 
     query<TRecord extends {} = any, TResult = void>(
@@ -3045,7 +3046,7 @@ export declare namespace Knex {
     host?: string;
     connectionString?: string;
     keepAlive?: boolean;
-    stream?: stream.Duplex;
+    stream?: () => stream.Duplex | stream.Duplex | undefined;
     statement_timeout?: false | number;
     parseInputDatesAsUTC?: boolean;
     ssl?: boolean | ConnectionOptions;
@@ -3271,4 +3272,4 @@ export declare namespace Knex {
   }
 }
 
-export default knex;
+export = knex;

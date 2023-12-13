@@ -16,6 +16,22 @@ const main = async () => {
     await knex<User>('users')
       .groupBy('count')
       .orderBy('name', 'desc')
+      .havingNull('age')
+      .orHavingNull('name')
+  );
+
+  expectType<User[]>(
+    await knex<User>('users')
+      .groupBy('count')
+      .orderBy('name', 'desc')
       .havingNotNull('age')
+  );
+
+  expectType<User[]>(
+    await knex<User>('users')
+      .groupBy('count')
+      .orderBy('name', 'desc')
+      .havingNotNull('age')
+      .orHavingNotNull('name')
   );
 };
