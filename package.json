@@ -143,7 +143,7 @@
     "tedious": "^16.6.1",
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.9.1",
-    "tsd": "^0.28.1",
+    "tsd": "^0.30.0",
     "typescript": "5.0.4"
   },
   "buildDependencies": [
