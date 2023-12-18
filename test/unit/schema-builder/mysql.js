@@ -723,6 +723,25 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test basic create table with composite key on big incrementing column + other', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.primary(['userId', 'name']);
+          table.bigincrements('userId');
+          table.string('name');
+        })
+        .toSQL();
+
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`userId` bigint unsigned not null, `name` varchar(255), primary key (`userId`, `name`))'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table `users` modify column `userId` bigint unsigned not null auto_increment'
+      );
+    });
+
     it('test adding column after another column', function () {
       tableSql = client
         .schemaBuilder()

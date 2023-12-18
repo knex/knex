@@ -86,6 +86,21 @@ module.exports = function (knex) {
         });
     });
 
+    it('#5738 should handle deletes with comments', function () {
+      return knex('accounts')
+        .where('id', 1)
+        .del()
+        .comment('removing acccount')
+        .testSql(function (tester) {
+          tester(
+            'mysql',
+            '/* removing acccount */ delete from `accounts` where `id` = ?',
+            [1],
+            0
+          );
+        });
+    });
+
     describe('Delete with join', function () {
       it('should handle basic delete with join', async function () {
         const query = knex('test_table_two')

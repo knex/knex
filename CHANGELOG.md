@@ -1,5 +1,31 @@
 # Master (Unreleased)
 
+# 3.1.0 - 8 December, 2023
+
+### Bug fixes
+
+- andWhereNotJsonObject calling wrong function (#5683)
+- PostgreSQL: fix error when setting query_timeout (#5673)
+- MySQL: Missing comments on delete, update and insert (#5738)
+- MySQL: Fixed issue with bigincrements not working with composite primary key - #5341 (#5343)
+
+### Types
+
+- Add type definitions for orHavingNull and orHavingNotNull (#5669)
+- Import knex as type in TS migration template (#5741)
+- Fix conditional constraint error (#5747)
+- PostgreSQL: Fix typing to reflect pg typing change (#5647)
+
+### New features
+
+- Add transactor.parentTransaction (#5567)
+- MySQL: Added implementation for upsert (#5743)
+- Oracle: Support Object Names Greater than 30 Characters for Oracle DB Versions 12.2 and Greater (#5197)
+
+# 3.0.1 - 6 October, 2023
+
+- Build fix
+
 # 3.0.0 - 6 October, 2023
 
 - Fix raw bindings typing (#5401)
