@@ -44,17 +44,17 @@ describe('Migrations Lifecycle Hooks', () => {
 
         describe('beforeAll', () => {
           it('runs before the migrations batch', async function () {
-            let beforeCount;
+            let count;
             await knex.migrate.latest({
               directory: 'test/integration2/migrate/test',
               beforeAll: async (knexOrTrx) => {
                 const data = await knexOrTrx('knex_migrations').select('*');
-                beforeCount = data.length;
+                count = data.length;
               },
             });
 
             const data = await knex('knex_migrations').select('*');
-            expect(data.length).to.equal(beforeCount + 2);
+            expect(data.length).to.equal(count + 2);
           });
         });
 
