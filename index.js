@@ -1,6 +1,8 @@
+'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+exports.getDialectByNameOrAlias = void 0;
 const { resolveClientNameWithAliases } = require('../util/helpers');
-
-const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
+const dbNameToDialectLoader = Object.freeze({
   'better-sqlite3': () => require('./better-sqlite3'),
   cockroachdb: () => require('./cockroachdb'),
   mssql: () => require('./mssql'),
@@ -13,7 +15,6 @@ const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
   redshift: () => require('./redshift'),
   sqlite3: () => require('./sqlite3'),
 });
-
 /**
  * Gets the Dialect object with the given client name or throw an
  * error if not found.
@@ -21,7 +22,7 @@ const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
  * NOTE: This is a replacement for prior practice of doing dynamic
  * string construction for imports of Dialect objects.
  */
-export function getDialectByNameOrAlias(clientName: string) {
+function getDialectByNameOrAlias(clientName) {
   const resolvedClientName = resolveClientNameWithAliases(clientName);
   const dialectLoader = dbNameToDialectLoader[resolvedClientName];
   if (!dialectLoader) {
@@ -29,3 +30,5 @@ export function getDialectByNameOrAlias(clientName: string) {
   }
   return dialectLoader();
 }
+exports.getDialectByNameOrAlias = getDialectByNameOrAlias;
+//# sourceMappingURL=index.js.map

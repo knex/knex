@@ -1,25 +1,28 @@
 {
   "name": "knex",
-  "version": "2.4.2",
+  "version": "3.1.0",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex",
   "types": "types/index.d.ts",
   "engines": {
-    "node": ">=12"
+    "node": ">=16"
   },
   "scripts": {
-    "build": "npm run build:gitignore && npm run build:ts",
+    "build": "npm run build:gitignore && npm run build:ts && npm run format",
     "clean": "node scripts/clean.js",
     "build:ts": "tsc",
     "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
-    "format": "prettier --write \"{lib,bin,scripts,test}/**/*.js\"",
-    "format:check-difference": "prettier --list-different \"{lib,bin,scripts,test}/**/*.js\"",
+    "format": "prettier --write --list-different .",
+    "format:check": "prettier --list-different .",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
     "coveralls": "nyc report --reporter=lcov",
-    "lint": "eslint \"lib/**/*.js\" \"test/**/*.js\" \"bin/**/*.js\"",
-    "lint:types": "tsd && dtslint types",
-    "lint:everything": "npm run lint:types && npm run lint",
+    "lint": "eslint --cache .",
+    "lint:fix": "eslint --cache --fix .",
+    "lint:types": "tsd",
+    "lint:types:legacy": "dtslint types",
+    "lint:everything": "npm run lint && npm run lint:types",
+    "lint:fix:everything": "npm run lint:fix && npm run lint:types",
     "test:unit": "npm run test:unit-only && npm run test:cli",
     "test:unit-only": "mocha --exit -t 10000 --config test/mocha-unit-config-test.js",
     "test:db": "mocha --exit -t 10000 --config test/mocha-integration-config-test.js",
@@ -56,9 +59,7 @@
     "db:stop:oracle": "docker-compose -f scripts/docker-compose.yml down",
     "stress:init": "docker-compose -f scripts/stress-test/docker-compose.yml up --no-start && docker-compose -f scripts/stress-test/docker-compose.yml start",
     "stress:test": "node scripts/stress-test/knex-stress-test.js | grep -A 5 -B 60 -- '- STATS '",
-    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop",
-    "prepare": "husky install && npm run clean && npm run build",
-    "prepublishOnly": "npm run format:check-difference && npm run lint && npm run clean && npm run build"
+    "stress:destroy": "docker-compose -f scripts/stress-test/docker-compose.yml stop"
   },
   "dependencies": {
     "colorette": "2.0.19",
@@ -70,7 +71,7 @@
     "getopts": "2.3.0",
     "interpret": "^2.2.0",
     "lodash": "^4.17.21",
-    "pg-connection-string": "2.5.0",
+    "pg-connection-string": "2.6.2",
     "rechoir": "^0.8.0",
     "resolve-from": "^5.0.0",
     "tarn": "^3.0.2",
@@ -100,14 +101,13 @@
     }
   },
   "lint-staged": {
-    "*.{js,json}": [
-      "prettier --write"
-    ]
+    "*": "prettier --ignore-unknown --write",
+    "*.js": "eslint --cache --fix"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
-    "@types/node": "^18.7.14",
-    "better-sqlite3": "^7.6.2",
+    "@types/node": "^20.4.0",
+    "better-sqlite3": "^9.1.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
     "chai-subset-in-order": "^3.1.0",
@@ -115,9 +115,9 @@
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
     "dtslint": "4.2.1",
-    "eslint": "^8.32.0",
+    "eslint": "^8.54.0",
     "eslint-config-prettier": "^8.6.0",
-    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
@@ -129,22 +129,22 @@
     "mysql": "^2.18.1",
     "mysql2": "^3.2.0",
     "nyc": "^15.1.0",
-    "oracledb": "^5.4.0",
+    "oracledb": "^6.1.0",
     "pg": "^8.8.0",
     "pg-query-stream": "^4.2.4",
     "prettier": "2.8.7",
-    "rimraf": "^3.0.2",
+    "rimraf": "^5.0.5",
     "sinon": "^15.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
     "sqlite3": "^5.0.11",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.0",
-    "tedious": "^14.4.0",
+    "tedious": "^16.6.1",
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.9.1",
     "tsd": "^0.28.1",
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "buildDependencies": [
     "rimraf"
@@ -234,6 +234,7 @@
     "CHANGELOG.md",
     "CONTRIBUTING.md",
     "knex.js",
+    "knex.mjs",
     "LICENSE",
     "README.md",
     "UPGRADING.md"

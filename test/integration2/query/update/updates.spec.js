@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../../util/constants');
+const { isPostgreSQL } = require('../../../util/db-helpers');
 const {
   getAllDbs,
   getKnexForDb,
@@ -77,6 +78,25 @@ describe('Updates', function () {
             tester(
               'mssql',
               'update [accounts] set [first_name] = ?, [last_name] = ?, [email] = ? where [id] = ?;select @@rowcount',
+              ['User', 'Test', 'test100@example.com', 1],
+              1
+            );
+          });
+      });
+
+      it('#5738 should handle update with comments', async function () {
+        await knex('accounts')
+          .where('id', 1)
+          .update({
+            first_name: 'User',
+            last_name: 'Test',
+            email: 'test100@example.com',
+          })
+          .comment('update in account')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              '/* update in account */ update `accounts` set `first_name` = ?, `last_name` = ?, `email` = ? where `id` = ?',
               ['User', 'Test', 'test100@example.com', 1],
               1
             );
@@ -341,7 +361,20 @@ describe('Updates', function () {
                 1,
                 (v) => v.toString() === '[object ReturningHelper:ROWID]',
               ],
-              1
+              [
+                {
+                  id: accountId1,
+                  first_name: 'UpdatedUser',
+                  last_name: 'UpdatedTest',
+                  email: 'test100@example.com',
+                  logins: 1,
+                  balance: 12.24,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                },
+              ]
             );
             tester(
               'mssql',
@@ -365,6 +398,146 @@ describe('Updates', function () {
           });
       });
 
+      it('should allow returning for updates with specific transaction', async function () {
+        await knex('accounts').where('id', accountId1).update({
+          balance: 12.240000000000002,
+        });
+
+        await knex.transaction(function (tr) {
+          return knex('accounts')
+            .transacting(tr)
+            .where('id', accountId1)
+            .update(
+              {
+                email: 'test100@example.com',
+                first_name: 'UpdatedUser',
+                last_name: 'UpdatedTest',
+              },
+              '*'
+            )
+            .testSql(function (tester) {
+              tester(
+                'mysql',
+                'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+                ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
+                1
+              );
+              tester(
+                'pg',
+                'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
+                ['test100@example.com', 'UpdatedUser', 'UpdatedTest', '1'],
+                [
+                  {
+                    id: '1',
+                    first_name: 'UpdatedUser',
+                    last_name: 'UpdatedTest',
+                    email: 'test100@example.com',
+                    logins: 1,
+                    balance: 12.24,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'cockroachdb',
+                'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
+                [
+                  'test100@example.com',
+                  'UpdatedUser',
+                  'UpdatedTest',
+                  accountId1,
+                ],
+                [
+                  {
+                    id: accountId1,
+                    first_name: 'UpdatedUser',
+                    last_name: 'UpdatedTest',
+                    email: 'test100@example.com',
+                    logins: '1',
+                    balance: 12.24,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'pg-redshift',
+                'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+                ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
+                1
+              );
+              tester(
+                'sqlite3',
+                'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ? returning *',
+                ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
+                [
+                  {
+                    id: 1,
+                    first_name: 'UpdatedUser',
+                    last_name: 'UpdatedTest',
+                    email: 'test100@example.com',
+                    logins: 1,
+                    balance: 12.240000000000002,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'oracledb',
+                'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning "ROWID" into ?',
+                [
+                  'test100@example.com',
+                  'UpdatedUser',
+                  'UpdatedTest',
+                  1,
+                  (v) => v.toString() === '[object ReturningHelper:ROWID]',
+                ],
+                [
+                  {
+                    id: accountId1,
+                    first_name: 'UpdatedUser',
+                    last_name: 'UpdatedTest',
+                    email: 'test100@example.com',
+                    logins: 1,
+                    balance: 12.24,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+              tester(
+                'mssql',
+                'update [accounts] set [email] = ?, [first_name] = ?, [last_name] = ? output inserted.* where [id] = ?',
+                ['test100@example.com', 'UpdatedUser', 'UpdatedTest', '1'],
+                [
+                  {
+                    id: '1',
+                    first_name: 'UpdatedUser',
+                    last_name: 'UpdatedTest',
+                    email: 'test100@example.com',
+                    logins: 1,
+                    balance: 12.240000000000002,
+                    about: 'Lorem ipsum Dolore labore incididunt enim.',
+                    created_at: TEST_TIMESTAMP,
+                    updated_at: TEST_TIMESTAMP,
+                    phone: null,
+                  },
+                ]
+              );
+            });
+        });
+      });
+
       it('with update query', async function () {
         await knex
           .with('withClause', function () {
@@ -379,6 +552,30 @@ describe('Updates', function () {
           .from('accounts')
           .where('email', '=', 'test1@example.com');
         expect(results[0].last_name).to.equal('olivier');
+      });
+
+      it('should allow explicit from', async function () {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        await knex('accounts')
+          .update({ last_name: 'olivier' })
+          .with('withClause', function () {
+            this.select('id', 'last_name')
+              .from('accounts')
+              .where('email', '=', 'test1@example.com');
+          })
+          .updateFrom('withClause')
+          .where('withClause.id', '=', knex.ref('accounts.id'))
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'with "withClause" as (select "id", "last_name" from "accounts" where "email" = ?) update "accounts" set "last_name" = ? from "withClause" where "withClause"."id" = "accounts"."id"',
+              ['test1@example.com', 'olivier'],
+              1
+            );
+          });
       });
 
       it('should escaped json objects when update value #5059', async function () {

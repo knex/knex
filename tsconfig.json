@@ -6,17 +6,11 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "declaration": false,
-    "rootDirs": [
-      "lib"
-    ],
+    "rootDirs": ["lib"],
     "importHelpers": false,
     "sourceMap": true,
-    "baseUrl": ".",
+    "baseUrl": "."
   },
-  "include": [
-    "lib/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-  ]
+  "include": ["lib/**/*.ts"],
+  "exclude": ["node_modules"]
 }
