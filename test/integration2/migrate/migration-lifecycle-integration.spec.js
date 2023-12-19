@@ -14,7 +14,8 @@ describe('Migrations Lifecycle Hooks', function () {
     describe(db, () => {
       let knex;
 
-      before(async () => {
+      // Force clean slate before each test
+      beforeEach(async () => {
         rimraf.sync(path.join(__dirname, './migration'));
         knex = logger(getKnexForDb(db));
         // make sure lock was not left from previous failed test run
@@ -27,21 +28,7 @@ describe('Migrations Lifecycle Hooks', function () {
         });
       });
 
-      describe('knex.migrate.latest - lifecycle hooks', function () {
-        before(() => {
-          return knex.migrate.rollback(
-            { directory: 'test/integration2/migrate/test' },
-            true
-          );
-        });
-
-        afterEach(() => {
-          return knex.migrate.rollback(
-            { directory: 'test/integration2/migrate/test' },
-            true
-          );
-        });
-
+      describe('knex.migrate.latest', function () {
         describe('beforeAll', function () {
           it('runs before the migrations batch', async function () {
             let count;
