@@ -528,12 +528,6 @@ describe('Migrations', function () {
         });
 
         describe('knex.migrate.rollback', function () {
-          before(() => {
-            return knex.migrate.latest({
-              directory: 'test/integration2/migrate/test',
-            });
-          });
-
           it('should delete the most recent batch from the migration log', function () {
             return knex.migrate
               .rollback({ directory: 'test/integration2/migrate/test' })
