@@ -561,17 +561,17 @@ describe('Migrations', function () {
 
           describe('afterAll', () => {
             it('runs after the migrations batch', async function () {
-              let afterCount;
+              let count;
               await knex.migrate.latest({
                 directory: 'test/integration2/migrate/test',
                 afterAll: async (knexOrTrx) => {
                   const data = await knexOrTrx('knex_migrations').select('*');
-                  afterCount = data.length;
+                  count = data.length;
                 },
               });
 
               const data = await knex('knex_migrations').select('*');
-              expect(data.length).to.equal(afterCount);
+              expect(data.length).to.equal(count);
             });
           });
 
