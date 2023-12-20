@@ -147,16 +147,16 @@ describe('Migrations Lifecycle Hooks', function () {
             const afterEach = sinon.stub();
             const afterAll = sinon.stub();
 
-            await knex.migrate
+            const error = await knex.migrate
               .latest({
                 directory: 'test/integration2/migrate/test',
                 beforeEach,
                 afterEach,
                 afterAll,
               })
-              .catch((error) => {
-                expect(error.message).to.equal('force beforeEach hook failure');
-              });
+              .catch((error) => error);
+
+            expect(error.message).to.equal('force beforeEach hook failure');
 
             // Should not have run the migration
             const hasTableCreatedByMigration = await knex.schema.hasTable(
