@@ -140,7 +140,7 @@ describe('Migrations Lifecycle Hooks', function () {
             ]);
           });
 
-          it('does not run the migration or the afterEach/afterAll hooks if the hook fails', async function () {
+          it('does not run the migration and the afterEach/afterAll hooks if the hook fails', async function () {
             const beforeEach = sinon
               .stub()
               .throws(new Error('force beforeEach hook failure'));
