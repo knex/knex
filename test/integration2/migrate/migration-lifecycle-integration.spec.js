@@ -270,8 +270,7 @@ describe('Migrations Lifecycle Hooks', function () {
           });
         });
 
-        // NOTE (PR #5541) This is disabled pending further discussion
-        describe.skip('when there are no pending migrations', function () {
+        describe('when there are no pending migrations', function () {
           it('does not run any of the hooks', async function () {
             // Fire the migrations once to get the DB up to date
             await knex.migrate.latest({
