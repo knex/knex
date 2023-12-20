@@ -31,17 +31,29 @@ describe('Migrations Lifecycle Hooks', function () {
       describe('knex.migrate.latest', function () {
         describe('beforeAll', function () {
           it('runs before the migrations batch', async function () {
-            let count;
+            let count, migrationFiles;
             await knex.migrate.latest({
               directory: 'test/integration2/migrate/test',
-              beforeAll: async (knexOrTrx) => {
+              beforeAll: async (knexOrTrx, migrations) => {
                 const data = await knexOrTrx('knex_migrations').select('*');
                 count = data.length;
+                migrationFiles = migrations;
               },
             });
 
             const data = await knex('knex_migrations').select('*');
             expect(data.length).to.equal(count + 2);
+
+            expect(migrationFiles).to.deep.equal([
+              {
+                directory: 'test/integration2/migrate/test',
+                file: '20131019235242_migration_1.js',
+              },
+              {
+                directory: 'test/integration2/migrate/test',
+                file: '20131019235306_migration_2.js',
+              },
+            ]);
           });
 
           it('does not run the migration or beforeEach/afterEach/afterAll hooks if it fails', async function () {
@@ -79,17 +91,29 @@ describe('Migrations Lifecycle Hooks', function () {
 
         describe('afterAll', function () {
           it('runs after the migrations batch', async function () {
-            let count;
+            let count, migrationFiles;
             await knex.migrate.latest({
               directory: 'test/integration2/migrate/test',
-              afterAll: async (knexOrTrx) => {
+              afterAll: async (knexOrTrx, migrations) => {
                 const data = await knexOrTrx('knex_migrations').select('*');
                 count = data.length;
+                migrationFiles = migrations;
               },
             });
 
             const data = await knex('knex_migrations').select('*');
             expect(data.length).to.equal(count);
+
+            expect(migrationFiles).to.deep.equal([
+              {
+                directory: 'test/integration2/migrate/test',
+                file: '20131019235242_migration_1.js',
+              },
+              {
+                directory: 'test/integration2/migrate/test',
+                file: '20131019235306_migration_2.js',
+              },
+            ]);
           });
 
           it('is not called if the migration fails', async function () {
@@ -218,7 +242,7 @@ describe('Migrations Lifecycle Hooks', function () {
             // not after failed third migration
             expect(afterEach.callCount).to.equal(2);
             expect(
-              afterEach.args.map(([_knex, { file }]) => file)
+              afterEach.args.map(([_knex, [{ file }]]) => file)
             ).to.deep.equal([
               '20131019235242_migration_1.js',
               '20131019235306_migration_2.js',
@@ -252,8 +276,9 @@ describe('Migrations Lifecycle Hooks', function () {
             await knex.migrate.latest({
               directory: 'test/integration2/migrate/test',
               beforeAll: () => order.push('beforeAll'),
-              beforeEach: (_knex, { file }) => order.push(`beforeEach-${file}`),
-              afterEach: (_knex, { file }) => order.push(`afterEach-${file}`),
+              beforeEach: (_knex, [{ file }]) =>
+                order.push(`beforeEach-${file}`),
+              afterEach: (_knex, [{ file }]) => order.push(`afterEach-${file}`),
               afterAll: () => order.push('afterAll'),
             });
 
