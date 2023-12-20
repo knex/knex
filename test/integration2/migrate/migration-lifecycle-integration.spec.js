@@ -218,9 +218,7 @@ describe('Migrations Lifecycle Hooks', function () {
             // not after failed third migration
             expect(afterEach.callCount).to.equal(2);
             expect(
-              afterEach.args.map(([_knex, args]) => {
-                return args.file;
-              })
+              afterEach.args.map(([_knex, { file }]) => file)
             ).to.deep.equal([
               '20131019235242_migration_1.js',
               '20131019235306_migration_2.js',
