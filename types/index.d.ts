@@ -3154,7 +3154,7 @@ declare namespace Knex {
   // Note that the shape of the `migration` depends on the MigrationSource which may be custom.
   type LifecycleHook = (
     knexOrTrx: Knex | Transaction,
-    migrations: Array<unknown>
+    migrations: unknown[]
   ) => Promise<any>;
 
   interface MigratorConfigWithLifecycleHooks extends MigratorConfig {
