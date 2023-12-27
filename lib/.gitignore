@@ -5,3 +5,6 @@
 
 # Do not include tsc source maps
 **/*.js.map
+
+# Do not include .js files from .ts files
+dialects/index.js

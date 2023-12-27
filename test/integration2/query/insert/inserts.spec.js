@@ -256,7 +256,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` returning `id`',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -474,7 +474,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` returning `id`',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -891,9 +891,9 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `test_default_table` default values',
+              'insert into `test_default_table` default values returning `id`',
               [],
-              [1]
+              [{ id: 1 }]
             );
             tester(
               'oracledb',
@@ -958,9 +958,9 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `test_default_table2` default values',
+              'insert into `test_default_table2` default values returning `id`',
               [],
-              [1]
+              [{ id: 1 }]
             );
             tester(
               'oracledb',
@@ -1974,7 +1974,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
                 ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
               );
             });
@@ -2055,7 +2055,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`, `type`) select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` where true ' +
+                'insert into `upsert_tests` (`email`, `name`, `type`) values (?, ?, ?), (?, ?, ?), (?, ?, ?) ' +
                   "on conflict (email) where type = 'type1' do update set `email` = excluded.`email`, `name` = excluded.`name`, `type` = excluded.`type`",
                 [
                   'one@example.com',
