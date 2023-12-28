@@ -2568,6 +2568,10 @@ declare namespace Knex {
       columnNames: readonly (string | Raw)[],
       indexName?: string
     ): TableBuilder;
+    dropUniqueIfExists(
+      columnNames: readonly (string | Raw)[],
+      indexName?: string
+    ): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
     dropIndex(
       columnNames: string | readonly (string | Raw)[],
