@@ -319,6 +319,20 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('test drop unique if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.dropUniqueIfExists('foo');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'DROP INDEX IF EXISTS [users_foo_unique] ON [users]'
+    );
+  });
+
   it('should alter columns with the alter flag', function () {
     tableSql = client
       .schemaBuilder()

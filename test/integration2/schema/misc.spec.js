@@ -1618,6 +1618,26 @@ describe('Schema (misc)', () => {
             t.dropUnique(['column_a', 'column_b']);
           }));
 
+        describe('except mysql and oracle', () => {
+          it('allows dropping a unique index if exists', async function () {
+            if (isOracle(knex) || isMysql(knex)) {
+              return this.skip();
+            }
+            knex.schema.table('composite_key_test', (t) => {
+              t.dropUniqueIfExists(['column_a', 'column_b']);
+            });
+          });
+
+          it("allows dropping a unique index if exists, when it doesn't exist", async function () {
+            if (isOracle(knex) || isMysql(knex)) {
+              return this.skip();
+            }
+            knex.schema.table('composite_key_test', (t) => {
+              t.dropUniqueIfExists('foo');
+            });
+          });
+        });
+
         it('allows dropping a index', () =>
           knex.schema.table('test_table_one', (t) => {
             t.dropIndex('first_name');

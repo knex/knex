@@ -816,6 +816,12 @@ Drops a foreign key constraint from a table. A default foreign key name using th
 
 Drops a unique key constraint from a table. A default unique key name using the columns is used unless indexName is specified (in which case columns is ignored).
 
+### dropUniqueIfExists
+
+**table.dropUniqueIfExists(columns, [indexName])**
+
+Like dropUnique, but does not error if the constraint does not exist. Not supported in MySQL or Oracle.
+
 ### dropPrimary
 
 **table.dropPrimary([constraintName])**

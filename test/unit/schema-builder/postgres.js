@@ -635,6 +635,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('drop unique if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropUniqueIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "users_foo_unique"'
+    );
+  });
+
+  it('drop unique if exists, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropUniqueIfExists(null, 'foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "foo"'
+    );
+  });
+
   it('drop index', function () {
     tableSql = client
       .schemaBuilder()

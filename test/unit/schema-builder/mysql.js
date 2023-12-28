@@ -414,6 +414,17 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
     });
 
+    it('test drop unique if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropUniqueIfExists('foo');
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
+    });
+
     it('test drop index', function () {
       tableSql = client
         .schemaBuilder()
@@ -1370,6 +1381,14 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal(
         'alter table `composite_key_test` drop index `composite_key_test_column_a_column_b_unique`'
       );
+    });
+
+    it('allows dropping a unique compound index if exists', function () {
+      expect(() => {
+        client.schemaBuilder().table('composite_key_test', function (t) {
+          t.dropUniqueIfExists(['column_a', 'column_b']);
+        }).toSQL();
+      }).to.throw(/not supported/);
     });
 
     it('allows default as alias for defaultTo', function () {
