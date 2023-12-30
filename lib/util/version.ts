@@ -2,7 +2,7 @@
 export type Version = [number, number, number];
 
 /** Helper function to check `x` a integer where `x >= 0`  */
-function isNonNegInt(x: unknown): x is number {
+export function isNonNegInt(x: unknown): x is number {
   return typeof x === 'number' && Number.isInteger(x) && x >= 0;
 }
 
@@ -18,7 +18,9 @@ export function isVersion(x: unknown): x is Version {
 /** Parses given string into `Version` or returns `undefined` */
 export function parseVersion(x: string): Version | undefined {
   const versionRegex = /^(\d+)\.(\d+)\.(\d+)/m;
-  const versionNumbers = (versionRegex.exec(x) ?? []).slice(1, 4);
+  const versionNumbers = (versionRegex.exec(x) ?? [])
+    .slice(1, 4)
+    .map((x) => parseInt(x));
   if (!isVersion(versionNumbers)) return undefined;
   return versionNumbers;
 }
@@ -57,7 +59,7 @@ export function compareVersions(v1: Version, v2: Version): 1 | 0 | -1 {
 }
 
 /**
- * Returns `boolean` for if a given `version` satisfies the given `min` and `max`.
+ * Returns `boolean` for if a given `version` satisfies the given `min` (inclusive) and `max` (exclusive).
  *
  * This will throw an error if:
  *
