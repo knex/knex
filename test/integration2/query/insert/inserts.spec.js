@@ -14,6 +14,7 @@ const {
   isRedshift,
   isPostgreSQL,
   isSQLite,
+  isSQLite3,
   isMssql,
   isMysql,
   isOracle,
@@ -2315,9 +2316,9 @@ describe('Inserts', function () {
             });
         });
 
-        describe(`#5769 sqlite multi-insert uses standard syntax and supports JSON`, function () {
+        describe(`#5769 sqlite multi-insert uses standard syntax and supports JSON (does NOT include better-sqlite3)`, function () {
           it(`should JSON.stringify Sqlite multi-insert of Objects`, async function () {
-            if (!isSQLite(knex)) {
+            if (!isSQLite3(knex)) {
               return this.skip();
             }
 
@@ -2334,7 +2335,7 @@ describe('Inserts', function () {
           });
 
           it(`should throw error if doing Sqlite multi-insert on pre-3.7.11 version`, async function () {
-            if (!isSQLite(knex)) {
+            if (!isSQLite3(knex)) {
               return this.skip();
             }
 
@@ -2356,7 +2357,7 @@ describe('Inserts', function () {
           });
 
           it(`should NOT throw error if doing Sqlite multi-insert on 3.7.11 version`, async function () {
-            if (!isSQLite(knex)) {
+            if (!isSQLite3(knex)) {
               return this.skip();
             }
 
