@@ -3151,15 +3151,31 @@ declare namespace Knex {
     name?: string;
   }
 
+  // Note that the shape of the `migration` depends on the MigrationSource which may be custom.
+  type LifecycleHook = (
+    knexOrTrx: Knex | Transaction,
+    migrations: unknown[]
+  ) => Promise<any>;
+
+  interface MigratorConfigWithLifecycleHooks extends MigratorConfig {
+    beforeAll?: LifecycleHook;
+    beforeEach?: LifecycleHook;
+    afterEach?: LifecycleHook;
+    afterAll?: LifecycleHook;
+  }
+
   interface Migrator {
     make(name: string, config?: MigratorConfig): Promise<string>;
-    latest(config?: MigratorConfig): Promise<any>;
-    rollback(config?: MigratorConfig, all?: boolean): Promise<any>;
+    latest(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    rollback(
+      config?: MigratorConfigWithLifecycleHooks,
+      all?: boolean
+    ): Promise<any>;
     status(config?: MigratorConfig): Promise<number>;
     currentVersion(config?: MigratorConfig): Promise<string>;
     list(config?: MigratorConfig): Promise<any>;
-    up(config?: MigratorConfig): Promise<any>;
-    down(config?: MigratorConfig): Promise<any>;
+    up(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    down(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
