@@ -6176,16 +6176,16 @@ describe('QueryBuilder', () => {
   it('order by, null first', () => {
     testsql(qb().from('users').orderBy('foo', 'desc', 'first'), {
       mysql: {
-        sql: 'select * from `users` order by (`foo` is not null) desc',
+        sql: 'select * from `users` order by (`foo` is not null), `foo` desc',
       },
       mssql: {
-        sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+        sql: 'select * from [users] order by IIF([foo] is null,0,1), [foo] desc',
       },
       pg: {
-        sql: 'select * from "users" order by "foo" desc nulls first',
+        sql: 'select * from "users" order by "foo" desc nulls first, "foo" desc',
       },
       'pg-redshift': {
-        sql: 'select * from "users" order by "foo" desc nulls first',
+        sql: 'select * from "users" order by "foo" desc nulls first, "foo" desc',
       },
     });
   });
@@ -6197,16 +6197,16 @@ describe('QueryBuilder', () => {
         .orderBy([{ column: 'foo', order: 'desc', nulls: 'first' }]),
       {
         mysql: {
-          sql: 'select * from `users` order by (`foo` is not null) desc',
+          sql: 'select * from `users` order by (`foo` is not null), `foo` desc',
         },
         mssql: {
-          sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+          sql: 'select * from [users] order by IIF([foo] is null,0,1), [foo] desc',
         },
         pg: {
-          sql: 'select * from "users" order by "foo" desc nulls first',
+          sql: 'select * from "users" order by "foo" desc nulls first, "foo" desc',
         },
         'pg-redshift': {
-          sql: 'select * from "users" order by "foo" desc nulls first',
+          sql: 'select * from "users" order by "foo" desc nulls first, "foo" desc',
         },
       }
     );

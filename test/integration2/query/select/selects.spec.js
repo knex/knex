@@ -635,43 +635,43 @@ describe('Selects', function () {
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null), `null_col` asc, `string_col` asc',
               [],
               [2, 4, 1, 3]
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
               [],
               [2, 4, 1, 3]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
               [],
               [2, 4, 1, 3]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
               [],
               ['2', '4', '1', '3']
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null), `null_col` asc, `string_col` asc',
               [],
               [2, 4, 1, 3]
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
               [],
               [2, 4, 1, 3]
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1) asc, [string_col] asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0), [null_col] asc, [string_col] asc',
               [],
               [2, 4, 1, 3]
             );
@@ -686,45 +686,159 @@ describe('Selects', function () {
           .testSql(function (tester) {
             tester(
               'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null), `null_col` asc, `string_col` asc',
               [],
               [1, 3, 2, 4]
             );
             tester(
               'pg',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "null_col" asc, "string_col" asc',
               [],
               [1, 3, 2, 4]
             );
             tester(
               'pgnative',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "null_col" asc, "string_col" asc',
               [],
               [1, 3, 2, 4]
             );
             tester(
               'pg-redshift',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last,"null_col" asc, "string_col" asc',
               [],
               ['1', '3', '2', '4']
             );
             tester(
               'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null), `null_col` asc, `string_col` asc',
               [],
               [1, 3, 2, 4]
             );
             tester(
               'oracledb',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "string_col" asc',
+              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "null_col" asc, "string_col" asc',
               [],
               [1, 3, 2, 4]
             );
             tester(
               'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0) asc, [string_col] asc',
+              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1),[null_col] asc, [string_col] asc',
               [],
               [1, 3, 2, 4]
+            );
+          });
+        await knex.schema.dropTable('OrderByNullTest');
+      });
+
+      it('order by with null desc on integer column', async () => {
+        await knex.schema
+          .dropTableIfExists('OrderByNullTest')
+          .createTable('OrderByNullTest', function (table) {
+            table.increments('id').primary();
+            table.integer('score').nullable().defaultTo(null);
+          });
+
+        await knex('OrderByNullTest').insert([
+          { score: 2 },
+          { score: 1 },
+          { score: null },
+          { score: null },
+          { score: 5 },
+        ]);
+
+        await knex('OrderByNullTest')
+          .pluck('score')
+          .orderBy('score', 'desc', 'first')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select `score` from `OrderByNullTest` order by (`score` is not null), `score` desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'pg',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'pgnative',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'pg-redshift',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'sqlite3',
+              'select `score` from `OrderByNullTest` order by (`score` is not null), `score` desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'oracledb',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+            tester(
+              'mssql',
+              'select [score] from [OrderByNullTest] order by IIF([score] is null,1,0) desc, [score] desc',
+              [],
+              [null, null, 5, 2, 1]
+            );
+          });
+
+        await knex('OrderByNullTest')
+          .pluck('score')
+          .orderBy('score', 'desc', 'last')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'select `score` from `OrderByNullTest` order by (`score` is null), `score` desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'pg',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'pgnative',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'pg-redshift',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'sqlite3',
+              'select `score` from `OrderByNullTest` order by (`score` is null), `score` desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'oracledb',
+              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
+              [],
+              [5, 2, 1, null, null]
+            );
+            tester(
+              'mssql',
+              'select [score] from [OrderByNullTest] order by IIF([score] is null,0,1) desc, [score] desc',
+              [],
+              [5, 2, 1, null, null]
             );
           });
         await knex.schema.dropTable('OrderByNullTest');
