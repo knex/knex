@@ -815,6 +815,18 @@ describe('PostgreSQL SchemaBuilder', function () {
 
     tableSql = client
       .schemaBuilder()
+      .withSchema('schema1')
+      .table('users', function () {
+        this.foreign('foo_id').references('id').on('orders');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "schema1"."users" add constraint "users_foo_id_foreign" foreign key ("foo_id") references "schema1"."orders" ("id")'
+    );
+
+    tableSql = client
+      .schemaBuilder()
       .table('users', function () {
         this.integer('foo_id').references('id').on('orders');
       })
