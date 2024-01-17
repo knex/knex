@@ -4720,22 +4720,23 @@ describe('QueryBuilder', () => {
         .select('*')
         .from('users')
         .join('contacts', 'users.id', '=', 'contacts.id')
-        .leftJoin('photos', 'users.id', '=', 'photos.id'),
+        .leftJoin('photos', 'users.id', '=', 'photos.id')
+        .leftJoin({ c: 'cards' }, 'users.id', '=', 'c.id'),
       {
         mysql: {
-          sql: 'select * from `myschema`.`users` inner join `myschema`.`contacts` on `users`.`id` = `contacts`.`id` left join `myschema`.`photos` on `users`.`id` = `photos`.`id`',
+          sql: 'select * from `myschema`.`users` inner join `myschema`.`contacts` on `users`.`id` = `contacts`.`id` left join `myschema`.`photos` on `users`.`id` = `photos`.`id` left join `myschema`.`cards` as `c` on `users`.`id` = `c`.`id`',
           bindings: [],
         },
         mssql: {
-          sql: 'select * from [myschema].[users] inner join [myschema].[contacts] on [users].[id] = [contacts].[id] left join [myschema].[photos] on [users].[id] = [photos].[id]',
+          sql: 'select * from [myschema].[users] inner join [myschema].[contacts] on [users].[id] = [contacts].[id] left join [myschema].[photos] on [users].[id] = [photos].[id] left join [myschema].[cards] as [c] on [users].[id] = [c].[id]',
           bindings: [],
         },
         pg: {
-          sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id"',
+          sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id" left join "myschema"."cards" as "c" on "users"."id" = "c"."id"',
           bindings: [],
         },
         'pg-redshift': {
-          sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id"',
+          sql: 'select * from "myschema"."users" inner join "myschema"."contacts" on "users"."id" = "contacts"."id" left join "myschema"."photos" on "users"."id" = "photos"."id" left join "myschema"."cards" as "c" on "users"."id" = "c"."id"',
           bindings: [],
         },
       }
