@@ -6011,7 +6011,7 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       sqlite3: {
-        sql: 'insert into `users` default values',
+        sql: 'insert into `users` default values returning `id`',
         bindings: [],
       },
       pg: {
