@@ -1011,7 +1011,6 @@ describe('Selects', function () {
               });
           });
         } catch (err) {
-          console.log(err.message);
           expect(err.message).to.be.contain(
             'Defined query timeout of 100ms exceeded when running query'
           );
