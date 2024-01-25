@@ -652,7 +652,7 @@ describe('Inserts', function () {
                 'There should be a fail when multi-insert are made in unique col.'
               );
             },
-            function () {}
+            function () { }
           );
       });
 
@@ -809,7 +809,7 @@ describe('Inserts', function () {
                 );
               }
             },
-            function () {}
+            function () { }
           );
       });
 
@@ -835,7 +835,7 @@ describe('Inserts', function () {
                 );
               }
             },
-            function () {}
+            function () { }
           );
       });
 
@@ -924,6 +924,13 @@ describe('Inserts', function () {
               '/* insert into test_default_table */ insert into `test_default_table` () values ()',
               [],
               [2]
+            );
+            tester(
+              'pg',
+              '/* insert into test_default_table */ insert into "test_default_table" () values ()',
+              'insert into "test_default_table" default values returning "id"',
+              [],
+              [{ id: 1 }]
             );
           });
       });
@@ -2012,8 +2019,8 @@ describe('Inserts', function () {
         });
         await knex.raw(
           'create unique index email_type1 ' +
-            'on upsert_tests(email) ' +
-            "where type = 'type1'"
+          'on upsert_tests(email) ' +
+          "where type = 'type1'"
         );
 
         await knex('upsert_tests').insert([
@@ -2056,7 +2063,7 @@ describe('Inserts', function () {
               tester(
                 'sqlite3',
                 'insert into `upsert_tests` (`email`, `name`, `type`) select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` where true ' +
-                  "on conflict (email) where type = 'type1' do update set `email` = excluded.`email`, `name` = excluded.`name`, `type` = excluded.`type`",
+                "on conflict (email) where type = 'type1' do update set `email` = excluded.`email`, `name` = excluded.`name`, `type` = excluded.`type`",
                 [
                   'one@example.com',
                   'AFTER',

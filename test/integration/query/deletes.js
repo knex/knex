@@ -98,6 +98,12 @@ module.exports = function (knex) {
             [1],
             0
           );
+          tester(
+            'pg',
+            '/* removing acccount */ delete from "accounts" where "id" = ?',
+            [1],
+            0
+          );
         });
     });
 
