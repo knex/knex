@@ -652,7 +652,7 @@ describe('Inserts', function () {
                 'There should be a fail when multi-insert are made in unique col.'
               );
             },
-            function () { }
+            function () {}
           );
       });
 
@@ -809,7 +809,7 @@ describe('Inserts', function () {
                 );
               }
             },
-            function () { }
+            function () {}
           );
       });
 
@@ -835,7 +835,7 @@ describe('Inserts', function () {
                 );
               }
             },
-            function () { }
+            function () {}
           );
       });
 

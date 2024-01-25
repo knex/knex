@@ -9064,7 +9064,7 @@ describe('QueryBuilder', () => {
       qb()
         .select('foo')
         .from('tbl')
-        .where(() => { }),
+        .where(() => {}),
       {
         mysql: 'select `foo` from `tbl`',
         mssql: 'select [foo] from [tbl]',
@@ -10511,7 +10511,7 @@ describe('QueryBuilder', () => {
   });
 
   it('#2003, properly escapes objects with toPostgres specialization', () => {
-    function TestObject() { }
+    function TestObject() {}
     TestObject.prototype.toPostgres = () => 'foobar';
     testquery(qb().table('sometable').insert({ id: new TestObject() }), {
       pg: 'insert into "sometable" ("id") values (\'foobar\')',
