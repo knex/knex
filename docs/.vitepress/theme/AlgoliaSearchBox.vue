@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import '@docsearch/css'
-import docsearch from '@docsearch/js'
-import { useRoute, useRouter, useData } from 'vitepress'
-import { getCurrentInstance, onMounted, watch } from 'vue'
-import type { DefaultTheme } from '../config'
-import type { DocSearchHit } from '@docsearch/react/dist/esm/types'
+import '@docsearch/css';
+import docsearch from '@docsearch/js';
+import { useRoute, useRouter, useData } from 'vitepress';
+import { getCurrentInstance, onMounted, watch } from 'vue';
+import type { DefaultTheme } from '../config';
+import type { DocSearchHit } from '@docsearch/react/dist/esm/types';
 const props = defineProps<{
-  options: DefaultTheme.AlgoliaSearchOptions
-  multilang?: boolean
-}>()
-const vm = getCurrentInstance()
-const route = useRoute()
-const router = useRouter()
+  options: DefaultTheme.AlgoliaSearchOptions;
+  multilang?: boolean;
+}>();
+const vm = getCurrentInstance();
+const route = useRoute();
+const router = useRouter();
 watch(
   () => props.options,
   (value) => {
-    update(value)
+    update(value);
   }
-)
+);
 onMounted(() => {
-  initialize(props.options)
-})
+  initialize(props.options);
+});
 function isSpecialClick(event: MouseEvent) {
   return (
     event.button === 1 ||
@@ -28,32 +28,34 @@ function isSpecialClick(event: MouseEvent) {
     event.ctrlKey ||
     event.metaKey ||
     event.shiftKey
-  )
+  );
 }
 function getRelativePath(absoluteUrl: string) {
-  const { pathname, hash } = new URL(absoluteUrl)
-  return pathname + hash
+  const { pathname, hash } = new URL(absoluteUrl);
+  return pathname + hash;
 }
 function update(options: any) {
   if (vm && vm.vnode.el) {
     vm.vnode.el.innerHTML =
-      '<div class="algolia-search-box" id="docsearch"></div>'
-    initialize(options)
+      '<div class="algolia-search-box" id="docsearch"></div>';
+    initialize(options);
   }
 }
-const { lang } = useData()
+const { lang } = useData();
 // if the user has multiple locales, the search results should be filtered
 // based on the language
-const facetFilters: string[] = props.multilang ? ['lang:' + lang.value] : []
+const facetFilters: string[] = props.multilang ? ['lang:' + lang.value] : [];
 if (props.options.searchParameters?.facetFilters) {
-  facetFilters.push(...props.options.searchParameters.facetFilters)
+  facetFilters.push(...props.options.searchParameters.facetFilters);
 }
 watch(lang, (newLang, oldLang) => {
-  const index = facetFilters.findIndex((filter) => filter === 'lang:' + oldLang)
+  const index = facetFilters.findIndex(
+    (filter) => filter === 'lang:' + oldLang
+  );
   if (index > -1) {
-    facetFilters.splice(index, 1, 'lang:' + newLang)
+    facetFilters.splice(index, 1, 'lang:' + newLang);
   }
-})
+});
 function initialize(userOptions: any) {
   docsearch(
     Object.assign({}, userOptions, {
@@ -61,21 +63,21 @@ function initialize(userOptions: any) {
       searchParameters: Object.assign({}, userOptions.searchParameters, {
         // pass a custom lang facetFilter to allow multiple language search
         // https://github.com/algolia/docsearch-configs/pull/3942
-        facetFilters
+        facetFilters,
       }),
       navigator: {
         navigate: ({ itemUrl }: { itemUrl: string }) => {
           const { pathname: hitPathname } = new URL(
             window.location.origin + itemUrl
-          )
+          );
           // Router doesn't handle same-page navigation so we use the native
           // browser location API for anchor navigation
           if (route.path === hitPathname) {
-            window.location.assign(window.location.origin + itemUrl)
+            window.location.assign(window.location.origin + itemUrl);
           } else {
-            router.go(itemUrl)
+            router.go(itemUrl);
           }
-        }
+        },
       },
       transformItems: (items: DocSearchHit[]) => {
         return items.map((item) => {
@@ -88,24 +90,24 @@ function initialize(userOptions: any) {
           // This fix attempts to remove the `/knex` prefix from all results of
           // the search box.
           const url = new URL(item.url);
-          if(url.pathname.startsWith('/knex'))
+          if (url.pathname.startsWith('/knex'))
             url.pathname = url.pathname.replace('/knex', '');
 
           return Object.assign({}, item, {
-            url: getRelativePath(url.href)
-          })
-        })
+            url: getRelativePath(url.href),
+          });
+        });
       },
       hitComponent: ({
         hit,
-        children
+        children,
       }: {
-        hit: DocSearchHit
-        children: any
+        hit: DocSearchHit;
+        children: any;
       }) => {
         const relativeHit = hit.url.startsWith('http')
           ? getRelativePath(hit.url as string)
-          : hit.url
+          : hit.url;
         return {
           type: 'a',
           ref: undefined,
@@ -115,28 +117,28 @@ function initialize(userOptions: any) {
             href: hit.url,
             onClick: (event: MouseEvent) => {
               if (isSpecialClick(event)) {
-                return
+                return;
               }
               // we rely on the native link scrolling when user is already on
               // the right anchor because Router doesn't support duplicated
               // history entries
               if (route.path === relativeHit) {
-                return
+                return;
               }
               // if the hits goes to another page, we prevent the native link
               // behavior to leverage the Router loading feature
               if (route.path !== relativeHit) {
-                event.preventDefault()
+                event.preventDefault();
               }
-              router.go(relativeHit)
+              router.go(relativeHit);
             },
-            children
+            children,
           },
-          __v: null
-        }
-      }
+          __v: null,
+        };
+      },
     })
-  )
+  );
 }
 </script>
 
@@ -178,7 +180,12 @@ body .DocSearch {
   --docsearch-modal-shadow: 0 3px 8px 0 var(--c-white-dark);
   --docsearch-hit-color: var(--c-text);
   --docsearch-footer-shadow: 0 -1px 0 0 var(--c-white-dark);
-  --docsearch-key-gradient: linear-gradient(-225deg,var(--c-white-dark),var(--c-white));
-  --docsearch-key-shadow: inset 0 -2px 0 0 var(--c-white-dark),inset 0 0 1px 1px var(--c-white),0 1px 2px 1px var(--c-white-darker);
+  --docsearch-key-gradient: linear-gradient(
+    -225deg,
+    var(--c-white-dark),
+    var(--c-white)
+  );
+  --docsearch-key-shadow: inset 0 -2px 0 0 var(--c-white-dark),
+    inset 0 0 1px 1px var(--c-white), 0 1px 2px 1px var(--c-white-darker);
 }
 </style>

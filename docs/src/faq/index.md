@@ -1,7 +1,6 @@
-
 # F.A.Q.
 
-## How do I help contribute? 
+## How do I help contribute?
 
 Glad you asked! Pull requests, or feature requests, though not always implemented, are a great way to help make Knex even better than it is now. If you're looking for something specific to help out with, there's a number of unit tests that aren't implemented yet, the library could never have too many of those. If you want to submit a fix or feature, take a look at the [Contributing](https://github.com/knex/knex/blob/master/CONTRIBUTING.md) readme in the Github and go ahead and open a ticket.
 

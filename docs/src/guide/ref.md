@@ -1,6 +1,5 @@
 # Ref
 
-
 Can be used to create references in a query, such as column- or tablenames. This is a good and shorter alternative to using `knex.raw('??', 'tableName.columName')` which essentially does the same thing.
 
 ## Usage
@@ -11,7 +10,7 @@ Can be used to create references in a query, such as column- or tablenames. This
 knex(knex.ref('Users').withSchema('TenantId'))
   .where(knex.ref('Id'), 1)
   .orWhere(knex.ref('Name'), 'Admin')
-  .select(['Id', knex.ref('Name').as('Username')])
+  .select(['Id', knex.ref('Name').as('Username')]);
 ```
 
 <SqlOutput code="knex(knex.ref('Users').withSchema('TenantId'))
@@ -24,7 +23,7 @@ knex(knex.ref('Users').withSchema('TenantId'))
 The Ref function supports schema using `.withSchema(string)`:
 
 ```js
-knex(knex.ref('users').withSchema('TenantId')).select()
+knex(knex.ref('users').withSchema('TenantId')).select();
 ```
 
 ### alias
@@ -32,8 +31,7 @@ knex(knex.ref('users').withSchema('TenantId')).select()
 Alias is supported using `.alias(string)`
 
 ```js
-knex('users')
-  .select(knex.ref('Id').as('UserId'))
+knex('users').select(knex.ref('Id').as('UserId'));
 ```
 
 <SqlOutput code="knex('users')

@@ -1,39 +1,39 @@
-import { watch, ref, nextTick, inject } from "vue";
+import { watch, ref, nextTick, inject } from 'vue';
 
 export function createDialect(app) {
-  const dialect = ref('mysql')
+  const dialect = ref('mysql');
 
   if (!import.meta.url) {
     watch(dialect, (value) => {
-      localStorage.setItem("sql-dialect", value);
-    })
+      localStorage.setItem('sql-dialect', value);
+    });
     nextTick(() => {
-      const value = localStorage.getItem("sql-dialect");
+      const value = localStorage.getItem('sql-dialect');
       if (value) {
         dialect.value = value;
       }
-    })
+    });
   }
 
   // provide for later inject
-  app.provide('dialect', dialect)
+  app.provide('dialect', dialect);
 
   // expose $dialect to templates
   Object.defineProperty(app.config.globalProperties, '$dialect', {
     get() {
-      return dialect.value
-    }
-  })
+      return dialect.value;
+    },
+  });
 
   return {
-    dialect
-  }
+    dialect,
+  };
 }
 
 export function useDialect() {
-  const dialect = inject('dialect')
+  const dialect = inject('dialect');
 
   return {
-    dialect
-  }
+    dialect,
+  };
 }

@@ -11,88 +11,90 @@ Consider these two examples:
 
 ```js
 // Using trx as a query builder:
-knex.transaction(function(trx) {
+knex
+  .transaction(function (trx) {
+    const books = [
+      { title: 'Canterbury Tales' },
+      { title: 'Moby Dick' },
+      { title: 'Hamlet' },
+    ];
 
-  const books = [
-    {title: 'Canterbury Tales'},
-    {title: 'Moby Dick'},
-    {title: 'Hamlet'}
-  ];
-
-  return trx
-    .insert({name: 'Old Books'}, 'id')
-    .into('catalogues')
-    .then(function(ids) {
-      books.forEach((book) => book.catalogue_id = ids[0]);
-      return trx('books').insert(books);
-    });
-})
-.then(function(inserts) {
-  console.log(inserts.length + ' new books saved.');
-})
-.catch(function(error) {
-  // If we get here, that means that 
-  // neither the 'Old Books' catalogues insert,
-  // nor any of the books inserts will have taken place.
-  console.error(error);
-});
+    return trx
+      .insert({ name: 'Old Books' }, 'id')
+      .into('catalogues')
+      .then(function (ids) {
+        books.forEach((book) => (book.catalogue_id = ids[0]));
+        return trx('books').insert(books);
+      });
+  })
+  .then(function (inserts) {
+    console.log(inserts.length + ' new books saved.');
+  })
+  .catch(function (error) {
+    // If we get here, that means that
+    // neither the 'Old Books' catalogues insert,
+    // nor any of the books inserts will have taken place.
+    console.error(error);
+  });
 ```
 
 And then this example:
 
 ```js
 // Using trx as a transaction object:
-knex.transaction(function(trx) {
+knex
+  .transaction(function (trx) {
+    const books = [
+      { title: 'Canterbury Tales' },
+      { title: 'Moby Dick' },
+      { title: 'Hamlet' },
+    ];
 
-  const books = [
-    {title: 'Canterbury Tales'},
-    {title: 'Moby Dick'},
-    {title: 'Hamlet'}
-  ];
-
-  knex.insert({name: 'Old Books'}, 'id')
-    .into('catalogues')
-    .transacting(trx)
-    .then(function(ids) {
-      books.forEach((book) => book.catalogue_id = ids[0]);
-      return knex('books').insert(books).transacting(trx);
-    })
-    .then(trx.commit)
-    .catch(trx.rollback);
-})
-.then(function(inserts) {
-  console.log(inserts.length + ' new books saved.');
-})
-.catch(function(error) {
-  // If we get here, that means that 
-  // neither the 'Old Books' catalogues insert,
-  // nor any of the books inserts will have taken place.
-  console.error(error);
-});
+    knex
+      .insert({ name: 'Old Books' }, 'id')
+      .into('catalogues')
+      .transacting(trx)
+      .then(function (ids) {
+        books.forEach((book) => (book.catalogue_id = ids[0]));
+        return knex('books').insert(books).transacting(trx);
+      })
+      .then(trx.commit)
+      .catch(trx.rollback);
+  })
+  .then(function (inserts) {
+    console.log(inserts.length + ' new books saved.');
+  })
+  .catch(function (error) {
+    // If we get here, that means that
+    // neither the 'Old Books' catalogues insert,
+    // nor any of the books inserts will have taken place.
+    console.error(error);
+  });
 ```
 
 Same example as above using await/async:
 
 ```ts
 try {
-  await knex.transaction(async trx => {
-
+  await knex.transaction(async (trx) => {
     const books = [
-      {title: 'Canterbury Tales'},
-      {title: 'Moby Dick'},
-      {title: 'Hamlet'}
+      { title: 'Canterbury Tales' },
+      { title: 'Moby Dick' },
+      { title: 'Hamlet' },
     ];
-    
-    const ids = await trx('catalogues')
-      .insert({
-        name: 'Old Books'
-      }, 'id')
 
-    books.forEach((book) => book.catalogue_id = ids[0])
-    const inserts = await trx('books').insert(books)
-    
-    console.log(inserts.length + ' new books saved.')
-  })
+    const ids = await trx('catalogues').insert(
+      {
+        name: 'Old Books',
+      },
+      'id'
+    );
+
+    books.forEach((book) => (book.catalogue_id = ids[0]));
+    const inserts = await trx('books').insert(books);
+
+    console.log(inserts.length + ' new books saved.');
+  });
 } catch (error) {
   // If we get here, that means that neither the 'Old Books' catalogues insert,
   // nor any of the books inserts will have taken place.
@@ -104,27 +106,27 @@ Same example as above using another await/async approach:
 
 ```ts
 try {
-  await knex.transaction(async trx => {
-
+  await knex.transaction(async (trx) => {
     const books = [
-      {title: 'Canterbury Tales'},
-      {title: 'Moby Dick'},
-      {title: 'Hamlet'}
+      { title: 'Canterbury Tales' },
+      { title: 'Moby Dick' },
+      { title: 'Hamlet' },
     ];
 
     const ids = await knex('catalogues')
-      .insert({
-        name: 'Old Books'
-      }, 'id')
-      .transacting(trx)
+      .insert(
+        {
+          name: 'Old Books',
+        },
+        'id'
+      )
+      .transacting(trx);
 
-    books.forEach(book => book.catalogue_id = ids[0])
-    await knex('books')
-      .insert(books)
-      .transacting(trx)
+    books.forEach((book) => (book.catalogue_id = ids[0]));
+    await knex('books').insert(books).transacting(trx);
 
-    console.log(inserts.length + ' new books saved.')
-  })
+    console.log(inserts.length + ' new books saved.');
+  });
 } catch (error) {
   console.error(error);
 }
@@ -145,15 +147,15 @@ In some cases you may prefer to create transaction but only execute statements i
 const trx = await knex.transaction();
 
 const books = [
-  {title: 'Canterbury Tales'},
-  {title: 'Moby Dick'},
-  {title: 'Hamlet'}
+  { title: 'Canterbury Tales' },
+  { title: 'Moby Dick' },
+  { title: 'Hamlet' },
 ];
 
 trx('catalogues')
-  .insert({name: 'Old Books'}, 'id')
-  .then(function(ids) {
-    books.forEach((book) => book.catalogue_id = ids[0]);
+  .insert({ name: 'Old Books' }, 'id')
+  .then(function (ids) {
+    books.forEach((book) => (book.catalogue_id = ids[0]));
     return trx('books').insert(books);
   })
   .then(trx.commit)
@@ -167,23 +169,21 @@ If you want to create a reusable transaction instance, but do not want to actual
 const trxProvider = knex.transactionProvider();
 
 const books = [
-  {title: 'Canterbury Tales'},
-  {title: 'Moby Dick'},
-  {title: 'Hamlet'}
+  { title: 'Canterbury Tales' },
+  { title: 'Moby Dick' },
+  { title: 'Hamlet' },
 ];
 
 // Starts a transaction
 const trx = await trxProvider();
-const ids = await trx('catalogues')
-  .insert({name: 'Old Books'}, 'id')
-books.forEach((book) => book.catalogue_id = ids[0]);
+const ids = await trx('catalogues').insert({ name: 'Old Books' }, 'id');
+books.forEach((book) => (book.catalogue_id = ids[0]));
 await trx('books').insert(books);
 
 // Reuses same transaction
 const sameTrx = await trxProvider();
-const ids2 = await sameTrx('catalogues')
-  .insert({name: 'New Books'}, 'id')
-books.forEach((book) => book.catalogue_id = ids2[0]);
+const ids2 = await sameTrx('catalogues').insert({ name: 'New Books' }, 'id');
+books.forEach((book) => (book.catalogue_id = ids2[0]));
 await sameTrx('books').insert(books);
 ```
 
@@ -228,7 +228,7 @@ In case you need to specify an isolation level for your transaction, you can use
 ```ts
 // Simple read skew example
 const isolationLevel = 'read committed';
-const trx = await knex.transaction({isolationLevel});
+const trx = await knex.transaction({ isolationLevel });
 const result1 = await trx(tableName).select();
 await knex(tableName).insert({ id: 1, value: 1 });
 const result2 = await trx(tableName).select();

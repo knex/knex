@@ -1,14 +1,12 @@
-import { defineConfig } from 'vitepress'
-import KnexDialectsPlugins from './knexDialects'
+import { defineConfig } from 'vitepress';
+import KnexDialectsPlugins from './knexDialects';
 
 export default defineConfig({
   title: 'Knex.js',
   description: 'Beta knex.js documentation.',
   base: '/',
   srcDir: 'src',
-  head: [
-    ["link", { rel: "icon", type: "image/png", href: "/knex-logo.png" }],
-  ],
+  head: [['link', { rel: 'icon', type: 'image/png', href: '/knex-logo.png' }]],
   themeConfig: {
     logo: '/knex-logo.png',
     repo: 'knex/knex',
@@ -27,7 +25,7 @@ export default defineConfig({
       {
         text: 'Changelog',
         link: '/changelog.html',
-      }
+      },
     ],
     sidebar: {
       '/guide/': getGuideSidebar(),
@@ -38,72 +36,70 @@ export default defineConfig({
       apiKey: '44b5077836c1c8fba0f364383dde7fb4',
       indexName: 'knex',
       initialQuery: '',
-    }
+    },
   },
-   vite: {
-     plugins: [
-       KnexDialectsPlugins()
-     ]
-   }
-})
+  vite: {
+    plugins: [KnexDialectsPlugins()],
+  },
+});
 
 function getGuideSidebar() {
   return [
     {
       text: 'Installation',
-      link: '/guide/'
+      link: '/guide/',
     },
     {
       text: 'Query Builder',
-      link: '/guide/query-builder'
+      link: '/guide/query-builder',
     },
     {
       text: 'Transactions',
-      link: '/guide/transactions'
+      link: '/guide/transactions',
     },
     {
       text: 'Schema Builder',
-      link: '/guide/schema-builder'
+      link: '/guide/schema-builder',
     },
     {
       text: 'Raw',
-      link: '/guide/raw'
+      link: '/guide/raw',
     },
     {
       text: 'Ref',
-      link: '/guide/ref'
+      link: '/guide/ref',
     },
     {
       text: 'Utility',
-      link: '/guide/utility'
+      link: '/guide/utility',
     },
     {
       text: 'Interfaces',
-      link: '/guide/interfaces'
+      link: '/guide/interfaces',
     },
     {
       text: 'Migrations',
-      link: '/guide/migrations'
+      link: '/guide/migrations',
     },
     {
       text: 'Extending',
-      link: '/guide/extending'
-    }
-  ]
+      link: '/guide/extending',
+    },
+  ];
 }
 function getFaqSidebar() {
   return [
     {
       text: 'F.A.Q.',
-      link: '/faq/'
+      link: '/faq/',
     },
     {
       text: 'Recipes',
-      link: '/faq/recipes'
+      link: '/faq/recipes',
     },
     {
       text: 'Support',
-      link: '/faq/support'
+      link: '/faq/support',
     },
-  ]
+  ];
 }

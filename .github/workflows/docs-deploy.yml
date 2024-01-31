@@ -7,7 +7,7 @@ on:
     paths:
       - docs/**
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      
+
       # cache node_modules
       - name: Restore cached dependencies
         uses: actions/cache@v3

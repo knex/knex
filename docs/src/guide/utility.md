@@ -3,6 +3,7 @@
 A collection of utilities that the knex library provides for convenience.
 
 ## batchInsert
+
 **knex.batchInsert(tableName)**
 
 The `batchInsert` utility will insert a batch of rows wrapped inside a transaction _(which is automatically created unless explicitly given a transaction using [transacting](/guide/query-builder#transacting))_, at a given `chunkSize`.
@@ -14,19 +15,35 @@ By default, the `chunkSize` is set to 1000.
 BatchInsert also allows for [returning values](/guide/query-builder#returning) and supplying transactions using [transacting](/guide/query-builder#transacting).
 
 ```js
-const rows = [{/*...*/}, {/*...*/}];
+const rows = [
+  {
+    /*...*/
+  },
+  {
+    /*...*/
+  },
+];
 const chunkSize = 30;
-knex.batchInsert('TableName', rows, chunkSize)
+knex
+  .batchInsert('TableName', rows, chunkSize)
   .returning('id')
-  .then(function(ids) { /*...*/ })
-  .catch(function(error) { /*...*/ });
-
-knex.transaction(function(tr) {
-  return knex.batchInsert('TableName', rows, chunkSize)
-    .transacting(tr)
+  .then(function (ids) {
+    /*...*/
   })
-  .then(function() { /*...*/ })
-  .catch(function(error) { /*...*/ });
+  .catch(function (error) {
+    /*...*/
+  });
+
+knex
+  .transaction(function (tr) {
+    return knex.batchInsert('TableName', rows, chunkSize).transacting(tr);
+  })
+  .then(function () {
+    /*...*/
+  })
+  .catch(function (error) {
+    /*...*/
+  });
 ```
 
 ## now
@@ -36,7 +53,7 @@ knex.transaction(function(tr) {
 Return the current timestamp with a precision (optional)
 
 ```js
-table.datetime('some_time', { precision: 6 }).defaultTo(knex.fn.now(6))
+table.datetime('some_time', { precision: 6 }).defaultTo(knex.fn.now(6));
 ```
 
 ## uuid
@@ -46,7 +63,7 @@ table.datetime('some_time', { precision: 6 }).defaultTo(knex.fn.now(6))
 Return a uuid generation function. Not supported by Redshift
 
 ```js
-table.uuid('uuid').defaultTo(knex.fn.uuid())
+table.uuid('uuid').defaultTo(knex.fn.uuid());
 ```
 
 ## uuidToBin
@@ -60,7 +77,7 @@ knex.schema.createTable('uuid_table', (t) => {
   t.uuid('uuid_col_binary', { useBinaryUuid: true });
 });
 knex('uuid_table').insert({
-  uuid_col_binary:  knex.fn.uuidToBin('3f06af63-a93c-11e4-9797-00505690773f'),
+  uuid_col_binary: knex.fn.uuidToBin('3f06af63-a93c-11e4-9797-00505690773f'),
 });
 ```
 
@@ -72,5 +89,5 @@ Convert a binary uuid (binary(16)) to a string uuid (char(36))
 
 ```js
 const res = await knex('uuid_table').select('uuid_col_binary');
-knex.fn.binToUuid(res[0].uuid_col_binary)
+knex.fn.binToUuid(res[0].uuid_col_binary);
 ```

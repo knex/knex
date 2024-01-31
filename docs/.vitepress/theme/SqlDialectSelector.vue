@@ -1,31 +1,30 @@
 <script setup>
-import { watch, onMounted, nextTick } from 'vue'
-import { useRoute } from "vitepress";
-import { useDialect } from "./dialect";
-const { dialect } = useDialect()
-const route = useRoute()
+import { watch, onMounted, nextTick } from 'vue';
+import { useRoute } from 'vitepress';
+import { useDialect } from './dialect';
+const { dialect } = useDialect();
+const route = useRoute();
 
 const switchExamples = () => {
   nextTick(() => {
-    document.querySelectorAll('[data-dialect]').forEach(el => {
-      el.style.display = 'none'
-    })
-    document.querySelectorAll(`[data-dialect="${dialect.value}"]`).forEach(el => {
-      el.style.display = 'block'
-    })
-  })
-}
+    document.querySelectorAll('[data-dialect]').forEach((el) => {
+      el.style.display = 'none';
+    });
+    document
+      .querySelectorAll(`[data-dialect="${dialect.value}"]`)
+      .forEach((el) => {
+        el.style.display = 'block';
+      });
+  });
+};
 
-watch(route, switchExamples)
-watch(dialect, switchExamples)
-onMounted(switchExamples)
+watch(route, switchExamples);
+watch(dialect, switchExamples);
+onMounted(switchExamples);
 </script>
 
 <template>
-  <select
-    v-model="dialect"
-    class="sql-dropdown item nav-link"
-  >
+  <select v-model="dialect" class="sql-dropdown item nav-link">
     <option value="mysql">MySQL / MariaDB</option>
     <option value="mysql2">MySQL2</option>
     <option value="postgres">PostgreSQL</option>
@@ -42,7 +41,7 @@ onMounted(switchExamples)
 .sql-dropdown {
   border-radius: 8px;
   margin-left: 1rem;
-  padding: 0.5rem 0.4rem;;
+  padding: 0.5rem 0.4rem;
   cursor: pointer;
   color: var(--c-text);
   outline: none;

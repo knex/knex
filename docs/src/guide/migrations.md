@@ -37,26 +37,26 @@ $ knex init -x ts
 will create a sample knexfile.js - the file which contains our various database configurations. Once you have a knexfile.js, you can use the migration tool to create migration files to the specified directory (default migrations). Creating new migration files can be achieved by running:
 
 ```bash
-$ knex migrate:make migration_name 
+$ knex migrate:make migration_name
 
 # or for .ts
 
 $ knex migrate:make migration_name -x ts
 ```
 
--   you can also create your migration using a specific stub file, this serves as a migration template to speed up development for common migration operations
--   if the --stub option is not passed, the CLI will use either the knex default stub for the chosen extension, or the config.stub file
+- you can also create your migration using a specific stub file, this serves as a migration template to speed up development for common migration operations
+- if the --stub option is not passed, the CLI will use either the knex default stub for the chosen extension, or the config.stub file
 
 ```bash
-$ knex migrate:make --stub 
+$ knex migrate:make --stub
 
 # or
 
-$ knex migrate:make --stub 
+$ knex migrate:make --stub
 ```
 
--   if a stub path is provided, it must be relative to the knexfile.\[js, ts, etc\] location
--   if a is used, the stub is selected by its file name. The CLI will look for this file in the config.migrations.directory folder. If the config.migrations.directory is not defined, this operation will fail
+- if a stub path is provided, it must be relative to the knexfile.\[js, ts, etc\] location
+- if a is used, the stub is selected by its file name. The CLI will look for this file in the config.migrations.directory folder. If the config.migrations.directory is not defined, this operation will fail
 
 Once you have finished writing the migrations, you can update the database matching your `NODE_ENV` by running:
 
@@ -134,14 +134,18 @@ Seed files are created in the directory specified in your knexfile.js for the cu
 module.exports = {
   // ...
   development: {
-    client: {/* ... */},
-    connection: {/* ... */},
+    client: {
+      /* ... */
+    },
+    connection: {
+      /* ... */
+    },
     seeds: {
-        directory: './seeds/dev'
-    }
-  }
+      directory: './seeds/dev',
+    },
+  },
   // ...
-  }
+};
 ```
 
 If no `seeds.directory` is defined, files are created in `./seeds`. Note that the seed directory needs to be a relative path. Absolute paths are not supported (nor is it good practice).
@@ -169,10 +173,10 @@ A knexfile.js generally contains all of the configuration for your database. It 
 ```js
 module.exports = {
   client: 'pg',
-  connection: process.env.DATABASE_URL || { 
-    user: 'me', 
-    database: 'my_app' 
-  }
+  connection: process.env.DATABASE_URL || {
+    user: 'me',
+    database: 'my_app',
+  },
 };
 ```
 
@@ -181,16 +185,16 @@ You can also use an async function to get connection details for your configurat
 ```js
 const getPassword = async () => {
   // TODO: implement me
-  return 'my_pass'
-}
+  return 'my_pass';
+};
 
 module.exports = {
   client: 'pg',
   connection: async () => {
-    const password = await getPassword()
-    return { user: 'me', password }
+    const password = await getPassword();
+    return { user: 'me', password };
   },
-  migrations: {}
+  migrations: {},
 };
 ```
 
@@ -200,12 +204,12 @@ module.exports = {
 module.exports = {
   development: {
     client: 'pg',
-    connection: { user: 'me', database: 'my_app' }
+    connection: { user: 'me', database: 'my_app' },
   },
-  production: { 
-    client: 'pg', 
-    connection: process.env.DATABASE_URL 
-  }
+  production: {
+    client: 'pg',
+    connection: process.env.DATABASE_URL,
+  },
 };
 ```
 
@@ -217,8 +221,8 @@ You may provide a custom migration stub to be used in place of the default optio
 module.exports = {
   client: 'pg',
   migrations: {
-    stub: 'migration.stub'
-  }
+    stub: 'migration.stub',
+  },
 };
 ```
 
@@ -232,8 +236,8 @@ module.exports = {
   migrations: {
     getNewMigrationName: (name) => {
       return `${+new Date()}-${name}.js`;
-    }
-  }
+    },
+  },
 };
 ```
 
@@ -245,8 +249,8 @@ You can control extension of generated migrations.
 module.exports = {
   client: 'pg',
   migrations: {
-    extension: 'ts'
-  }
+    extension: 'ts',
+  },
 };
 ```
 
@@ -281,24 +285,22 @@ Each method takes an optional `config` object, which may specify the following p
 By default, each migration is run inside a transaction. Whenever needed, one can disable transactions for all migrations via the common migration config option `config.disableTransactions` or per-migration, via exposing a boolean property `config.transaction` from a migration file:
 
 ```js
-exports.up = function(knex) {
+exports.up = function (knex) {
   return knex.schema
     .createTable('users', function (table) {
-        table.increments('id');
-        table.string('first_name', 255).notNullable();
-        table.string('last_name', 255).notNullable();
+      table.increments('id');
+      table.string('first_name', 255).notNullable();
+      table.string('last_name', 255).notNullable();
     })
     .createTable('products', function (table) {
-        table.increments('id');
-        table.decimal('price').notNullable();
-        table.string('name', 1000).notNullable();
+      table.increments('id');
+      table.decimal('price').notNullable();
+      table.string('name', 1000).notNullable();
     });
 };
 
-exports.down = function(knex) {
-  return knex.schema
-      .dropTable("products")
-      .dropTable("users");
+exports.down = function (knex) {
+  return knex.schema.dropTable('products').dropTable('users');
 };
 
 exports.config = { transaction: false };
@@ -321,11 +323,12 @@ Runs all migrations that have not yet been run.
 If you need to run something only after all migrations have finished their execution, you can do something like this:
 
 ```js
-knex.migrate.latest()
-  .then(function() {
+knex.migrate
+  .latest()
+  .then(function () {
     return knex.seed.run();
   })
-  .then(function() {
+  .then(function () {
     // migrations are finished
   });
 ```
@@ -381,13 +384,13 @@ Knex supports custom migration sources, allowing you full control of where your 
 ```js
 // Create a custom migration source class
 class MyMigrationSource {
-  // Must return a Promise containing a list of migrations. 
-  // Migrations can be whatever you want, 
-  // they will be passed as arguments to getMigrationName 
+  // Must return a Promise containing a list of migrations.
+  // Migrations can be whatever you want,
+  // they will be passed as arguments to getMigrationName
   // and getMigration
   getMigrations() {
     // In this example we are just returning migration names
-    return Promise.resolve(['migration1'])
+    return Promise.resolve(['migration1']);
   }
 
   getMigrationName(migration) {
@@ -395,20 +398,24 @@ class MyMigrationSource {
   }
 
   getMigration(migration) {
-    switch(migration) {
+    switch (migration) {
       case 'migration1':
         return {
-          up(knex)   { /* ... */ },
-          down(knex) { /* ... */ },
-        }
+          up(knex) {
+            /* ... */
+          },
+          down(knex) {
+            /* ... */
+          },
+        };
     }
   }
 }
 
 // pass an instance of your migration source as knex config
-knex.migrate.latest({ 
-  migrationSource: new MyMigrationSource() 
-})
+knex.migrate.latest({
+  migrationSource: new MyMigrationSource(),
+});
 ```
 
 ### Webpack migration source example
@@ -416,25 +423,23 @@ knex.migrate.latest({
 An example of how to create a migration source where migrations are included in a webpack bundle.
 
 ```js
-const path = require('path')
+const path = require('path');
 
 class WebpackMigrationSource {
   constructor(migrationContext) {
-    this.migrationContext = migrationContext
+    this.migrationContext = migrationContext;
   }
 
   getMigrations() {
-    return Promise.resolve(
-      this.migrationContext.keys().sort()
-    )
+    return Promise.resolve(this.migrationContext.keys().sort());
   }
 
   getMigrationName(migration) {
-    return path.parse(migration).base
+    return path.parse(migration).base;
   }
 
   getMigration(migration) {
-    return this.migrationContext(migration)
+    return this.migrationContext(migration);
   }
 }
 
@@ -442,20 +447,20 @@ class WebpackMigrationSource {
 knex.migrate.latest({
   migrationSource: new WebpackMigrationSource(
     require.context('./migrations', false, /.js$/)
-  )
-})
+  ),
+});
 
-// with webpack >=5, require.context will add 
+// with webpack >=5, require.context will add
 // both the relative and absolute paths to the context
-// to avoid duplicate migration errors, you'll need 
-// to filter out one or the other this example filters 
-// out absolute paths, leaving only the relative 
+// to avoid duplicate migration errors, you'll need
+// to filter out one or the other this example filters
+// out absolute paths, leaving only the relative
 // ones(./migrations/*.js):
 knex.migrate.latest({
   migrationSource: new WebpackMigrationSource(
     require.context('./migrations', false, /^\.\/.*\.js$/)
-  )
-})
+  ),
+});
 ```
 
 ## ECMAScript modules (ESM) Interoperability
@@ -486,31 +491,31 @@ node --experimental-modules ./node_modules/.bin/knex $@
 When using migration and seed files with '.cjs' or '.mjs' extensions, you will need to specify that explicitly:
 
 ```ts
-/** 
+/**
  * knexfile.mjs
  */
-export default {      
+export default {
   migrations: {
-    // ... client, connection,etc .... 
+    // ... client, connection,etc ....
     directory: './migrations',
-    loadExtensions: ['.mjs'] // 
-  }
-}
+    loadExtensions: ['.mjs'], //
+  },
+};
 ```
 
 When using '.mjs' extensions for your knexfile and '.js' for the seeds/migrations, you will need to specify that explicitly.
 
 ```ts
-/** 
+/**
  * knexfile.mjs
  */
-export default {      
+export default {
   migrations: {
-    // ... client, connection,etc .... 
+    // ... client, connection,etc ....
     directory: './migrations',
-    loadExtensions: ['.js'] // knex will search for 'mjs' file by default
-  }
-}
+    loadExtensions: ['.js'], // knex will search for 'mjs' file by default
+  },
+};
 ```
 
 For the knexfile you can use a default export,  
@@ -520,7 +525,7 @@ it will take precedence over named export.
 /**
  * filename: knexfile.js
  * For the knexfile you can use a default export
- **/        
+ **/
 export default {
   client: 'sqlite3',
   connection: {
@@ -532,7 +537,7 @@ export default {
   seeds: {
     directory: './seeds',
   },
-}
+};
 
 /**
  * filename: knexfile.js
@@ -561,7 +566,7 @@ Seed and migration files need to follow Knex conventions
 
 ```ts
 // file: seed.js
-/** 
+/**
  * Same as with the CommonJS modules
  * You will need to export a "seed" named function.
  * */
@@ -570,15 +575,15 @@ export function seed(knex) {
 }
 
 // file: migration.js
-/** 
- * Same as the CommonJS version, the miration file should export 
+/**
+ * Same as the CommonJS version, the miration file should export
  * "up" and "down" named functions
  */
 export function up(knex) {
   // ... migration logic here
 }
 export function down(knex) {
-// ... migration logic here
+  // ... migration logic here
 }
 ```
 
@@ -596,7 +601,6 @@ Each method takes an optional `config` object, which may specify the following p
 - `seedSource`: specify a custom seed source, see [Custom Seed Source](#custom-seed-sources) for more info (default filesystem)
 - `extension`: extension to be used for newly generated seeds (default `js`)
 - `timestampFilenamePrefix`: whether timestamp should be added as a prefix for newly generated seeds (default `false`)
-
 
 ### make
 
@@ -617,22 +621,24 @@ Knex supports custom seed sources, allowing you full control of where your seeds
 ```js
 // Create a custom seed source class
 class MySeedSource {
-  // Must return a Promise containing a list of seeds. 
+  // Must return a Promise containing a list of seeds.
   // Seeds can be whatever you want, they will be passed as
   // arguments to getSeed
   getSeeds() {
     // In this example we are just returning seed names
-    return Promise.resolve(['seed1'])
+    return Promise.resolve(['seed1']);
   }
 
   getSeed(seed) {
-    switch(seed) {
+    switch (seed) {
       case 'seed1':
-        return (knex) => { /* ... */ }
+        return (knex) => {
+          /* ... */
+        };
     }
   }
 }
 
 // pass an instance of your seed source as knex config
-knex.seed.run({ seedSource: new MySeedSource() })
+knex.seed.run({ seedSource: new MySeedSource() });
 ```

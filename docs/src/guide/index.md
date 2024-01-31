@@ -1,6 +1,5 @@
 # Installation
 
-
 Knex can be used as an SQL query builder in both Node.JS and the browser, limited to WebSQL's constraints (like the inability to drop tables or read schemas). Composing SQL queries in the browser for execution on the server is highly discouraged, as this can be the cause of serious security vulnerabilities. The browser builds outside of WebSQL are primarily for learning purposes - for example, you can pop open the console and build queries on this page using the **knex** object.
 
 ## Node.js
@@ -37,12 +36,12 @@ The `knex` module is itself a function which takes a configuration object for Kn
 const knex = require('knex')({
   client: 'mysql',
   connection: {
-    host : '127.0.0.1',
-    port : 3306,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
-  }
+    host: '127.0.0.1',
+    port: 3306,
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
+  },
 });
 ```
 
@@ -58,6 +57,7 @@ const pg = require('knex')({
   searchPath: ['knex', 'public'],
 });
 ```
+
 :::
 
 When using the PostgreSQL driver, another usage pattern for instantiating the Knex configuration object could be to use a `connection: {}` object details to specify various flags such as enabling SSL, a connection string, and individual connection configuration fields all in the same object. Consider the following example:
@@ -70,15 +70,16 @@ const pg = require('knex')({
   client: 'pg',
   connection: {
     connectionString: config.DATABASE_URL,
-    host: config["DB_HOST"],
-    port: config["DB_PORT"],
-    user: config["DB_USER"],
-    database: config["DB_NAME"],
-    password: config["DB_PASSWORD"],
-    ssl: config["DB_SSL"] ? { rejectUnauthorized: false } : false,
-  }
+    host: config['DB_HOST'],
+    port: config['DB_PORT'],
+    user: config['DB_USER'],
+    database: config['DB_NAME'],
+    password: config['DB_PASSWORD'],
+    ssl: config['DB_SSL'] ? { rejectUnauthorized: false } : false,
+  },
 });
 ```
+
 :::
 
 The following are SQLite usage patterns for instantiating the Knex configuration object:
@@ -90,22 +91,23 @@ When you use the SQLite3 or Better-SQLite3 adapter, there is a filename required
 const knex = require('knex')({
   client: 'sqlite3', // or 'better-sqlite3'
   connection: {
-    filename: "./mydb.sqlite"
-  }
+    filename: './mydb.sqlite',
+  },
 });
 ```
 
- You can also run either SQLite3 or Better-SQLite3 with an in-memory database by providing `:memory:` as the filename. For example:
+You can also run either SQLite3 or Better-SQLite3 with an in-memory database by providing `:memory:` as the filename. For example:
 
 ```js
 const knex = require('knex')({
   client: 'sqlite3', // or 'better-sqlite3'
   connection: {
-    filename: ":memory:"
-  }
+    filename: ':memory:',
+  },
 });
 ```
-::: 
+
+:::
 
 ::: info SQLite3
 When you use the SQLite3 adapter, you can set flags used to open the connection. For example:
@@ -114,13 +116,13 @@ When you use the SQLite3 adapter, you can set flags used to open the connection.
 const knex = require('knex')({
   client: 'sqlite3',
   connection: {
-    filename: "file:memDb1?mode=memory&cache=shared",
-    flags: ['OPEN_URI', 'OPEN_SHAREDCACHE']
-  }
+    filename: 'file:memDb1?mode=memory&cache=shared',
+    flags: ['OPEN_URI', 'OPEN_SHAREDCACHE'],
+  },
 });
 ```
-::: 
 
+:::
 
 ::: info Better-SQLite3
 With the Better-SQLite3 adapter, you can use `options.nativeBinding` to specify the location of the adapter's compiled C++ addon. This can be useful when your build system does a lot of transformation/relocation of files.
@@ -131,9 +133,9 @@ Example use:
 const knex = require('knex')({
   client: 'better-sqlite3',
   connection: {
-    filename: ":memory:",
+    filename: ':memory:',
     options: {
-      nativeBinding: "/path/to/better_sqlite3.node",
+      nativeBinding: '/path/to/better_sqlite3.node',
     },
   },
 });
@@ -145,7 +147,7 @@ Additionally, you can open the database in read-only mode using `options.readonl
 const knex = require('knex')({
   client: 'better-sqlite3',
   connection: {
-    filename: "/path/to/db.sqlite3",
+    filename: '/path/to/db.sqlite3',
     options: {
       readonly: true,
     },
@@ -158,8 +160,9 @@ For more information, see the [Better-SQLite3 documentation](https://github.com/
 :::
 
 ::: info MSSQL
-When you use the MSSQL client, you can define a `mapBinding` function to define your own logic for mapping from knex query parameters to `tedious` types. 
+When you use the MSSQL client, you can define a `mapBinding` function to define your own logic for mapping from knex query parameters to `tedious` types.
 Returning undefined from the function will fallback to the default mapping.
+
 ```js
 import { TYPES } from 'tedious';
 
@@ -167,12 +170,12 @@ const knex = require('knex')({
   client: 'mssql',
   connection: {
     options: {
-      mapBinding: value => {
+      mapBinding: (value) => {
         // bind all strings to varchar instead of nvarchar
         if (typeof value === 'string') {
           return {
             type: TYPES.VarChar,
-            value
+            value,
           };
         }
 
@@ -180,19 +183,20 @@ const knex = require('knex')({
         if (value != null && value.type) {
           return {
             type: value.type,
-            value: value.value
+            value: value.value,
           };
         }
 
         // undefined is returned; falling back to default mapping function
-      }
-    }
-  }
+      },
+    },
+  },
 });
 ```
-::: 
 
-::: info 
+:::
+
+::: info
 The database version can be added in knex configuration, when you use the PostgreSQL adapter to connect a non-standard database.
 
 ```js
@@ -200,12 +204,12 @@ const knex = require('knex')({
   client: 'pg',
   version: '7.2',
   connection: {
-    host : '127.0.0.1',
-    port : 5432,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
-  }
+    host: '127.0.0.1',
+    port: 5432,
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
+  },
 });
 ```
 
@@ -214,27 +218,29 @@ const knex = require('knex')({
   client: 'mysql',
   version: '5.7',
   connection: {
-    host : '127.0.0.1',
-    port : 3306,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
-  }
+    host: '127.0.0.1',
+    port: 3306,
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
+  },
 });
 ```
-::: 
+
+:::
 
 ::: info
 When using a custom PostgreSQL client like `knex-aurora-data-api-client`, you can explicitly state if it supports jsonb column types
 
 ```js
 const knex = require('knex')({
-    client: require('knex-aurora-data-api-client').postgres,
-    connection: { resourceArn, secretArn, database: `mydb` },
-    version: 'data-api',
-    jsonbSupport: true
-})
+  client: require('knex-aurora-data-api-client').postgres,
+  connection: { resourceArn, secretArn, database: `mydb` },
+  version: 'data-api',
+  jsonbSupport: true,
+});
 ```
+
 :::
 
 A function can be used to determine the connection configuration dynamically. This function receives no parameters, and returns either a configuration object or a promise for a configuration object.
@@ -243,8 +249,8 @@ A function can be used to determine the connection configuration dynamically. Th
 const knex = require('knex')({
   client: 'sqlite3',
   connection: () => ({
-    filename: process.env.SQLITE_FILENAME
-  })
+    filename: process.env.SQLITE_FILENAME,
+  }),
 });
 ```
 
@@ -254,22 +260,19 @@ By default, the configuration object received via a function is cached and reuse
 const knex = require('knex')({
   client: 'postgres',
   connection: async () => {
-    const { 
-      token, 
-      tokenExpiration 
-    } = await someCallToGetTheToken();
+    const { token, tokenExpiration } = await someCallToGetTheToken();
 
     return {
-      host : 'your_host',
-      port : 5432,
-      user : 'your_database_user',
-      password : token,
-      database : 'myapp_test',
+      host: 'your_host',
+      port: 5432,
+      user: 'your_database_user',
+      password: token,
+      database: 'myapp_test',
       expirationChecker: () => {
         return tokenExpiration <= Date.now();
-      }
+      },
     };
-  }
+  },
 });
 ```
 
@@ -279,11 +282,11 @@ You can also connect via a unix domain socket, which will ignore host and port.
 const knex = require('knex')({
   client: 'mysql',
   connection: {
-    socketPath : '/path/to/socket.sock',
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
-  }
+    socketPath: '/path/to/socket.sock',
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
+  },
 });
 ```
 
@@ -293,15 +296,15 @@ const knex = require('knex')({
 const knex = require('knex')({
   client: 'mysql',
   connection: {
-    host : '127.0.0.1',
-    port : 3306,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
+    host: '127.0.0.1',
+    port: 3306,
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
   },
   userParams: {
-    userParam1: '451'
-  }
+    userParam1: '451',
+  },
 });
 ```
 
@@ -310,18 +313,12 @@ Initializing the library should normally only ever happen once in your applicati
 Specify the client for the particular flavour of SQL you are interested in.
 
 ```js
-const pg = require('knex')({client: 'pg'});
+const pg = require('knex')({ client: 'pg' });
 
-knex('table')
-  .insert({a: 'b'})
-  .returning('*')
-  .toString();
+knex('table').insert({ a: 'b' }).returning('*').toString();
 // "insert into "table" ("a") values ('b')"
 
-pg('table')
-  .insert({a: 'b'})
-  .returning('*')
-  .toString();
+pg('table').insert({ a: 'b' }).returning('*').toString();
 // "insert into "table" ("a") values ('b') returning *"
 ```
 
@@ -334,12 +331,10 @@ const knex = require('knex')({
   // Params
 });
 
-const knexWithParams = knex.withUserParams({ 
-  customUserParam: 'table1'
+const knexWithParams = knex.withUserParams({
+  customUserParam: 'table1',
 });
-const customUserParam = knexWithParams
-  .userParams
-  .customUserParam;
+const customUserParam = knexWithParams.userParams.customUserParam;
 ```
 
 ### debug
@@ -362,13 +357,13 @@ Checkout the [tarn.js](https://github.com/vincit/tarn.js) library for more infor
 const knex = require('knex')({
   client: 'mysql',
   connection: {
-    host : '127.0.0.1',
-    port : 3306,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
+    host: '127.0.0.1',
+    port: 3306,
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
   },
-  pool: { min: 0, max: 7 }
+  pool: { min: 0, max: 7 },
 });
 ```
 
@@ -381,30 +376,30 @@ If you ever need to explicitly teardown the connection pool, you may use `knex.d
 ```js
 const knex = require('knex')({
   client: 'pg',
-  connection: {/*...*/},
+  connection: {
+    /*...*/
+  },
   pool: {
     afterCreate: function (conn, done) {
       // in this example we use pg driver's connection API
       conn.query('SET timezone="UTC";', function (err) {
         if (err) {
-          // first query failed, 
+          // first query failed,
           // return error and don't try to make next query
           done(err, conn);
         } else {
           // do the second query...
-          conn.query(
-            'SELECT set_limit(0.01);', 
-            function (err) {
-              // if err is not falsy, 
-              //  connection is discarded from pool
-              // if connection aquire was triggered by a 
-              // query the error is passed to query promise
-              done(err, conn);
-            });
+          conn.query('SELECT set_limit(0.01);', function (err) {
+            // if err is not falsy,
+            //  connection is discarded from pool
+            // if connection aquire was triggered by a
+            // query the error is passed to query promise
+            done(err, conn);
+          });
         }
       });
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -415,9 +410,13 @@ const knex = require('knex')({
 ```js
 const knex = require('knex')({
   client: 'pg',
-  connection: {/*...*/},
-  pool: {/*...*/},
-  acquireConnectionTimeout: 10000
+  connection: {
+    /*...*/
+  },
+  pool: {
+    /*...*/
+  },
+  acquireConnectionTimeout: 10000,
 });
 ```
 
@@ -428,8 +427,10 @@ Utilized by Oracledb. An array of types. The valid types are 'DATE', 'NUMBER' an
 ```js
 const knex = require('knex')({
   client: 'oracledb',
-  connection: {/*...*/},
-  fetchAsString: [ 'number', 'clob' ]
+  connection: {
+    /*...*/
+  },
+  fetchAsString: ['number', 'clob'],
 });
 ```
 
@@ -441,35 +442,35 @@ For convenience, any migration configuration may be specified when initializing 
 const knex = require('knex')({
   client: 'mysql',
   connection: {
-    host : '127.0.0.1',
-    port : 3306,
-    user : 'your_database_user',
-    password : 'your_database_password',
-    database : 'myapp_test'
+    host: '127.0.0.1',
+    port: 3306,
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
   },
   migrations: {
-    tableName: 'migrations'
-  }
+    tableName: 'migrations',
+  },
 });
 ```
 
 ### postProcessResponse
 
-Hook for modifying returned rows, before passing them forward to user. One can do for example snake\_case -> camelCase conversion for returned columns with this hook. The `queryContext` is only available if configured for a query builder instance via [queryContext](/guide/schema-builder.html#querycontext).
+Hook for modifying returned rows, before passing them forward to user. One can do for example snake_case -> camelCase conversion for returned columns with this hook. The `queryContext` is only available if configured for a query builder instance via [queryContext](/guide/schema-builder.html#querycontext).
 
 ```js
 const knex = require('knex')({
   client: 'mysql',
   // overly simplified snake_case -> camelCase converter
   postProcessResponse: (result, queryContext) => {
-    // TODO: add special case for raw results 
+    // TODO: add special case for raw results
     // (depends on dialect)
     if (Array.isArray(result)) {
-      return result.map(row => convertToCamel(row));
+      return result.map((row) => convertToCamel(row));
     } else {
       return convertToCamel(result);
     }
-  }
+  },
 });
 ```
 
@@ -485,11 +486,8 @@ Conversion function `wrapIdentifier(value, dialectImpl, context): string` gets e
 const knex = require('knex')({
   client: 'mysql',
   // overly simplified camelCase -> snake_case converter
-  wrapIdentifier: (
-    value, 
-    origImpl, 
-    queryContext
-  ) => origImpl(convertToSnakeCase(value))
+  wrapIdentifier: (value, origImpl, queryContext) =>
+    origImpl(convertToSnakeCase(value)),
 });
 ```
 
@@ -500,15 +498,11 @@ Knex contains some internal log functions for printing warnings, errors, depreca
 ```js
 const knex = require('knex')({
   log: {
-    warn(message) {
-    },
-    error(message) {
-    },
-    deprecate(message) {
-    },
-    debug(message) {
-    },
-  }
+    warn(message) {},
+    error(message) {},
+    deprecate(message) {},
+    debug(message) {},
+  },
 });
 ```
 
@@ -518,11 +512,11 @@ Knex builds an error message in case of query error. By default Knex adds compil
 
 ```js
 const knex = require('knex')({
-  compileSqlOnError: false
+  compileSqlOnError: false,
 });
 ```
 
-## TypeScript 
+## TypeScript
 
 While knex is written in JavaScript, officially supported TypeScript bindings are available (within the knex npm package).
 
@@ -542,27 +536,27 @@ declare module 'knex/types/tables' {
     created_at: string;
     updated_at: string;
   }
-  
+
   interface Tables {
     // This is same as specifying `knex<User>('users')`
     users: User;
     // For more advanced types, you can specify separate type
     // for base model, "insert" type and "update" type.
-    // But first: notice that if you choose to use this, 
+    // But first: notice that if you choose to use this,
     // the basic typing showed above can be ignored.
     // So, this is like specifying
     //    knex
     //    .insert<{ name: string }>({ name: 'name' })
     //    .into<{ name: string, id: number }>('users')
     users_composite: Knex.CompositeTableType<
-      // This interface will be used for return type and 
-      // `where`, `having` etc where full type is required 
+      // This interface will be used for return type and
+      // `where`, `having` etc where full type is required
       User,
       // Specifying "insert" type will also make sure
       // data matches interface in full. Meaning
       // if interface is `{ a: string, b: string }`,
       // `insert({ a: '' })` will complain about missing fields.
-      // 
+      //
       // For example, this will require only "name" field when inserting
       // and make created_at and updated_at optional.
       // And "id" can't be provided at all.
@@ -576,7 +570,7 @@ declare module 'knex/types/tables' {
       // require some field (e.g., `Partial<User> & { updated_at: string }`
       // will allow updating any field for User but require updated_at to be
       // always provided as well.
-      // 
+      //
       // For example, this wil allow updating all fields except "id".
       // "id" will still be usable for `where` clauses so
       //      knex('users_composite')
@@ -594,7 +588,8 @@ When TypeScript is configured to use a modern module resolution setting (`node16
 
 ```ts
 // The trailing `.js` is required by the TypeScript compiler in certain configs:
-declare module 'knex/types/tables.js' { // <----- Different module path!!!
+declare module 'knex/types/tables.js' {
+  // <----- Different module path!!!
   interface Tables {
     // ...
   }
