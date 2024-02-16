@@ -18,9 +18,7 @@
 
 ## Documentation
 
-Documentation is no longer maintained in knex master repository. All the documentation pull requests should be sent to https://github.com/knex/documentation
-
-Documentation pull requests should not be merged before knex version which has the new documented feature is released.
+Documentation is maintained in the docs folder. every pull request that changes the public API should also update the docs
 
 ## I would like to add support for new dialect to knex, is it possible?
 

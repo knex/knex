@@ -29,7 +29,11 @@ If issue is about TypeScript definitions, tag @ lorefnon.
 
 # Missing / erroneus documentation
 
-Send issue to documentation repo, or fix it and send PR https://github.com/knex/documentation
+1. What is the missing or erroneus part of the documentation
+
+2. What is the correct information
+
+3. If you have time, you can also make a pull request to fix the documentation
 
 # Questions about how to use knex
 

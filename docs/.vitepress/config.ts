@@ -10,8 +10,8 @@ export default defineConfig({
   themeConfig: {
     logo: '/knex-logo.png',
     repo: 'knex/knex',
-    docsRepo: 'knex/documentation',
-    docsDir: 'src',
+    docsRepo: 'knex/knex',
+    docsDir: 'docs/src',
     docsBranch: 'main',
     editLinks: true,
     editLinkText: 'Edit this page on GitHub',

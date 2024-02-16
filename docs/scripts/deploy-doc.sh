@@ -16,6 +16,6 @@ git init
 git add -A
 git commit -m 'deploy'
 
-git push -f git@github.com:knex/documentation.git master:gh-pages
+git push -f git@github.com:knex/knex.git master:gh-pages
 
 cd -
