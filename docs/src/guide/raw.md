@@ -61,6 +61,71 @@ query will become:
 select * from users where id in (?, ?, ?) /* with bindings [1,2,3] */
 ```
 
+For raw queries that involve combining multiple named bindings where one of the bindings is a string array, you'll need to turn the string array in to a string and let knex build a query.
+
+```js
+const names = ['Sally', 'Jay', 'Foobar'];
+const bindings = {
+  names: knex.raw(
+    `'${names.join("','")}'`
+  ) /* generates 'Sally','Jay','Foobar' */,
+  age: 21,
+  limit: 100,
+};
+```
+
+Pass the bindings to your raw query:
+
+```js
+knex.raw(
+  `
+  select * from people
+  where "name" in (:names)
+  and "age" > :age
+  limit :limit
+`,
+  bindings
+);
+```
+
+query will become:
+
+```sql
+select * from people
+where "name" in ('Sally', 'Jay', 'Foobar')
+and "age" > 21
+limit 100
+```
+
+You can also use `ANY`, which in many cases is equivalent to `WHERE IN`.
+
+```js
+const names = ['Sally', 'Jay', 'Foobar'];
+const bindings = {
+  names,
+  age: 21,
+  limit: 100,
+};
+knex.raw(
+  `
+  select * from people
+  where "name" = any(:names)
+  and "age" > :age
+  limit :limit
+`,
+  bindings
+);
+```
+
+This evaluates to: 
+
+```sql
+select * from people
+where "name" = any('{"Sally", "Jay", "Foobar"}')
+and "age" > 21
+limit 100
+```
+
 To prevent replacement of `?` one can use the escape sequence `\\?`.
 
 ```js
