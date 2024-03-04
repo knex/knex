@@ -3,7 +3,7 @@ name: Knex / Documentation deployment
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
     paths:
       - docs/**
 
