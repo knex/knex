@@ -12,7 +12,7 @@ export default defineConfig({
     repo: 'knex/knex',
     docsRepo: 'knex/knex',
     docsDir: 'docs/src',
-    docsBranch: 'main',
+    docsBranch: 'master',
     editLinks: true,
     editLinkText: 'Edit this page on GitHub',
     lastUpdated: 'Last Updated',
