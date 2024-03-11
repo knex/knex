@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Source+Code+Pro&display=swap');
+
+:root {
+  --c-brand: #d26b38;
+  --c-white-dark: #f5f5f5;
+  --c-white-darker: #c5bab5;
+  --c-brand-light: #ff8144;
+  --font-family-base: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
+  --font-family-mono: 'Source Code Pro', source-code-pro, Menlo, Monaco,
+    Consolas, 'Courier New', monospace;
+
+  --code-font-size: 14px;
+  --code-line-height: 22px;
+  /* --c-text-light-1: #c5bab5; */
+  --c-text-light-2: #cd7244;
+  --c-text-light-3: #d26a38;
+  --c-text-dark-1: #7f7f7f;
+  --code-bg-color: #362f2d;
+  --code-inline-bg-color: rgb(68 52 47 / 5%);
+}
+html {
+  font-size: 14px;
+}
+.dark {
+  --c-white: #2a2420;
+  --c-white-dark: #342c27;
+  --c-white-darker: #201d1c;
+  --c-black: #ffffff;
+  --c-text-light-1: #c5bab5;
+  --c-text-light-2: #dfa486;
+  --c-text-light-3: #d26a38;
+  --c-text-dark-1: #9f9f9f;
+  --code-bg-color: #201d1c;
+  --code-inline-bg-color: #201d1c;
+
+  color-scheme: dark;
+}
+
+.nav-bar .item {
+  font-size: 1rem;
+}
+.nav-bar .nav-bar-title {
+  font-size: 1.4rem;
+}
+.sidebar > .sidebar-links > .sidebar-link + .sidebar-link {
+  padding-top: 0.3rem;
+}
+.sidebar > .sidebar-links > .sidebar-link > a.sidebar-link-item {
+  font-weight: 600;
+}
+.sidebar > .sidebar-links > .sidebar-link > .sidebar-link-item {
+  padding: 0.35rem 1.5rem 0.35rem 1.25rem;
+}
+
+a.header-anchor {
+  float: left;
+  margin-top: 0.125em;
+  margin-left: -1.1em;
+  padding-right: 0.23em;
+  font-size: 0.85em;
+  opacity: 0;
+}
+.custom-block.warning {
+  border-color: var(--c-brand);
+  color: #914926;
+  background-color: rgb(210 106 56 / 15%);
+}
+.custom-block.warning .custom-block-title {
+  color: #d66026;
+}
+.custom-block.info {
+  background-color: #fbf6f4;
+}
+.dark .custom-block.info {
+  background-color: #3a3532;
+}
+.dark .custom-block.warning {
+  color: var(--c-text-light-1);
+  background-color: #462414;
+}
+.dark .custom-block.warning .custom-block-title {
+  color: #d66026;
+}
+
+.home-hero {
+  max-width: 42rem;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.home-hero .image {
+  animation: spin 5s linear infinite;
+  animation-play-state: paused;
+}
+.home-hero:hover .image {
+  animation-play-state: running;
+}
+.theme .container {
+  max-width: 54rem;
+}
+.container-home {
+  max-width: 42rem;
+  margin: 0 auto;
+  background: var(--c-white-dark);
+  padding: 0.5rem 2rem;
+  border-radius: 6px;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-dialect]::before {
+  content: attr(data-dialect);
+}
+
+.language-sql code {
+  color: #ccc;
+}
