@@ -1954,12 +1954,12 @@ declare namespace Knex {
 
   interface OrderBy<TRecord extends {} = any, TResult = unknown[]> {
     (
-      columnName: keyof TRecord | QueryBuilder,
+      columnName: keyof TRecord | QueryBuilder | Raw,
       order?: 'asc' | 'desc',
       nulls?: 'first' | 'last'
     ): QueryBuilder<TRecord, TResult>;
     (
-      columnName: string | QueryBuilder,
+      columnName: string | QueryBuilder | Raw,
       order?: string,
       nulls?: string
     ): QueryBuilder<TRecord, TResult>;
@@ -1967,7 +1967,7 @@ declare namespace Knex {
       columnDefs: Array<
         | keyof TRecord
         | Readonly<{
-            column: keyof TRecord | QueryBuilder;
+            column: keyof TRecord | QueryBuilder | Raw;
             order?: 'asc' | 'desc';
             nulls?: 'first' | 'last';
           }>
@@ -1977,7 +1977,7 @@ declare namespace Knex {
       columnDefs: Array<
         | string
         | Readonly<{
-            column: string | QueryBuilder;
+            column: string | QueryBuilder | Raw;
             order?: string;
             nulls?: string;
           }>
