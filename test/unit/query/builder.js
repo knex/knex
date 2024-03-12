@@ -879,6 +879,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS like ?',
         bindings: ['luk%'],
       },
+      sqlite3: {
+        sql: 'select * from `users` where `name` like ?',
+        bindings: ['luk%'],
+      },
     });
   });
 
@@ -901,6 +905,10 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CS_AS like ? and [name] collate SQL_Latin1_General_CP1_CS_AS like ? or [name] collate SQL_Latin1_General_CP1_CS_AS like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        sqlite3: {
+          sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
           bindings: ['luk1%', 'luk2%', 'luk3%'],
         },
       }
@@ -926,6 +934,10 @@ describe('QueryBuilder', () => {
         },
         mssql: {
           sql: 'select * from [users] where [name] collate SQL_Latin1_General_CP1_CI_AS like ? and [name] collate SQL_Latin1_General_CP1_CI_AS like ? or [name] collate SQL_Latin1_General_CP1_CI_AS like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        sqlite3: {
+          sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
           bindings: ['luk1%', 'luk2%', 'luk3%'],
         },
       }
