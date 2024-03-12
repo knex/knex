@@ -1541,6 +1541,33 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('raw value where ins', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .whereIn(raw('?', [9]), [1, 2, 3]),
+      {
+        mysql: {
+          sql: 'select * from `users` where ? in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        mssql: {
+          sql: 'select * from [users] where ? in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        pg: {
+          sql: 'select * from "users" where ? in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" where ? in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+      }
+    );
+  });
+
   it('orWhereIn', () => {
     testsql(
       qb()
