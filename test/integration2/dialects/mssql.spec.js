@@ -19,6 +19,8 @@ async function fetchDefaultConstraint(knex, table, column) {
   return result || { name: null, definition: null };
 }
 
+const TEST_TABLE_NAME = 'test_table';
+
 describe('MSSQL dialect', () => {
   getAllDbs()
     .filter((db) => db.startsWith('mssql'))
@@ -30,7 +32,7 @@ describe('MSSQL dialect', () => {
         });
 
         beforeEach(async () => {
-          await knex.schema.createTable('test', function () {
+          await knex.schema.createTable(TEST_TABLE_NAME, function () {
             this.increments('id').primary();
             this.specificType('varchar', 'varchar(100)');
             this.string('nvarchar');
@@ -42,23 +44,23 @@ describe('MSSQL dialect', () => {
         });
 
         afterEach(async () => {
-          await knex.schema.dropTable('test');
+          await knex.schema.dropTable(TEST_TABLE_NAME);
         });
 
         describe('column default handling', () => {
           describe('changing default value', () => {
             beforeEach(async () => {
-              await knex.schema.alterTable('test', function () {
-                this.string('name').defaultTo('test');
+              await knex.schema.alterTable(TEST_TABLE_NAME, function () {
+                this.string('name').defaultTo(TEST_TABLE_NAME);
               });
             });
             it('can change the default value', async () => {
-              await knex.schema.alterTable('test', function () {
+              await knex.schema.alterTable(TEST_TABLE_NAME, function () {
                 this.string('name').defaultTo('test2').alter();
               });
               const { definition } = await fetchDefaultConstraint(
                 knex,
-                'test',
+                TEST_TABLE_NAME,
                 'name'
               );
               expect(definition).to.equal("('test2')");
@@ -66,28 +68,43 @@ describe('MSSQL dialect', () => {
           });
 
           it('names default constraint', async () => {
-            await knex.schema.alterTable('test', function () {
+            await knex.schema.alterTable(TEST_TABLE_NAME, function () {
               this.string('name').defaultTo('knex');
             });
-            const { name } = await fetchDefaultConstraint(knex, 'test', 'name');
-            expect(name).to.equal('test_name_default');
+            const { name } = await fetchDefaultConstraint(
+              knex,
+              TEST_TABLE_NAME,
+              'name'
+            );
+            expect(name).to.equal(`${TEST_TABLE_NAME}_name_default`);
           });
           it('names default constraint with supplied name', async () => {
             const constraintName = 'DF_test_name';
-            await knex.schema.alterTable('test', function () {
+            await knex.schema.alterTable(TEST_TABLE_NAME, function () {
               this.string('name').defaultTo('knex', { constraintName });
             });
-            const { name } = await fetchDefaultConstraint(knex, 'test', 'name');
+            const { name } = await fetchDefaultConstraint(
+              knex,
+              TEST_TABLE_NAME,
+              'name'
+            );
             expect(name).to.equal('DF_test_name');
           });
           it("doesn't name default constraint", async () => {
             const constraintName = '';
-            await knex.schema.alterTable('test', function () {
+            await knex.schema.alterTable(TEST_TABLE_NAME, function () {
               this.string('name').defaultTo('knex', { constraintName });
             });
-            const { name } = await fetchDefaultConstraint(knex, 'test', 'name');
+            const { name } = await fetchDefaultConstraint(
+              knex,
+              TEST_TABLE_NAME,
+              'name'
+            );
             // this is the default patten used by mssql if no constraint is defined
-            expect(name).to.match(/^DF__test__name__[0-9A-Z]+$/);
+            const regex = new RegExp(
+              `^DF__${TEST_TABLE_NAME}__name__[0-9A-Z]+$`
+            );
+            expect(name).to.match(regex);
           });
         });
 
@@ -97,7 +114,7 @@ describe('MSSQL dialect', () => {
           const byteCount7500 = "'" + 'X'.repeat(7500) + "'";
           const byteCountOver7500 = "'" + 'X'.repeat(7501) + "'";
 
-          const tableTarget = { schemaName: 'dbo', tableName: 'test' };
+          const tableTarget = { schemaName: 'dbo', tableName: TEST_TABLE_NAME };
           it('supports table comments of max 7500 bytes', async () => {
             // 0 works
             await expect(comment(knex, 'add', byteCount0, tableTarget)).to
@@ -368,7 +385,7 @@ describe('MSSQL dialect', () => {
 
         describe('supports mapBinding config', async () => {
           it('can remap types', async () => {
-            const query = knex('test')
+            const query = knex(TEST_TABLE_NAME)
               .where('varchar', { value: 'testing', type: TYPES.VarChar })
               .select('id');
             const { bindings } = query.toSQL().toNative();
@@ -379,7 +396,7 @@ describe('MSSQL dialect', () => {
             await query;
           });
           it('undefined mapBinding result falls back to default implementation', async () => {
-            const query = knex('test')
+            const query = knex(TEST_TABLE_NAME)
               .where('nvarchar', 'testing')
               .select('id');
 
