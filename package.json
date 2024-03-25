@@ -263,5 +263,10 @@
       "module": "commonjs",
       "target": "ES2017"
     }
+  },
+  "exports": {
+    "types": "./types/index.d.ts",
+    "import": "./knex.mjs",
+    "default": "./knex.js"
   }
 }
