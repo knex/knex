@@ -31,9 +31,9 @@ For support and questions, join our [Gitter channel](https://gitter.im/tgriesser
 
 For knex-based Object Relational Mapper, see:
 
-- https://github.com/Vincit/objection.js
-- https://github.com/mikro-orm/mikro-orm
-- https://bookshelfjs.org
+- <https://github.com/Vincit/objection.js>
+- <https://github.com/mikro-orm/mikro-orm>
+- <https://bookshelfjs.org>
 
 To see the SQL that Knex will generate for a given query, you can use [Knex Query Lab](https://michaelavila.com/knex-querylab/)
 
@@ -146,4 +146,89 @@ const database = knex({
   },
 });
 database.migrate.latest();
+```
+
+## Integrating Knex.js with Next.js or Vite
+
+If you are using a framework to develop your applications, follow these steps to implement **[Knex](https://knexjs.org/guide/)** in your project:
+
+1. **Install **[Knex](https://knexjs.org/guide/)**:**
+
+```bash
+npm i knex
+# or 
+yarn add knex
+# or
+pnpm add knex
+```
+
+In this example we are using sqlite3 as the database client, so let's install that too:
+
+```bash
+npm i sqlite3
+# or 
+yarn add sqlite3
+# or
+pnpm add sqlite3
+```
+
+2. **Initialize **[Knex](https://knexjs.org/guide/)** (using a `.js` file):**
+
+```bash
+npx knex init --knexfile knexfile.js
+```
+
+>[!important]
+> To use Knex together with frameworks such as Next.js or Vite, you need to start by using a `.js` file.
+
+With the `knexfile.js` already generated, let's configure it:
+
+3. **Create a new file named `database.config.mjs` inside the `src` directory or another directory of your application:**
+
+```bash
+touch ./src/database.config.mjs
+```
+
+4. **Delete and Pasting Content from `knexfile.js`:**
+Copy all the content of the code below and paste it inside a new file named `database.config.mjs`:
+
+```js
+// In the database.config.mjs file
+import pkg from 'knex';
+const { knex: setupKnex } = pkg;
+
+export const config = {
+client: 'sqlite3', // Consult the documentation and Replace with your database client (e.g., 'mysql', 'postgres')
+connection: {
+filename: './data.db', // Replace with your database connection details
+},
+migrations: {
+directory: './migrations', // Path to your migrations directory
+extension: 'ts', // Change to 'js' if using Vanilla
+},
+useNullAsDefault: true,
+};
+
+export const knex = setupKnex(config)
+```
+
+5. **Import the `config` instance from `database.config.mjs`:**
+Delete all content inside your `knexfile.js` and paste the code below:
+
+```js
+import { config } from './src/database.config.mjs'
+export default config
+```
+
+6. Lastly, we must add to package.json:
+
+```json
+"type": "module",
+```
+
+With this, you'll be able to create your first **[migrations](https://knexjs.org/guide/migrations.html#migration-cli)**.
+Let's try:
+
+```bash
+npx knex migrate:make create-initial-migration-example
 ```
