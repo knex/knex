@@ -818,6 +818,36 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adds unique constraint with nulls not distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .unique({ indexName: 'user_id_index', nullsNotDistinct: true });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_index" unique ("user_id") nulls not distinct'
+    );
+  });
+
+  it('adds unique constraint with nulls distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table
+          .integer('user_id')
+          .unique({ indexName: 'user_id_index', nullsNotDistinct: false });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'alter table "person" add constraint "user_id_index" unique ("user_id") nulls distinct'
+    );
+  });
+
   it('adds primary constraint with deferrable initially immediate', function () {
     tableSql = client
       .schemaBuilder()
@@ -1154,6 +1184,40 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'create index "baz" on "users" ("foo", "bar") where "email" is not null'
+    );
+  });
+
+  it('adding unique index with nulls not distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique('foo', {
+          indexName: 'bar',
+          useConstraint: false,
+          nullsNotDistinct: true,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "bar" on "users" ("foo") nulls not distinct'
+    );
+  });
+
+  it('adding unique index with nulls distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique('foo', {
+          indexName: 'bar',
+          useConstraint: false,
+          nullsNotDistinct: false,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "bar" on "users" ("foo") nulls distinct'
     );
   });
 
