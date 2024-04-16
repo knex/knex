@@ -17,6 +17,7 @@ export default defineConfig({
     editLinkText: 'Edit this page on GitHub',
     lastUpdated: 'Last Updated',
     nav: [
+      { text: 'Playground', link: '/playground/' },
       { text: 'Guide', link: '/guide/', activeMatch: '^/guide/' },
       {
         text: 'F.A.Q.',

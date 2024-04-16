@@ -13,7 +13,9 @@
     "typescript": "^4.6.3",
     "vitepress": "^0.22.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "split.js": "^1.6.5"
+  },
   "author": {
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
