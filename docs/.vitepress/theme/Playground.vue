@@ -9,7 +9,8 @@ export default {
 </script>
 
 <script setup>
-import { shallowRef } from 'vue';
+import Knex from 'knex';
+import { shallowRef, watch } from 'vue';
 import { useDialect } from './dialect';
 
 const { dialect } = useDialect();
@@ -32,17 +33,42 @@ const outputEditorOptions = {
 
 function handleMountEditor(editor) {
   editorRef.value = editor;
+
+  fetch('/playground-assets/types/index.d.ts')
+    .then((res) => res.text())
+    .then((typeRes) => {
+      const mappedTypes = typeRes
+        .replace(/^import .*$/gmu, '')
+        .replace(/[^ ]export /gu, ' ')
+        .replace(
+          'declare function knex<TRecord extends {} = any, TResult = unknown[]>(\n  config: Knex.Config | string\n): Knex<TRecord, TResult>;',
+          'declare const knex: Knex.Client & (<TRecord extends {} = any, TResult = unknown[]>(config: Knex.Config | string) => Knex<TRecord, TResult>);'
+        );
+
+      // @ts-ignore
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(
+        mappedTypes,
+        'knex.d.ts'
+      );
+    })
+    .catch(() => {
+      window.location.reload();
+    });
 }
 
 function handleMountOutput(editor) {
   outputRef.value = editor;
 }
 
+watch(dialect, () => {
+  onChange(editorRef.value.getValue());
+});
+
 function onChange(value) {
   let output = '--- generated SQL code\n';
 
   try {
-    console.log({ dialect: dialect.value });
+    const knex = Knex({ client: dialect.value });
 
     output += eval(value).toQuery();
   } catch (err) {
