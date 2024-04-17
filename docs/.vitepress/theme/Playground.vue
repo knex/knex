@@ -10,28 +10,28 @@ export default {
 
 <script setup>
 import Knex from 'knex';
-import { shallowRef, watch } from 'vue';
-import * as sqlFormatter from "sql-formatter";
+import { ref, shallowRef, watch } from 'vue';
+import * as sqlFormatter from 'sql-formatter';
 import { useDialect } from './dialect';
 
 const formatter = {
-  pg: "postgresql",
-  pgnative: "postgresql",
-  mysql: "mysql",
-  mysql2: "mysql",
-  cockroachdb: "postgresql",
-  redshift: "redshift",
-  sqlite3: "sqlite",
-  oracledb: "plsql",
-  mssql: "tsql",
+  pg: 'postgresql',
+  pgnative: 'postgresql',
+  mysql: 'mysql',
+  mysql2: 'mysql',
+  cockroachdb: 'postgresql',
+  redshift: 'redshift',
+  sqlite3: 'sqlite',
+  oracledb: 'plsql',
+  mssql: 'tsql',
 };
 
 const { dialect } = useDialect();
 const editorRef = shallowRef();
 const outputRef = shallowRef();
 
-const code = `// Knex code\nknex("table").select()\n`;
-const sql = `--- generated SQL code\nselect\n  *\nfrom\n  "table"\n`;
+const code = ref('// Knex code\nknex("table").select()\n');
+const sql = ref('--- generated SQL code\nselect\n  *\nfrom\n  `table`\n');
 
 const editorOptions = {
   scrollBeyondLastLine: false,
@@ -73,17 +73,13 @@ function handleMountOutput(editor) {
   outputRef.value = editor;
 }
 
-watch(dialect, () => {
-  onChange(editorRef.value.getValue());
-});
-
-function onChange(value) {
+watch([code, dialect], () => {
   let output = '--- generated SQL code\n';
 
   try {
     const knex = Knex({ client: dialect.value });
 
-    output += eval(value).toQuery();
+    output += eval(code.value).toQuery();
 
     try {
       output = sqlFormatter.format(output, {
@@ -97,7 +93,7 @@ function onChange(value) {
   }
 
   outputRef.value.setValue(output);
-}
+});
 </script>
 
 <template>
@@ -110,7 +106,6 @@ function onChange(value) {
       :options="editorOptions"
       :saveViewState="false"
       @mount="handleMountEditor"
-      @change="onChange"
     />
 
     <vue-monaco-editor
