@@ -11,7 +11,20 @@ export default {
 <script setup>
 import Knex from 'knex';
 import { shallowRef, watch } from 'vue';
+import * as sqlFormatter from "sql-formatter";
 import { useDialect } from './dialect';
+
+const formatter = {
+  pg: "postgresql",
+  pgnative: "postgresql",
+  mysql: "mysql",
+  mysql2: "mysql",
+  cockroachdb: "postgresql",
+  redshift: "redshift",
+  sqlite3: "sqlite",
+  oracledb: "plsql",
+  mssql: "tsql",
+};
 
 const { dialect } = useDialect();
 const editorRef = shallowRef();
@@ -71,6 +84,14 @@ function onChange(value) {
     const knex = Knex({ client: dialect.value });
 
     output += eval(value).toQuery();
+
+    try {
+      output = sqlFormatter.format(output, {
+        language: formatter[dialect.value],
+      });
+    } catch (e) {
+      output += `\n--- sqlFormatter failed to run: ${e?.toString() ?? e}\n`;
+    }
   } catch (err) {
     output = `--- ${err?.toString() ?? err}\n`;
   }
