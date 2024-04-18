@@ -125,6 +125,11 @@ a.header-anchor {
 
 .split {
   display: flex;
+}
+.split-vertical {
+  flex-direction: column;
+}
+.split-horizontal {
   flex-direction: row;
 }
 .gutter {

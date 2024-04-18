@@ -1,34 +1,47 @@
-<script>
-import Split from 'split.js';
-
-export default {
-  mounted() {
-    Split(['#editor', '#output']);
-  },
-};
-</script>
-
 <script setup>
 import Knex from 'knex';
-import { ref, watch } from 'vue';
 import * as sqlFormatter from 'sql-formatter';
+import Split from 'split.js';
+import { computed, onMounted, ref, shallowRef, watch } from 'vue';
+
+import { useBreakpoints } from './breakpoint';
 import { useDialect } from './dialect';
 
 const formatter = {
-  pg: 'postgresql',
-  pgnative: 'postgresql',
+  cockroachdb: 'postgresql',
+  mssql: 'tsql',
   mysql: 'mysql',
   mysql2: 'mysql',
-  cockroachdb: 'postgresql',
+  oracledb: 'plsql',
+  pg: 'postgresql',
+  pgnative: 'postgresql',
   redshift: 'redshift',
   sqlite3: 'sqlite',
-  oracledb: 'plsql',
-  mssql: 'tsql',
 };
 
 const { dialect } = useDialect();
+const { type } = useBreakpoints();
+const isVertical = computed(() => ['xs', 'sm'].includes(type.value));
+
+const split = shallowRef();
 const sql = ref('');
 const code = ref('');
+
+onMounted(() => {
+  split.value = Split(['#editor', '#output'], {
+    direction: isVertical.value ? 'vertical' : 'horizontal',
+    sizes: [50, 50],
+  });
+});
+
+watch(isVertical, () => {
+  split.value?.destroy(false, false);
+
+  split.value = Split(['#editor', '#output'], {
+    direction: isVertical.value ? 'vertical' : 'horizontal',
+    sizes: [50, 50],
+  });
+});
 
 const editorOptions = {
   scrollBeyondLastLine: false,
@@ -94,7 +107,7 @@ watch([code, dialect], () => {
     output = `--- ${err?.toString() ?? err}\n`;
   }
 
-  sql.value = output;
+  sql.value = `${output}\n`;
 
   window.history.replaceState(
     null,
@@ -105,7 +118,10 @@ watch([code, dialect], () => {
 </script>
 
 <template>
-  <div class="playground split">
+  <div
+    class="playground split"
+    :class="{ 'split-vertical': isVertical, 'split-horizontal': !isVertical }"
+  >
     <vue-monaco-editor
       id="editor"
       language="typescript"
