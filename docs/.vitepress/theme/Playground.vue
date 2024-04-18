@@ -10,7 +10,7 @@ export default {
 
 <script setup>
 import Knex from 'knex';
-import { ref, shallowRef, watch } from 'vue';
+import { ref, watch } from 'vue';
 import * as sqlFormatter from 'sql-formatter';
 import { useDialect } from './dialect';
 
@@ -27,11 +27,8 @@ const formatter = {
 };
 
 const { dialect } = useDialect();
-const editorRef = shallowRef();
-const outputRef = shallowRef();
-
-const code = ref('// Knex code\nknex("table").select()\n');
-const sql = ref('--- generated SQL code\nselect\n  *\nfrom\n  `table`\n');
+const sql = ref('');
+const code = ref('');
 
 const editorOptions = {
   scrollBeyondLastLine: false,
@@ -44,8 +41,17 @@ const outputEditorOptions = {
   wordWrap: 'on',
 };
 
-function handleMountEditor(editor) {
-  editorRef.value = editor;
+function handleMountEditor() {
+  code.value = (() => {
+    const hash = location.hash.slice(1);
+    const code = '// Knex code\nknex("table").select()\n';
+
+    try {
+      return hash ? decodeURIComponent(atob(hash)) || code : code;
+    } catch {
+      return code;
+    }
+  })();
 
   fetch('/playground-assets/types/index.d.ts')
     .then((res) => res.text())
@@ -69,10 +75,6 @@ function handleMountEditor(editor) {
     });
 }
 
-function handleMountOutput(editor) {
-  outputRef.value = editor;
-}
-
 watch([code, dialect], () => {
   let output = '--- generated SQL code\n';
 
@@ -92,7 +94,13 @@ watch([code, dialect], () => {
     output = `--- ${err?.toString() ?? err}\n`;
   }
 
-  outputRef.value.setValue(output);
+  sql.value = output;
+
+  window.history.replaceState(
+    null,
+    '',
+    `#${btoa(encodeURIComponent(code.value))}`
+  );
 });
 </script>
 
@@ -115,7 +123,6 @@ watch([code, dialect], () => {
       v-model:value="sql"
       :options="outputEditorOptions"
       :saveViewState="false"
-      @mount="handleMountOutput"
     />
   </div>
 </template>
