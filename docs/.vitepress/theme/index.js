@@ -5,6 +5,7 @@ import { createDialect } from './dialect';
 import SqlOutput from './SqlOutput.vue';
 import Playground from './Playground.vue';
 import './styles.css';
+import { createDarkMode } from './dark-mode';
 
 // @todo: hack, vite.config.ts define option seem not to work
 globalThis.process = globalThis.process || {
@@ -17,6 +18,7 @@ export default {
 
   enhanceApp({ app }) {
     createDialect(app);
+    createDarkMode(app);
     app.component('SqlOutput', SqlOutput);
     app.component('Playground', Playground);
     app.use(VueMonacoEditorPlugin, {

@@ -1,27 +1,14 @@
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, watch } from 'vue';
+import { useDarkMode } from './dark-mode';
+const { isDark, toggleDark } = useDarkMode();
 
-const prefersDark = ref(false);
-const setting = ref('auto');
-const isDark = computed(
-  () =>
-    setting.value === 'dark' || (prefersDark.value && setting.value !== 'light')
-);
-const toggleDark = () => {
-  setting.value = setting.value === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('color-scheme', setting.value);
-};
-watch(isDark, () => {
+function onDarkChange() {
   document.documentElement.classList.toggle('dark', isDark.value);
-});
+}
 
-onMounted(() => {
-  prefersDark.value =
-    window.matchMedia &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches;
-  setting.value = localStorage.getItem('color-scheme') || 'auto';
-  document.documentElement.classList.toggle('dark', isDark.value);
-});
+watch(isDark, onDarkChange);
+onMounted(onDarkChange);
 </script>
 
 <template>

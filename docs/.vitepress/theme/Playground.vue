@@ -6,6 +6,7 @@ import { computed, onMounted, ref, shallowRef, watch } from 'vue';
 
 import { useBreakpoints } from './breakpoint';
 import { useDialect } from './dialect';
+import { useDarkMode } from './dark-mode';
 
 const formatter = {
   cockroachdb: 'postgresql',
@@ -20,6 +21,7 @@ const formatter = {
 };
 
 const { dialect } = useDialect();
+const { isDark } = useDarkMode();
 const { type } = useBreakpoints();
 const isVertical = computed(() => ['xs', 'sm'].includes(type.value));
 
@@ -125,7 +127,7 @@ watch([code, dialect], () => {
     <vue-monaco-editor
       id="editor"
       language="typescript"
-      theme="vs-dark"
+      :theme="isDark ? 'vs-dark' : 'vs-light'"
       v-model:value="code"
       :options="editorOptions"
       :saveViewState="false"
@@ -135,7 +137,7 @@ watch([code, dialect], () => {
     <vue-monaco-editor
       id="output"
       language="sql"
-      theme="vs-dark"
+      :theme="isDark ? 'vs-dark' : 'vs-light'"
       v-model:value="sql"
       :options="outputEditorOptions"
       :saveViewState="false"
