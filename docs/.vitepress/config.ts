@@ -1,4 +1,6 @@
+import path from 'node:path';
 import { defineConfig } from 'vitepress';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import KnexDialectsPlugins from './knexDialects';
 
 export default defineConfig({
@@ -17,6 +19,7 @@ export default defineConfig({
     editLinkText: 'Edit this page on GitHub',
     lastUpdated: 'Last Updated',
     nav: [
+      { text: 'Playground', link: '/playground/' },
       { text: 'Guide', link: '/guide/', activeMatch: '^/guide/' },
       {
         text: 'F.A.Q.',
@@ -39,7 +42,32 @@ export default defineConfig({
     },
   },
   vite: {
-    plugins: [KnexDialectsPlugins()],
+    plugins: [
+      KnexDialectsPlugins(),
+      viteStaticCopy({
+        targets: [
+          {
+            src: path.resolve(
+              path.join(__dirname, '..', 'node_modules', 'knex', 'types')
+            ),
+            dest: 'playground-assets',
+          },
+        ],
+      }),
+    ],
+    define: {
+      process: {
+        env: {},
+      },
+    },
+    build: {
+      target: ['es2020'],
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        target: 'es2020',
+      },
+    },
   },
 });
 
