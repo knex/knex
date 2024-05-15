@@ -2543,6 +2543,7 @@ declare namespace Knex {
         deferrable?: deferrableType;
         useConstraint?: boolean;
         predicate?: QueryBuilder;
+        nullsNotDistinct?: boolean;
       }>
     ): TableBuilder;
     /** @deprecated */
