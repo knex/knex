@@ -18,7 +18,7 @@ Node.js, featuring:
 - both a [promise](https://knex.github.io/documentation/#Interfaces-Promises) and [callback](https://knex.github.io/documentation/#Interfaces-Callbacks) API
 - a [thorough test suite](https://github.com/knex/knex/actions)
 
-Node.js versions 12+ are supported.
+Node.js versions 16+ are supported.
 
 - Take a look at the [full documentation](https://knex.github.io/documentation) to get started!
 - Browse the [list of plugins and tools](https://github.com/knex/knex/blob/master/ECOSYSTEM.md) built for knex
