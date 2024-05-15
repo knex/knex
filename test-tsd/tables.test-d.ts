@@ -151,6 +151,9 @@ const main = async () => {
       .onDelete('CASCADE')
       .deferrable('deferred')
       .inTable('non_exist');
+    table
+      .uuid('test_id')
+      .index('testTable_test_id_index', { indexType: "HASH" })
 
     table.enu('myenum', null, {
       enumName: 'MyEnum',
