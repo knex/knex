@@ -815,7 +815,19 @@ describe('SQLite SchemaBuilder', function () {
       .toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` double');
+  });
+
+  it('adding double, no precision', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.double('foo', null);
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` double');
   });
 
   it('adding decimal', function () {
@@ -827,7 +839,7 @@ describe('SQLite SchemaBuilder', function () {
       .toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` decimal');
   });
 
   it('test adding decimal, no precision', function () {
@@ -839,7 +851,7 @@ describe('SQLite SchemaBuilder', function () {
       .toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'alter table `users` add column `foo` float');
+    equal(tableSql[0].sql, 'alter table `users` add column `foo` decimal');
   });
 
   it('adding boolean', function () {
