@@ -788,7 +788,7 @@ declare namespace Knex {
     avgDistinct: TypePreservingAggregation<TRecord, TResult>;
 
     increment(
-      columnName: keyof TRecord,
+      columnName: keyof ResolveTableType<TRecord, 'update'>,
       amount?: number
     ): QueryBuilder<TRecord, number>;
     increment(
@@ -796,11 +796,11 @@ declare namespace Knex {
       amount?: number
     ): QueryBuilder<TRecord, number>;
     increment(columns: {
-      [column in keyof TRecord]: number;
+      [column in keyof ResolveTableType<TRecord, 'update'>]: number;
     }): QueryBuilder<TRecord, number>;
 
     decrement(
-      columnName: keyof TRecord,
+      columnName: keyof ResolveTableType<TRecord, 'update'>,
       amount?: number
     ): QueryBuilder<TRecord, number>;
     decrement(
@@ -808,7 +808,7 @@ declare namespace Knex {
       amount?: number
     ): QueryBuilder<TRecord, number>;
     decrement(columns: {
-      [column in keyof TRecord]: number;
+      [column in keyof ResolveTableType<TRecord, 'update'>]: number;
     }): QueryBuilder<TRecord, number>;
 
     // Analytics
