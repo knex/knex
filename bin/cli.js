@@ -2,7 +2,6 @@
 const rechoir = require('rechoir');
 const merge = require('lodash/merge');
 const interpret = require('interpret');
-const resolveFrom = require('resolve-from');
 const path = require('path');
 const tildify = require('tildify');
 const commander = require('commander');
@@ -23,6 +22,7 @@ const {
   findUpModulePath,
   findUpConfig,
 } = require('./utils/cli-config-utils');
+const { silent } = require('./utils/resolve-from');
 const {
   existsSync,
   readFile,
@@ -93,7 +93,7 @@ function invoke() {
 
   // TODO add knexpath here eventually
   const modulePath =
-    resolveFrom.silent(cwd, 'knex') ||
+    silent(cwd, 'knex') ||
     findUpModulePath(cwd, 'knex') ||
     process.env.KNEX_PATH;
 
