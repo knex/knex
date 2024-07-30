@@ -84,6 +84,25 @@ describe('Updates', function () {
           });
       });
 
+      it('#5738 should handle update with comments', async function () {
+        await knex('accounts')
+          .where('id', 1)
+          .update({
+            first_name: 'User',
+            last_name: 'Test',
+            email: 'test100@example.com',
+          })
+          .comment('update in account')
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              '/* update in account */ update `accounts` set `first_name` = ?, `last_name` = ?, `email` = ? where `id` = ?',
+              ['User', 'Test', 'test100@example.com', 1],
+              1
+            );
+          });
+      });
+
       it('should allow for null updates', async function () {
         await knex('accounts')
           .where('id', 1000)

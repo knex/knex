@@ -19,16 +19,16 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 16.x]
+        node-version: [20.x, 18.x, 16.x]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3.7.0
+        uses: actions/setup-node@v4
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
