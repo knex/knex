@@ -290,11 +290,33 @@ The context configured will be passed to `wrapIdentifier` for each identifier th
 
 Calling `queryContext` with no arguments will return any context configured for the schema builder instance.
 
+### createSchema
+
+**knex.schema.createSchema(schemaName)**
+
+Create a schema, specified by the schema's name. Only supported by MSSQL and PostgreSQL.
+
+```js
+//create schema 'public'
+knex.schema.createSchema('public');
+```
+
+### createSchemaIfNotExists
+
+**knex.schema.createSchemaIfNotExists(schemaName)**
+
+Create a schema conditionally if the schema not exists, specified by the schema's name. Only supported by MSSQL and PostgreSQL.
+
+```js
+//create schema if not exists 'public'
+knex.schema.createSchemaIfNotExists('public');
+```
+
 ### dropSchema
 
 **knex.schema.dropSchema(schemaName, [cascade])**
 
-Drop a schema, specified by the schema's name, with optional cascade option (default to false). Only supported by PostgreSQL.
+Drop a schema, specified by the schema's name, with optional cascade option (default to false). Only supported by MSSQL and PostgreSQL. Cascade option is only supported by PostgreSQL.
 
 ```js
 //drop schema 'public'
@@ -307,7 +329,7 @@ knex.schema.dropSchema('public', true);
 
 **knex.schema.dropSchemaIfExists(schemaName, [cascade])**
 
-Drop a schema conditionally if the schema exists, specified by the schema's name, with optional cascade option (default to false). Only supported by PostgreSQL.
+Drop a schema conditionally if the schema exists, specified by the schema's name, with optional cascade option (default to false). Only supported by MSSQL and PostgreSQL. Cascade option is only supported by PostgreSQL.
 
 ```js
 //drop schema if exists 'public'
