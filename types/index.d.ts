@@ -620,6 +620,7 @@ declare namespace Knex {
     outerJoin: Join<TRecord, TResult>;
     fullOuterJoin: Join<TRecord, TResult>;
     crossJoin: Join<TRecord, TResult>;
+    joined: Joined;
 
     // Json manipulation
     jsonExtract: JsonExtract<TRecord, TResult>;
@@ -1559,6 +1560,10 @@ declare namespace Knex {
       operator: string,
       column2: string
     ): QueryBuilder<TRecord2, TResult2>;
+  }
+
+  interface Joined {
+    (tableName: string): boolean;
   }
 
   interface JoinClause {

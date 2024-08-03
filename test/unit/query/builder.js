@@ -5192,6 +5192,18 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('check joined source by tableTame (string value)', () => {
+    const query = qb()
+      .select('*')
+      .from('users')
+      .join('contacts', 'contacts.id', 'users.id')
+      .join('contacts as contacts2', 'contacts2.id', 'users.id');
+
+    expect(query.joined('contacts')).to.equal(true);
+    expect(query.joined('contacts as contacts2')).to.equal(true);
+    expect(query.joined('notJoined')).to.equal(false);
+  });
+
   it('raw expressions in select', () => {
     testsql(qb().select(raw('substr(foo, 6)')).from('users'), {
       mysql: {
