@@ -580,6 +580,25 @@ table.enu('column', null, {
 
 Knex does not provide any way to alter enumerations after creation. To change an enumeration later on you must use Knex.raw, and the appropriate command for your database.
 
+### set
+
+**table.set(col, values)**
+
+Adds a set column, (aliased to set, as set is a reserved word in JavaScript). Note that the second argument is an array of values. Example:
+
+```js
+table.set('column', ['value1', 'value2']);
+```
+
+It will use the values provided to generate the appropriate TYPE. Example:
+
+```sql
+CREATE TYPE "foo_type" AS SET ('value1', 'value2');
+```
+
+Knex does not provide any way to alter enumerations after creation. To change an enumeration later on you must use Knex.raw, and the appropriate command for your database.
+
+
 ### json
 
 **table.json(name)**
