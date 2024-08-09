@@ -1,5 +1,4 @@
 yarn.lock
-package-lock.json
 !docs/package-lock.json
 raw
 *.sw?
