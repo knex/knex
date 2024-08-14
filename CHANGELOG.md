@@ -1,18 +1,99 @@
 # Master (Unreleased)
 
-# 2.4.2 - 22 January, 2022
+# 3.1.0 - 8 December, 2023
+
+### Bug fixes
+
+- andWhereNotJsonObject calling wrong function (#5683)
+- PostgreSQL: fix error when setting query_timeout (#5673)
+- MySQL: Missing comments on delete, update and insert (#5738)
+- MySQL: Fixed issue with bigincrements not working with composite primary key - #5341 (#5343)
+
+### Types
+
+- Add type definitions for orHavingNull and orHavingNotNull (#5669)
+- Import knex as type in TS migration template (#5741)
+- Fix conditional constraint error (#5747)
+- PostgreSQL: Fix typing to reflect pg typing change (#5647)
+
+### New features
+
+- Add transactor.parentTransaction (#5567)
+- MySQL: Added implementation for upsert (#5743)
+- Oracle: Support Object Names Greater than 30 Characters for Oracle DB Versions 12.2 and Greater (#5197)
+
+# 3.0.1 - 6 October, 2023
+
+- Build fix
+
+# 3.0.0 - 6 October, 2023
+
+- Fix raw bindings typing (#5401)
+- Fix migrate:unlock when used with custom identifier wrapping. (#5353)
+- Fix driver options specified with .options() method being ignored for oracledb dialect (#5123)
+- Drop compatibility for Node < 16
+- Fix knex d.ts to work with mixed modules (#5659)
+- Fix Lexical error from "Instaed" to "Instead" (#5655)
+
+### Bug fixes
+
+- Fix Linting #5455 - #5460
+
+# 2.5.1 - 12 July, 2023
+
+### Bug fixes
+
+- Fix Linting #5455 - #5460
+
+# 2.5.0 - 08 July, 2023
+
+### New features
+
+- Add uuid helper function (#5617)
+- Add `nativeBindings` option to `better-sqlite3` options (#5461)
+- Add QueryBuilder#updateFrom (#5386)
+- Add readonly transaction access mode (#5445)
+- Add readonly option to Better-SQLite3 (#5530)
+- Add EXCEPT as a valid keyword (#5357)
+- Add ability to prepend query comments (#5289)
+- Add fetchAsString option (#5484)
+
+### Bug fixes
+
+- Avoid password leaks on query logs (#5559)
+- Add knex.mjs to files in package.json (#5518)
+- Handle numeric array elements in .orderBy() (#5551)
+- Attach error handler early enough (#5552)
+- Fix Returning \* in Oracle (#5598)
+- Fix indexType option in `Postgres` (#5601)
+- Add mjs extension type (#5616)
+- Use implicit check on json fields for OracleDB (#5478)
+- Fix when manually close source stream (#5466)
+- Fix case sensitive issue with get table (#5509)
+
+### Typings
+
+- Add Object syntax overload to increment method (#5512)
+- Add object syntax overload to decrement method (#5555)
+- Fix typing for toSql (#5594)
+- Add ResolveTableType for `.merge()` (#5605)
+- Add missing types for havingNull and havingNotNull (#5529)
+- Add collate to the columnbuilder interface (#5568)
+- TableBuilder methods return the SchemaBuilder. (#5486)
+
+# 2.4.2 - 22 January, 2023
 
 ### Bug fixes
 
 - CLI: Fix incorrent EOL causing errors on Linux #5455
 
-# 2.4.1 - 18 January, 2022
+# 2.4.1 - 18 January, 2023
 
 ### Bug fixes
 
 - PostgreSQL: Fix Malformed array literal 2.4.0 Regression #5439
 
-# 2.4.0 - 06 January, 2022
+# 2.4.0 - 06 January, 2023
 
 ### New features:
 
@@ -465,13 +546,13 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Change default to not trigger a promise rejection for transactions with a specified handler #4195
 - Make toSQL().toNative() work for Raw to match the API for QueryBuilder #4058
 - Allow 'match' operator #3569
-- Support optimizer hints #4243  
+- Support optimizer hints #4243
 - Add parameter to prevent autoincrement columns from being primary keys #4266
-- Make "first" and "pluck" mutually exclusive #4280  
+- Make "first" and "pluck" mutually exclusive #4280
 - Added merge strategy to allow selecting columns to upsert. #4252
 - Throw error if the array passed to insert is empty #4289
 - Events: introduce queryContext on query-error #4301
-- CLI: Use UTC timestamp for new migrations #4245  
+- CLI: Use UTC timestamp for new migrations #4245
 - MSSQL: Replace MSSQL dialect with Tedious.js implementation #2857 #4281
 - MSSQL: Use "nvarchar(max)" for ".json()" #4278
 - MSSQL: Schema builder - add predictable constraint names for default values #4319
@@ -513,9 +594,9 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Various internal refactorings #4175 #4177 #4178 #4192
 - Refactor to classes #4190 #4191 #4193 #4210 #4253
 - Move transaction type tests to TSD #4208
-- Clean up destroy logic #4248  
-- Colorize code snippets in readme files #4234  
-- Add "Ecosystem" documentation for Knex plugins #4183  
+- Clean up destroy logic #4248
+- Colorize code snippets in readme files #4234
+- Add "Ecosystem" documentation for Knex plugins #4183
 - Documentation cleanup
 - SQLite: Use SQLite "rename column" instead of a DDL helper #4200
 - SQLite: Simplify reinsert logic when altering a table #4272
@@ -570,7 +651,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### Bug fixes:
 
-- Make sure query-response and query-error events contain _knexTxId #4160
+- Make sure query-response and query-error events contain \_knexTxId #4160
 
 ### Test / internal changes:
 
@@ -826,7 +907,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### Bug fixes:
 
-- Correctly handle dateToString escaping without timezone passed #3742 
+- Correctly handle dateToString escaping without timezone passed #3742
 - Make protocol length check more defensive #3744
 
 ### Typings:
@@ -837,7 +918,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### Bug fixes:
 
-- Added missing call to _reject in Transactor#transaction #3706
+- Added missing call to \_reject in Transactor#transaction #3706
 - Fix method binding on knex proxy #3717
 - Oracle: Transaction_OracleDB can use config.connection #3731
 
@@ -848,7 +929,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 ### Test / internal changes:
 
 - Cleanup/remove transaction stalling #3716
-- Rewrote Transaction#acquireConnection() methods to use async #3707 
+- Rewrote Transaction#acquireConnection() methods to use async #3707
 
 # 0.20.11 - 26 February, 2020
 
@@ -884,7 +965,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 ### Typings:
 
 - `fn.now` takes optionally a precision argument. #3662
-- PG: Include SSL in connection definition #3659 
+- PG: Include SSL in connection definition #3659
 
 ### Test / internal changes:
 
@@ -898,7 +979,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### Typings:
 
-- MSSQL: Add `enableArithAbort` to `MsSqlConnectionConfig` 
+- MSSQL: Add `enableArithAbort` to `MsSqlConnectionConfig`
 
 ### Test / internal changes:
 
@@ -917,7 +998,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### Typings:
 
-- Fix incorrect type of QueryBuilder.first('*') result #3621
+- Fix incorrect type of QueryBuilder.first('\*') result #3621
 
 # 0.20.7 - 07 January, 2020
 
@@ -1072,7 +1153,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 ### Typings:
 
 - Add missing Migrator.list typing #3460
-- Fix Typescript type inference for to better support wildcard (*) calls #3444
+- Fix Typescript type inference for to better support wildcard (\*) calls #3444
 - Make options argument optional in timeout #3442
 
 ### Test / internal changes:
@@ -1109,7 +1190,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### Changes:
 
-- migrate: Refactor _lockMigrations to avoid forUpdate - makes migrations compatible with CockroachDB #3395
+- migrate: Refactor \_lockMigrations to avoid forUpdate - makes migrations compatible with CockroachDB #3395
 
 # 0.19.2 - 17 August, 2019
 
@@ -1120,7 +1201,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### New features:
 
-- Fallback to JSON when using JSONB in MySQL #3394 
+- Fallback to JSON when using JSONB in MySQL #3394
 
 # 0.19.1 - 23 July, 2019
 
@@ -1139,7 +1220,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 
 ### Changes:
 
-- Pooling: tarn.js connection pool was updated to version 2.0.0. This fixes issue with destroying connections and introduces support for connection pool event handlers. Please see tarn.js documentation for more details #3345 
+- Pooling: tarn.js connection pool was updated to version 2.0.0. This fixes issue with destroying connections and introduces support for connection pool event handlers. Please see tarn.js documentation for more details #3345
 - Pooling: Passing unsupported pooling configuration options now throws an error
 - Pooling: `beforeDestroy` configuration option was removed
 
@@ -1330,7 +1411,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Typings: Add 'string' as accepted Knex constructor type definition #3105
 - Typings: Add boolean as a column name in join #3121
 - Typings: Add missing clearOrder & clearCounters types #3109
-- Dependencies: Fix security warning #3082 
+- Dependencies: Fix security warning #3082
 - Do not use unsupported column width/length arguments on data types int and tinyint in MSSQL #2738
 
 ### Changes:
@@ -1453,7 +1534,7 @@ Note: there are many breaking changes in this version, particularly in TypeScrip
 - Drop support for strong-oracle #2487
 - Timeout errors doesn't silently ignore the passed errors anymore #2626
 - Removed WebSQL dialect #2647
-- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instaed of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
+- Various fixes to mssql dialect to make it compatible with other dialects #2653, Unique constraint now allow multiple null values, float type is now float instead of decimal, rolling back transaction with undefined rejects with Error, select for update and select for share actually locks selected row, so basically old schema migrations will work a lot different and produce different schema like before. Also now MSSQL is included in CI tests.
 
 ### Bug fixes:
 

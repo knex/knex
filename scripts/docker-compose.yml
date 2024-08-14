@@ -90,8 +90,8 @@ services:
     hostname: crdb
     command: start-single-node --cluster-name=example-single-node --insecure
     ports:
-      - "26257:26257"
-      - "8080:8080"
+      - '26257:26257'
+      - '8080:8080'
 
   waitcockroachdb:
     container_name: crdb-init

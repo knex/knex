@@ -1,6 +1,7 @@
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
+const util = require('util');
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 chai.use(require('sinon-chai'));
@@ -34,6 +35,7 @@ const {
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const sinon = require('sinon');
+const { setHiddenProperty } = require('../../../../lib/util/security');
 
 describe('Additional', function () {
   getAllDbs().forEach((db) => {
@@ -128,7 +130,7 @@ describe('Additional', function () {
           });
         });
 
-        it('should close the connection when a stream query iteration errors', async function () {
+        it('should release the connection when a stream query iteration errors', async function () {
           const spy = sinon.spy(knex.client, 'releaseConnection');
 
           const stream = knex.raw('VALUES (1), (2), (3)').stream();
@@ -144,6 +146,26 @@ describe('Additional', function () {
 
           expect(spy).to.have.been.called;
           spy.restore();
+        });
+
+        it('should close the db connection when prematurely closing a stream', async function () {
+          await knex('accounts').truncate();
+          await insertAccounts(knex, 'accounts');
+
+          // We limit to only one row at a time, to keep the cursor open
+          const stream = knex('accounts').stream({ highWaterMark: 1 });
+
+          // eslint-disable-next-line no-unused-vars
+          for await (const _ of stream) {
+            stream.destroy();
+            break;
+          }
+
+          await new Promise((res) => setTimeout(res, 50));
+
+          // Will timeout if the connection is in the pool, but not closed
+          this.timeout(1000);
+          await knex('accounts').limit(1);
         });
 
         it('should process response done through a stream', async () => {
@@ -368,6 +390,54 @@ describe('Additional', function () {
           expect(knex.fn.now().prototype === knex.raw().prototype);
           expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
           expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
+        });
+
+        it('should allow using .fn.uuid to create raw statements', function () {
+          const expectedStatement = {
+            [drivers.MsSQL]: '(NEWID())',
+            [drivers.MySQL]: '(UUID())',
+            [drivers.MySQL2]: '(UUID())',
+            [drivers.Oracle]: '(random_uuid())',
+            oracle: '(random_uuid())',
+            [drivers.PostgreSQL]: '(gen_random_uuid())',
+            [drivers.PgNative]: '(gen_random_uuid())',
+            [drivers.SQLite]:
+              "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
+            [drivers.CockroachDB]: '(gen_random_uuid())',
+            [drivers.BetterSQLite3]:
+              "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
+          };
+
+          expect(knex.fn.uuid().prototype === knex.raw().prototype);
+
+          if (isRedshift()) {
+            expect(() => knex.fn.uuid().toQuery()).to.throw(
+              `${knex.client.driverName} does not have a uuid function`
+            );
+          } else {
+            expect(knex.fn.uuid().toQuery()).to.equal(
+              expectedStatement[knex.client.driverName]
+            );
+          }
+        });
+
+        it('should allow using .fn-methods to generate a uuid with select', async function () {
+          const uuid = await knex.select(knex.raw(knex.fn.uuid() + ' as uuid'));
+          expect(uuid[0].uuid).to.match(
+            /^[0-9A-F]{8}-[0-9A-F]{4}-[1-5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+          );
+        });
+
+        it('should allow using .fn-methods to be a default value', async function () {
+          await knex.schema.dropTableIfExists('default_uuid_table');
+          await knex.schema.createTable('default_uuid_table', (t) => {
+            t.uuid('uuid').defaultTo(knex.fn.uuid());
+          });
+          await knex('default_uuid_table').insert({});
+          const uuid = await knex('default_uuid_table').select('uuid');
+          expect(uuid[0].uuid).to.match(
+            /^[0-9A-F]{8}-[0-9A-F]{4}-[1-5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+          );
         });
 
         it('should allow using .fn-methods to convert uuid to binary', function () {
@@ -986,6 +1056,16 @@ describe('Additional', function () {
           // To make this test easier, I'm changing the pool settings to max 1.
           // Also setting acquireTimeoutMillis to lower as not to wait the default time
           const knexConfig = _.cloneDeep(knex.client.config);
+          if (
+            knex.client.config.connection &&
+            knex.client.config.connection.password
+          ) {
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
+          }
+
           knexConfig.pool.min = 0;
           knexConfig.pool.max = 1;
           knexConfig.pool.acquireTimeoutMillis = 100;
@@ -1103,6 +1183,16 @@ describe('Additional', function () {
           // To make this test easier, I'm changing the pool settings to max 1.
           // Also setting acquireTimeoutMillis to lower as not to wait the default time
           const knexConfig = _.cloneDeep(knex.client.config);
+          if (
+            knex.client.config.connection &&
+            knex.client.config.connection.password
+          ) {
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
+          }
+
           knexConfig.pool.min = 0;
           knexConfig.pool.max = 2;
           knexConfig.pool.acquireTimeoutMillis = 100;
@@ -1399,6 +1489,17 @@ describe('Additional', function () {
             knexDb.initialize();
             expect(knexDb.client.pool.destroyed).to.equal(false);
           });
+        });
+
+        it('should not leak passwords when logged', async function () {
+          const query = knex('test_table_two').select('*');
+          const fakeLog = util.inspect(query, { depth: null });
+
+          // These passwords come from `scripts/docker-compose.yml`
+          const passwordMatches = fakeLog.match(
+            /(knextest|testpassword|S0meVeryHardPassword|testrootpassword)/g
+          );
+          expect(passwordMatches).to.be.null;
         });
       });
     });
