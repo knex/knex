@@ -7,6 +7,7 @@ const PG_Client = require('../../../lib/dialects/postgres');
 const Redshift_Client = require('../../../lib/dialects/redshift');
 const Oracledb_Client = require('../../../lib/dialects/oracledb');
 const SQLite3_Client = require('../../../lib/dialects/sqlite3');
+const SQLJS_Client = require('../../../lib/dialects/sqljs');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
 const CockroachDB_Client = require('../../../lib/dialects/cockroachdb');
 
@@ -17,6 +18,7 @@ const clients = {
   'pg-redshift': new Redshift_Client({ client: 'redshift' }),
   oracledb: new Oracledb_Client({ client: 'oracledb' }),
   sqlite3: new SQLite3_Client({ client: 'sqlite3' }),
+  sqljs: new SQLJS_Client({ client: 'sqljs' }),
   mssql: new MSSQL_Client({ client: 'mssql' }),
   cockroachdb: new CockroachDB_Client({ client: 'cockroachdb' }),
 };
@@ -36,6 +38,9 @@ const clientsWithNullAsDefault = {
   ),
   sqlite3: new SQLite3_Client(
     Object.assign({ client: 'sqlite3' }, useNullAsDefaultConfig)
+  ),
+  sqljs: new SQLJS_Client(
+    Object.assign({ client: 'sqljs' }, useNullAsDefaultConfig)
   ),
   mssql: new MSSQL_Client(
     Object.assign({ client: 'mssql' }, useNullAsDefaultConfig)
@@ -63,6 +68,12 @@ const clientsWithCustomLoggerForTestWarnings = {
   sqlite3: new SQLite3_Client(
     Object.assign(
       { client: 'sqlite3' },
+      { ...customLoggerConfig, ...useNullAsDefaultConfig }
+    )
+  ),
+  sqljs: new SQLJS_Client(
+    Object.assign(
+      { client: 'sqljs' },
       { ...customLoggerConfig, ...useNullAsDefaultConfig }
     )
   ),
@@ -164,6 +175,9 @@ describe('Custom identifier wrapping', () => {
     sqlite3: new SQLite3_Client(
       Object.assign({ client: 'sqlite3' }, customWrapperConfig)
     ),
+    sqljs: new SQLJS_Client(
+      Object.assign({ client: 'sqljs' }, customWrapperConfig)
+    ),
     mssql: new MSSQL_Client(
       Object.assign({ client: 'mssql' }, customWrapperConfig)
     ),
@@ -183,6 +197,8 @@ describe('Custom identifier wrapping', () => {
         'pg-redshift':
           'select "users_wrapper_was_here"."foo_wrapper_was_here" as "bar_wrapper_was_here" from "schema_wrapper_was_here"."users_wrapper_was_here"',
         sqlite3:
+          'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`',
+        sqljs:
           'select `users_wrapper_was_here`.`foo_wrapper_was_here` as `bar_wrapper_was_here` from `schema_wrapper_was_here`.`users_wrapper_was_here`',
       },
       clientsWithCustomIdentifierWrapper
@@ -208,6 +224,9 @@ describe('Custom identifier wrapping', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
+          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`',
+        },
+        sqljs: {
           sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`',
         },
         pg: {
@@ -260,6 +279,10 @@ describe('Custom identifier wrapping', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
+          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`, `name_wrapper_was_here`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        sqljs: {
           sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`, `name_wrapper_was_here`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
@@ -320,6 +343,8 @@ describe('Custom identifier wrapping', () => {
           pg: 'select "users_fancy_wrapper_was_here"."foo_fancy_wrapper_was_here" as "bar_fancy_wrapper_was_here" from "schema_fancy_wrapper_was_here"."users_fancy_wrapper_was_here"',
           sqlite3:
             'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
+          sqljs:
+            'select `users_fancy_wrapper_was_here`.`foo_fancy_wrapper_was_here` as `bar_fancy_wrapper_was_here` from `schema_fancy_wrapper_was_here`.`users_fancy_wrapper_was_here`',
         },
         clientsWithCustomIdentifierWrapper
       );
@@ -340,6 +365,8 @@ describe('Custom identifier wrapping', () => {
             'select "col1_fancy_wrapper_was_here" "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
           pg: 'select "col1_fancy_wrapper_was_here" as "a_fancy_wrapper_was_here" from "users_fancy_wrapper_was_here"',
           sqlite3:
+            'select `col1_fancy_wrapper_was_here` as `a_fancy_wrapper_was_here` from `users_fancy_wrapper_was_here`',
+          sqljs:
             'select `col1_fancy_wrapper_was_here` as `a_fancy_wrapper_was_here` from `users_fancy_wrapper_was_here`',
         },
         clientsWithCustomIdentifierWrapper
@@ -521,6 +548,8 @@ describe('QueryBuilder', () => {
           'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
         pg: 'select "table1".* as "bar", (select "col1" as "a", "col2" as "b" from "test" limit ?) as "subq" from "table" as "table1", "table" as "table2", (select * from "test" limit ?) as "subq"',
         sqlite3:
+          'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
+        sqljs:
           'select `table1`.* as `bar`, (select `col1` as `a`, `col2` as `b` from `test` limit ?) as `subq` from `table` as `table1`, `table` as `table2`, (select * from `test` limit ?) as `subq`',
         oracledb:
           'select "table1".* "bar", (select * from (select "col1" "a", "col2" "b" from "test") where rownum <= ?) "subq" from "table" "table1", "table" "table2", (select * from (select * from "test") where rownum <= ?) "subq"',
@@ -883,6 +912,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` where `name` like ?',
         bindings: ['luk%'],
       },
+      sqljs: {
+        sql: 'select * from `users` where `name` like ?',
+        bindings: ['luk%'],
+      },
     });
   });
 
@@ -908,6 +941,10 @@ describe('QueryBuilder', () => {
           bindings: ['luk1%', 'luk2%', 'luk3%'],
         },
         sqlite3: {
+          sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        sqljs: {
           sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
           bindings: ['luk1%', 'luk2%', 'luk3%'],
         },
@@ -937,6 +974,10 @@ describe('QueryBuilder', () => {
           bindings: ['luk1%', 'luk2%', 'luk3%'],
         },
         sqlite3: {
+          sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
+          bindings: ['luk1%', 'luk2%', 'luk3%'],
+        },
+        sqljs: {
           sql: 'select * from `users` where `name` like ? and `name` like ? or `name` like ?',
           bindings: ['luk1%', 'luk2%', 'luk3%'],
         },
@@ -1182,6 +1223,7 @@ describe('QueryBuilder', () => {
     testquery(qb().select('*').from('users').where(true), {
       mysql: 'select * from `users` where 1 = 1',
       sqlite3: 'select * from `users` where 1 = 1',
+      sqljs: 'select * from `users` where 1 = 1',
       mssql: 'select * from [users] where 1 = 1',
       pg: 'select * from "users" where 1 = 1',
     });
@@ -1549,6 +1591,10 @@ describe('QueryBuilder', () => {
           sql: 'select * from `users` where (`a`, `b`) in ( values (?, ?), (?, ?), (?, ?))',
           bindings: [1, 2, 3, 4, 5, 6],
         },
+        sqljs: {
+          sql: 'select * from `users` where (`a`, `b`) in ( values (?, ?), (?, ?), (?, ?))',
+          bindings: [1, 2, 3, 4, 5, 6],
+        },
       }
     );
   });
@@ -1717,6 +1763,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` where 1 = ?',
         bindings: [0],
       },
+      sqljs: {
+        sql: 'select * from `users` where 1 = ?',
+        bindings: [0],
+      },
       mssql: {
         sql: 'select * from [users] where 1 = ?',
         bindings: [0],
@@ -1739,6 +1789,10 @@ describe('QueryBuilder', () => {
         bindings: [1],
       },
       sqlite3: {
+        sql: 'select * from `users` where 1 = ?',
+        bindings: [1],
+      },
+      sqljs: {
         sql: 'select * from `users` where 1 = ?',
         bindings: [1],
       },
@@ -2522,6 +2576,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
         bindings: [1, 2],
       },
+      sqljs: {
+        sql: 'select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
+        bindings: [1, 2],
+      },
     });
 
     const multipleArgumentsChain = qb()
@@ -2557,6 +2615,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` where `id` = ? intersect select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
         bindings: [1, 2, 3],
       },
+      sqljs: {
+        sql: 'select * from `users` where `id` = ? intersect select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
     });
 
     const arrayChain = qb()
@@ -2589,6 +2651,10 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       sqlite3: {
+        sql: 'select * from `users` where `id` = ? intersect select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+      sqljs: {
         sql: 'select * from `users` where `id` = ? intersect select * from `users` where `id` = ? intersect select * from `users` where `id` = ?',
         bindings: [1, 2, 3],
       },
@@ -2782,6 +2848,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ?',
         bindings: [1, 2],
       },
+      sqljs: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2],
+      },
     });
 
     const multipleArgumentsChain = qb()
@@ -2817,6 +2887,10 @@ describe('QueryBuilder', () => {
         sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
         bindings: [1, 2, 3],
       },
+      sqljs: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
     });
 
     const arrayChain = qb()
@@ -2849,6 +2923,10 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 3],
       },
       sqlite3: {
+        sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
+        bindings: [1, 2, 3],
+      },
+      sqljs: {
         sql: 'select * from `users` where `id` = ? except select * from `users` where `id` = ? except select * from `users` where `id` = ?',
         bindings: [1, 2, 3],
       },
@@ -3325,6 +3403,10 @@ describe('QueryBuilder', () => {
           bindings: [],
         },
         sqlite3: {
+          sql: 'select * from `persons` order by (select `p`.`id` from `persons` as `p` where `persons`.`id` = `p`.`id`) asc',
+          bindings: [],
+        },
+        sqljs: {
           sql: 'select * from `persons` order by (select `p`.`id` from `persons` as `p` where `persons`.`id` = `p`.`id`) asc',
           bindings: [],
         },
@@ -4001,6 +4083,9 @@ describe('QueryBuilder', () => {
         sqlite3: {
           sql: 'select * from `users` limit 10 offset 5',
         },
+        sqljs: {
+          sql: 'select * from `users` limit 10 offset 5',
+        },
         mssql: {
           sql: 'select * from [users] offset 5 rows fetch next 10 rows only',
         },
@@ -4083,6 +4168,10 @@ describe('QueryBuilder', () => {
         bindings: [5],
       },
       sqlite3: {
+        sql: 'select * from `users` limit ? offset ?',
+        bindings: [-1, 5],
+      },
+      sqljs: {
         sql: 'select * from `users` limit ? offset ?',
         bindings: [-1, 5],
       },
@@ -4489,6 +4578,10 @@ describe('QueryBuilder', () => {
           sql: 'select * from `users` cross join `contracts` cross join `photos`',
           bindings: [],
         },
+        sqljs: {
+          sql: 'select * from `users` cross join `contracts` cross join `photos`',
+          bindings: [],
+        },
         oracledb: {
           sql: 'select * from "users" cross join "contracts" cross join "photos"',
           bindings: [],
@@ -4536,6 +4629,10 @@ describe('QueryBuilder', () => {
           bindings: [],
         },
         sqlite3: {
+          sql: 'select * from `users` cross join `contracts` on `users`.`contractId` = `contracts`.`id`',
+          bindings: [],
+        },
+        sqljs: {
           sql: 'select * from `users` cross join `contracts` on `users`.`contractId` = `contracts`.`id`',
           bindings: [],
         },
@@ -5707,6 +5804,10 @@ describe('QueryBuilder', () => {
           sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
+        sqljs: {
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
         mssql: {
           sql: 'insert into [users] ([email], [name]) values (?, ?), (?, ?)',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
@@ -5736,6 +5837,8 @@ describe('QueryBuilder', () => {
         mysql:
           "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",
         sqlite3:
+          "insert into `users` (`email`, `name`) select 'foo' as `email`, 'taylor' as `name` union all select NULL as `email`, 'dayle' as `name`",
+        sqljs:
           "insert into `users` (`email`, `name`) select 'foo' as `email`, 'taylor' as `name` union all select NULL as `email`, 'dayle' as `name`",
         mssql:
           "insert into [users] ([email], [name]) values ('foo', 'taylor'), (NULL, 'dayle')",
@@ -5781,6 +5884,19 @@ describe('QueryBuilder', () => {
     }).to.throw(TypeError);
   });
 
+  it('multiple inserts with partly undefined keys throw error with sqljs', () => {
+    expect(() => {
+      testquery(
+        qb()
+          .from('users')
+          .insert([{ email: 'foo', name: 'taylor' }, { name: 'dayle' }]),
+        {
+          sqljs: '',
+        }
+      );
+    }).to.throw(TypeError);
+  });
+
   it('multiple inserts with returning', () => {
     // returning only supported directly by postgres and with workaround with oracle
     // other databases implicitly return the inserted id
@@ -5800,6 +5916,9 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`',
+        },
+        sqljs: {
           sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`',
         },
         pg: {
@@ -5851,6 +5970,10 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`, `name`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        sqljs: {
           sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`, `name`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
@@ -5926,6 +6049,8 @@ describe('QueryBuilder', () => {
     //It's reset at the end of the test.
     const previousValuesForUndefinedSqlite3 = clients.sqlite3.valueForUndefined;
     clients.sqlite3.valueForUndefined = null;
+    const previousValuesForUndefinedSQLJS = clients.sqljs.valueForUndefined;
+    clients.sqljs.valueForUndefined = null;
 
     testsql(qb().insert(data).into('table'), {
       mysql: {
@@ -5933,6 +6058,20 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 2, 3],
       },
       sqlite3: {
+        sql: 'insert into `table` (`a`, `b`, `c`) select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c`',
+        bindings: [
+          1,
+          undefined,
+          undefined,
+          undefined,
+          2,
+          undefined,
+          2,
+          undefined,
+          3,
+        ],
+      },
+      sqljs: {
         sql: 'insert into `table` (`a`, `b`, `c`) select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c`',
         bindings: [
           1,
@@ -5964,6 +6103,7 @@ describe('QueryBuilder', () => {
       },
     });
     clients.sqlite3.valueForUndefined = previousValuesForUndefinedSqlite3;
+    clients.sqljs.valueForUndefined = previousValuesForUndefinedSQLJS;
   });
 
   it('empty insert should be a noop', () => {
@@ -6023,6 +6163,10 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       sqlite3: {
+        sql: 'insert into `users` default values',
+        bindings: [],
+      },
+      sqljs: {
         sql: 'insert into `users` default values',
         bindings: [],
       },
@@ -6551,6 +6695,10 @@ describe('QueryBuilder', () => {
           sql: 'insert into `users` (`email`) values (?) on conflict (`email`) do nothing',
           bindings: ['foo'],
         },
+        sqljs: {
+          sql: 'insert into `users` (`email`) values (?) on conflict (`email`) do nothing',
+          bindings: ['foo'],
+        },
       }
     );
   });
@@ -6572,6 +6720,10 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar'],
         },
         sqlite3: {
+          sql: 'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (`email`) do nothing',
+          bindings: ['foo', 'bar'],
+        },
+        sqljs: {
           sql: 'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (`email`) do nothing',
           bindings: ['foo', 'bar'],
         },
@@ -6599,6 +6751,10 @@ describe('QueryBuilder', () => {
           sql: 'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (value) WHERE deleted_at IS NULL do nothing',
           bindings: ['foo', 'bar'],
         },
+        sqljs: {
+          sql: 'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (value) WHERE deleted_at IS NULL do nothing',
+          bindings: ['foo', 'bar'],
+        },
       }
     );
   });
@@ -6623,6 +6779,10 @@ describe('QueryBuilder', () => {
           sql: 'insert into `users` (`email`, `org`) values (?, ?) on conflict (`org`, `email`) do nothing',
           bindings: ['foo', 'acme-inc'],
         },
+        sqljs: {
+          sql: 'insert into `users` (`email`, `org`) values (?, ?) on conflict (`org`, `email`) do nothing',
+          bindings: ['foo', 'acme-inc'],
+        },
       }
     );
   });
@@ -6643,6 +6803,10 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
         },
         sqlite3: {
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `name` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
+        },
+        sqljs: {
           sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `name` = ?',
           bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
         },
@@ -6673,6 +6837,10 @@ describe('QueryBuilder', () => {
           sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
+        sqljs: {
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
         pg: {
           sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name"',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
@@ -6695,6 +6863,10 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'foo2'],
         },
         sqlite3: {
+          sql: 'insert into `users` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `email` = ?',
+          bindings: ['foo', 'taylor', 'foo2'],
+        },
+        sqljs: {
           sql: 'insert into `users` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `email` = ?',
           bindings: ['foo', 'taylor', 'foo2'],
         },
@@ -6973,6 +7145,13 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       sqlite3: {
+        sql: 'delete from `users`',
+        bindings: [],
+        output: (output) => {
+          expect(typeof output).to.equal('function');
+        },
+      },
+      sqljs: {
         sql: 'delete from `users`',
         bindings: [],
         output: (output) => {
@@ -9317,6 +9496,7 @@ describe('QueryBuilder', () => {
     const mssql = clients.mssql;
     const mysql = clients.mysql;
     const sqlite3 = clients.sqlite3;
+    const sqljs = clients.sqljs;
 
     const mssqlQb = mssql
       .queryBuilder()
@@ -9342,6 +9522,14 @@ describe('QueryBuilder', () => {
         sqlite3.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)
       )
       .toSQL();
+    const sqljsQb = sqljs
+      .queryBuilder()
+      .select('*')
+      .from('users')
+      .where(
+        sqljs.raw(':name: = :thisGuy or :name: = :otherGuy', namedBindings)
+      )
+      .toSQL();
 
     expect(mssqlQb.sql).to.equal(
       'select * from [users] where [users].[name] = ? or [users].[name] = ?'
@@ -9357,6 +9545,10 @@ describe('QueryBuilder', () => {
       'select * from `users` where `users`.`name` = ? or `users`.`name` = ?'
     );
     expect(sqliteQb.bindings).to.deep.equal(['Bob', 'Jay']);
+    expect(sqljsQb.sql).to.equal(
+      'select * from `users` where `users`.`name` = ? or `users`.`name` = ?'
+    );
+    expect(sqljsQb.bindings).to.deep.equal(['Bob', 'Jay']);
   });
 
   it('#1268 - valueForUndefined should be in toSQL(QueryCompiler)', () => {
@@ -9400,7 +9592,23 @@ describe('QueryBuilder', () => {
     }).to.throw(TypeError);
 
     expect(() => {
+      clients.sqljs
+        .queryBuilder()
+        .insert([{ id: void 0 }])
+        .into('users')
+        .toString();
+    }).to.throw(TypeError);
+
+    expect(() => {
       clientsWithNullAsDefault.sqlite3
+        .queryBuilder()
+        .insert([{ id: void 0 }])
+        .into('users')
+        .toString();
+    }).to.not.throw(TypeError);
+
+    expect(() => {
+      clientsWithNullAsDefault.sqljs
         .queryBuilder()
         .insert([{ id: void 0 }])
         .into('users')
@@ -10025,6 +10233,8 @@ describe('QueryBuilder', () => {
           'with [withClause] as (select [foo] from [users]) select * from [withClause]',
         sqlite3:
           'with `withClause` as (select `foo` from `users`) select * from `withClause`',
+        sqljs:
+          'with `withClause` as (select `foo` from `users`) select * from `withClause`',
         pg: 'with "withClause" as (select "foo" from "users") select * from "withClause"',
         'pg-redshift':
           'with "withClause" as (select "foo" from "users") select * from "withClause"',
@@ -10046,6 +10256,8 @@ describe('QueryBuilder', () => {
         mssql:
           'with [withClause] as (select [foo] from [users]) insert into [users] select * from "withClause"',
         sqlite3:
+          'with `withClause` as (select `foo` from `users`) insert into `users` select * from "withClause"',
+        sqljs:
           'with `withClause` as (select `foo` from `users`) insert into `users` select * from "withClause"',
         pg: 'with "withClause" as (select "foo" from "users") insert into "users" select * from "withClause"',
       }
@@ -10069,6 +10281,10 @@ describe('QueryBuilder', () => {
           bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack'],
         },
         sqlite3: {
+          sql: 'with `withClause` as (select `foo` from `users` where `name` = ?) insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
+          bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack'],
+        },
+        sqljs: {
           sql: 'with `withClause` as (select `foo` from `users` where `name` = ?) insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
           bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack'],
         },
@@ -10099,6 +10315,8 @@ describe('QueryBuilder', () => {
           'with [withClause] as (select [foo] from [users]) update [users] set [foo] = ? where [email] = ?;select @@rowcount',
         sqlite3:
           'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
+        sqljs:
+          'with `withClause` as (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
         pg: 'with "withClause" as (select "foo" from "users") update "users" set "foo" = ? where "email" = ?',
       }
     );
@@ -10116,6 +10334,8 @@ describe('QueryBuilder', () => {
       {
         sqlite3:
           'with `withClause` as materialized (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
+        sqljs:
+          'with `withClause` as materialized (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
         pg: 'with "withClause" as materialized (select "foo" from "users") update "users" set "foo" = ? where "email" = ?',
       }
     );
@@ -10132,6 +10352,8 @@ describe('QueryBuilder', () => {
         .from('users'),
       {
         sqlite3:
+          'with `withClause` as not materialized (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
+        sqljs:
           'with `withClause` as not materialized (select `foo` from `users`) update `users` set `foo` = ? where `email` = ?',
         pg: 'with "withClause" as not materialized (select "foo" from "users") update "users" set "foo" = ? where "email" = ?',
       }
@@ -10152,6 +10374,8 @@ describe('QueryBuilder', () => {
           'with [withClause] as (select [email] from [users]) delete from [users] where [foo] = ?;select @@rowcount',
         sqlite3:
           'with `withClause` as (select `email` from `users`) delete from `users` where `foo` = ?',
+        sqljs:
+          'with `withClause` as (select `email` from `users`) delete from `users` where `foo` = ?',
         pg: 'with "withClause" as (select "email" from "users") delete from "users" where "foo" = ?',
       }
     );
@@ -10167,6 +10391,8 @@ describe('QueryBuilder', () => {
         mssql:
           'with [withRawClause] as (select "foo" as "baz" from "users") select * from [withRawClause]',
         sqlite3:
+          'with `withRawClause` as (select "foo" as "baz" from "users") select * from `withRawClause`',
+        sqljs:
           'with `withRawClause` as (select "foo" as "baz" from "users") select * from `withRawClause`',
         pg: 'with "withRawClause" as (select "foo" as "baz" from "users") select * from "withRawClause"',
         'pg-redshift':
@@ -10193,6 +10419,8 @@ describe('QueryBuilder', () => {
           'with [firstWithClause] as (select [foo] from [users]), [secondWithClause] as (select [bar] from [users]) select * from [secondWithClause]',
         sqlite3:
           'with `firstWithClause` as (select `foo` from `users`), `secondWithClause` as (select `bar` from `users`) select * from `secondWithClause`',
+        sqljs:
+          'with `firstWithClause` as (select `foo` from `users`), `secondWithClause` as (select `bar` from `users`) select * from `secondWithClause`',
         pg: 'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
         'pg-redshift':
           'with "firstWithClause" as (select "foo" from "users"), "secondWithClause" as (select "bar" from "users") select * from "secondWithClause"',
@@ -10218,6 +10446,8 @@ describe('QueryBuilder', () => {
         mssql:
           'with [withClause] as (with [withSubClause] as ((select [foo] from [users]) as [baz]) select * from [withSubClause]) select * from [withClause]',
         sqlite3:
+          'with `withClause` as (with `withSubClause` as ((select `foo` from `users`) as `baz`) select * from `withSubClause`) select * from `withClause`',
+        sqljs:
           'with `withClause` as (with `withSubClause` as ((select `foo` from `users`) as `baz`) select * from `withSubClause`) select * from `withClause`',
         pg: 'with "withClause" as (with "withSubClause" as ((select "foo" from "users") as "baz") select * from "withSubClause") select * from "withClause"',
         'pg-redshift':
@@ -10254,6 +10484,10 @@ describe('QueryBuilder', () => {
           sql: 'with `withClause` as (with `withSubClause` as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from `withSubClause`) select * from `withClause` where `id` = ?',
           bindings: [1, 20, 10],
         },
+        sqljs: {
+          sql: 'with `withClause` as (with `withSubClause` as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from `withSubClause`) select * from `withClause` where `id` = ?',
+          bindings: [1, 20, 10],
+        },
         pg: {
           sql: 'with "withClause" as (with "withSubClause" as (select "foo" as "baz" from "users" where "baz" > ? and "baz" < ?) select * from "withSubClause") select * from "withClause" where "id" = ?',
           bindings: [1, 20, 10],
@@ -10281,6 +10515,10 @@ describe('QueryBuilder', () => {
         bindings: [true],
       },
       sqlite3: {
+        sql: 'select * from `table` where `isIt` = ?',
+        bindings: [true],
+      },
+      sqljs: {
         sql: 'select * from `table` where `isIt` = ?',
         bindings: [true],
       },
@@ -10319,6 +10557,8 @@ describe('QueryBuilder', () => {
           'with [firstWithClause] as (with [firstWithSubClause] as ((select [foo] from [users]) as [foz]) select * from [firstWithSubClause]), [secondWithClause] as (with [secondWithSubClause] as ((select [bar] from [users]) as [baz]) select * from [secondWithSubClause]) select * from [secondWithClause]',
         sqlite3:
           'with `firstWithClause` as (with `firstWithSubClause` as ((select `foo` from `users`) as `foz`) select * from `firstWithSubClause`), `secondWithClause` as (with `secondWithSubClause` as ((select `bar` from `users`) as `baz`) select * from `secondWithSubClause`) select * from `secondWithClause`',
+        sqljs:
+          'with `firstWithClause` as (with `firstWithSubClause` as ((select `foo` from `users`) as `foz`) select * from `firstWithSubClause`), `secondWithClause` as (with `secondWithSubClause` as ((select `bar` from `users`) as `baz`) select * from `secondWithSubClause`) select * from `secondWithClause`',
         pg: 'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
         'pg-redshift':
           'with "firstWithClause" as (with "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
@@ -10352,6 +10592,8 @@ describe('QueryBuilder', () => {
         mssql:
           'with [firstWithClause] as (with [firstWithSubClause] as ((select [foo] from [users]) as [foz]) select * from [firstWithSubClause]), [secondWithClause] as (with [secondWithSubClause] as ((select [bar] from [users]) as [baz]) select * from [secondWithSubClause]) select * from [secondWithClause]',
         sqlite3:
+          'with recursive `firstWithClause` as (with recursive `firstWithSubClause` as ((select `foo` from `users`) as `foz`) select * from `firstWithSubClause`), `secondWithClause` as (with recursive `secondWithSubClause` as ((select `bar` from `users`) as `baz`) select * from `secondWithSubClause`) select * from `secondWithClause`',
+        sqljs:
           'with recursive `firstWithClause` as (with recursive `firstWithSubClause` as ((select `foo` from `users`) as `foz`) select * from `firstWithSubClause`), `secondWithClause` as (with recursive `secondWithSubClause` as ((select `bar` from `users`) as `baz`) select * from `secondWithSubClause`) select * from `secondWithClause`',
         pg: 'with recursive "firstWithClause" as (with recursive "firstWithSubClause" as ((select "foo" from "users") as "foz") select * from "firstWithSubClause"), "secondWithClause" as (with recursive "secondWithSubClause" as ((select "bar" from "users") as "baz") select * from "secondWithSubClause") select * from "secondWithClause"',
         'pg-redshift':
@@ -10692,6 +10934,8 @@ describe('QueryBuilder', () => {
           'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
         sqlite3:
           'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        sqljs:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
       }
     );
   });
@@ -10718,6 +10962,8 @@ describe('QueryBuilder', () => {
           'select * from "schema"."foo" inner join (select "f_id" from "baz") as "bar" on "bar"."f_id" = "foo"."id"',
         sqlite3:
           'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
+        sqljs:
+          'select * from `schema`.`foo` inner join (select `f_id` from `baz`) as `bar` on `bar`.`f_id` = `foo`.`id`',
       }
     );
   });
@@ -10740,6 +10986,8 @@ describe('QueryBuilder', () => {
         oracledb:
           'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
         sqlite3:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        sqljs:
           'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
       }
     );
@@ -10764,6 +11012,8 @@ describe('QueryBuilder', () => {
           'select * from (select * from "foo") "bar" inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
         sqlite3:
           'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        sqljs:
+          'select * from (select * from `foo`) as `bar` inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
       }
     );
   });
@@ -10787,6 +11037,8 @@ describe('QueryBuilder', () => {
           'select * from bar inner join "schema"."baz" on "foo"."id" = "bar"."foo_id"',
         sqlite3:
           'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
+        sqljs:
+          'select * from bar inner join `schema`.`baz` on `foo`.`id` = `bar`.`foo_id`',
       }
     );
   });
@@ -10809,6 +11061,8 @@ describe('QueryBuilder', () => {
         oracledb:
           'select * from "schema"."bar" inner join baz on "foo"."id" = "bar"."foo_id"',
         sqlite3:
+          'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
+        sqljs:
           'select * from `schema`.`bar` inner join baz on `foo`.`id` = `bar`.`foo_id`',
       }
     );
@@ -11039,6 +11293,10 @@ describe('QueryBuilder', () => {
             sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
             bindings: ['mock@example.com'],
           },
+          sqljs: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id` where `user`.`email` = ?',
+            bindings: ['mock@example.com'],
+          },
         }
       );
     });
@@ -11064,6 +11322,9 @@ describe('QueryBuilder', () => {
             sql: 'delete "users" from "users" inner join "photos" on "photos"."id" = "users"."id"',
           },
           sqlite3: {
+            sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id`',
+          },
+          sqljs: {
             sql: 'delete `users` from `users` inner join `photos` on `photos`.`id` = `users`.`id`',
           },
         }
@@ -11103,6 +11364,10 @@ describe('QueryBuilder', () => {
             bindings: [false],
           },
           sqlite3: {
+            sql: 'delete  from  inner join `accounts` on `accounts`.`id` = `users`.`account_id` and `accounts`.`user_id` = `users`.`id` where `activated` = ?',
+            bindings: [false],
+          },
+          sqljs: {
             sql: 'delete  from  inner join `accounts` on `accounts`.`id` = `users`.`account_id` and `accounts`.`user_id` = `users`.`id` where `activated` = ?',
             bindings: [false],
           },
@@ -11152,6 +11417,10 @@ describe('QueryBuilder', () => {
             sql: 'select json_extract(`name`, ?) from `users`',
             bindings: ['$.names.firstName'],
           },
+          sqljs: {
+            sql: 'select json_extract(`name`, ?) from `users`',
+            bindings: ['$.names.firstName'],
+          },
           'pg-redshift': {
             sql: 'select json_extract_path_text("name", ?, ?) from "users"',
             bindings: ['names', 'firstName'],
@@ -11182,6 +11451,10 @@ describe('QueryBuilder', () => {
             bindings: [],
           },
           sqlite3: {
+            sql: 'select json_extract(`json_col`, ?) as `name` from `users`',
+            bindings: ['$.name'],
+          },
+          sqljs: {
             sql: 'select json_extract(`json_col`, ?) as `name` from `users`',
             bindings: ['$.name'],
           },
@@ -11258,6 +11531,17 @@ describe('QueryBuilder', () => {
                 '$.infos.gender',
               ],
             },
+            sqljs: {
+              sql:
+                'select json_extract(`json_col`, ?) as `name`, json_extract(`json_col`, ?) as `last_name`, ' +
+                'json_extract(`json_col`, ?) as `age`, json_extract(`json_col`, ?) as `gender` from `users`',
+              bindings: [
+                '$.name',
+                '$.last_name',
+                '$.infos.age',
+                '$.infos.gender',
+              ],
+            },
             'pg-redshift': {
               sql:
                 'select json_extract_path_text("json_col", ?) as "name", ' +
@@ -11310,6 +11594,10 @@ describe('QueryBuilder', () => {
               bindings: ['$.street.numbers[2]', '5'],
             },
             sqlite3: {
+              sql: 'select json_set(`address`, ?, ?) from `users`',
+              bindings: ['$.street.numbers[2]', '5'],
+            },
+            sqljs: {
               sql: 'select json_set(`address`, ?, ?) from `users`',
               bindings: ['$.street.numbers[2]', '5'],
             },
@@ -11367,6 +11655,10 @@ describe('QueryBuilder', () => {
               sql: 'select json_set(json_extract(`cities`, ?), ?, ?) from `users`',
               bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
             },
+            sqljs: {
+              sql: 'select json_set(json_extract(`cities`, ?), ?, ?) from `users`',
+              bindings: ['$.mainStreet', '$.street.numbers[1]', "{'test': 2}"],
+            },
             cockroachdb: {
               sql: 'select jsonb_set(json_extract_path("cities", ?), ?, ?) from "users"',
               bindings: ['mainStreet', '{street,numbers,1}', "{'test': 2}"],
@@ -11397,6 +11689,10 @@ describe('QueryBuilder', () => {
             sql: 'select json_insert(`address`, ?, ?) from `users`',
             bindings: ['$.mainStreet', '5'],
           },
+          sqljs: {
+            sql: 'select json_insert(`address`, ?, ?) from `users`',
+            bindings: ['$.mainStreet', '5'],
+          },
           cockroachdb: {
             sql: 'select jsonb_insert("address", ?, ?) from "users"',
             bindings: ['{mainStreet}', '5'],
@@ -11423,6 +11719,10 @@ describe('QueryBuilder', () => {
             bindings: ['$.street[1]'],
           },
           sqlite3: {
+            sql: 'select json_remove(`address`,?) from `users`',
+            bindings: ['$.street[1]'],
+          },
+          sqljs: {
             sql: 'select json_remove(`address`,?) from `users`',
             bindings: ['$.street[1]'],
           },
@@ -11460,6 +11760,10 @@ describe('QueryBuilder', () => {
               bindings: ['$.test', '1234'],
             },
             sqlite3: {
+              sql: 'select json_extract(json_insert(`population`, ?, ?), ?) as `insertExtract` from `cities`',
+              bindings: ['$.test', '1234', '$.test'],
+            },
+            sqljs: {
               sql: 'select json_extract(json_insert(`population`, ?, ?), ?) as `insertExtract` from `cities`',
               bindings: ['$.test', '1234', '$.test'],
             },
@@ -11519,6 +11823,13 @@ describe('QueryBuilder', () => {
                 '{"street":"street2","number":7}',
               ],
             },
+            sqljs: {
+              sql: 'select * from `users` where `address` = ? or `address` != ?',
+              bindings: [
+                '{"street":"street1","number":5}',
+                '{"street":"street2","number":7}',
+              ],
+            },
             cockroachdb: {
               sql: 'select * from "users" where "address" = ? or "address" != ?',
               bindings: [
@@ -11555,6 +11866,10 @@ describe('QueryBuilder', () => {
               bindings: [5, 8],
             },
             sqlite3: {
+              sql: 'select * from `users` where json_extract(`address`, ?) > ? or json_extract(`address`, ?) < ?',
+              bindings: ['$.street.number', 5, '$.street.number', 8],
+            },
+            sqljs: {
               sql: 'select * from `users` where json_extract(`address`, ?) > ? or json_extract(`address`, ?) < ?',
               bindings: ['$.street.number', 5, '$.street.number', 8],
             },

@@ -10,7 +10,7 @@ const _ = require('lodash');
 // excluding redshift, oracle, and mssql dialects from default integrations test
 const testIntegrationDialects = (
   process.env.DB ||
-  'sqlite3 postgres pgnative mysql mysql2 mssql oracledb cockroachdb better-sqlite3'
+  'sqlite3 postgres pgnative mysql mysql2 mssql oracledb cockroachdb better-sqlite3 sqljs'
 ).match(/[\w-]+/g);
 
 console.log(`ENV DB: ${process.env.DB}`);
@@ -23,6 +23,16 @@ const pool = {
 };
 
 const poolSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function (connection, callback) {
+    assert.ok(typeof connection.__knexUid !== 'undefined');
+    connection.run('PRAGMA foreign_keys = ON', callback);
+  },
+};
+
+const poolSqljs = {
   min: 0,
   max: 1,
   acquireTimeoutMillis: 1000,
@@ -171,6 +181,16 @@ const testConfigs = {
       filename: __dirname + '/test.sqlite3',
     },
     pool: poolSqlite,
+    migrations,
+    seeds,
+  },
+
+  sqljs: {
+    client: 'sqljs',
+    connection: testConfig.sqljs || {
+      bytes: Uint8Array.from([]),
+    },
+    pool: poolSqljs,
     migrations,
     seeds,
   },

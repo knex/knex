@@ -55,6 +55,10 @@ function isSQLite(knex) {
   return getDriverName(knex) === drivers.SQLite || isBetterSQLite3(knex);
 }
 
+function isSQLJS(knex) {
+  return getDriverName(knex) === drivers.SQLJS;
+}
+
 function isCockroachDB(knex) {
   return getDriverName(knex) === drivers.CockroachDB;
 }
@@ -87,4 +91,5 @@ module.exports = {
   isRedshift,
   isSQLite,
   isBetterSQLite3,
+  isSQLJS,
 };

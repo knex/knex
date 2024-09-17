@@ -64,7 +64,7 @@ module.exports = function (knex) {
           await knex.raw(`
                         CREATE TRIGGER [${triggerName}] ON [${secondaryTable}]
                         AFTER UPDATE
-                        AS 
+                        AS
                         BEGIN
                             SET NOCOUNT ON;
 
@@ -253,6 +253,12 @@ module.exports = function (knex) {
             );
             tester(
               'sqlite3',
+              'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
+              ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
+              1
+            );
+            tester(
+              'sqljs',
               'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ?',
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
               1

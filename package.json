@@ -1,7 +1,7 @@
 {
   "name": "knex",
   "version": "3.1.0",
-  "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
+  "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL, SQLite3 and Sql.js",
   "main": "knex",
   "types": "types/index.d.ts",
   "engines": {
@@ -27,7 +27,7 @@
     "test:unit-only": "mocha --exit -t 10000 --config test/mocha-unit-config-test.js",
     "test:db": "mocha --exit -t 10000 --config test/mocha-integration-config-test.js",
     "test:db:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
-    "test:db:no-oracle": "cross-env DB=\"mssql mysql mysql2 postgres sqlite3\" mocha --exit -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
+    "test:db:no-oracle": "cross-env DB=\"mssql mysql mysql2 postgres sqlite3 sqljs\" mocha --exit -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
     "test": "mocha --exit -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
     "test:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
     "test:everything": "npm run lint:everything && npm run test:coverage",
@@ -37,6 +37,7 @@
     "test:oracledb": "cross-env DB=oracledb npm run test:db",
     "test:sqlite": "cross-env DB=sqlite3 npm run test:db",
     "test:better-sqlite3": "cross-env DB=better-sqlite3 npm run test:db",
+    "test:sqljs": "cross-env DB=sqljs npm run test:db",
     "test:postgres": "cross-env DB=postgres npm run test:db",
     "test:cockroachdb": "cross-env DB=cockroachdb npm run test:db",
     "test:pgnative": "cross-env DB=pgnative npm run test:db",
@@ -98,6 +99,9 @@
     },
     "better-sqlite3": {
       "optional": true
+    },
+    "sql.js": {
+      "optional": true
     }
   },
   "lint-staged": {
@@ -107,6 +111,8 @@
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
     "@types/node": "^20.4.0",
+    "@types/sql.js": "^1.4.9",
+    "JSONStream": "^1.3.5",
     "better-sqlite3": "^9.1.1",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
@@ -122,7 +128,6 @@
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
     "jake": "^10.8.5",
-    "JSONStream": "^1.3.5",
     "lint-staged": "^13.0.0",
     "mocha": "^10.0.0",
     "mock-fs": "^5.1.4",
@@ -137,6 +142,7 @@
     "sinon": "^15.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
+    "sql.js": "^1.11.0",
     "sqlite3": "^5.0.11",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.0",
@@ -165,6 +171,7 @@
     "mysql",
     "cockroachdb",
     "sqlite3",
+    "sql.js",
     "oracle",
     "mssql",
     "builder",
@@ -213,6 +220,7 @@
     "oracle": false,
     "sqlite3": false,
     "better-sqlite3": false,
+    "sql.js": false,
     "oracledb": false
   },
   "react-native": {

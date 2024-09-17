@@ -15,6 +15,7 @@ import { Tables } from './tables';
 
 import { Stream } from 'stream';
 import { ConnectionOptions } from 'tls';
+import type initSqlJs from 'sql.js';
 
 // # Generic type-level utilities
 
@@ -2761,6 +2762,7 @@ declare namespace Knex {
     | PgConnectionConfig
     | RedshiftConnectionConfig
     | Sqlite3ConnectionConfig
+    | SqljsConnectionConfig
     | BetterSqlite3ConnectionConfig
     | SocketConnectionConfig;
 
@@ -3072,6 +3074,14 @@ declare namespace Knex {
   interface Sqlite3ConnectionConfig {
     filename: string;
     flags?: string[];
+    debug?: boolean;
+    expirationChecker?(): boolean;
+  }
+
+  /** Used with SQLJS adapter */
+  interface SqljsConnectionConfig {
+    bytes?: Uint8Array;
+    sqljs?: initSqlJs.SqlJsConfig;
     debug?: boolean;
     expirationChecker?(): boolean;
   }

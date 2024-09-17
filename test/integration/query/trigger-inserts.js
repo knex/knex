@@ -11,6 +11,7 @@ const {
   isOracle,
   isMysql,
   isPgBased,
+  isSQLJS,
 } = require('../../util/db-helpers');
 const {
   dropTables,
@@ -276,6 +277,20 @@ module.exports = function (knex) {
               [1]
             );
             tester(
+              'sqljs',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+              [
+                'Lorem ipsum Dolore labore incididunt enim.',
+                TEST_TIMESTAMP,
+                'test1@example.com',
+                'Test',
+                'User',
+                1,
+                TEST_TIMESTAMP,
+              ],
+              [1]
+            );
+            tester(
               'oracledb',
               'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
               [
@@ -401,6 +416,27 @@ module.exports = function (knex) {
             );
             tester(
               'sqlite3',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
+              [
+                'Lorem ipsum Dolore labore incididunt enim.',
+                TEST_TIMESTAMP,
+                'test2@example.com',
+                'Test',
+                'User',
+                1,
+                TEST_TIMESTAMP,
+                'Lorem ipsum Dolore labore incididunt enim.',
+                TEST_TIMESTAMP,
+                'test3@example.com',
+                'Test',
+                'User',
+                2,
+                TEST_TIMESTAMP,
+              ],
+              [3]
+            );
+            tester(
+              'sqljs',
               'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
@@ -641,6 +677,27 @@ module.exports = function (knex) {
               [5]
             );
             tester(
+              'sqljs',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at`',
+              [
+                'Lorem ipsum Dolore labore incididunt enim.',
+                TEST_TIMESTAMP,
+                'test4@example.com',
+                'Test',
+                'User',
+                2,
+                TEST_TIMESTAMP,
+                'Lorem ipsum Dolore labore incididunt enim.',
+                TEST_TIMESTAMP,
+                'test5@example.com',
+                'Test',
+                'User',
+                2,
+                TEST_TIMESTAMP,
+              ],
+              [5]
+            );
+            tester(
               'oracledb',
               'begin execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?; execute immediate \'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (:1, :2, :3, :4, :5, :6, :7) returning "id" into :8\' using ?, ?, ?, ?, ?, ?, ?, out ?;end;',
               [
@@ -767,6 +824,19 @@ module.exports = function (knex) {
               ]
             );
             tester(
+              'sqljs',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+              [
+                'Lorem ipsum Dolore labore incididunt enim.',
+                TEST_TIMESTAMP,
+                'test5@example.com',
+                'Test',
+                'User',
+                2,
+                TEST_TIMESTAMP,
+              ]
+            );
+            tester(
               'oracledb',
               'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
               [
@@ -881,6 +951,20 @@ module.exports = function (knex) {
               [6]
             );
             tester(
+              'sqljs',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?)',
+              [
+                'Lorem ipsum Dolore labore incididunt enim.',
+                TEST_TIMESTAMP,
+                'test6@example.com',
+                'Test',
+                'User',
+                2,
+                TEST_TIMESTAMP,
+              ],
+              [6]
+            );
+            tester(
               'oracledb',
               'insert into "accounts" ("about", "created_at", "email", "first_name", "last_name", "logins", "updated_at") values (?, ?, ?, ?, ?, ?, ?) returning "id" into ?',
               [
@@ -952,6 +1036,12 @@ module.exports = function (knex) {
                   [1]
                 );
                 tester(
+                  'sqljs',
+                  'insert into `trigger_retest_insert` default values',
+                  [],
+                  [1]
+                );
+                tester(
                   'oracledb',
                   'insert into "trigger_retest_insert" ("id") values (default) returning "id" into ?',
                   [
@@ -1004,6 +1094,12 @@ module.exports = function (knex) {
                 );
                 tester(
                   'sqlite3',
+                  'insert into `trigger_retest_insert2` default values',
+                  [],
+                  [1]
+                );
+                tester(
+                  'sqljs',
                   'insert into `trigger_retest_insert2` default values',
                   [],
                   [1]
@@ -1076,6 +1172,16 @@ module.exports = function (knex) {
             );
             tester(
               'sqlite3',
+              'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
+              [
+                10,
+                'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                0,
+              ],
+              [1]
+            );
+            tester(
+              'sqljs',
               'insert into `test_table_two` (`account_id`, `details`, `status`) values (?, ?, ?)',
               [
                 10,
@@ -1221,7 +1327,7 @@ module.exports = function (knex) {
       });
 
       it('should replace undefined keys in multi insert with DEFAULT', function () {
-        if (isSQLite(knex)) {
+        if (isSQLite(knex) || isSQLJS(knex)) {
           return true;
         }
         return knex('accounts')
@@ -1316,6 +1422,11 @@ module.exports = function (knex) {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
                 ['ignoretest1@example.com', 'AFTER']
               );
+              tester(
+                'sqljs',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing',
+                ['ignoretest1@example.com', 'AFTER']
+              );
             });
         } catch (err) {
           if (isOracle(knex) || isMssql(knex)) {
@@ -1385,6 +1496,11 @@ module.exports = function (knex) {
                 'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
                 ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
+              tester(
+                'sqljs',
+                'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing',
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
+              );
             });
         } catch (err) {
           if (isOracle(knex) || isMssql(knex)) {
@@ -1448,6 +1564,11 @@ module.exports = function (knex) {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
                 ['mergetest1@example.com', 'AFTER']
               );
+              tester(
+                'sqljs',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+                ['mergetest1@example.com', 'AFTER']
+              );
             });
         } catch (err) {
           if (isOracle(knex) || isMssql(knex)) {
@@ -1506,6 +1627,11 @@ module.exports = function (knex) {
               );
               tester(
                 'sqlite3',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
+                ['mergetest1@example.com', 'AFTER', 'tester']
+              );
+              tester(
+                'sqljs',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
                 ['mergetest1@example.com', 'AFTER', 'tester']
               );
@@ -1576,6 +1702,11 @@ module.exports = function (knex) {
               );
               tester(
                 'sqlite3',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
+                ['mergetest1@example.com', 'AFTER', 'fake-role']
+              );
+              tester(
+                'sqljs',
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ?',
                 ['mergetest1@example.com', 'AFTER', 'fake-role']
               );
@@ -1656,6 +1787,11 @@ module.exports = function (knex) {
                 "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`",
                 ['mergedest@example.com']
               );
+              tester(
+                'sqljs',
+                "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`",
+                ['mergedest@example.com']
+              );
             });
         } catch (err) {
           if (isOracle(knex) || isMssql(knex)) {
@@ -1725,6 +1861,11 @@ module.exports = function (knex) {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = (SELECT name FROM upsert_value_source)',
                 ['mergedest@example.com', 'SHOULD NOT BE USED']
               );
+              tester(
+                'sqljs',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = (SELECT name FROM upsert_value_source)',
+                ['mergedest@example.com', 'SHOULD NOT BE USED']
+              );
             });
         } catch (err) {
           if (isOracle(knex) || isMssql(knex)) {
@@ -1788,6 +1929,11 @@ module.exports = function (knex) {
               );
               tester(
                 'sqlite3',
+                'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+                ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+              );
+              tester(
+                'sqljs',
                 'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
                 ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
               );

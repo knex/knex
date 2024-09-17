@@ -11,6 +11,7 @@ const {
   isMssql,
   isSQLite,
   isOracle,
+  isSQLJS,
 } = require('../../../util/db-helpers');
 const {
   createUsers,
@@ -67,7 +68,7 @@ describe('Where', function () {
             .select('first_name', 'last_name')
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                ['mysql', 'sqlite3', 'sqljs'],
                 'select `first_name`, `last_name` from `accounts` where `id` = ?',
                 [1],
                 [
@@ -108,7 +109,7 @@ describe('Where', function () {
             .select('first_name', 'last_name')
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                ['mysql', 'sqlite3', 'sqljs'],
                 'select `first_name`, `last_name` from `accounts` where `id` = ?',
                 [1],
                 [
@@ -149,7 +150,7 @@ describe('Where', function () {
             .select(['email', 'logins'])
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                ['mysql', 'sqlite3', 'sqljs'],
                 'select `email`, `logins` from `accounts` where `id` > ?',
                 [1]
               );
@@ -172,7 +173,7 @@ describe('Where', function () {
             .select('*')
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                ['mysql', 'sqlite3', 'sqljs'],
                 'select * from `accounts` where `id` = ?',
                 [1],
                 [
@@ -237,7 +238,7 @@ describe('Where', function () {
             .select('first_name', 'email')
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                ['mysql', 'sqlite3', 'sqljs'],
                 'select `first_name`, `email` from `accounts` where `id` is null',
                 [],
                 []
@@ -263,7 +264,7 @@ describe('Where', function () {
             .select()
             .testSql(function (tester) {
               tester(
-                ['mysql', 'sqlite3'],
+                ['mysql', 'sqlite3', 'sqljs'],
                 'select * from `accounts` where `id` = ?',
                 [0],
                 []
@@ -372,7 +373,7 @@ describe('Where', function () {
                 ]
               );
               tester(
-                'sqlite3',
+                ['sqlite3', 'sqljs'],
                 'select * from `composite_key_test` where (`column_a`, `column_b`) in ( values (?, ?), (?, ?)) order by `status` desc',
                 [1, 1, 1, 2],
                 [
@@ -433,7 +434,7 @@ describe('Where', function () {
       });
 
       it('handles multi-column "where in" cases with where', async function () {
-        if (!isSQLite(knex) && !isMssql(knex)) {
+        if (!isSQLite(knex) && !isMssql(knex) && !isSQLJS(knex)) {
           await knex('composite_key_test')
             .where('status', 1)
             .whereIn(
@@ -561,7 +562,8 @@ describe('Where', function () {
               isPostgreSQL(knex) ||
               isSQLite(knex) ||
               isMssql(knex) ||
-              isMysql(knex)
+              isMysql(knex) ||
+              isSQLJS(knex)
             )
           ) {
             return this.skip();
@@ -640,7 +642,7 @@ describe('Where', function () {
         it("doesn't find data using whereLike when different case sensitivity", async function () {
           const result = await knex('accounts').whereLike('email', 'Test1%');
           // sqlite only supports case-insensitive search
-          if (isSQLite(knex)) {
+          if (isSQLite(knex) || isSQLJS(knex)) {
             this.skip();
           }
           expect(result).to.deep.equal([]);
@@ -648,7 +650,7 @@ describe('Where', function () {
 
         it('supports only case-insensitive searches in sqlite', async function () {
           const result = await knex('accounts').whereILike('email', 'Test1%');
-          if (!isSQLite(knex)) {
+          if (!isSQLite(knex) && !isSQLJS(knex)) {
             this.skip();
           }
           expect(result.length).to.equal(1);

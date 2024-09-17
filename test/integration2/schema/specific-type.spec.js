@@ -35,6 +35,12 @@ describe('Schema', () => {
                 'varchar(42)'
               );
               break;
+            case Db.SQLjs:
+              res = await knex.schema.raw(`PRAGMA table_info(${tblName})`);
+              expect(res.find((c) => c.name === colName).type).to.equal(
+                'varchar(42)'
+              );
+              break;
             case Db.PgNative:
             case Db.PostgresSQL:
               res = await knex

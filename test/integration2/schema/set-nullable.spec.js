@@ -4,6 +4,7 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const {
   isSQLite,
+  isSQLJS,
   isPostgreSQL,
   isMysql,
   isBetterSQLite3,
@@ -46,7 +47,7 @@ describe('Schema', () => {
             });
             const queries = await builder.generateDdlCommands();
 
-            if (isSQLite(knex)) {
+            if (isSQLite(knex) || isSQLJS(knex)) {
               expect(queries.sql).to.eql([
                 'CREATE TABLE `_knex_temp_alter111` (`id_nullable` integer NULL, `id_not_nullable` integer)',
                 'INSERT INTO "_knex_temp_alter111" SELECT * FROM "primary_table";',
@@ -143,6 +144,9 @@ describe('Schema', () => {
             } else if (isSQLite(knex)) {
               errorMessage =
                 'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - SQLITE_CONSTRAINT: NOT NULL constraint failed: primary_table.id_nullable';
+            } else if (isSQLJS(knex)) {
+              errorMessage =
+                'insert into `primary_table` (`id_not_nullable`, `id_nullable`) values (1, NULL) - NOT NULL constraint failed: primary_table.id_nullable';
             }
 
             await expect(
