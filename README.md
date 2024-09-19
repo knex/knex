@@ -9,7 +9,7 @@
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (PostgreSQL, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
+A batteries-included, multi-dialect (PostgreSQL, MariaDB, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
 Node.js, featuring:
 
 - [transactions](https://knex.github.io/documentation/#Transactions)
