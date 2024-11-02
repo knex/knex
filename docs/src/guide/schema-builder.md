@@ -69,7 +69,9 @@ knex.schema.dropTableIfExists('users');
 
 ### renameTable
 
-**knex.schema.renameTable(from, to)**
+```js
+knex.schema.renameTable(from, to)
+```
 
 Renames a table from a current tableName to another.
 
@@ -79,7 +81,9 @@ knex.schema.renameTable('old_users', 'users');
 
 ### hasTable
 
-**knex.schema.hasTable(tableName)**
+```js
+knex.schema.hasTable(tableName)
+```
 
 Checks for a table's existence by tableName, resolving with a boolean to signal if the table exists.
 
@@ -98,13 +102,17 @@ knex.schema.hasTable('users').then(function (exists) {
 
 ### hasColumn
 
-**knex.schema.hasColumn(tableName, columnName)**
+```js
+knex.schema.hasColumn(tableName, columnName)
+```
 
 Checks if a column exists in the current table, resolves the promise with a boolean, true if the column exists, false otherwise.
 
 ### table
 
-**knex.schema.table(tableName, callback)**
+```js
+knex.schema.table(tableName, callback)
+```
 
 Chooses a database table, and then modifies the table, using the Schema Building functions inside of the callback.
 
@@ -118,7 +126,9 @@ knex.schema.table('users', function (table) {
 
 ### alterTable
 
-**knex.schema.alterTable(tableName, callback)**
+```js
+knex.schema.alterTable(tableName, callback)
+```
 
 Chooses a database table, and then modifies the table, using the Schema Building functions inside of the callback.
 
@@ -132,7 +142,9 @@ knex.schema.alterTable('users', function (table) {
 
 ### createView
 
-**knex.schema.createView(tableName, callback)**
+```js
+knex.schema.createView(tableName, callback)
+```
 
 Creates a new view on the database, with a callback function to modify the view's structure, using the schema-building commands.
 
@@ -145,7 +157,9 @@ knex.schema.createView('users_view', function (view) {
 
 ### createViewOrReplace
 
-**knex.schema.createViewOrReplace(tableName, callback)**
+```js
+knex.schema.createViewOrReplace(tableName, callback)
+```
 
 Creates a new view or replace it on the database, with a callback function to modify the view's structure, using the schema-building commands. You need to specify at least the same columns in same order (you can add extra columns). In SQLite, this function generate drop/create view queries (view columns can be different).
 
@@ -158,7 +172,9 @@ knex.schema.createViewOrReplace('users_view', function (view) {
 
 ### createMaterializedView
 
-**knex.schema.createMaterializedView(viewName, callback)**
+```js
+knex.schema.createMaterializedView(viewName, callback)
+```
 
 Creates a new materialized view on the database, with a callback function to modify the view's structure, using the schema-building commands. Only on PostgreSQL, CockroachDb, Redshift and Oracle.
 
@@ -171,7 +187,9 @@ knex.schema.createMaterializedView('users_view', function (view) {
 
 ### refreshMaterializedView
 
-**knex.schema.refreshMaterializedView(viewName)**
+```js
+knex.schema.refreshMaterializedView(viewName)
+```
 
 Refresh materialized view on the database. Only on PostgreSQL, CockroachDb, Redshift and Oracle.
 
@@ -181,7 +199,9 @@ knex.schema.refreshMaterializedView('users_view');
 
 ### dropView
 
-**knex.schema.dropView(viewName)**
+```js
+knex.schema.dropView(viewName)
+```
 
 Drop view on the database.
 
@@ -191,7 +211,9 @@ knex.schema.dropView('users_view');
 
 ### dropViewIfExists
 
-**knex.schema.dropViewIfExists(viewName)**
+```js
+knex.schema.dropViewIfExists(viewName)
+```
 
 Drop view on the database if exists.
 
@@ -201,7 +223,9 @@ knex.schema.dropViewIfExists('users_view');
 
 ### dropMaterializedView
 
-**knex.schema.dropMaterializedView(viewName)**
+```js
+knex.schema.dropMaterializedView(viewName)
+```
 
 Drop materialized view on the database. Only on PostgreSQL, CockroachDb, Redshift and Oracle.
 
@@ -211,7 +235,9 @@ knex.schema.dropMaterializedView('users_view');
 
 ### dropMaterializedViewIfExists
 
-**knex.schema.dropMaterializedViewIfExists(viewName)**
+```js
+knex.schema.dropMaterializedViewIfExists(viewName)
+```
 
 Drop materialized view on the database if exists. Only on PostgreSQL, CockroachDb, Redshift and Oracle.
 
@@ -221,7 +247,9 @@ knex.schema.dropMaterializedViewIfExists('users_view');
 
 ### renameView
 
-**knex.schema.renameView(viewName)**
+```js
+knex.schema.renameView(viewName)
+```
 
 Rename a existing view in the database. Not supported by Oracle and SQLite.
 
@@ -231,7 +259,8 @@ knex.schema.renameView('users_view');
 
 ### alterView
 
-**knex.schema.alterView(viewName)**
+```js
+knex.schema.alterView(viewName)```
 
 Alter view to rename columns or change default values. Only available on PostgreSQL, MSSQL and Redshift.
 
@@ -244,7 +273,9 @@ knex.schema.alterView('view_test', function (view) {
 
 ### generateDdlCommands
 
-**knex.schema.generateDdlCommands()**
+```js
+knex.schema.generateDdlCommands()
+```
 
 Generates complete SQL commands for applying described schema changes, without executing anything. Useful when knex is being used purely as a query builder. Generally produces same result as .toSQL(), with a notable exception with SQLite, which relies on asynchronous calls to the database for building part of its schema modification statements
 
@@ -261,7 +292,9 @@ const ddlCommands = knex.schema
 
 ### raw
 
-**knex.schema.raw(statement)**
+```js
+knex.schema.raw(statement)
+```
 
 Run an arbitrary sql query in the schema builder chain.
 
@@ -275,7 +308,9 @@ knex.schema.raw("SET sql_mode='TRADITIONAL'").table('users', function (table) {
 
 ### queryContext
 
-**knex.schema.queryContext(context)**
+```js
+knex.schema.queryContext(context)
+```
 
 Allows configuring a context to be passed to the [wrapIdentifier](/guide/#wrapidentifier) hook. The context can be any kind of value and will be passed to `wrapIdentifier` without modification.
 
@@ -292,7 +327,9 @@ Calling `queryContext` with no arguments will return any context configured for 
 
 ### dropSchema
 
-**knex.schema.dropSchema(schemaName, [cascade])**
+```js
+knex.schema.dropSchema(schemaName, [cascade])
+```
 
 Drop a schema, specified by the schema's name, with optional cascade option (default to false). Only supported by PostgreSQL.
 
@@ -305,7 +342,9 @@ knex.schema.dropSchema('public', true);
 
 ### dropSchemaIfExists
 
-**knex.schema.dropSchemaIfExists(schemaName, [cascade])**
+```js
+knex.schema.dropSchemaIfExists(schemaName, [cascade])
+```
 
 Drop a schema conditionally if the schema exists, specified by the schema's name, with optional cascade option (default to false). Only supported by PostgreSQL.
 
@@ -320,7 +359,9 @@ knex.schema.dropSchemaIfExists('public', true);
 
 ### dropColumn
 
-**table.dropColumn(name)**
+```js
+table.dropColumn(name)
+```
 
 Drops a column, specified by the column's name
 
@@ -332,13 +373,17 @@ Drops multiple columns, taking a variable number of column names.
 
 ### renameColumn
 
-**table.renameColumn(from, to)**
+```js
+table.renameColumn(from, to)
+```
 
 Renames a column from one name to another.
 
 ### increments
 
-**table.increments(name, options={[primaryKey: boolean = true])**
+```js
+table.increments(name, options={[primaryKey: boolean = true])
+```
 
 Adds an auto incrementing column. In PostgreSQL this is a serial; in Amazon Redshift an integer identity(1,1). This will be used as the primary key for the table if the column isn't in another primary key. Also available is a bigIncrements if you wish to add a bigint incrementing number (in PostgreSQL bigserial). Note that a primary key is created by default if the column isn't in primary key (with primary function), but you can override this behaviour by passing the `primaryKey` option. If you use this function with primary function, the column is added to the composite primary key. With SQLite, autoincrement column need to be a primary key, so if primary function is used, primary keys are transformed in unique index. MySQL don't support autoincrement column without primary key, so multiple queries are generated to create int column, add increments column to composite primary key then modify the column to autoincrement column.
 
@@ -384,85 +429,113 @@ knex.schema.createTable('users', function (table) {
 
 ### integer
 
-**table.integer(name, length)**
+```js
+table.integer(name, length)
+```
 
 Adds an integer column. On PostgreSQL you cannot adjust the length, you need to use other option such as bigInteger, etc
 
 ### bigInteger
 
-**table.bigInteger(name)**
+```js
+table.bigInteger(name)
+```
 
 In MySQL or PostgreSQL, adds a bigint column, otherwise adds a normal integer. Note that bigint data is returned as a string in queries because JavaScript may be unable to parse them without loss of precision.
 
 ### tinyint
 
-**table.tinyint(name, length)**
+```js
+table.tinyint(name, length)
+```
 
 Adds a tinyint column
 
 ### smallint
 
-**table.smallint(name)**
+```js
+table.smallint(name)
+```
 
 Adds a smallint column
 
 ### mediumint
 
-**table.mediumint(name)**
+```js
+table.mediumint(name)
+```
 
 Adds a mediumint column
 
 ### bigint
 
-**table.bigint(name)**
+```js
+table.bigint(name)
+```
 
 Adds a bigint column
 
 ### text
 
-**table.text(name, [textType])**
+```js
+table.text(name, [textType])
+```
 
 Adds a text column, with optional textType for MySql text datatype preference. textType may be mediumtext or longtext, otherwise defaults to text.
 
 ### string
 
-**table.string(name, [length])**
+```js
+table.string(name, [length])
+```
 
 Adds a string column, with optional length defaulting to 255.
 
 ### float
 
-**table.float(column, [precision], [scale])**
+```js
+table.float(column, [precision], [scale])
+```
 
 Adds a float column, with optional precision (defaults to 8) and scale (defaults to 2).
 
 ### double
 
-**table.double(column, [precision], [scale])**
+```js
+table.double(column, [precision], [scale])
+```
 
 Adds a double column, with optional precision (defaults to 8) and scale (defaults to 2). In SQLite/MSSQL this is a float with no precision/scale; In PostgreSQL this is a double precision; In Oracle this is a number with matching precision/scale.
 
 ### decimal
 
-**table.decimal(column, [precision], [scale])**
+```js
+table.decimal(column, [precision], [scale])
+```
 
 Adds a decimal column, with optional precision (defaults to 8) and scale (defaults to 2). Specifying NULL as precision creates a decimal column that can store numbers of any precision and scale. (Only supported for Oracle, SQLite, Postgres)
 
 ### boolean
 
-**table.boolean(name)**
+```js
+table.boolean(name)
+```
 
 Adds a boolean column.
 
 ### date
 
-**table.date(name)**
+```js
+table.date(name)
+```
 
 Adds a date column.
 
 ### datetime
 
-**table.datetime(name, options={[useTz: boolean], [precision: number]})**
+```js
+table.datetime(name, options={[useTz: boolean], [precision: number]})
+```
 
 Adds a datetime column. By default PostgreSQL creates column with timezone (timestamptz type). This behaviour can be overriden by passing the useTz option (which is by default true for PostgreSQL). MySQL and MSSQL do not have useTz option.
 
@@ -474,7 +547,9 @@ table.datetime('some_time', { precision: 6 }).defaultTo(knex.fn.now(6));
 
 ### time
 
-**table.time(name, [precision])**
+```js
+table.time(name, [precision])
+```
 
 Adds a time column, with optional precision for MySQL. Not supported on Amazon Redshift.
 
@@ -486,7 +561,9 @@ table.time('some_time', { precision: 6 });
 
 ### timestamp
 
-**table.timestamp(name, options={[useTz: boolean], [precision: number]})**
+```js
+table.timestamp(name, options={[useTz: boolean], [precision: number]})
+```
 
 Adds a timestamp column. By default PostgreSQL creates column with timezone (timestamptz type) and MSSQL does not (datetime2). This behaviour can be overriden by passing the useTz option (which is by default false for MSSQL and true for PostgreSQL). MySQL does not have useTz option.
 
@@ -508,7 +585,9 @@ table.timestamp('created_at', { useTz: true });
 
 ### timestamps
 
-**table.timestamps([useTimestamps], [defaultToNow], [useCamelCase])**
+```js
+table.timestamps([useTimestamps], [defaultToNow], [useCamelCase])
+```
 
 Adds created_at and updated_at columns on the database, setting each to datetime types. When true is passed as the first argument a timestamp type is used instead. Both columns default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the .timestamps() only have seconds precision, to get better precision use the .datetime or .timestamp methods directly with precision. If useCamelCase is true, the name of columns are createdAt and updatedAt.
 
@@ -518,19 +597,25 @@ PostgreSQL `updated_at` field will not automatically be updated. Please see this
 
 ### dropTimestamps
 
-**table.dropTimestamps([useCamelCase])**
+```js
+table.dropTimestamps([useCamelCase])
+```
 
 Drops the columns created_at and updated_at from the table, which can be created via timestamps. If useCamelCase is true, the name of columns are createdAt and updatedAt.
 
 ### binary
 
-**table.binary(name, [length])**
+```js
+table.binary(name, [length])
+```
 
 Adds a binary column, with optional length argument for MySQL.
 
 ### enum / enu
 
-**table.enu(col, values, [options])**
+```js
+table.enu(col, values, [options])
+```
 
 Adds a enum column, (aliased to enu, as enum is a reserved word in JavaScript). Implemented as unchecked varchar(255) on Amazon Redshift. Note that the second argument is an array of values. Example:
 
@@ -582,7 +667,9 @@ Knex does not provide any way to alter enumerations after creation. To change an
 
 ### json
 
-**table.json(name)**
+```js
+table.json(name)
+```
 
 Adds a json column, using the built-in json type in PostgreSQL, MySQL and SQLite, defaulting to a text column in older versions or in unsupported databases.
 
@@ -597,13 +684,17 @@ knex
 
 ### jsonb
 
-**table.jsonb(name)**
+```js
+table.jsonb(name)
+```
 
 Adds a jsonb column. Works similar to table.json(), but uses native jsonb type if possible.
 
 ### uuid
 
-**table.uuid(name, options=({[useBinaryUuid:boolean],[primaryKey:boolean]})**
+```js
+table.uuid(name, options=({[useBinaryUuid:boolean],[primaryKey:boolean]})
+```
 
 Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling back to a char(36) in other databases by default.
 If useBinaryUuid is true, binary(16) is used. See uuidToBin function to convert uuid in binary before inserting and binToUuid to convert binary uuid to uuid.
@@ -619,7 +710,9 @@ knex.schema.createTable(tblName, (table) => {
 
 ### geometry
 
-**table.geometry(name)**
+```js
+table.geometry(name)
+```
 
 Adds a geometry column. Supported by SQLite, MSSQL and PostgreSQL.
 
@@ -631,7 +724,9 @@ knex.schema.createTable(tblName, (table) => {
 
 ### geography
 
-**table.geography(name)**
+```js
+table.geography(name)
+```
 
 Adds a geography column. Supported by SQLite, MSSQL and PostgreSQL (in PostGIS extension).
 
@@ -643,7 +738,9 @@ knex.schema.createTable(tblName, (table) => {
 
 ### point
 
-**table.point(name)**
+```js
+table.point(name)
+```
 
 Add a point column. Not supported by CockroachDB and MSSQL.
 
@@ -655,43 +752,57 @@ knex.schema.createTable(tblName, (table) => {
 
 ### comment
 
-**table.comment(value)**
+```js
+table.comment(value)
+```
 
 Sets the comment for a table.
 
 ### engine
 
-**table.engine(val)**
+```js
+table.engine(val)
+```
 
 Sets the engine for the database table, only available within a createTable call, and only applicable to MySQL.
 
 ### charset
 
-**table.charset(val)**
+```js
+table.charset(val)
+```
 
 Sets the charset for the database table, only available within a createTable call, and only applicable to MySQL.
 
 ### collate
 
-**table.collate(val)**
+```js
+table.collate(val)
+```
 
 Sets the collation for the database table, only available within a createTable call, and only applicable to MySQL.
 
 ### inherits
 
-**table.inherits(val)**
+```js
+table.inherits(val)
+```
 
 Sets the tables that this table inherits, only available within a createTable call, and only applicable to PostgreSQL.
 
 ### specificType
 
-**table.specificType(name, type)**
+```js
+table.specificType(name, type)
+```
 
 Sets a specific type for the column creation, if you'd like to add a column type that isn't supported here.
 
 ### index
 
-**table.index(columns, [indexName], options=({[indexType: string], [storageEngineIndexType: 'btree'|'hash'], [predicate: QueryBuilder]}))**
+```js
+table.index(columns, [indexName], options=({[indexType: string], [storageEngineIndexType: 'btree'|'hash'], [predicate: QueryBuilder]}))
+```
 
 Adds an index to a table over the given columns. A default index name using the columns is used unless indexName is specified. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : [https://dev.mysql.com/doc/refman/8.0/en/create-index.html](https://dev.mysql.com/doc/refman/8.0/en/create-index.html). The indexType can be optionally specified for PostgreSQL and MySQL. Amazon Redshift does not allow creating an index. In PostgreSQL, SQLite and MSSQL a partial index can be specified by setting a 'where' predicate.
 
@@ -707,25 +818,33 @@ knex.table('users', function (table) {
 
 ### dropIndex
 
-**table.dropIndex(columns, [indexName])**
+```js
+table.dropIndex(columns, [indexName])
+```
 
 Drops an index from a table. A default index name using the columns is used unless indexName is specified (in which case columns is ignored). Amazon Redshift does not allow creating an index.
 
 ### setNullable
 
-**table.setNullable(column)**
+```js
+table.setNullable(column)
+```
 
 Makes table column nullable.
 
 ### dropNullable
 
-**table.dropNullable(column)**
+```js
+table.dropNullable(column)
+```
 
 Makes table column not nullable. Note that this operation will fail if there are already null values in this column.
 
 ### primary
 
-**table.primary(columns, options=({[constraintName:string],[deferrable:'not deferrable'|'deferred'|'immediate']})**
+```js
+table.primary(columns, options=({[constraintName:string],[deferrable:'not deferrable'|'deferred'|'immediate']})
+```
 
 Create a primary key constraint on table using input `columns`. If you need to create a composite primary key, pass an array of columns to `columns`. Constraint name defaults to `tablename_pkey` unless `constraintName` is specified. On Amazon Redshift, all columns included in a primary key must be not nullable. Deferrable primary constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.
 
@@ -747,7 +866,9 @@ If you want to chain primary() while creating new column you can use [primary](#
 
 ### unique
 
-**table.unique(columns, options={[indexName: string], [deferrable:'not deferrable'|'immediate'|'deferred'], [storageEngineIndexType:'btree'|'hash'], [useConstraint:true|false], [predicate: QueryBuilder]})**
+```js
+table.unique(columns, options={[indexName: string], [deferrable:'not deferrable'|'immediate'|'deferred'], [storageEngineIndexType:'btree'|'hash'], [useConstraint:true|false], [predicate: QueryBuilder]})
+```
 
 Adds an unique index to a table over the given `columns`. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : [https://dev.mysql.com/doc/refman/8.0/en/create-index.html](https://dev.mysql.com/doc/refman/8.0/en/create-index.html). A default index name using the columns is used unless indexName is specified. If you need to create a composite index, pass an array of column to `columns`. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object. In MSSQL and Postgres, you can set the `useConstraint` option to true to create a unique constraint instead of a unique index (defaults to false for MSSQL, true for Postgres without `predicate`, false for Postgres with `predicate`). In PostgreSQL, SQLite and MSSQL a partial unique index can be specified by setting a 'where' predicate.
 
@@ -782,7 +903,9 @@ If you want to chain unique() while creating new column you can use [unique](#un
 
 ### foreign
 
-**table.foreign(columns, [foreignKeyName])[.onDelete(statement).onUpdate(statement).withKeyName(foreignKeyName).deferrable(type)]**
+```js
+table.foreign(columns, [foreignKeyName])[.onDelete(statement).onUpdate(statement).withKeyName(foreignKeyName).deferrable(type)]
+```
 
 Adds a foreign key constraint to a table for an existing column using `table.foreign(column).references(column)` or multiple columns using `table.foreign(columns).references(columns).inTable(table)`.
 
@@ -806,25 +929,33 @@ knex.schema.table('users', function (table) {
 
 ### dropForeign
 
-**table.dropForeign(columns, [foreignKeyName])**
+```js
+table.dropForeign(columns, [foreignKeyName])
+```
 
 Drops a foreign key constraint from a table. A default foreign key name using the columns is used unless foreignKeyName is specified (in which case columns is ignored).
 
 ### dropUnique
 
-**table.dropUnique(columns, [indexName])**
+```js
+table.dropUnique(columns, [indexName])
+```
 
 Drops a unique key constraint from a table. A default unique key name using the columns is used unless indexName is specified (in which case columns is ignored).
 
 ### dropPrimary
 
-**table.dropPrimary([constraintName])**
+```js
+table.dropPrimary([constraintName])
+```
 
 Drops the primary key constraint on a table. Defaults to tablename_pkey unless constraintName is specified.
 
 ### queryContext
 
-**table.queryContext(context)**
+```js
+table.queryContext(context)
+```
 
 Allows configuring a context to be passed to the [wrapIdentifier](/guide/#wrapidentifier) hook for formatting table builder identifiers. The context can be any kind of value and will be passed to `wrapIdentifier` without modification.
 
@@ -864,7 +995,9 @@ The following three methods may be chained on the schema building methods, as mo
 
 ### alter
 
-**column.alter(options={[alterNullable: boolean = true, alterType: boolean = true])**
+```js
+column.alter(options={[alterNullable: boolean = true, alterType: boolean = true])
+```
 
 Marks the column as an alter / modify, instead of the default add.
 
@@ -889,13 +1022,17 @@ knex.schema.alterTable('user', function (t) {
 
 ### index
 
-**column.index([indexName], options=({[indexType: string], [storageEngineIndexType: 'btree'|'hash'], [predicate: QueryBuilder]}))**
+```js
+column.index([indexName], options=({[indexType: string], [storageEngineIndexType: 'btree'|'hash'], [predicate: QueryBuilder]}))
+```
 
 Specifies a field as an index. If an indexName is specified, it is used in place of the standard index naming convention of tableName_columnName. In MySQL, the storage engine index type may be 'btree' or 'hash' index types, more info in Index Options section : [https://dev.mysql.com/doc/refman/8.0/en/create-index.html](https://dev.mysql.com/doc/refman/8.0/en/create-index.html). The indexType can be optionally specified for PostgreSQL and MySQL. No-op if this is chained off of a field that cannot be indexed. In PostgreSQL, SQLite and MSSQL a partial index can be specified by setting a 'where' predicate.
 
 ### primary
 
-**column.primary(options=({[constraintName:string],[deferrable:'not deferrable'|'deferred'|'immediate']}));**
+```js
+column.primary(options=({[constraintName:string],[deferrable:'not deferrable'|'deferred'|'immediate']}));
+```
 
 Sets a primary key constraint on `column`. Constraint name defaults to `tablename_pkey` unless `constraintName` is specified. On Amazon Redshift, all columns included in a primary key must be not nullable. Deferrable primary constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.
 
@@ -914,7 +1051,9 @@ If you want to create primary constraint on existing column use [primary](#prima
 
 ### unique
 
-**column.unique(options={[indexName:string],[deferrable:'not deferrable'|'immediate'|'deferred']})**
+```js
+column.unique(options={[indexName:string],[deferrable:'not deferrable'|'immediate'|'deferred']})
+```
 
 Sets the `column` as unique. On Amazon Redshift, this constraint is not enforced, but it is used by the query planner. Deferrable unique constraint are supported on Postgres and Oracle and can be set by passing deferrable option to options object.
 
@@ -932,31 +1071,41 @@ If you want to create unique constraint on existing column use [unique](#unique)
 
 ### references
 
-**column.references(column)**
+```js
+column.references(column)
+```
 
 Sets the "column" that the current column references as a foreign key. "column" can either be "." syntax, or just the column name followed up with a call to inTable to specify the table.
 
 ### inTable
 
-**column.inTable(table)**
+```js
+column.inTable(table)
+```
 
 Sets the "table" where the foreign key column is located after calling column.references.
 
 ### onDelete
 
-**column.onDelete(command)**
+```js
+column.onDelete(command)
+```
 
 Sets the SQL command to be run "onDelete".
 
 ### onUpdate
 
-**column.onUpdate(command)**
+```js
+column.onUpdate(command)
+```
 
 Sets the SQL command to be run "onUpdate".
 
 ### defaultTo
 
-**column.defaultTo(value, options={[constraintName: string = undefined]))**
+```js
+column.defaultTo(value, options={[constraintName: string = undefined]))
+```
 
 Sets the default value for the column on an insert.
 
@@ -968,37 +1117,49 @@ column.defaultTo('value', { constraintName: 'df_table_value' });
 
 ### unsigned
 
-**column.unsigned()**
+```js
+column.unsigned()
+```
 
 Specifies a number as unsigned. Only for numeric values.
 
 ### notNullable
 
-**column.notNullable()**
+```js
+column.notNullable()
+```
 
 Adds a not null on the current column being created.
 
 ### nullable
 
-**column.nullable()**
+```js
+column.nullable()
+```
 
 Default on column creation, this explicitly sets a field to be nullable.
 
 ### first
 
-**column.first()**
+```js
+column.first()
+```
 
 Sets the column to be inserted on the first position, only used in MySQL alter tables.
 
 ### after
 
-**column.after(field)**
+```js
+column.after(field)
+```
 
 Sets the column to be inserted after another, only used in MySQL alter tables.
 
 ### comment
 
-**column.comment(value)**
+```js
+column.comment(value)
+```
 
 Sets the comment for a column.
 
@@ -1011,7 +1172,9 @@ knex.schema.createTable('accounts', function (t) {
 
 ### collate
 
-**column.collate(collation)**
+```js
+column.collate(collation)
+```
 
 Sets the collation for a column (only works in MySQL). Here is a list of all available collations: [https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html](https://dev.mysql.com/doc/refman/5.5/en/charset-charsets.html)
 
@@ -1026,7 +1189,9 @@ knex.schema.createTable('users', function (t) {
 
 ### columns
 
-**view.columns([columnNames])**
+```js
+view.columns([columnNames])
+```
 
 Specify the columns of the view.
 
@@ -1039,25 +1204,33 @@ knex.schema.createView('users_view', function (view) {
 
 ### as
 
-**view.as(selectQuery)**
+```js
+view.as(selectQuery)
+```
 
 Specify the select query of the view.
 
 ### checkOption
 
-**view.checkOption()**
+```js
+view.checkOption()
+```
 
 Add check option on the view definition. On OracleDb, MySQL, PostgreSQL and Redshift.
 
 ### localCheckOption
 
-**view.localCheckOption()**
+```js
+view.localCheckOption()
+```
 
 Add local check option on the view definition. On MySQL, PostgreSQL and Redshift.
 
 ### cascadedCheckOption
 
-**view.cascadedCheckOption()**
+```js
+view.cascadedCheckOption()
+```
 
 Add cascaded check option on the view definition. On MySQL, PostgreSQL and Redshift.
 
@@ -1065,7 +1238,9 @@ Add cascaded check option on the view definition. On MySQL, PostgreSQL and Redsh
 
 ### check
 
-**table.check(checkPredicate, [bindings], [constraintName]))**
+```js
+table.check(checkPredicate, [bindings], [constraintName])
+```
 
 Specify a check on table or column with raw predicate.
 
@@ -1079,7 +1254,9 @@ knex.schema.createTable('product', function (table) {
 
 ### checkPositive
 
-**column.checkPositive([constraintName])**
+```js
+column.checkPositive([constraintName])
+```
 
 Specify a check on column that test if the value of column is positive.
 
@@ -1091,7 +1268,9 @@ knex.schema.createTable('product', function (table) {
 
 ### checkNegative
 
-**column.checkNegative([constraintName])**
+```js
+column.checkNegative([constraintName])
+```
 
 Specify a check on column that test if the value of column is negative.
 
@@ -1103,7 +1282,9 @@ knex.schema.createTable('product', function (table) {
 
 ### checkIn
 
-**column.checkIn(values, [constraintName])**
+```js
+column.checkIn(values, [constraintName])
+```
 
 Specify a check on column that test if the value of column is contained in a set of specified values.
 
@@ -1115,7 +1296,9 @@ knex.schema.createTable('product', function (table) {
 
 ### checkNotIn
 
-**column.checkNotIn(values, [constraintName])**
+```js
+column.checkNotIn(values, [constraintName])
+```
 
 Specify a check on column that test if the value of column is not contains in a set of specified values.
 
@@ -1127,7 +1310,9 @@ knex.schema.createTable('product', function (table) {
 
 ### checkBetween
 
-**column.checkBetween(values, [constraintName])**
+```js
+column.checkBetween(values, [constraintName])
+```
 
 Specify a check on column that test if the value of column is within a range of values.
 
@@ -1146,7 +1331,9 @@ knex.schema.createTable('product', function (table) {
 
 ### checkLength
 
-**column.checkLength(operator, length, [constraintName])**
+```js
+column.checkLength(operator, length, [constraintName])
+```
 
 Specify a check on column that test if the length of a string match the predicate.
 
@@ -1159,7 +1346,9 @@ knex.schema.createTable('product', function (table) {
 
 ### checkRegex
 
-**column.checkRegex(regex, [constraintName])**
+```js
+column.checkRegex(regex, [constraintName])
+```
 
 Specify a check on column that test if the value match the specified regular expression. In MSSQL only simple pattern matching in supported but not regex syntax.
 
@@ -1174,7 +1363,9 @@ knex.schema.createTable('product', function (table) {
 
 ### dropChecks
 
-**table.dropChecks([checkConstraintNames])**
+```js
+table.dropChecks([checkConstraintNames])
+```
 
 Drop checks constraint given an array of constraint names.
 
