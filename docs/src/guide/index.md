@@ -4,7 +4,7 @@ Knex can be used as an SQL query builder in both Node.JS and the browser, limite
 
 ## Node.js
 
-The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL, CockroachDB and Amazon Redshift, [`pg-native`](https://github.com/brianc/node-pg-native) for PostgreSQL with native C++ `libpq` bindings (requires PostgresSQL installed to link against), [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`tedious`](https://github.com/tediousjs/tedious) for MSSQL.
+The primary target environment for Knex is Node.js, you will need to install the `knex` library, and then install the appropriate database library: [`pg`](https://github.com/brianc/node-postgres) for PostgreSQL, CockroachDB and Amazon Redshift, [`pg-native`](https://github.com/brianc/node-postgres/tree/master/packages/pg-native) for PostgreSQL with native C++ `libpq` bindings (requires PostgresSQL installed to link against), [`mysql`](https://github.com/felixge/node-mysql) for MySQL or MariaDB, [`sqlite3`](https://github.com/mapbox/node-sqlite3) for SQLite3, or [`tedious`](https://github.com/tediousjs/tedious) for MSSQL.
 
 ```bash
 $ npm install knex --save
