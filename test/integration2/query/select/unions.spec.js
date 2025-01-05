@@ -8,6 +8,7 @@ const {
   isSQLite,
   isPostgreSQL,
   isMysql,
+  isSQLJS,
 } = require('../../../util/db-helpers');
 const { assertNumberArray } = require('../../../util/assertHelper');
 const {
@@ -696,7 +697,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }
@@ -722,7 +724,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }
@@ -753,7 +756,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }
@@ -784,7 +788,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }
@@ -811,7 +816,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }
@@ -838,7 +844,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }
@@ -868,7 +875,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }
@@ -903,7 +911,8 @@ describe('All Union functions [.union(), .unionAll(), .intersect(), .except()]',
             !isPgBased(knex) &&
             !isMssql(knex) &&
             !isOracle(knex) &&
-            !isSQLite(knex)
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
           ) {
             return this.skip();
           }

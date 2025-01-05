@@ -21,6 +21,7 @@ const {
   isPgBased,
   isPgNative,
   isCockroachDB,
+  isSQLJS,
 } = require('../../../util/db-helpers');
 const { DRIVER_NAMES: drivers } = require('../../../util/constants');
 const {
@@ -293,7 +294,12 @@ describe('Additional', function () {
         });
 
         it('should return the correct column when a single property is given to returning', async function () {
-          if (!isPostgreSQL(knex) && !isMssql(knex) && !isSQLite(knex)) {
+          if (
+            !isPostgreSQL(knex) &&
+            !isMssql(knex) &&
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
+          ) {
             return this.skip();
           }
 
@@ -308,7 +314,12 @@ describe('Additional', function () {
         });
 
         it('should return the correct columns when multiple properties are given to returning', async function () {
-          if (!isPostgreSQL(knex) && !isMssql(knex) && !isSQLite(knex)) {
+          if (
+            !isPostgreSQL(knex) &&
+            !isMssql(knex) &&
+            !isSQLite(knex) &&
+            !isSQLJS(knex)
+          ) {
             return this.skip();
           }
 
@@ -330,6 +341,7 @@ describe('Additional', function () {
               tester('pgnative', 'truncate "test_table_two" restart identity');
               tester('pg-redshift', 'truncate "test_table_two"');
               tester('sqlite3', 'delete from `test_table_two`');
+              tester('sqljs', 'delete from `test_table_two`');
               tester('oracledb', 'truncate table "test_table_two"');
               tester('mssql', 'truncate table [test_table_two]');
             });
@@ -369,6 +381,8 @@ describe('Additional', function () {
               "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.SQLite]:
               "SELECT name FROM sqlite_master WHERE type='table';",
+            [drivers.SQLJS]:
+              "SELECT name FROM sqlite_master WHERE type='table';",
             [drivers.Oracle]: 'select TABLE_NAME from USER_TABLES',
             [drivers.MsSQL]:
               "SELECT table_name FROM INFORMATION_SCHEMA.TABLES WHERE table_schema='dbo'",
@@ -402,6 +416,8 @@ describe('Additional', function () {
             [drivers.PostgreSQL]: '(gen_random_uuid())',
             [drivers.PgNative]: '(gen_random_uuid())',
             [drivers.SQLite]:
+              "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
+            [drivers.SQLJS]:
               "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
             [drivers.CockroachDB]: '(gen_random_uuid())',
             [drivers.BetterSQLite3]:
@@ -532,7 +548,7 @@ describe('Additional', function () {
         });
 
         it('#2184 - should properly escape table name for SQLite columnInfo', async function () {
-          if (!isSQLite(knex)) {
+          if (!isSQLite(knex) && !isSQLJS(knex)) {
             return this.skip();
           }
 
@@ -652,6 +668,9 @@ describe('Additional', function () {
               tester('sqlite3', [
                 'alter table `accounts` rename `about` to `about_col`',
               ]);
+              tester('sqljs', [
+                'alter table `accounts` rename `about` to `about_col`',
+              ]);
               tester('oracledb', [
                 'DECLARE PK_NAME VARCHAR(200); IS_AUTOINC NUMBER := 0; BEGIN  EXECUTE IMMEDIATE (\'ALTER TABLE "accounts" RENAME COLUMN "about" TO "about_col"\');  SELECT COUNT(*) INTO IS_AUTOINC from "USER_TRIGGERS" where trigger_name = \'accounts_autoinc_trg\';  IF (IS_AUTOINC > 0) THEN    SELECT cols.column_name INTO PK_NAME    FROM all_constraints cons, all_cons_columns cols    WHERE cons.constraint_type = \'P\'    AND cons.constraint_name = cols.constraint_name    AND cons.owner = cols.owner    AND cols.table_name = \'accounts\';    IF (\'about_col\' = PK_NAME) THEN      EXECUTE IMMEDIATE (\'DROP TRIGGER "accounts_autoinc_trg"\');      EXECUTE IMMEDIATE (\'create or replace trigger "accounts_autoinc_trg"      BEFORE INSERT on "accounts" for each row        declare        checking number := 1;        begin          if (:new."about_col" is null) then            while checking >= 1 loop              select "accounts_seq".nextval into :new."about_col" from dual;              select count("about_col") into checking from "accounts"              where "about_col" = :new."about_col";            end loop;          end if;        end;\');    end if;  end if;END;',
               ]);
@@ -716,6 +735,7 @@ describe('Additional', function () {
                     'alter table "accounts" drop column "first_name"',
                   ]);
                   tester('sqlite3', ['PRAGMA table_info(`accounts`)']);
+                  tester('sqljs', ['PRAGMA table_info(`accounts`)']);
                   tester('oracledb', [
                     'alter table "accounts" drop ("first_name")',
                   ]);
@@ -758,7 +778,7 @@ describe('Additional', function () {
       describe('timeouts', () => {
         it('.timeout() should throw TimeoutError', async function () {
           const driverName = knex.client.driverName;
-          if (isSQLite(knex)) {
+          if (isSQLite(knex) || isSQLJS(knex)) {
             return this.skip();
           } //TODO -- No built-in support for sleeps
 
@@ -811,7 +831,7 @@ describe('Additional', function () {
         });
 
         it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query', async function () {
-          if (isSQLite(knex) || isCockroachDB(knex)) {
+          if (isSQLite(knex) || isSQLJS(knex) || isCockroachDB(knex)) {
             return this.skip();
           } //TODO -- No built-in support for sleeps
           if (isRedshift(knex)) {
@@ -930,7 +950,7 @@ describe('Additional', function () {
         });
 
         it('.timeout(ms, {cancel: true}) should throw TimeoutError and cancel slow query in transaction', async function () {
-          if (isSQLite(knex) || isCockroachDB(knex)) {
+          if (isSQLite(knex) || isSQLJS(knex) || isCockroachDB(knex)) {
             return this.skip();
           } //TODO -- No built-in support for sleeps
           if (isRedshift(knex)) {

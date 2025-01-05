@@ -8,6 +8,7 @@ const {
   isSQLite,
   isCockroachDB,
   isBetterSQLite3,
+  isSQLJS,
 } = require('../../util/db-helpers');
 
 describe('Schema', () => {
@@ -73,7 +74,7 @@ describe('Schema', () => {
             );
             const queries = await builder.generateDdlCommands();
 
-            if (isSQLite(knex)) {
+            if (isSQLite(knex) || isSQLJS(knex)) {
               expect(queries.sql).to.eql([
                 'CREATE TABLE `_knex_temp_alter111` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `fkey_two` integer NOT NULL, `fkey_three` integer NOT NULL, CONSTRAINT `fk_fkey_threeee` FOREIGN KEY (`fkey_three`) REFERENCES `foreign_keys_table_three` (`id`))',
                 'INSERT INTO "_knex_temp_alter111" SELECT * FROM "foreign_keys_table_one";',
@@ -93,7 +94,7 @@ describe('Schema', () => {
           });
 
           it('generates correct SQL for the new foreign key operation with an on delete clause', async () => {
-            if (!isSQLite(knex)) {
+            if (!isSQLite(knex) && !isSQLJS(knex)) {
               return;
             }
 
@@ -119,7 +120,7 @@ describe('Schema', () => {
           });
 
           it('generates correct SQL for the new foreign key operation with an on update clause', async () => {
-            if (!isSQLite(knex)) {
+            if (!isSQLite(knex) && !isSQLJS(knex)) {
               return;
             }
 
@@ -208,6 +209,10 @@ describe('Schema', () => {
                 expect(err.message).to.equal(
                   `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (99, 9999) - SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`
                 );
+              } else if (isSQLJS(knex)) {
+                expect(err.message).to.equal(
+                  `insert into \`foreign_keys_table_one\` (\`fkey_three\`, \`fkey_two\`) values (99, 9999) - FOREIGN KEY constraint failed`
+                );
               }
               if (isPostgreSQL(knex)) {
                 expect(err.message).to.equal(
@@ -245,7 +250,7 @@ describe('Schema', () => {
           });
 
           it('can drop added foreign keys in sqlite after a table rebuild', async () => {
-            if (!isSQLite(knex)) {
+            if (!isSQLite(knex) && !isSQLJS(knex)) {
               return;
             }
 
@@ -271,7 +276,7 @@ describe('Schema', () => {
           });
 
           it('can alter a table in sqlite while another table has a foreign key constraint on this table', async () => {
-            if (!isSQLite(knex)) {
+            if (!isSQLite(knex) && !isSQLJS(knex)) {
               return;
             }
 
@@ -367,6 +372,10 @@ describe('Schema', () => {
                 } else if (isSQLite(knex)) {
                   expect(err.message).to.equal(
                     `insert into \`foreign_keys_table_one\` (\`fkey_four_part1\`, \`fkey_four_part2\`, \`fkey_three\`, \`fkey_two\`) values ('a', 'b', 99, 9999) - SQLITE_CONSTRAINT: FOREIGN KEY constraint failed`
+                  );
+                } else if (isSQLJS(knex)) {
+                  expect(err.message).to.equal(
+                    `insert into \`foreign_keys_table_one\` (\`fkey_four_part1\`, \`fkey_four_part2\`, \`fkey_three\`, \`fkey_two\`) values ('a', 'b', 99, 9999) - FOREIGN KEY constraint failed`
                   );
                 }
                 if (isPostgreSQL(knex)) {

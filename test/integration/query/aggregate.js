@@ -68,6 +68,16 @@ module.exports = function (knex) {
             ]
           );
           tester(
+            'sqljs',
+            'select sum(`logins`) from `accounts`',
+            [],
+            [
+              {
+                'sum(`logins`)': 15,
+              },
+            ]
+          );
+          tester(
             'oracledb',
             'select sum("logins") from "accounts"',
             [],
@@ -136,6 +146,16 @@ module.exports = function (knex) {
           );
           tester(
             'sqlite3',
+            'select sum(`logins`) as `login_sum` from `accounts`',
+            [],
+            [
+              {
+                login_sum: 15,
+              },
+            ]
+          );
+          tester(
+            'sqljs',
             'select sum(`logins`) as `login_sum` from `accounts`',
             [],
             [
@@ -227,6 +247,17 @@ module.exports = function (knex) {
             ]
           );
           tester(
+            'sqljs',
+            'select sum(`logins`) as `login_sum`, sum(`balance`) as `balance_sum` from `accounts`',
+            [],
+            [
+              {
+                balance_sum: 0,
+                login_sum: 15,
+              },
+            ]
+          );
+          tester(
             'oracledb',
             'select sum("logins") "login_sum", sum("balance") "balance_sum" from "accounts"',
             [],
@@ -272,6 +303,12 @@ module.exports = function (knex) {
           // sqlite: 1.6666666666666667
           tester(
             'sqlite3',
+            'select avg(`logins`) from `accounts`',
+            [],
+            checkResRange.bind(null, 'avg(`logins`)')
+          );
+          tester(
+            'sqljs',
             'select avg(`logins`) from `accounts`',
             [],
             checkResRange.bind(null, 'avg(`logins`)')
@@ -343,6 +380,16 @@ module.exports = function (knex) {
           );
           tester(
             'sqlite3',
+            'select count(`id`) from `accounts`',
+            [],
+            [
+              {
+                'count(`id`)': 8,
+              },
+            ]
+          );
+          tester(
+            'sqljs',
             'select count(`id`) from `accounts`',
             [],
             [
@@ -429,6 +476,18 @@ module.exports = function (knex) {
             ]
           );
           tester(
+            'sqljs',
+            'select count(`id`), max(`logins`), min(`logins`) from `accounts`',
+            [],
+            [
+              {
+                'count(`id`)': 8,
+                'max(`logins`)': 3,
+                'min(`logins`)': 1,
+              },
+            ]
+          );
+          tester(
             'oracledb',
             'select count("id"), max("logins"), min("logins") from "accounts"',
             [],
@@ -497,6 +556,18 @@ module.exports = function (knex) {
           );
           tester(
             'sqlite3',
+            'select count(distinct `id`), sum(distinct `logins`), avg(distinct `logins`) from `accounts`',
+            [],
+            [
+              {
+                'count(distinct `id`)': 8,
+                'sum(distinct `logins`)': 6,
+                'avg(distinct `logins`)': 2.0,
+              },
+            ]
+          );
+          tester(
+            'sqljs',
             'select count(distinct `id`), sum(distinct `logins`), avg(distinct `logins`) from `accounts`',
             [],
             [
@@ -667,6 +738,22 @@ module.exports = function (knex) {
             ]
           );
           tester(
+            'sqljs',
+            'select count(`id`) from `accounts` group by `logins` order by `logins` asc',
+            [],
+            [
+              {
+                'count(`id`)': 2,
+              },
+              {
+                'count(`id`)': 5,
+              },
+              {
+                'count(`id`)': 1,
+              },
+            ]
+          );
+          tester(
             'oracledb',
             'select count("id") from "accounts" group by "logins" order by "logins" asc',
             [],
@@ -745,6 +832,19 @@ module.exports = function (knex) {
               );
               tester(
                 'sqlite3',
+                'select count(`id`) from `accounts` group by `first_name`',
+                [],
+                [
+                  {
+                    'count(`id`)': 6,
+                  },
+                  {
+                    'count(`id`)': 2,
+                  },
+                ]
+              );
+              tester(
+                'sqljs',
                 'select count(`id`) from `accounts` group by `first_name`',
                 [],
                 [

@@ -5,12 +5,14 @@ const MysqlClient = require('../../lib/dialects/mysql/index');
 const MssqlClient = require('../../lib/dialects/mssql/index');
 const PostgreClient = require('../../lib/dialects/postgres/index');
 const SqliteClient = require('../../lib/dialects/sqlite3/index');
+const SQLJSClient = require('../../lib/dialects/sqljs/index');
 const test = require('tape');
 const _ = require('lodash');
 
 const clientMysql = new MysqlClient({ client: 'mysql' });
 const clientPostgre = new PostgreClient({ client: 'pg' });
 const clientSqlite = new SqliteClient({ client: 'sqlite3' });
+const clientSqljs = new SQLJSClient({ client: 'sqljs' });
 const clientMssql = new MssqlClient({ client: 'mssql' });
 
 function raw(sql, bindings, client = clientMysql) {
@@ -156,6 +158,28 @@ test('Allows retrieval of raw query through toNative (SQLite)', function (t) {
   );
   t.deepEqual(
     raw('select * from users where id = ?', [1], clientSqlite)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'select * from users where id = ?',
+      bindings: [1],
+    }
+  );
+});
+
+test('Allows retrieval of raw query through toNative (SQLJS)', function (t) {
+  t.plan(2);
+  t.deepEqual(
+    raw('count(*) as user_count, status', undefined, clientSqljs)
+      .toSQL()
+      .toNative(),
+    {
+      sql: 'count(*) as user_count, status',
+      bindings: [],
+    }
+  );
+  t.deepEqual(
+    raw('select * from users where id = ?', [1], clientSqljs)
       .toSQL()
       .toNative(),
     {

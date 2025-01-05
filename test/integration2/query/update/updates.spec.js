@@ -70,7 +70,7 @@ describe('Updates', function () {
               1
             );
             tester(
-              'sqlite3',
+              ['sqlite3', 'sqljs'],
               'update `accounts` set `first_name` = ?, `last_name` = ?, `email` = ? where `id` = ?',
               ['User', 'Test', 'test100@example.com', 1],
               1
@@ -333,7 +333,7 @@ describe('Updates', function () {
               1
             );
             tester(
-              'sqlite3',
+              ['sqlite3', 'sqljs'],
               'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ? returning *',
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
               [
@@ -472,7 +472,7 @@ describe('Updates', function () {
                 1
               );
               tester(
-                'sqlite3',
+                ['sqlite3', 'sqljs'],
                 'update `accounts` set `email` = ?, `first_name` = ?, `last_name` = ? where `id` = ? returning *',
                 ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
                 [
@@ -602,10 +602,11 @@ describe('Updates', function () {
               'update "testing" set "one" = ? where "id" = ?',
               ['{"one":123,"two":456}', 1]
             );
-            tester('sqlite3', 'update `testing` set `one` = ? where `id` = ?', [
-              '{"one":123,"two":456}',
-              1,
-            ]);
+            tester(
+              ['sqlite3', 'sqljs'],
+              'update `testing` set `one` = ? where `id` = ?',
+              ['{"one":123,"two":456}', 1]
+            );
             tester('mysql', 'update `testing` set `one` = ? where `id` = ?', [
               '{"one":123,"two":456}',
               1,
