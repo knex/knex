@@ -1277,6 +1277,8 @@ knex
 
 Similar to select, but only retrieves & resolves with the first record from the query.
 
+Returns `undefined` when no rows match.
+
 ```js
 knex
   .table('users')
