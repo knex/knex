@@ -48,7 +48,7 @@ jobs:
       - name: Start Database(s)
         run: |
           docker compose \
-            --file "scripts/docker compose.yml" \
+            --file "scripts/docker-compose.yml" \
             up \
               --detach \
               --build \
@@ -61,7 +61,7 @@ jobs:
       - name: Initialize Database(s)
         run: |
           docker compose \
-            --file "scripts/docker compose.yml" \
+            --file "scripts/docker-compose.yml" \
             up \
               "wait${{ matrix.database-type }}"
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
@@ -100,7 +100,7 @@ jobs:
       - name: Stop Database(s)
         run: |
           docker compose \
-            --file "scripts/docker compose.yml" \
+            --file "scripts/docker-compose.yml" \
             down
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
