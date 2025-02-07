@@ -6,7 +6,9 @@ The `knex.schema` is a **getter function**, which returns a stateful object cont
 
 ### withSchema
 
-**knex.schema.withSchema([schemaName])**
+```js
+knex.schema.withSchema([schemaName])
+```
 
 Specifies the schema to be used when using the schema-building commands.
 
@@ -18,7 +20,9 @@ knex.schema.withSchema('public').createTable('users', function (table) {
 
 ### createTable
 
-**knex.schema.createTable(tableName, callback)**
+```js
+knex.schema.createTable(tableName, callback)
+```
 
 Creates a new table on the database, with a callback function to modify the table's structure, using the schema-building commands.
 
@@ -32,7 +36,9 @@ knex.schema.createTable('users', function (table) {
 
 ### createTableLike
 
-**knex.schema.createTableLike(tableName, tableNameToCopy, [callback])**
+```js
+knex.schema.createTableLike(tableName, tableNameToCopy, [callback])
+```
 
 Creates a new table on the database based on another table. Copy only the structure : columns, keys and indexes (expected on SQL Server which only copy columns) and not the data. Callback function can be specified to add columns in the duplicated table.
 
@@ -49,7 +55,9 @@ knex.schema.createTableLike('new_users', 'users', (table) => {
 
 ### dropTable
 
-**knex.schema.dropTable(tableName)**
+```js
+knex.schema.dropTable(tableName)
+```
 
 Drops a table, specified by tableName.
 
@@ -59,7 +67,9 @@ knex.schema.dropTable('users');
 
 ### dropTableIfExists
 
-**knex.schema.dropTableIfExists(tableName)**
+```js
+knex.schema.dropTableIfExists(tableName)
+```
 
 Drops a table conditionally if the table exists, specified by tableName.
 
@@ -260,7 +270,8 @@ knex.schema.renameView('users_view');
 ### alterView
 
 ```js
-knex.schema.alterView(viewName)```
+knex.schema.alterView(viewName)
+```
 
 Alter view to rename columns or change default values. Only available on PostgreSQL, MSSQL and Redshift.
 
@@ -367,7 +378,9 @@ Drops a column, specified by the column's name
 
 ### dropColumns
 
-**table.dropColumns(columns)**
+````js
+table.dropColumns(columns)
+````
 
 Drops multiple columns, taking a variable number of column names.
 
@@ -594,6 +607,7 @@ Adds created_at and updated_at columns on the database, setting each to datetime
 ::: info
 PostgreSQL `updated_at` field will not automatically be updated. Please see this [issue](https://github.com/knex/knex/issues/1928 'issue') for details
 :::
+:::
 
 ### dropTimestamps
 
@@ -688,12 +702,12 @@ knex
 table.jsonb(name)
 ```
 
-Adds a jsonb column. Works similar to table.json(), but uses native jsonb type if possible.
+Adds a jsonb column. Works similar to `table.json()`, but uses native `jsonb` type if possible.
 
 ### uuid
 
 ```js
-table.uuid(name, options=({[useBinaryUuid:boolean],[primaryKey:boolean]})
+table.uuid(name, options=({[useBinaryUuid:boolean],[primaryKey:boolean]}))
 ```
 
 Adds a uuid column - this uses the built-in uuid type in PostgreSQL, and falling back to a char(36) in other databases by default.
@@ -911,7 +925,7 @@ Adds a foreign key constraint to a table for an existing column using `table.for
 
 A default key name using the columns is used unless `foreignKeyName` is specified.
 
-You can also chain `onDelete()` and/or `onUpdate()` to set the reference option `(RESTRICT, CASCADE, SET NULL, NO ACTION)` for the operation. You can also chain `withKeyName()` to override default key name that is generated from table and column names (result is identical to specifying second parameter to function `foreign()`).
+You can also chain `onDelete()` and/or `onUpdate()` to set the reference option `(RESTRICT, CASCADE, SET NULL, NO ACTION)` for the operation. You can also chain `withKeyName()` to override default key name that is generated from table and column names (result is identical to specifying second parameter to function `foreign()`). 
 
 Deferrable foreign constraint is supported on Postgres and Oracle and can be set by chaining `.deferrable(type)`
 
