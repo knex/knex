@@ -395,11 +395,13 @@ module.exports = function (knex) {
         });
     });
 
-    it('should execute functions after transaction', function () {
+    it('should save after transaction methods', function () {
       let change1 = false;
       let change2 = false;
+      const afterTransactionCollector = [];
       return knex
         .transaction(function (trx) {
+          trx.setOnAfterTransactionCollection(afterTransactionCollector);
           trx.addFunctionOnAfterTransaction(async () => {
             change1 = true;
           });
@@ -409,7 +411,8 @@ module.exports = function (knex) {
           trx.debugging = true;
           return Promise.resolve(null);
         })
-        .then(function (result) {
+        .then(async function (result) {
+          await Promise.all(afterTransactionCollector.map((fn) => fn()));
           expect(result).to.equal(null);
           expect(change1).to.be.true;
           expect(change2).to.be.true;
