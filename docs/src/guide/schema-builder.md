@@ -290,6 +290,28 @@ The context configured will be passed to `wrapIdentifier` for each identifier th
 
 Calling `queryContext` with no arguments will return any context configured for the schema builder instance.
 
+### createSchema
+
+**knex.schema.createSchema(schemaName)**
+
+Creates a new schema. Only supported by PostgreSQL.
+
+```js
+//create schema 'public'
+knex.schema.createSchema('public');
+```
+
+### createSchemaIfNotExists
+
+**knex.schema.createSchemaIfNotExists(schemaName)**
+
+Creates a new schema conditionally if the schema doesnt exist. Only supported by PostgreSQL.
+
+```js
+//create schema 'public'
+knex.schema.createSchemaIfNotExists('public');
+```
+
 ### dropSchema
 
 **knex.schema.dropSchema(schemaName, [cascade])**
