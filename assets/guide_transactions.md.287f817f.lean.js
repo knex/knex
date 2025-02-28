@@ -1,0 +1,1 @@
+import{_ as n,c as s,o as a,a as t}from"./app.36cb52e5.js";const y='{"title":"Transactions","description":"","frontmatter":{},"headers":[{"level":2,"title":"Transaction Modes","slug":"transaction-modes"}],"relativePath":"guide/transactions.md"}',p={},o=t("",30),c=[o];function e(u,l,i,k,r,d){return a(),s("div",null,c)}var f=n(p,[["render",e]]);export{y as __pageData,f as default};

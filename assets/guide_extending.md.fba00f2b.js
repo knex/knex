@@ -1,0 +1,34 @@
+import{_ as n,c as s,o as a,a as t}from"./app.36cb52e5.js";const m='{"title":"Extending","description":"","frontmatter":{},"headers":[],"relativePath":"guide/extending.md"}',p={},o=t(`<h1 id="extending" tabindex="-1">Extending <a class="header-anchor" href="#extending" aria-hidden="true">#</a></h1><p>To extend knex&#39;s builders, we have the following methods</p><div class="language-js"><pre><code>knex<span class="token punctuation">.</span>SchemaBuilder<span class="token punctuation">.</span><span class="token function">extend</span><span class="token punctuation">(</span><span class="token string">&#39;functionName&#39;</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&#39;Custom Schema Builder Function&#39;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+knex<span class="token punctuation">.</span>TableBuilder<span class="token punctuation">.</span><span class="token function">extend</span><span class="token punctuation">(</span><span class="token string">&#39;functionName&#39;</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&#39;Custom Table Builder Function&#39;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+knex<span class="token punctuation">.</span>ViewBuilder<span class="token punctuation">.</span><span class="token function">extend</span><span class="token punctuation">(</span><span class="token string">&#39;functionName&#39;</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&#39;Custom View Builder Function&#39;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+knex<span class="token punctuation">.</span>ColumnBuilder<span class="token punctuation">.</span><span class="token function">extend</span><span class="token punctuation">(</span><span class="token string">&#39;functionName&#39;</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">&#39;Custom Column Builder Function&#39;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">return</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre></div><p>To add typescript support you can add the following (.d.ts):</p><div class="language-ts"><pre><code><span class="token keyword">import</span> <span class="token string">&#39;knex&#39;</span><span class="token punctuation">;</span>
+<span class="token keyword">declare</span> <span class="token keyword">module</span> <span class="token string">&#39;knex&#39;</span> <span class="token punctuation">{</span>
+  <span class="token keyword">namespace</span> Knex <span class="token punctuation">{</span>
+    <span class="token keyword">interface</span> <span class="token class-name">SchemaBuilder</span> <span class="token punctuation">{</span>
+      <span class="token function">functionName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> Knex<span class="token punctuation">.</span>SchemaBuilder<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">interface</span> <span class="token class-name">TableBuilder</span> <span class="token punctuation">{</span>
+      <span class="token function">functionName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> Knex<span class="token punctuation">.</span>TableBuilder<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">interface</span> <span class="token class-name">ViewBuilder</span> <span class="token punctuation">{</span>
+      <span class="token function">functionName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> Knex<span class="token punctuation">.</span>ViewBuilder<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">interface</span> <span class="token class-name">ColumnBuilder</span> <span class="token punctuation">{</span>
+      <span class="token function">functionName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> Knex<span class="token punctuation">.</span>ColumnBuilder<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div>`,5),e=[o];function c(u,l,i,k,r,d){return a(),s("div",null,e)}var g=n(p,[["render",c]]);export{m as __pageData,g as default};
