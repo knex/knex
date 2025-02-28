@@ -9,14 +9,29 @@
     "serve": "vitepress serve ."
   },
   "devDependencies": {
-    "knex": "^2.4.0",
+    "knex": "^3.1.0",
     "typescript": "^4.6.3",
+    "vite-plugin-static-copy": "^0.6.0",
     "vitepress": "^0.22.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@guolao/vue-monaco-editor": "^1.5.1",
+    "fs-browser-stub": "^1.0.1",
+    "split.js": "^1.6.5",
+    "sql-formatter": "^15.3.0"
+  },
   "author": {
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "browser": {
+    "crypto": false,
+    "fs": "fs-browser-stub",
+    "os": false,
+    "path": false,
+    "stream": false,
+    "timers": false,
+    "tty": false
+  }
 }
