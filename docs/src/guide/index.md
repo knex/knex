@@ -18,6 +18,7 @@ $ npm install mysql
 $ npm install mysql2
 $ npm install oracledb
 $ npm install tedious
+$ npm install @electric-sql/pglite knex-pglite # for knex in browser
 ```
 
 _If you want to use CockroachDB or Redshift instance, you can use the `pg` driver._
@@ -26,7 +27,12 @@ _If you want to use a MariaDB instance, you can use the `mysql` driver._
 
 ## Browser
 
-Knex can be built using a JavaScript build tool such as [browserify](http://browserify.org/) or [webpack](https://github.com/webpack/webpack). In fact, this documentation uses a webpack build which [includes knex](https://github.com/knex/documentation/blob/a4de1b2eb50d6699f126be8d134f3d1acc4fc69d/components/Container.jsx#L3). View source on this page to see the browser build in-action (the global `knex` variable).
+Knex can be built using a JavaScript build tool such as [browserify](http://browserify.org/), [webpack](https://github.com/webpack/webpack) or [vite](https://vitejs.dev/).
+
+In fact, this documentation uses a webpack build which [includes knex](https://github.com/knex/documentation/blob/a4de1b2eb50d6699f126be8d134f3d1acc4fc69d/components/Container.jsx#L3). View source on this page to see the browser build in-action (the global `knex` variable).
+
+It is also possible to combine Vite, [PGLite](https://pglite.dev/) and Knex to use a full-featured database in frontend
+applications. Features like the query builder, schema builder and raw queries as well will be available.
 
 ## Configuration Options
 
@@ -79,6 +85,28 @@ const pg = require('knex')({
   },
 });
 ```
+
+:::
+
+::: info PGLite and Vite
+Vite is a widely used frontend build tool and PGLite is a PostgreSQL
+[WASM](https://developer.mozilla.org/en-US/docs/WebAssembly) build which brings
+SQL capabilities to the browser.
+
+```javascript
+import { knex } from "knex"
+import ClientPgLite from "knex-pglite"
+
+export const db = knex({
+    client: ClientPgLite,
+    dialect: "postgres",
+    connection: { connectionString: 'idb://your-database' }, // persist data on indexed db
+})
+```
+
+You must exclude pglite from vite optimizations and polyfill EventEmitter so Knex works properly on browser, see
+[this example](https://github.com/sombriks/vue-pglite-knex-example/blob/0.1.0/vite.config.js) and
+[PGLite docs](https://pglite.dev/docs/bundler-support#vite) for details.
 
 :::
 
