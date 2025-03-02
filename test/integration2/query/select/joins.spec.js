@@ -252,6 +252,54 @@ describe('Joins', function () {
               ]
             );
             tester(
+              'sqljs',
+              'select `accounts`.*, `test_table_two`.`details` from `accounts` inner join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc',
+              [],
+              [
+                {
+                  id: 1,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test1@example.com',
+                  logins: 1,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details:
+                    'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                },
+                {
+                  id: 2,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test2@example.com',
+                  logins: 1,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details:
+                    'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                },
+                {
+                  id: 3,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test3@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: '',
+                },
+              ]
+            );
+            tester(
               'oracledb',
               'select "accounts".*, "test_table_two"."details" from "accounts" inner join "test_table_two" on "accounts"."id" = "test_table_two"."account_id" order by "accounts"."id" asc',
               [],
@@ -702,6 +750,119 @@ describe('Joins', function () {
             );
             tester(
               'sqlite3',
+              'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc',
+              [],
+              [
+                {
+                  id: 1,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test1@example.com',
+                  logins: 1,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details:
+                    'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                },
+                {
+                  id: 2,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test2@example.com',
+                  logins: 1,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details:
+                    'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                },
+                {
+                  id: 3,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test3@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: '',
+                },
+                {
+                  id: 4,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test4@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 5,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test5@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 6,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test6@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 7,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+                {
+                  id: 8,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  details: null,
+                },
+              ]
+            );
+            tester(
+              'sqljs',
               'select `accounts`.*, `test_table_two`.`details` from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` order by `accounts`.`id` asc',
               [],
               [
@@ -1569,6 +1730,135 @@ describe('Joins', function () {
               ]
             );
             tester(
+              'sqljs',
+              'select * from `accounts` left join `test_table_two` on `accounts`.`id` = `test_table_two`.`account_id` or `accounts`.`email` = `test_table_two`.`details` order by `accounts`.`id` asc',
+              [],
+              [
+                {
+                  id: 1,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test1@example.com',
+                  logins: 1,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: 1,
+                  details:
+                    'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                  status: 0,
+                },
+                {
+                  id: 2,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test2@example.com',
+                  logins: 1,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: 2,
+                  details:
+                    'Lorem ipsum Minim nostrud Excepteur consectetur enim ut qui sint in veniam in nulla anim do cillum sunt voluptate Duis non incididunt.',
+                  status: 1,
+                },
+                {
+                  id: 3,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test3@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: 3,
+                  details: '',
+                  status: 1,
+                },
+                {
+                  id: null,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test4@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test5@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test',
+                  last_name: 'User',
+                  email: 'test6@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test7@example.com',
+                  logins: 2,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+                {
+                  id: null,
+                  first_name: 'Test2',
+                  last_name: 'User2',
+                  email: 'test8@example.com',
+                  logins: 3,
+                  balance: 0,
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  created_at: TEST_TIMESTAMP,
+                  updated_at: TEST_TIMESTAMP,
+                  phone: null,
+                  account_id: null,
+                  details: null,
+                  status: null,
+                },
+              ]
+            );
+            tester(
               'mssql',
               'select * from [accounts] left join [test_table_two] on [accounts].[id] = [test_table_two].[account_id] or [accounts].[email] = [test_table_two].[details] order by [accounts].[id] asc',
               [],
@@ -1818,6 +2108,33 @@ describe('Joins', function () {
               ]
             );
             tester(
+              'sqljs',
+              'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `a2`.`email` <> `accounts`.`email` where `a2`.`email` = ? order by `e1` asc limit ?',
+              ['test2@example.com', 5],
+              [
+                {
+                  e1: 'test1@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test3@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test4@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test5@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test6@example.com',
+                  e2: 'test2@example.com',
+                },
+              ]
+            );
+            tester(
               'oracledb',
               'select * from (select "accounts"."email" "e1", "a2"."email" "e2" from "accounts" inner join "accounts" "a2" on "a2"."email" <> "accounts"."email" where "a2"."email" = ? order by "e1" asc) where rownum <= ?',
               ['test2@example.com', 5],
@@ -1999,6 +2316,33 @@ describe('Joins', function () {
               ]
             );
             tester(
+              'sqljs',
+              'select `accounts`.`email` as `e1`, `a2`.`email` as `e2` from `accounts` inner join `accounts` as `a2` on `accounts`.`email` <> `a2`.`email` or `accounts`.`id` = 2 where `a2`.`email` = ? order by `e1` asc limit ?',
+              ['test2@example.com', 5],
+              [
+                {
+                  e1: 'test1@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test2@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test3@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test4@example.com',
+                  e2: 'test2@example.com',
+                },
+                {
+                  e1: 'test5@example.com',
+                  e2: 'test2@example.com',
+                },
+              ]
+            );
+            tester(
               'oracledb',
               'select * from (select "accounts"."email" "e1", "a2"."email" "e2" from "accounts" inner join "accounts" "a2" on "accounts"."email" <> "a2"."email" or "accounts"."id" = 2 where "a2"."email" = ? order by "e1" asc) where rownum <= ?',
               ['test2@example.com', 5],
@@ -2104,6 +2448,14 @@ describe('Joins', function () {
               }
             );
             tester(
+              'sqljs',
+              'select `account_id` from `accounts` cross join `test_table_two` order by `account_id` asc',
+              [],
+              function (res) {
+                return res.length === 24;
+              }
+            );
+            tester(
               'mssql',
               'select [account_id] from [accounts] cross join [test_table_two] order by [account_id] asc',
               [],
@@ -2160,6 +2512,14 @@ describe('Joins', function () {
             );
             tester(
               'sqlite3',
+              'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
+              [1],
+              function (res) {
+                return res.length === 10;
+              }
+            );
+            tester(
+              'sqljs',
               'select `account_id` from `accounts` left join `test_table_two` on `accounts`.`id` = (select `id` from `test_table_two` limit ?)',
               [1],
               function (res) {
@@ -2250,6 +2610,19 @@ describe('Joins', function () {
             );
             tester(
               'sqlite3',
+              'select `a1`.`email`, `a2`.`email` from `accounts` as `a1` left join `accounts` as `a2` on `a1`.`email` <> `a2`.`email` where a1.id = 1 order by `a2`.`id` asc limit ?',
+              [2],
+              [
+                {
+                  email: 'test2@example.com',
+                },
+                {
+                  email: 'test3@example.com',
+                },
+              ]
+            );
+            tester(
+              'sqljs',
               'select `a1`.`email`, `a2`.`email` from `accounts` as `a1` left join `accounts` as `a2` on `a1`.`email` <> `a2`.`email` where a1.id = 1 order by `a2`.`id` asc limit ?',
               [2],
               [

@@ -4,7 +4,7 @@ const { expect } = require('chai');
 
 require('lodash');
 
-const { isSQLite, isMssql } = require('../../util/db-helpers');
+const { isSQLite, isSQLJS, isMssql } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const logger = require('../../integration/logger');
 
@@ -80,6 +80,9 @@ describe('Checks', () => {
             tester('sqlite3', [
               'create table `check_test` (`col1` varchar(255), `col2` varchar(255), check (`col1` = `col2`))',
             ]);
+            tester('sqljs', [
+              'create table `check_test` (`col1` varchar(255), `col2` varchar(255), check (`col1` = `col2`))',
+            ]);
             tester('mssql', [
               'CREATE TABLE [check_test] ([col1] nvarchar(255), [col2] nvarchar(255), check ([col1] = [col2]))',
             ]);
@@ -110,6 +113,9 @@ describe('Checks', () => {
             tester('sqlite3', [
               'create table `check_test` (`price` integer check (`price` > 0))',
             ]);
+            tester('sqljs', [
+              'create table `check_test` (`price` integer check (`price` > 0))',
+            ]);
             tester('mssql', [
               'CREATE TABLE [check_test] ([price] int check ([price] > 0))',
             ]);
@@ -135,6 +141,9 @@ describe('Checks', () => {
               'create table `check_test` (`price` int check (`price` < 0)) default character set utf8',
             ]);
             tester('sqlite3', [
+              'create table `check_test` (`price` integer check (`price` < 0))',
+            ]);
+            tester('sqljs', [
               'create table `check_test` (`price` integer check (`price` < 0))',
             ]);
             tester('mssql', [
@@ -165,6 +174,9 @@ describe('Checks', () => {
               "create table `check_test` (`animal` varchar(255) check (`animal` in ('dog','cat'))) default character set utf8",
             ]);
             tester('sqlite3', [
+              "create table `check_test` (`animal` varchar(255) check (`animal` in ('dog','cat')))",
+            ]);
+            tester('sqljs', [
               "create table `check_test` (`animal` varchar(255) check (`animal` in ('dog','cat')))",
             ]);
             tester('mssql', [
@@ -198,6 +210,9 @@ describe('Checks', () => {
             tester('sqlite3', [
               "create table `check_test` (`animal` varchar(255) check (`animal` not in ('dog','cat')))",
             ]);
+            tester('sqljs', [
+              "create table `check_test` (`animal` varchar(255) check (`animal` not in ('dog','cat')))",
+            ]);
             tester('mssql', [
               "CREATE TABLE [check_test] ([animal] nvarchar(255) check ([animal] not in ('dog','cat')))",
             ]);
@@ -224,6 +239,9 @@ describe('Checks', () => {
               'create table `check_test` (`price` int check (`price` between 10 and 20)) default character set utf8',
             ]);
             tester('sqlite3', [
+              'create table `check_test` (`price` integer check (`price` between 10 and 20))',
+            ]);
+            tester('sqljs', [
               'create table `check_test` (`price` integer check (`price` between 10 and 20))',
             ]);
             tester('mssql', [
@@ -254,6 +272,9 @@ describe('Checks', () => {
               'create table `check_test` (`price` int check (`price` between 10 and 20 or `price` between 30 and 40)) default character set utf8',
             ]);
             tester('sqlite3', [
+              'create table `check_test` (`price` integer check (`price` between 10 and 20 or `price` between 30 and 40))',
+            ]);
+            tester('sqljs', [
               'create table `check_test` (`price` integer check (`price` between 10 and 20 or `price` between 30 and 40))',
             ]);
             tester('mssql', [
@@ -287,6 +308,9 @@ describe('Checks', () => {
             tester('sqlite3', [
               'create table `check_test` (`year` varchar(255) check (length(`year`) = 4))',
             ]);
+            tester('sqljs', [
+              'create table `check_test` (`year` varchar(255) check (length(`year`) = 4))',
+            ]);
             tester('mssql', [
               'CREATE TABLE [check_test] ([year] nvarchar(255) check (LEN([year]) = 4))',
             ]);
@@ -296,7 +320,7 @@ describe('Checks', () => {
       });
 
       it('create table with check regex', async function () {
-        if (isMssql(knex) || isSQLite(knex)) {
+        if (isMssql(knex) || isSQLite(knex) || isSQLJS(knex)) {
           this.skip();
         }
         await knex.schema.dropTableIfExists('check_test');
@@ -324,7 +348,7 @@ describe('Checks', () => {
       });
 
       it('drop checks', async function () {
-        if (isSQLite(knex)) {
+        if (isSQLite(knex) || isSQLJS(knex)) {
           this.skip();
         }
         await knex.schema.dropTableIfExists('check_test');
@@ -392,7 +416,7 @@ describe('Checks', () => {
       });
 
       it('create table with checks then alter', async function () {
-        if (isSQLite(knex)) {
+        if (isSQLite(knex) || isSQLJS(knex)) {
           this.skip();
         }
         await knex.schema.dropTableIfExists('check_test');

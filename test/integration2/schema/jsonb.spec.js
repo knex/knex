@@ -34,6 +34,12 @@ describe('Schema', () => {
                   'json'
                 );
                 break;
+              case 'sqljs':
+                res = await knex.schema.raw(`PRAGMA table_info(${tblName})`);
+                expect(res.find((c) => c.name === colName).type).to.equal(
+                  'json'
+                );
+                break;
               case 'postgres':
                 res = await knex
                   .select('data_type')

@@ -14,6 +14,7 @@ const {
   isOracle,
   isPgBased,
   isCockroachDB,
+  isSQLJS,
 } = require('../../../util/db-helpers');
 const {
   createUsers,
@@ -109,6 +110,12 @@ describe('Selects', function () {
               [1, 2, 3, 4, 5, 6, 7, 8]
             );
             tester(
+              'sqljs',
+              'select `id` from `accounts` order by `id` asc',
+              [],
+              [1, 2, 3, 4, 5, 6, 7, 8]
+            );
+            tester(
               'oracledb',
               'select "id" from "accounts" order by "id" asc',
               [],
@@ -155,6 +162,12 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
+              'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
+              [],
+              [1, 2, 3, 4, 5, 6, 7, 8]
+            );
+            tester(
+              'sqljs',
               'select `accounts`.`id` from `accounts` order by `accounts`.`id` asc',
               [],
               [1, 2, 3, 4, 5, 6, 7, 8]
@@ -207,6 +220,12 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
+              'select `id` from `accounts` order by `id` asc limit ? offset ?',
+              [-1, 2],
+              [3, 4, 5, 6, 7, 8]
+            );
+            tester(
+              'sqljs',
               'select `id` from `accounts` order by `id` asc limit ? offset ?',
               [-1, 2],
               [3, 4, 5, 6, 7, 8]
@@ -355,6 +374,21 @@ describe('Selects', function () {
               ]
             );
             tester(
+              'sqljs',
+              'select /*+ invalid() */ `id` from `accounts` order by `id` asc',
+              [],
+              [
+                { id: 1 },
+                { id: 2 },
+                { id: 3 },
+                { id: 4 },
+                { id: 5 },
+                { id: 6 },
+                { id: 7 },
+                { id: 8 },
+              ]
+            );
+            tester(
               'oracledb',
               'select /*+ invalid() */ "id" from "accounts" order by "id" asc',
               [],
@@ -419,6 +453,12 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
+              'select `id`, `first_name` from `accounts` order by `id` asc limit ?',
+              [1],
+              { id: 1, first_name: 'Test' }
+            );
+            tester(
+              'sqljs',
               'select `id`, `first_name` from `accounts` order by `id` asc limit ?',
               [1],
               { id: 1, first_name: 'Test' }
@@ -664,6 +704,12 @@ describe('Selects', function () {
               [2, 4, 1, 3]
             );
             tester(
+              'sqljs',
+              'select `id` from `OrderByNullTest` order by (`null_col` is not null) asc, `string_col` asc',
+              [],
+              [2, 4, 1, 3]
+            );
+            tester(
               'oracledb',
               'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "string_col" asc',
               [],
@@ -710,6 +756,12 @@ describe('Selects', function () {
             );
             tester(
               'sqlite3',
+              'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
+              [],
+              [1, 3, 2, 4]
+            );
+            tester(
+              'sqljs',
               'select `id` from `OrderByNullTest` order by (`null_col` is null) asc, `string_col` asc',
               [],
               [1, 3, 2, 4]
@@ -951,7 +1003,7 @@ describe('Selects', function () {
       });
 
       it('select for update locks selected row', async function () {
-        if (isSQLite(knex)) {
+        if (isSQLite(knex) || isSQLJS(knex)) {
           return this.skip();
         }
 
@@ -1080,7 +1132,12 @@ describe('Selects', function () {
 
       it('select for share prevents updating in other transaction', async function () {
         // Query cancellation is not yet implemented for CockroachDB
-        if (isSQLite(knex) || isOracle(knex) || isCockroachDB(knex)) {
+        if (
+          isSQLite(knex) ||
+          isSQLJS(knex) ||
+          isOracle(knex) ||
+          isCockroachDB(knex)
+        ) {
           return this.skip();
         }
         await knex('test_default_table').insert({
@@ -1246,6 +1303,7 @@ describe('Selects', function () {
 
           expect(knex.client.driverName).to.oneOf([
             'sqlite3',
+            'sqljs',
             'oracledb',
             'cockroachdb',
             'better-sqlite3',
@@ -1294,7 +1352,7 @@ describe('Selects', function () {
         });
 
         it('with materialized', async function () {
-          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+          if (!isPostgreSQL(knex) && !isSQLite(knex) && !isSQLJS(knex)) {
             return this.skip();
           }
           const materialized = await knex('t')
@@ -1304,7 +1362,7 @@ describe('Selects', function () {
         });
 
         it('with not materialized', async function () {
-          if (!isPostgreSQL(knex) && !isSQLite(knex)) {
+          if (!isPostgreSQL(knex) && !isSQLite(knex) && !isSQLJS(knex)) {
             return this.skip();
           }
           const notMaterialized = await knex('t')
@@ -1522,6 +1580,12 @@ describe('Selects', function () {
               );
               tester(
                 'sqlite3',
+                'select json_extract(json_remove(`population`,?), ?) as `maxPop` from `cities`',
+                ['$.minMax.min', '$.minMax.max'],
+                [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
+              );
+              tester(
+                'sqljs',
                 'select json_extract(json_remove(`population`,?), ?) as `maxPop` from `cities`',
                 ['$.minMax.min', '$.minMax.max'],
                 [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]

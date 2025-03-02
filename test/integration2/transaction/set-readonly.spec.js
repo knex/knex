@@ -1,6 +1,7 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const {
   isSQLite,
+  isSQLJS,
   isMssql,
   isOracle,
   isCockroachDB,
@@ -37,6 +38,7 @@ describe('Transaction', () => {
         it.skip('Expect insert in read only transaction to be rejected', async () => {
           if (
             isSQLite(knex) ||
+            isSQLJS(knex) ||
             isOracle(knex) ||
             isMssql(knex) ||
             isCockroachDB(knex)

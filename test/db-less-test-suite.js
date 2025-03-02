@@ -26,6 +26,7 @@ describe('Query Building Tests', function () {
   require('./unit/schema-builder/cockroachdb');
   require('./unit/schema-builder/redshift');
   require('./unit/schema-builder/sqlite3');
+  require('./unit/schema-builder/sqljs');
   require('./unit/schema-builder/oracle');
   require('./unit/schema-builder/mssql');
   require('./unit/schema-builder/oracledb');
