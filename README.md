@@ -109,7 +109,7 @@ const config: Knex.Config = {
 const knexInstance = knex(config);
 
 try {
-  const users = await knex<User>('users').select('id', 'age');
+  const users = await knexInstance<User>('users').select('id', 'age');
 } catch (err) {
   // error handling
 }
