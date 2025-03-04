@@ -2499,6 +2499,10 @@ declare namespace Knex {
       values: readonly Value[] | null,
       options?: EnumOptions
     ): ColumnBuilder;
+    set(
+      columnName: string,
+      values: readonly Value[] | null,
+    ): ColumnBuilder;
     json(columnName: string): ColumnBuilder;
     jsonb(columnName: string): ColumnBuilder;
     uuid(
