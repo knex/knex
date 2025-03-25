@@ -388,7 +388,7 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
     TRecord2 extends {} = TRecord,
     TResult2 = DeferredKeySelection<TRecord2, never>[]
   >(
-    tableName?: Knex.TableDescriptor | Knex.AliasDict,
+    tableName: Knex.TableDescriptor | Knex.AliasDict,
     options?: TableOptions
   ): Knex.QueryBuilder<TRecord2, TResult2>;
   VERSION: string;
