@@ -104,15 +104,21 @@ const config: Knex.Config = {
   connection: {
     filename: './data.db',
   },
+  useNullAsDefault: true
 };
 
 const knexInstance = knex(config);
 
-try {
-  const users = await knex<User>('users').select('id', 'age');
-} catch (err) {
-  // error handling
-}
+knexInstance<User>('users').select()
+.then((users)=>{
+  console.log(users);
+})
+.catch((err)=>{
+  console.error(err);
+})
+.finally(()=>{
+  knexInstance.destroy();
+});
 ```
 
 ## Usage as ESM module
