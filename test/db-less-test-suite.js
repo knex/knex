@@ -47,6 +47,10 @@ if (config.postgres) {
   require('./unit/dialects/postgres');
 }
 
+if (config.oracledb) {
+  require('./unit/dialects/oracledb');
+}
+
 if (config.mysql) {
   require('./unit/dialects/mysql');
 }
