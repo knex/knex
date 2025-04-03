@@ -2446,4 +2446,67 @@ describe('PostgreSQL SchemaBuilder', function () {
       );
     });
   });
+
+  it('should handle array default values correctly', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('test_array_defaults', function (table) {
+        table.specificType('int_array', 'integer[]').defaultTo([1, 2, 3]);
+        table.specificType('text_array', 'text[]').defaultTo(['a', 'b', 'c']);
+        table.specificType('empty_array', 'varchar[]').defaultTo([]);
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "test_array_defaults" ("int_array" integer[] default \'{1,2,3}\', "text_array" text[] default \'{"a","b","c"}\', "empty_array" varchar[] default \'{}\')'
+    );
+  });
+
+  it('should handle array default values with special characters', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('test_array_special', function (table) {
+        table
+          .specificType('text_array', 'text[]')
+          .defaultTo(['a,b', 'c"d', "e'f"]);
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "test_array_special" ("text_array" text[] default \'{"a,b","c""d","e\'f"}\')'
+    );
+  });
+
+  it('should handle nested array default values', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('test_nested_arrays', function (table) {
+        table.specificType('nested_array', 'integer[][]').defaultTo([
+          [1, 2],
+          [3, 4],
+        ]);
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "test_nested_arrays" ("nested_array" integer[][] default \'{{1,2},{3,4}}\')'
+    );
+  });
+
+  it('should handle null values in arrays', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('test_null_arrays', function (table) {
+        table.specificType('mixed_array', 'text[]').defaultTo(['a', null, 'b']);
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "test_null_arrays" ("mixed_array" text[] default \'{"a",NULL,"b"}\')'
+    );
+  });
 });
