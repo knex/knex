@@ -1601,7 +1601,7 @@ The context can be any kind of value and will be passed to the hooks without mod
 
 Calling `queryContext` with no arguments will return any context configured for the query builder instance.
 
-##### Extending Query Builder
+## Extending Query Builder
 
 **Important:** this feature is experimental and its API may change in the future.
 
