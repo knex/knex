@@ -91,19 +91,18 @@ services:
       - 9010:9010
       - 9020:9020
 
-
   spanner-pgadapter:
     # Most recent container as of 2025-04-25
     image: gcr.io/cloud-spanner-pg-adapter/pgadapter:v0.46.2
     container_name: uis-test-spanner-pgadapter
     command:
-      - "-p test-project"
-      - "-i test-instance"
-      - "-r autoConfigEmulator=true"
-      - "-e spanner-emulator:9010"
-      - "-ddl=AutocommitExplicitTransaction"
-      - "-c \"\""
-      - "-x"
+      - '-p test-project'
+      - '-i test-instance'
+      - '-r autoConfigEmulator=true'
+      - '-e spanner-emulator:9010'
+      - '-ddl=AutocommitExplicitTransaction'
+      - '-c ""'
+      - '-x'
     # Mapping to port 25434 as the next available port following the incrementing of Postgres
     # services in this file
     ports:
