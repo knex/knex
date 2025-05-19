@@ -10,6 +10,7 @@ const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
   oracledb: () => require('./oracledb'),
   pgnative: () => require('./pgnative'),
   postgres: () => require('./postgres'),
+  'postgres-spanner': () => require('./postgres-spanner'),
   redshift: () => require('./redshift'),
   sqlite3: () => require('./sqlite3'),
 });
