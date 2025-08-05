@@ -2240,7 +2240,19 @@ declare namespace Knex {
     skipLocked(): QueryBuilder<TRecord, TResult>;
     noWait(): QueryBuilder<TRecord, TResult>;
 
-    toSQL(): Sql;
+    toSQL(method?:
+            | 'columns'
+            | 'comments'
+            | 'group'
+            | 'having'
+            | 'join'
+            | 'limit'
+            | 'lock'
+            | 'offset'
+            | 'order'
+            | 'union'
+            | 'waitMode'
+            | 'where'): Sql;
 
     on(event: string, callback: Function): QueryBuilder<TRecord, TResult>;
 
