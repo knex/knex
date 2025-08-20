@@ -35,3 +35,18 @@ $ npm test
 ## I found something broken with Amazon Redshift! Can you help?
 
 Because there is no testing platform available for Amazon Redshift, be aware that it is included as a dialect but is unsupported. With that said, please file an issue if something is found to be broken that is not noted in the documentation, and we will do our best.
+
+## Can I use Knex in the browser?
+
+Yes! Knex can be used in the browser for building SQL queries. However, note that:
+- You cannot connect directly to databases from the browser (this would be a security risk)
+- The primary use case is building queries to send to your backend API
+- With Webpack 5, you'll need to configure polyfills for Node.js core modules (see the [Browser installation guide](/guide/#browser))
+
+## Why am I getting "Module not found" errors with Webpack 5?
+
+Webpack 5 no longer includes polyfills for Node.js core modules by default. You'll need to configure them manually. See the [Webpack 5 Configuration](/guide/#webpack-5-configuration) section in the installation guide for the complete setup.
+
+## How large is the browser bundle?
+
+The browser bundle is approximately 1MB minified. This includes all the query building functionality but excludes database drivers (which aren't needed in the browser).
