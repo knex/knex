@@ -298,6 +298,20 @@ describe('Where', function () {
           .andWhere('email', 'test1@example.com');
       });
 
+      it('does "andWhereIn" cases', async function () {
+        await knex('accounts')
+          .select('first_name', 'last_name', 'about')
+          .where('first_name', 'Test')
+          .andWhereIn('id', [1, 2]);
+      });
+
+      it('does "andWhereNotIn" cases', async function () {
+        await knex('accounts')
+          .select('first_name', 'last_name', 'about', 'id')
+          .where('first_name', 'Test')
+          .andWhereNotIn('id', [2, 3]);
+      });
+
       it('takes a function to wrap nested where statements', async () => {
         await knex('accounts')
           .where(function () {

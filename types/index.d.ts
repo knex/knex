@@ -656,8 +656,10 @@ declare namespace Knex {
     whereNotExists: WhereExists<TRecord, TResult>;
     orWhereNotExists: WhereExists<TRecord, TResult>;
     whereIn: WhereIn<TRecord, TResult>;
+    andWhereIn: WhereIn<TRecord, TResult>;
     orWhereIn: WhereIn<TRecord, TResult>;
     whereNotIn: WhereIn<TRecord, TResult>;
+    andWhereNotIn: WhereIn<TRecord, TResult>;
     orWhereNotIn: WhereIn<TRecord, TResult>;
     whereLike: Where<TRecord, TResult>;
     andWhereLike: Where<TRecord, TResult>;
