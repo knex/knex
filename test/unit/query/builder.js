@@ -9533,6 +9533,10 @@ describe('QueryBuilder', () => {
           sql: '/* Added comment 1 */ /* Added comment 2 */ insert into `users` (`email`) values (?)',
           bindings: ['foo'],
         },
+        pg: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ insert into "users" ("email") values (?)',
+          bindings: ['foo'],
+        },
       }
     );
   });
@@ -9549,6 +9553,10 @@ describe('QueryBuilder', () => {
           sql: '/* Added comment 1 */ /* Added comment 2 */ update `users` set `email` = ?',
           bindings: ['foo'],
         },
+        pg: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ update "users" set "email" = ?',
+          bindings: ['foo'],
+        },
       }
     );
   });
@@ -9563,6 +9571,10 @@ describe('QueryBuilder', () => {
       {
         mysql: {
           sql: '/* Added comment 1 */ /* Added comment 2 */ delete from `users`',
+          bindings: [],
+        },
+        pg: {
+          sql: '/* Added comment 1 */ /* Added comment 2 */ delete from "users"',
           bindings: [],
         },
       }
@@ -9847,8 +9859,8 @@ describe('QueryBuilder', () => {
       } catch (error) {
         expect(error.message).to.contain(
           'Undefined binding(s) detected when compiling ' +
-            builder._method.toUpperCase() +
-            `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
+          builder._method.toUpperCase() +
+          `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
         ); //This test is not for asserting correct queries
       }
     });
@@ -9868,8 +9880,8 @@ describe('QueryBuilder', () => {
         } else {
           expect(error.message).to.contain(
             'Undefined binding(s) detected when compiling ' +
-              builder._method.toUpperCase() +
-              `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
+            builder._method.toUpperCase() +
+            `. Undefined column(s): [${undefinedColumns.join(', ')}] query:`
           ); //This test is not for asserting correct queries
         }
       }
