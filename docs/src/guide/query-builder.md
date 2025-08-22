@@ -139,6 +139,75 @@ knex.select().from('books').timeout(1000, {
 });
 ```
 
+#### abortOnSignal
+
+**.abortOnSignal(signal)**
+
+Allows manual cancellation of a query using an [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal). When the signal is aborted, the query will be cancelled and the promise will reject with an `AbortError`. This is useful for implementing user-initiated query cancellation, such as in response to a button click or navigation away from a page.
+
+::: warning
+Only supported in MySQL and PostgreSQL for now.
+:::
+
+```js
+// Basic usage with AbortController
+const controller = new AbortController();
+
+const queryPromise = knex
+  .select()
+  .from('books')
+  .abortOnSignal(controller.signal);
+
+// Cancel the query from elsewhere in your code
+controller.abort();
+
+// The query promise will reject with an AbortError
+queryPromise.catch((error) => {
+  console.log(error.name); // 'AbortError'
+  console.log(error.message); // 'Query was aborted'
+});
+```
+
+```js
+// Example: Cancel query after user navigation
+async function searchBooks(searchTerm) {
+  const controller = new AbortController();
+  
+  // Store controller reference for cleanup
+  currentSearchController = controller;
+  
+  try {
+    const results = await knex('books')
+      .where('title', 'like', `%${searchTerm}%`)
+      .abortOnSignal(controller.signal);
+    
+    return results;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('Search was cancelled');
+    } else {
+      throw error; // Re-throw non-abort errors
+    }
+  }
+}
+
+// Cancel previous search when starting a new one
+function handleNewSearch(newTerm) {
+  if (currentSearchController) {
+    currentSearchController.abort();
+  }
+  
+  return searchBooks(newTerm);
+}
+```
+
+```js
+// Can be combined with timeout
+knex.select().from('books')
+  .timeout(30000, { cancel: true })
+  .abortOnSignal(controller.signal);
+```
+
 ### select
 
 **.select([\*columns])**
