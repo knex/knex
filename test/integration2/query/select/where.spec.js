@@ -302,14 +302,162 @@ describe('Where', function () {
         await knex('accounts')
           .select('first_name', 'last_name', 'about')
           .where('first_name', 'Test')
-          .andWhereIn('id', [1, 2]);
+          .andWhereIn('id', [1, 2])
+          .testSql(function (tester) {
+            tester(
+              ['mysql', 'sqlite3'],
+              'select `first_name`, `last_name`, `about` from `accounts` where `first_name` = ? and `id` in (?, ?)',
+              ['Test', 1, 2],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+            tester(
+              ['pg', 'pgnative', 'pg-redshift', 'oracledb'],
+              'select "first_name", "last_name", "about" from "accounts" where "first_name" = ? and "id" in (?, ?)',
+              ['Test', 1, 2],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+            tester(
+              'mssql',
+              'select [first_name], [last_name], [about] from [accounts] where [first_name] = ? and [id] in (?, ?)',
+              ['Test', 1, 2],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+          });
       });
 
       it('does "andWhereNotIn" cases', async function () {
         await knex('accounts')
           .select('first_name', 'last_name', 'about', 'id')
           .where('first_name', 'Test')
-          .andWhereNotIn('id', [2, 3]);
+          .andWhereNotIn('id', [2, 3])
+          .testSql(function (tester) {
+            tester(
+              ['mysql', 'sqlite3'],
+              'select `first_name`, `last_name`, `about`, `id` from `accounts` where `first_name` = ? and `id` not in (?, ?)',
+              ['Test', 2, 3],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: 1,
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: 4,
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: 5,
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: 6,
+                },
+              ]
+            );
+            tester(
+              ['pg', 'pgnative', 'pg-redshift', 'oracledb'],
+              'select "first_name", "last_name", "about", "id" from "accounts" where "first_name" = ? and "id" not in (?, ?)',
+              ['Test', 2, 3],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '1',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '4',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '5',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '6',
+                },
+              ]
+            );
+            tester(
+              'mssql',
+              'select [first_name], [last_name], [about], [id] from [accounts] where [first_name] = ? and [id] not in (?, ?)',
+              ['Test', 2, 3],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '1',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '4',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '5',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                  id: '6',
+                },
+              ]
+            );
+          });
       });
 
       it('takes a function to wrap nested where statements', async () => {
