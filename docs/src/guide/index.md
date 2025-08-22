@@ -1,6 +1,6 @@
 # Installation
 
-Knex can be used as an SQL query builder in both Node.JS and the browser, limited to WebSQL's constraints (like the inability to drop tables or read schemas). Composing SQL queries in the browser for execution on the server is highly discouraged, as this can be the cause of serious security vulnerabilities. The browser builds outside of WebSQL are primarily for learning purposes - for example, you can pop open the console and build queries on this page using the **knex** object.
+Knex can be used as an SQL query builder in both Node.JS and the browser. In the browser, Knex can only be used for building SQL query strings - it does not support connecting to browser databases like sql.js or SQLite WASM. Composing SQL queries in the browser for execution on the server is highly discouraged, as this can be the cause of serious security vulnerabilities. The browser builds are primarily for learning purposes or for building queries to send to a backend API - for example, you can pop open the console and build queries on this page using the **knex** object.
 
 ## Node.js
 
@@ -123,10 +123,11 @@ fetch('/api/query', {
 
 ::: warning Browser Limitations
 
-- **No Direct Database Connections**: Browsers cannot connect directly to databases (except deprecated WebSQL)
+- **No Browser Database Support**: Knex does not support browser databases like sql.js, SQLite WASM, or IndexedDB
+- **No Remote Database Connections**: Browsers cannot connect to remote database servers (MySQL, PostgreSQL, etc.) for security reasons
 - **Security**: Never expose database credentials in browser code
 - **Bundle Size**: The browser bundle will be approximately 1MB minified
-- **Use Cases**: Query building for backend APIs, educational purposes, or client-side SQL generation
+- **Use Cases**: Query building for backend APIs, educational purposes, or client-side SQL generation only
   :::
 
 ### Webpack 4 and Earlier
