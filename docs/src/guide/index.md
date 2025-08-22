@@ -62,37 +62,37 @@ module.exports = {
   resolve: {
     fallback: {
       // Core Node.js module polyfills
-      "assert": require.resolve("assert/"),
-      "buffer": require.resolve("buffer/"),
-      "crypto": require.resolve("crypto-browserify"),
-      "constants": require.resolve("constants-browserify"),
-      "fs": false,
-      "http": require.resolve("stream-http"),
-      "https": require.resolve("https-browserify"),
-      "os": require.resolve("os-browserify/browser"),
-      "path": require.resolve("path-browserify"),
-      "process": require.resolve("process/browser"),
-      "querystring": require.resolve("querystring-es3"),
-      "stream": require.resolve("stream-browserify"),
-      "timers": require.resolve("timers-browserify"),
-      "tty": require.resolve("tty-browserify"),
-      "url": require.resolve("url/"),
-      "util": require.resolve("util/"),
-      "vm": require.resolve("vm-browserify"),
-      "zlib": require.resolve("browserify-zlib"),
+      assert: require.resolve('assert/'),
+      buffer: require.resolve('buffer/'),
+      crypto: require.resolve('crypto-browserify'),
+      constants: require.resolve('constants-browserify'),
+      fs: false,
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify'),
+      os: require.resolve('os-browserify/browser'),
+      path: require.resolve('path-browserify'),
+      process: require.resolve('process/browser'),
+      querystring: require.resolve('querystring-es3'),
+      stream: require.resolve('stream-browserify'),
+      timers: require.resolve('timers-browserify'),
+      tty: require.resolve('tty-browserify'),
+      url: require.resolve('url/'),
+      util: require.resolve('util/'),
+      vm: require.resolve('vm-browserify'),
+      zlib: require.resolve('browserify-zlib'),
       // Database drivers - not needed in browser
-      "child_process": false,
-      "net": false,
-      "tls": false,
-      "dns": false
-    }
+      child_process: false,
+      net: false,
+      tls: false,
+      dns: false,
+    },
   },
   plugins: [
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
-      process: 'process/browser'
-    })
-  ]
+      process: 'process/browser',
+    }),
+  ],
 };
 ```
 
@@ -117,16 +117,17 @@ const query = db('users')
 fetch('/api/query', {
   method: 'POST',
   body: JSON.stringify({ sql: query }),
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
 });
 ```
 
 ::: warning Browser Limitations
+
 - **No Direct Database Connections**: Browsers cannot connect directly to databases (except deprecated WebSQL)
 - **Security**: Never expose database credentials in browser code
 - **Bundle Size**: The browser bundle will be approximately 1MB minified
 - **Use Cases**: Query building for backend APIs, educational purposes, or client-side SQL generation
-:::
+  :::
 
 ### Webpack 4 and Earlier
 

@@ -39,6 +39,7 @@ Because there is no testing platform available for Amazon Redshift, be aware tha
 ## Can I use Knex in the browser?
 
 Yes! Knex can be used in the browser for building SQL queries. However, note that:
+
 - You cannot connect directly to databases from the browser (this would be a security risk)
 - The primary use case is building queries to send to your backend API
 - With Webpack 5, you'll need to configure polyfills for Node.js core modules (see the [Browser installation guide](/guide/#browser))
