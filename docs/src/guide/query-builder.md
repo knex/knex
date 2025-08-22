@@ -1760,9 +1760,10 @@ knex('accounts').where('id', 'not in', subquery);
 ### whereIn
 
 **.whereIn(column|columns, array|callback|builder)**  
-**.orWhereIn**
+**.andWhereIn**
+**.orWhereIn**  
 
-Shorthand for .where('id', 'in', obj), the .whereIn and .orWhereIn methods add a "where in" clause to the query. Note that passing empty array as the value results in a query that never returns any rows (`WHERE 1 = 0`)
+Shorthand for .where('id', 'in', obj), the .whereIn, .andWhereIn, and .orWhereIn methods add a "where in" clause to the query. Note that passing empty array as the value results in a query that never returns any rows (`WHERE 1 = 0`)
 
 ```js
 knex
@@ -1800,17 +1801,28 @@ knex
     ['account_id', 'email'],
     knex.select('id', 'email').from('accounts')
   );
+
+knex
+  .select('name')
+  .from('users')
+  .whereIn('id', [1, 2, 3])
+  .andWhereIn('status', ['active', 'pending']);
 ```
 
 ### whereNotIn
 
 **.whereNotIn(column, array|callback|builder)**
+**.andWhereNotIn**
 **.orWhereNotIn**
 
 ```js
 knex('users').whereNotIn('id', [1, 2, 3]);
 
 knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3]);
+
+knex('users')
+  .whereNotIn('id', [1, 2, 3])
+  .andWhereNotIn('status', ['inactive', 'banned']);
 ```
 
 ### whereNull
