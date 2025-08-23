@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:14.15-alpine
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off -c random_page_cost=1.0
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=myuserpassword
+      - POSTGRES_DB=postgres_knex_db
+    container_name: 'postgres-for-testing'
+    ports:
+      - '54310:5432'
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '63790:6379'
+    command: redis-server --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
