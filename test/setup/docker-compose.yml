@@ -9,9 +9,3 @@ services:
     container_name: 'postgres-for-testing'
     ports:
       - '54310:5432'
-  redis:
-    image: redis:6.2-alpine
-    restart: always
-    ports:
-      - '63790:6379'
-    command: redis-server --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81

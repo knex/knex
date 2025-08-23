@@ -8,7 +8,6 @@ import { handleDatabaseSetup } from './database/relational/setup';
 import { getIntegrationTestPath } from './helpers/helpers';
 
 const dockerComposeYamlPath = `${getIntegrationTestPath()}/docker-compose.yml`;
-// const dockerComposeYamlPath = `./docker-compose.yml`;
 
 export const setup = async (): Promise<void> => {
   const res = YAML.load(dockerComposeYamlPath);

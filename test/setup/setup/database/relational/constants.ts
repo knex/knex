@@ -1,1 +1,1 @@
-export const relationalDatabases = ['mysql', 'postgres'];
+export const relationalDatabases = ['postgres'];

@@ -66,23 +66,16 @@
     "colorette": "2.0.19",
     "commander": "^10.0.0",
     "debug": "4.3.4",
-    "docker-compose": "^1.2.0",
-    "dotenv": "^17.2.1",
-    "env-cmd": "^10.1.0",
-    "env-var": "^7.5.0",
     "escalade": "^3.1.1",
     "esm": "^3.2.25",
     "get-package-type": "^0.1.0",
     "getopts": "2.3.0",
     "interpret": "^2.2.0",
     "lodash": "^4.17.21",
-    "pg-connection-string": "2.6.2",
-    "pg-format": "^1.0.4",
     "rechoir": "^0.8.0",
     "resolve-from": "^5.0.0",
     "tarn": "^3.0.2",
-    "tildify": "2.0.0",
-    "yamljs": "^0.3.0"
+    "tildify": "2.0.0"
   },
   "peerDependenciesMeta": {
     "tedious": {
@@ -125,6 +118,10 @@
     "cli-testlab": "^2.2.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
+    "docker-compose": "^1.2.0",
+    "dotenv": "^17.2.1",
+    "env-cmd": "^10.1.0",
+    "env-var": "^7.5.0",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.29.0",
@@ -141,6 +138,8 @@
     "nyc": "^15.1.0",
     "oracledb": "^6.1.0",
     "pg": "^8.16.3",
+    "pg-connection-string": "2.6.2",
+    "pg-format": "^1.0.4",
     "pg-query-stream": "^4.2.4",
     "prettier": "2.8.7",
     "rimraf": "^5.0.5",
@@ -154,7 +153,8 @@
     "toxiproxy-node-client": "^2.0.6",
     "ts-node": "^10.9.2",
     "tsd": "^0.28.1",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "yamljs": "^0.3.0"
   },
   "buildDependencies": [
     "rimraf"
