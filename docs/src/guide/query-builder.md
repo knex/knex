@@ -821,7 +821,7 @@ knex('tableName')
 
 **.upsert(data, [returning], [options])**
 
-Implemented for the CockroachDB. Creates an upsert query, taking either a hash of properties to be inserted into the row, or an array of upserts, to be executed as a single upsert command. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#returning)
+Implemented for the CockroachDB and MySQL. Creates an upsert query, taking either a hash of properties to be inserted into the row, or an array of upserts, to be executed as a single upsert command. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the added rows with specified columns. It's a shortcut for [returning method](#returning). Please be cautious because the returning option is not supported by MySQL.
 
 ```js
 // insert new row with unique index on title column
@@ -1277,6 +1277,8 @@ knex
 
 Similar to select, but only retrieves & resolves with the first record from the query.
 
+Returns `undefined` when no rows match.
+
 ```js
 knex
   .table('users')
@@ -1575,7 +1577,7 @@ The context can be any kind of value and will be passed to the hooks without mod
 
 Calling `queryContext` with no arguments will return any context configured for the query builder instance.
 
-##### Extending Query Builder
+## Extending Query Builder
 
 **Important:** this feature is experimental and its API may change in the future.
 
