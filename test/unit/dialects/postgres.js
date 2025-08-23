@@ -145,34 +145,4 @@ describe('Postgres Unit Tests', function () {
       knexInstance.destroy();
     });
   });
-
-  it.only('Determines bindings in JSONB query successfully', () => {
-    const knexInstance = knex({
-      client: 'postgresql',
-      connection: {},
-    });
-
-    const binding = 'bar_bind';
-
-    return knexInstance
-      .select('*')
-      .from('users')
-      .whereRaw('i.foo @\\? \'$.*.bar \\? (@ == "?")\'', binding)
-      .then((result) => {
-        console.log(result);
-        sinon.assert.calledOnce(querySpy);
-        sinon.assert.calledWithExactly(
-          querySpy,
-          {
-            text: 'select 1 as $1',
-            values: ['foo'],
-          },
-          sinon.match.func
-        );
-        knexInstance.destroy();
-      })
-      // .catch((err) => {
-      //   console.log(err);
-      // });
-  });
 });
