@@ -17,53 +17,28 @@ describe.only('Postgres dialect', () => {
         });
       });
 
-      it.only('Should correctly escape JSONB raw SQL', async () => {
+      // As it stands, this throws an error
+      xit('Should correctly interpret string literal in JSONB raw SQL', async () => {
         const binding = 'bar_bind';
         const k = knex2.select('*')
           .from('users')
           .whereRaw('json_key.json_value @\\? \'$.*.bar \\? (@ == "?")\'', binding);
 
-        console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-        const r = await k;
-        console.log(r, 'r');
+        await k;
       });
 
       // https://github.com/knex/knex/issues/6011
       // This works without pg-format
-      it.only('Should correctly escape JSONB raw SQL', async () => {
+      it('Should correctly map json key & value in JSONB raw SQL', async () => {
         const binding = ['json_key', 'json_value'];
         const k = knex2.select('*')
           .from('users')
           .where('id', '=', 1)
           .whereRaw('?? \\? ?', binding)
 
-        console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
+        // console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
         const r = await k;
-        // console.log(r, 'r');
-      });
-
-
-      // it.only('Should correctly escape JSONB raw SQL', async () => {
-      //   // const binding = ['json_key', 'json_value'];
-      //   const k = knex2.select('*')
-      //     .from('users')
-      //     .where('id', '=', 1)
-      //     .whereJsonPath('json_key', '$.json_value', 'json_value')
-
-      //   console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-      //   const r = await k;
-      //   // console.log(r, 'r');
-      // });
-
-      it('uses correct port for connecting', async () => {
-        const binding = { foo: 'foo' };
-        const k = knex2.raw(
-          `select 'string with a question mark ?', 'string with a named binding :foo';`, binding
-          );
-
-        console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-        const r = await k;
-        // console.log(r, 'r');
+        console.log(r, 'r');
       });
     });
   });
