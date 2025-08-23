@@ -1,12 +1,4 @@
-// const { expect } = require('chai');
-// const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const knex = require('../../../lib');
-
-// TODO: Create a new set of migrations for a basic user table in postgres
-// Use docker-compose to spin up postgres
-// Run migrations as part of start-up
-// Run tests against the migrations
-// Teardown
 
 describe.only('Postgres dialect', () => {
   describe('Connection configuration', () => {
@@ -20,15 +12,10 @@ describe.only('Postgres dialect', () => {
             port: 54310,
             user: 'myuser',
             password: 'myuserpassword',
-            // database: 'offering',
             database: 'postgres_knex_db',
           },
         });
       });
-
-      // after(() => {
-      //   return knex.destroy();
-      // });
 
       it.only('Should correctly escape JSONB raw SQL', async () => {
         const binding = 'bar_bind';
@@ -77,37 +64,6 @@ describe.only('Postgres dialect', () => {
         console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
         const r = await k;
         // console.log(r, 'r');
-      });
-
-      it('uses correct port for connecting', async () => {
-        const binding = 'bar_bind';
-        const k = knex2.select('*')
-          .from('outcomes')
-          .whereRaw('outcomes.sport_data @? \'$.*.bar ? (@ == ?)\'', [binding]);
-
-        console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-        await k;
-      });
-
-      it('uses correct port for connecting', async () => {
-        const binding = 'bar_bind';
-        const k = knex2.select('*')
-          .from('outcomes')
-          .whereJsonPath('sport_data', '$.*.bar ? (@ == ?)', [binding]);
-
-        console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-        await k;
-      });
-
-      it('uses correct port for connecting', async () => {
-        const binding = 'bar_bind';
-        const jsonPath = '$.*.bar ? (@ == ?)';
-        const k = knex2.select('*')
-          .from('outcomes')
-          .whereRaw('outcomes.sport_data @? ?', [jsonPath, binding]);
-
-        console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-        await k;
       });
     });
   });
