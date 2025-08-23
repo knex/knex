@@ -137,7 +137,7 @@
     "mysql2": "^3.2.0",
     "nyc": "^15.1.0",
     "oracledb": "^6.1.0",
-    "pg": "^8.16.3",
+    "pg": "^8.8.0",
     "pg-connection-string": "2.6.2",
     "pg-format": "^1.0.4",
     "pg-query-stream": "^4.2.4",
@@ -151,7 +151,7 @@
     "tape": "^5.6.0",
     "tedious": "^16.6.1",
     "toxiproxy-node-client": "^2.0.6",
-    "ts-node": "^10.9.2",
+    "ts-node": "^10.9.1",
     "tsd": "^0.28.1",
     "typescript": "5.0.4",
     "yamljs": "^0.3.0"
