@@ -31,16 +31,40 @@ const {
 
 const { listMigrations } = require('./utils/migrationsLister');
 
+// Ensure that anything thrown by user code becomes an instance
+// of Error. This ensures that `exit()` behaves correctly.
+function ensureError(context, configPath, original) {
+  const error = new Error(context);
+  if (original instanceof Error) {
+    error.detail = original.stack;
+  } else {
+    error.detail =
+      'A non-Error value was thrown\n' +
+      '    at default export (' +
+      configPath +
+      ')';
+    error.nonErrorValue = original;
+  }
+
+  return error;
+}
+
 async function openKnexfile(configPath) {
   const importFile = require('../lib/migrations/util/import-file'); // require me late!
-  let config = await importFile(configPath);
-  if (config && config.default) {
-    config = config.default;
+
+  try {
+    let config = await importFile(configPath);
+
+    if (config && config.default) {
+      config = config.default;
+    }
+    if (typeof config === 'function') {
+      config = await config();
+    }
+    return config;
+  } catch (err) {
+    throw ensureError('Failed to read config from knexfile', configPath, err);
   }
-  if (typeof config === 'function') {
-    config = await config();
-  }
-  return config;
 }
 
 async function initKnex(env, opts, useDefaultClientIfNotSpecified) {
