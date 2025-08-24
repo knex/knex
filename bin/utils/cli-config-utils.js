@@ -78,8 +78,19 @@ function exit(text) {
     console.error(
       color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
     );
-  } else {
+    // give whatever info we can about a non-error value that was thrown
+    if (text.nonErrorValue) {
+      console.error(text.nonErrorValue);
+    }
+  } else if (typeof text === 'string') {
     console.error(color.red(text));
+  } else {
+    // We shouldn't get here, but we should avoid failing if we do.
+    // This information can also help users report other problems to us.
+    console.error(
+      color.red('[BUG] exit() was called with an unexpected value:')
+    );
+    console.error(text);
   }
   process.exit(1);
 }
