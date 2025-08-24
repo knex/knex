@@ -1761,7 +1761,7 @@ knex('accounts').where('id', 'not in', subquery);
 
 **.whereIn(column|columns, array|callback|builder)**  
 **.andWhereIn**
-**.orWhereIn**  
+**.orWhereIn**
 
 Shorthand for .where('id', 'in', obj), the .whereIn, .andWhereIn, and .orWhereIn methods add a "where in" clause to the query. Note that passing empty array as the value results in a query that never returns any rows (`WHERE 1 = 0`)
 
