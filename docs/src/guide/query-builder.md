@@ -1836,9 +1836,7 @@ knex('users')
 ```js
 knex('users').whereNull('updated_at');
 
-knex('users')
-  .where('name', 'John')
-  .andWhereNull('deleted_at');
+knex('users').where('name', 'John').andWhereNull('deleted_at');
 ```
 
 ### whereNotNull
@@ -1850,9 +1848,7 @@ knex('users')
 ```js
 knex('users').whereNotNull('created_at');
 
-knex('users')
-  .where('active', true)
-  .andWhereNotNull('email');
+knex('users').where('active', true).andWhereNotNull('email');
 ```
 
 ### whereExists
@@ -1873,7 +1869,9 @@ knex('users').whereExists(
 knex('users')
   .where('active', true)
   .andWhereExists(function () {
-    this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+    this.select('*')
+      .from('accounts')
+      .whereRaw('users.account_id = accounts.id');
   });
 ```
 
@@ -1895,7 +1893,9 @@ knex('users').whereNotExists(
 knex('users')
   .where('active', true)
   .andWhereNotExists(function () {
-    this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
+    this.select('*')
+      .from('accounts')
+      .whereRaw('users.account_id = accounts.id');
   });
 ```
 
@@ -2048,7 +2048,10 @@ knex('users')
 Adds a where clause where the comparison is true if a json given by the column is not included in a given value. Only on MySQL, PostgreSQL and CockroachDB.
 
 ```js
-knex('users').whereJsonNotSubsetOf('hobby', { sport: 'tennis', book: 'fantasy' });
+knex('users').whereJsonNotSubsetOf('hobby', {
+  sport: 'tennis',
+  book: 'fantasy',
+});
 
 knex('users')
   .where('active', true)
