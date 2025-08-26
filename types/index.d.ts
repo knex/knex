@@ -652,8 +652,10 @@ declare namespace Knex {
     whereWrapped: WhereWrapped<TRecord, TResult>;
     havingWrapped: WhereWrapped<TRecord, TResult>;
     whereExists: WhereExists<TRecord, TResult>;
+    andWhereExists: WhereExists<TRecord, TResult>;
     orWhereExists: WhereExists<TRecord, TResult>;
     whereNotExists: WhereExists<TRecord, TResult>;
+    andWhereNotExists: WhereExists<TRecord, TResult>;
     orWhereNotExists: WhereExists<TRecord, TResult>;
     whereIn: WhereIn<TRecord, TResult>;
     andWhereIn: WhereIn<TRecord, TResult>;
@@ -668,8 +670,10 @@ declare namespace Knex {
     andWhereILike: Where<TRecord, TResult>;
     orWhereILike: Where<TRecord, TResult>;
     whereNull: WhereNull<TRecord, TResult>;
+    andWhereNull: WhereNull<TRecord, TResult>;
     orWhereNull: WhereNull<TRecord, TResult>;
     whereNotNull: WhereNull<TRecord, TResult>;
+    andWhereNotNull: WhereNull<TRecord, TResult>;
     orWhereNotNull: WhereNull<TRecord, TResult>;
     whereBetween: WhereBetween<TRecord, TResult>;
     orWhereBetween: WhereBetween<TRecord, TResult>;

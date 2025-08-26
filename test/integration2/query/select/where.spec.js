@@ -460,6 +460,267 @@ describe('Where', function () {
           });
       });
 
+      it('does "andWhereNull" cases', async function () {
+        await knex('accounts')
+          .select('first_name', 'last_name', 'about')
+          .where('first_name', 'Test')
+          .andWhereNull('phone')
+          .testSql(function (tester) {
+            tester(
+              ['mysql', 'sqlite3'],
+              'select `first_name`, `last_name`, `about` from `accounts` where `first_name` = ? and `phone` is null',
+              ['Test'],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+            tester(
+              ['pg', 'pgnative', 'pg-redshift', 'oracledb'],
+              'select "first_name", "last_name", "about" from "accounts" where "first_name" = ? and "phone" is null',
+              ['Test'],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+            tester(
+              'mssql',
+              'select [first_name], [last_name], [about] from [accounts] where [first_name] = ? and [phone] is null',
+              ['Test'],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+          });
+      });
+
+      it('does "andWhereNotNull" cases', async function () {
+        await knex('accounts')
+          .select('first_name', 'last_name', 'about')
+          .where('first_name', 'Test')
+          .andWhereNotNull('email')
+          .testSql(function (tester) {
+            tester(
+              ['mysql', 'sqlite3'],
+              'select `first_name`, `last_name`, `about` from `accounts` where `first_name` = ? and `email` is not null',
+              ['Test'],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+            tester(
+              ['pg', 'pgnative', 'pg-redshift', 'oracledb'],
+              'select "first_name", "last_name", "about" from "accounts" where "first_name" = ? and "email" is not null',
+              ['Test'],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+            tester(
+              'mssql',
+              'select [first_name], [last_name], [about] from [accounts] where [first_name] = ? and [email] is not null',
+              ['Test'],
+              [
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+                {
+                  first_name: 'Test',
+                  last_name: 'User',
+                  about: 'Lorem ipsum Dolore labore incididunt enim.',
+                },
+              ]
+            );
+          });
+      });
+
+      it('does "andWhereExists" cases', async function () {
+        const result = await knex('accounts')
+          .select('first_name', 'last_name')
+          .where('first_name', 'Test')
+          .andWhereExists(function () {
+            this.select('id').from('test_table_two').where({ id: 1 });
+          });
+        expect(Array.isArray(result)).to.equal(true);
+      });
+
+      it('does "andWhereNotExists" cases', async function () {
+        const result = await knex('accounts')
+          .select('first_name', 'last_name')
+          .where('first_name', 'Test')
+          .andWhereNotExists(function () {
+            this.select('id').from('test_table_two').where({ id: 999 });
+          });
+        expect(Array.isArray(result)).to.equal(true);
+        expect(result.length).to.be.greaterThan(0);
+      });
+
       it('takes a function to wrap nested where statements', async () => {
         await knex('accounts')
           .where(function () {
@@ -1060,6 +1321,79 @@ describe('Where', function () {
             {
               name: 'Paris',
             },
+            {
+              name: 'Milan',
+            },
+          ]);
+        });
+
+        it('and where json superset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            .where('name', 'Paris')
+            .andWhereJsonSupersetOf('descriptions', {
+              type: 'bigcity',
+            });
+          expect(result.length).to.equal(1);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+          ]);
+        });
+
+        it('and where json not superset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            .where('name', 'Oslo')
+            .andWhereJsonNotSupersetOf('descriptions', {
+              type: 'bigcity',
+            });
+          expect(result.length).to.equal(1);
+          assertJsonEquals(result, [
+            {
+              name: 'Oslo',
+            },
+          ]);
+        });
+
+        it('and where json subset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            .where('name', 'Paris')
+            .andWhereJsonSubsetOf('temperature', {
+              desc: 'cold',
+              desc2: 'very cold',
+            });
+          expect(result.length).to.equal(1);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+          ]);
+        });
+
+        it('and where json not subset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            .where('name', 'Milan')
+            .andWhereJsonNotSubsetOf('temperature', {
+              desc: 'cold',
+            });
+          expect(result.length).to.equal(1);
+          assertJsonEquals(result, [
             {
               name: 'Milan',
             },
