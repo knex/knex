@@ -82,15 +82,22 @@ describe('Migrations', function () {
             });
         });
 
-        if(db === DRIVER_NAMES.MsSQL) {
+        if(db === DRIVER_NAMES.MsSQL
+          || db === DRIVER_NAMES.PostgreSQL
+          // note that for these to work, we would want to run as a more privileged user
+          // || db === DRIVER_NAMES.MySQL2
+          // || db === DRIVER_NAMES.Oracle
+        ) {
           it('should not fail creating a foreign key referencing a schema', () => {
             return knex.migrate
               .latest({
-                directory: 'test/integration2/migrate/test_foreign_key_with_schema',
+                directory:
+                  'test/integration2/migrate/test_foreign_key_with_schema',
               })
               .then(() => {
                 return knex.migrate.rollback({
-                  directory: 'test/integration2/migrate/test_foreign_key_with_schema',
+                  directory:
+                    'test/integration2/migrate/test_foreign_key_with_schema',
                 });
               });
           });
