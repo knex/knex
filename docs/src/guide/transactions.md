@@ -38,6 +38,12 @@ knex
   });
 ```
 
+```js
+knex.transaction(function(trx) {
+  // ...existing code...
+})
+```
+
 And then this example:
 
 ```js
@@ -70,6 +76,12 @@ knex
     // nor any of the books inserts will have taken place.
     console.error(error);
   });
+```
+
+```js
+knex.transaction(async (trx) => {
+  // ...existing code...
+})
 ```
 
 Same example as above using await/async:
@@ -162,6 +174,10 @@ trx('catalogues')
   .catch(trx.rollback);
 ```
 
+```js
+knex.transactionProvider()
+```
+
 If you want to create a reusable transaction instance, but do not want to actually start it until it is used, you can create a transaction provider instance. It will start transaction after being called for the first time, and return same transaction on subsequent calls:
 
 ```ts
@@ -204,6 +220,10 @@ const trxInitPromise = new Promise(async (resolve, reject) => {
 });
 const trx3 = await trxInitPromise;
 const trx3Promise = trx3.executionPromise;
+```
+
+```js
+trx.executionPromise
 ```
 
 You can check if a transaction has been committed or rolled back with the method `isCompleted`:
