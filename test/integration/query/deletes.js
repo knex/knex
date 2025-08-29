@@ -2,7 +2,12 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const { isSQLite, isOracle, isCockroachDB } = require('../../util/db-helpers');
+const {
+  isSQLite,
+  isSQLJS,
+  isOracle,
+  isCockroachDB,
+} = require('../../util/db-helpers');
 const { isPostgreSQL } = require('../../util/db-helpers.js');
 
 module.exports = function (knex) {
@@ -21,6 +26,7 @@ module.exports = function (knex) {
             1
           );
           tester('sqlite3', 'delete from `accounts` where `id` = ?', [1], 1);
+          tester('sqljs', 'delete from `accounts` where `id` = ?', [1], 1);
           tester('oracledb', 'delete from "accounts" where "id" = ?', [1], 1);
           tester(
             'mssql',
@@ -63,6 +69,7 @@ module.exports = function (knex) {
             1
           );
           tester('sqlite3', 'delete from `accounts` where `id` = ?', [2], 1);
+          tester('sqljs', 'delete from `accounts` where `id` = ?', [2], 1);
           tester('oracledb', 'delete from "accounts" where "id" = ?', [2], 1);
           tester(
             'mssql',
@@ -107,7 +114,12 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test3@example.com' })
           .del();
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (
+          isSQLite(knex) ||
+          isCockroachDB(knex) ||
+          isOracle(knex) ||
+          isSQLJS(knex)
+        ) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -171,7 +183,12 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test4@example.com' })
           .del('*');
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (
+          isSQLite(knex) ||
+          isCockroachDB(knex) ||
+          isOracle(knex) ||
+          isSQLJS(knex)
+        ) {
           await expect(query).to.be.rejected;
           return;
         }

@@ -6,6 +6,7 @@ const {
   isPgBased,
   isSQLite,
   isMssql,
+  isSQLJS,
 } = require('../../util/db-helpers');
 
 describe('Schema', () => {
@@ -75,7 +76,7 @@ describe('Schema', () => {
             ]);
           }
 
-          if (isSQLite(knex)) {
+          if (isSQLite(knex) || isSQLJS(knex)) {
             await knex(tblName).insert({
               geometryColumn: '2, 3',
             });
@@ -100,7 +101,7 @@ describe('Schema', () => {
         });
 
         it('Creates GEOGRAPHY column for supported databases', async function () {
-          if (!isSQLite(knex) && !isMssql(knex)) {
+          if (!isSQLite(knex) && !isMssql(knex) && !isSQLJS(knex)) {
             return this.skip();
           }
 
@@ -108,7 +109,7 @@ describe('Schema', () => {
             table.geography('geoColumn');
           });
 
-          if (isSQLite(knex)) {
+          if (isSQLite(knex) || isSQLJS(knex)) {
             await knex(tblName).insert({
               geoColumn: '2, 3',
             });

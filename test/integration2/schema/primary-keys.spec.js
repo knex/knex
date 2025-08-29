@@ -5,6 +5,7 @@ const {
   isPgBased,
   isCockroachDB,
   isBetterSQLite3,
+  isSQLJS,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 
@@ -53,6 +54,10 @@ describe('Schema', () => {
               } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
+                );
+              } else if (isSQLJS(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_four`) values (1) - UNIQUE constraint failed: primary_table.id_four'
                 );
               }
               if (isPgBased(knex)) {
@@ -186,6 +191,10 @@ describe('Schema', () => {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
+              } else if (isSQLJS(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_four`) values (1) - UNIQUE constraint failed: primary_table.id_four'
+                );
               }
               if (isPgBased(knex)) {
                 expect(err.message).to.equal(
@@ -225,6 +234,10 @@ describe('Schema', () => {
               } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
                   'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                );
+              } else if (isSQLJS(knex)) {
+                expect(err.message).to.equal(
+                  'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
               }
               if (isPgBased(knex)) {
@@ -271,6 +284,10 @@ describe('Schema', () => {
                 } else if (isSQLite(knex)) {
                   expect(err.message).to.equal(
                     'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                  );
+                } else if (isSQLJS(knex)) {
+                  expect(err.message).to.equal(
+                    'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                   );
                 }
                 if (isPgBased(knex)) {

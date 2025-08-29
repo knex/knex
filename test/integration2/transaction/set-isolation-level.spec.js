@@ -1,5 +1,10 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isSQLite, isMssql, isOracle } = require('../../util/db-helpers');
+const {
+  isSQLite,
+  isMssql,
+  isOracle,
+  isSQLJS,
+} = require('../../util/db-helpers');
 const { expect } = require('chai');
 
 describe('Transaction', () => {
@@ -37,7 +42,7 @@ describe('Transaction', () => {
 
         it('Expect read skew when read committed', async () => {
           // SQLite is always Serializable
-          if (isSQLite(knex)) {
+          if (isSQLite(knex) || isSQLJS(knex)) {
             return;
           }
           const trx = await knex.transaction({
@@ -51,7 +56,7 @@ describe('Transaction', () => {
         });
 
         it('Expect to avoid read skew when repeatable read (snapshot isolation)', async () => {
-          if (isSQLite(knex) || isOracle(knex)) {
+          if (isSQLite(knex) || isOracle(knex) || isSQLJS(knex)) {
             return;
           }
           // NOTE: mssql requires an alter database call to enable the snapshot isolation level.

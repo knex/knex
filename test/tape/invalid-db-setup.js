@@ -12,6 +12,7 @@ module.exports = (knexfile) => {
     // TODO: FIX ORACLE AND MSSQL TO WORK THE SAME WAY WITH OTHER DIALECTS IF POSSIBLE
     if (
       dialect !== 'sqlite3' &&
+      dialect !== 'sqljs' &&
       dialect !== 'oracledb' &&
       dialect !== 'mssql' &&
       dialect !== 'cockroachdb'
@@ -74,7 +75,7 @@ module.exports = (knexfile) => {
       });
     }
 
-    if (dialect !== 'sqlite3') {
+    if (dialect !== 'sqlite3' && dialect !== 'sqljs') {
       const knexConf = _.cloneDeep(knexfile[key]);
       knexConf.acquireConnectionTimeout = 100;
       knexConf.pool = { max: 1, min: 1, acquireTimeoutMillis: 100 };

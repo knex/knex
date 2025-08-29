@@ -22,6 +22,7 @@ const {
   isMysql,
   isSQLite,
   isRedshift,
+  isSQLJS,
 } = require('../../util/db-helpers');
 const { assertNumber } = require('../../util/assertHelper');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
@@ -331,7 +332,7 @@ describe('Migrations', function () {
           });
 
           it('should work with concurent calls to _lockMigrations', async function () {
-            if (isSQLite(knex)) {
+            if (isSQLite(knex) || isSQLJS(knex)) {
               // sqlite doesn't support concurrency
               this.skip();
               return;

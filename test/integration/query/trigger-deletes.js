@@ -73,7 +73,7 @@ module.exports = function (knex) {
           await knex.raw(`
                         CREATE TRIGGER [dbo].[${triggerName}] ON [dbo].[${secondaryTable}]
                         AFTER DELETE
-                        AS 
+                        AS
                         BEGIN
                             SET NOCOUNT ON;
 
@@ -259,6 +259,7 @@ module.exports = function (knex) {
               1
             );
             tester('sqlite3', 'delete from `accounts` where `id` = ?', [2], 1);
+            tester('sqljs', 'delete from `accounts` where `id` = ?', [2], 1);
             tester('oracledb', 'delete from "accounts" where "id" = ?', [2], 1);
             tester(
               'mssql',

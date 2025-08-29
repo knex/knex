@@ -10,6 +10,7 @@ const Db = {
   MySQL2: 'mysql2',
   MSSQL: 'mssql',
   SQLite: 'sqlite3',
+  SQLjs: 'sqljs',
   Oracle: 'oracledb',
   CockroachDB: 'cockroachdb',
   BetterSqlite3: 'better-sqlite3',
@@ -21,6 +22,7 @@ const defaultDbs = [
   Db.MySQL,
   Db.MySQL2,
   Db.SQLite,
+  Db.SQLjs,
   Db.MSSQL,
   Db.CockroachDB,
   Db.BetterSqlite3,
@@ -37,6 +39,15 @@ const pool = {
 };
 
 const poolSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function (connection, callback) {
+    connection.run('PRAGMA foreign_keys = ON', callback);
+  },
+};
+
+const poolSqljs = {
   min: 0,
   max: 1,
   acquireTimeoutMillis: 1000,
@@ -153,6 +164,14 @@ const testConfigs = {
     client: 'sqlite3',
     connection: testConfig.sqlite3 || ':memory:',
     pool: poolSqlite,
+    migrations,
+    seeds,
+  },
+
+  sqljs: {
+    client: 'sqljs',
+    connection: testConfig.sqljs || ':memory:',
+    pool: poolSqljs,
     migrations,
     seeds,
   },
