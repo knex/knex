@@ -2606,7 +2606,7 @@ declare namespace Knex {
   }
 
   type deferrableType = 'not deferrable' | 'immediate' | 'deferred';
-  type storageEngineIndexType = 'hash' | 'btree';
+  type storageEngineIndexType = 'hash' | 'btree' | 'gin_trgm_ops';
   type lengthOperator = '>' | '<' | '<=' | '>=' | '!=' | '=';
 
   interface ColumnBuilder {
