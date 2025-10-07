@@ -427,6 +427,7 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
   >(): Knex.QueryBuilder<TRecord2, TResult2>;
 
   client: any;
+  hooks: Knex.Hooks;
   migrate: Knex.Migrator;
   seed: Knex.Seeder;
   fn: Knex.FunctionHelper;
@@ -3125,6 +3126,11 @@ declare namespace Knex {
     deprecate?: (method: string, alternative: string) => void;
   }
 
+  type HooksEvents = 'beforeAcquire' | 'afterAcquire' | 'beforeRelease' | 'afterRelease' | 'beforeCompile' | 'afterCompile' | 'beforeExecute' | 'afterExecute';
+  interface Hooks {
+    register(event: HooksEvents, callback: Function): void;
+  }
+
   interface Migration {
     up: (knex: Knex) => PromiseLike<any>;
     down?: (knex: Knex) => PromiseLike<any>;
@@ -3177,6 +3183,10 @@ declare namespace Knex {
     up(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     down(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
+  }
+
+  interface Hooks {
+    register(event: string, callback: (...args: any[]) => Promise<void>): void;
   }
 
   interface Seed {
@@ -3233,7 +3243,7 @@ declare namespace Knex {
     dialect: string;
     driverName: string;
     connectionSettings: object;
-
+    hooks: Hooks;
     acquireRawConnection(): Promise<any>;
     destroyRawConnection(connection: any): Promise<void>;
     validateConnection(connection: any): Promise<boolean>;
