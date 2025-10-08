@@ -1,7 +1,5 @@
-// const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-// const { getDriverName } = require('../../util/db-helpers');
-const tableName = 'users_lolz_jsonb';
+const tableName = 'users_jsonb';
 
 describe.only('Postgres dialect', () => {
   const db = getAllDbs().filter((db) => db.startsWith('postgres'))
