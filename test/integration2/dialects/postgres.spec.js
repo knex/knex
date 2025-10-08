@@ -29,7 +29,6 @@ describe.only('Postgres dialect', () => {
         });
 
         // https://github.com/knex/knex/issues/5189
-        // This now passes
         it('Should correctly interpret ? in where clause as JSONB query clause', async () => {
           const k = knex.select('*')
             .from(tableName)
@@ -39,7 +38,6 @@ describe.only('Postgres dialect', () => {
         });
 
         // https://github.com/knex/knex/issues/6011
-        // This works without pg-format
         it('Should correctly map json key & value in JSONB raw SQL', async () => {
           const binding = ['json_key', 'json_value'];
           const k = knex.select('*')
@@ -52,7 +50,7 @@ describe.only('Postgres dialect', () => {
           console.log(r, 'r');
         });
 
-                // As it stands, this throws an error
+        // As it stands, this throws an error
         // https://github.com/knex/knex/issues/5091
         xit('Should correctly interpret string literal in JSONB raw SQL', async () => {
           // Is the presence of "?" in postgres dialect enough to always replace with %L for pg-format?
