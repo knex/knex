@@ -438,6 +438,8 @@ describe('Selects', function () {
           });
       });
 
+
+
       it('allows you to stream', async function () {
         if (isPgNative(knex)) {
           return this.skip();
@@ -1591,6 +1593,37 @@ describe('Selects', function () {
             max: 1450000,
           });
         });
+
+        it('should allow raw json path', async function () {
+          if (isPgBased(knex)) {
+            await knex.schema.createTable('users', t => {
+              t.increments('id').primary();
+              t.string('name').notNullable();
+              t.string('email').notNullable();
+              t.string('password').notNullable();
+              t.jsonb('json_key').notNullable();
+            });
+
+            const res = await knex
+              .select('*')
+              .from('users')
+              .where('json_key', '\\?', 'json_value')
+              .testSql(function (tester) {
+                tester(
+                  'mysql',
+                  'select json_unquote(json_extract(json_remove(`population`,?), ?)) as `maxPop` from `cities`',
+                  ['$.minMax.min', '$.minMax.max'],
+                  [
+                    { maxPop: '12000000' },
+                    { maxPop: '1200000' },
+                    { maxPop: '1450000' },
+                  ]
+                );
+              });
+
+            console.log(res);
+          }
+        })
       });
     });
   });
