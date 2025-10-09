@@ -31,6 +31,20 @@ module.exports = function (knex) {
         });
     });
 
+    it.only('should handle delete with limit', function () {
+      if (!isPostgreSQL(knex)) {
+        this.skip();
+      }
+
+      return knex('accounts')
+        .where('id', 75)
+        .del()
+        .limit(1)
+        .testSql(function (tester) {
+          tester('pg', 'delete from "accounts" where "id" = ? limit 1', [1], 1);
+        });
+    });
+
     it('should allow returning for deletes in postgresql and mssql', function () {
       return knex('accounts')
         .where('id', 2)
