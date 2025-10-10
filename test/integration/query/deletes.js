@@ -31,18 +31,18 @@ module.exports = function (knex) {
         });
     });
 
-    it.only('should handle delete with limit', function () {
+    it.only('should handle delete with limit', async function () {
       if (!isPostgreSQL(knex)) {
         this.skip();
       }
 
-      return knex('accounts')
+      await expect(knex('accounts')
         .where('id', 75)
         .del()
         .limit(1)
-        .testSql(function (tester) {
-          tester('pg', 'delete from "accounts" where "id" = ? limit 1', [1], 1);
-        });
+      ).to.eventually.be.rejectedWith(
+        'PostgreSQL does not support limit on delete'
+      );
     });
 
     it('should allow returning for deletes in postgresql and mssql', function () {

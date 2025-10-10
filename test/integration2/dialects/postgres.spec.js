@@ -20,6 +20,7 @@ describe.only('Postgres dialect', () => {
             t.string('name').notNullable();
             t.string('email').notNullable();
             t.string('password').notNullable();
+            t.datetime('created_at').notNullable();
             t.jsonb('json_key').notNullable();
           });
         });
@@ -44,6 +45,15 @@ describe.only('Postgres dialect', () => {
             .from(tableName)
             .where('id', '=', 1)
             .whereRaw('?? \\? ?', binding)
+
+          // console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
+          const r = await k;
+          console.log(r, 'r');
+        });
+
+
+        it('Should correctly map json key & value in JSONB raw SQL', async () => {
+          const k = knex(tableName).update({ created_at: '2024-02-01T05:00:00.000Z' }).returning('*').toQuery();
 
           // console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
           const r = await k;
