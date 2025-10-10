@@ -6481,13 +6481,16 @@ describe('QueryBuilder', () => {
     );
   });
 
-  it('Calling decrement multiple times on same column overwrites the previous value', () => {
+  // https://github.com/knex/knex/issues/6096
+  it.only('Calling decrement multiple times on same column overwrites the previous value', () => {
     testsql(
       qb()
         .into('users')
         .where('id', '=', 1)
         .decrement('balance', 10)
-        .decrement('balance', 20),
+        .decrement('balance', 20)
+        // Make sure really big numbers work properly
+        .decrement('balance', "32492348324249023948230423"),
       {
         pg: {
           sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
