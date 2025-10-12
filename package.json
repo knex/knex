@@ -140,7 +140,7 @@
     "tap-spec": "^5.0.0",
     "tape": "^5.6.0",
     "tedious": "^16.6.1",
-    "toxiproxy-node-client": "^2.0.6",
+    "toxiproxy-node-client": "^3.0.0",
     "ts-node": "^10.9.1",
     "tsd": "^0.28.1",
     "typescript": "5.0.4"
