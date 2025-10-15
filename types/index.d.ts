@@ -3105,6 +3105,7 @@ declare namespace Knex {
     returnToHead?: boolean;
     priorityRange?: number;
     log?: (message: string, logLevel: string) => void;
+    validate?: (connection: any) => boolean;
 
     // tarn configs
     propagateCreateError?: boolean;
