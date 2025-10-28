@@ -59,7 +59,7 @@ describe('Schema (misc)', () => {
 
       describe('errors for unsupported dialects', () => {
         it('throws an error if client does not support createSchema', async function () {
-          if (isPgBased(knex)) {
+          if (isPgBased(knex) || isMssql(knex)) {
             return this.skip();
           }
 
@@ -91,7 +91,7 @@ describe('Schema (misc)', () => {
         });
 
         it('throws an error if client does not support dropSchema', async function () {
-          if (isPgBased(knex)) {
+          if (isPgBased(knex) || isMssql(knex)) {
             return this.skip();
           }
 
