@@ -438,8 +438,6 @@ describe('Selects', function () {
           });
       });
 
-
-
       it('allows you to stream', async function () {
         if (isPgNative(knex)) {
           return this.skip();

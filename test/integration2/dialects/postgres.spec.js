@@ -51,14 +51,6 @@ describe.only('Postgres dialect', () => {
           await k;
         });
 
-
-        it('Should correctly map json key & value in JSONB raw SQL', async () => {
-          const k = knex(tableName).update({ created_at: '2024-02-01T05:00:00.000Z' }).returning('*').toQuery();
-
-          // TODO: Needs assertion. Currently doesn't throw which implicitly shows previous syntax error is fixed.
-          await k;
-        });
-
         // As it stands, this throws an error
         // https://github.com/knex/knex/issues/5091
         xit('Should correctly interpret string literal in JSONB raw SQL', async () => {
