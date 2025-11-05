@@ -1,7 +1,7 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const tableName = 'users_jsonb';
 
-describe.only('Postgres dialect', () => {
+describe('Postgres dialect', () => {
   const db = getAllDbs().filter((db) => db.startsWith('postgres'))
 
   db.forEach((db) => {

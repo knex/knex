@@ -32,7 +32,7 @@ module.exports = function (knex) {
     });
 
     // https://github.com/knex/knex/issues/6074
-    it.only('should reject delete with limit in postgres', async function () {
+    it('should reject delete with limit in postgres', async function () {
       if (!isPostgreSQL(knex)) {
         this.skip();
       }
