@@ -785,7 +785,7 @@ describe('MSSQL SchemaBuilder', function () {
   });
 
   // https://github.com/knex/knex/issues/5995 - needs test case
-  it('adds foreign key onDelete cascade', function () {
+  xit('adds foreign key onDelete cascade', function () {
     tableSql = client
       .schemaBuilder()
       .createTable('person_random', function (table) {

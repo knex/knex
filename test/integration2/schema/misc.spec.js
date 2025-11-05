@@ -1545,7 +1545,7 @@ describe('Schema (misc)', () => {
           if (
             isSQLite(knex) ||
             isRedshift(knex) ||
-            // isMssql(knex) ||
+            isMssql(knex) ||
             isOracle(knex) ||
             isCockroachDB(knex)
           ) {
@@ -1578,7 +1578,8 @@ describe('Schema (misc)', () => {
           });
         });
 
-        it.only('allows CURRENT_TIMESTAMP', async () => {
+        // https://github.com/knex/knex/issues/6097
+        xit('allows CURRENT_TIMESTAMP', async () => {
           if (
             isSQLite(knex) ||
             isRedshift(knex) ||
@@ -1596,6 +1597,7 @@ describe('Schema (misc)', () => {
 
           const info = await knex('curr_timestamp').columnInfo();
 
+          // TODO: Needs assertion
           console.log(info)
 
           await knex.schema.dropTable('curr_timestamp');

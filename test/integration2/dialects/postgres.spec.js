@@ -35,6 +35,7 @@ describe.only('Postgres dialect', () => {
             .from(tableName)
             .where('json_key', '\\?', 'json_value')
 
+          // TODO: Needs assertion. Currently doesn't throw which implicitly shows previous syntax error is fixed.
           await k;
         });
 
@@ -46,18 +47,16 @@ describe.only('Postgres dialect', () => {
             .where('id', '=', 1)
             .whereRaw('?? \\? ?', binding)
 
-          // console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-          const r = await k;
-          console.log(r, 'r');
+          // TODO: Needs assertion. Currently doesn't throw which implicitly shows previous syntax error is fixed.
+          await k;
         });
 
 
         it('Should correctly map json key & value in JSONB raw SQL', async () => {
           const k = knex(tableName).update({ created_at: '2024-02-01T05:00:00.000Z' }).returning('*').toQuery();
 
-          // console.log({ toSQL: k.toSQL(), toQuery: k.toQuery() });
-          const r = await k;
-          console.log(r, 'r');
+          // TODO: Needs assertion. Currently doesn't throw which implicitly shows previous syntax error is fixed.
+          await k;
         });
 
         // As it stands, this throws an error
@@ -71,6 +70,7 @@ describe.only('Postgres dialect', () => {
             .from(tableName)
             .whereRaw('json_key.json_value @\\? \'$.*.bar \\? (@ == "?")\'', binding);
 
+          // TODO: Needs assertion.
           await k;
         });
       });

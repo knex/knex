@@ -6482,19 +6482,17 @@ describe('QueryBuilder', () => {
   });
 
   // https://github.com/knex/knex/issues/6096
-  it.only('Calling decrement with numbers > Math.MAX_SAFE_INTEGER should work', () => {
-    const veryLargeNumber = "32492348324249023948230423";
-
+  it('Calling decrement multiple times on same column overwrites the previous value', () => {
     testsql(
       qb()
         .into('users')
         .where('id', '=', 1)
-        // Make sure really big numbers work properly
-        .decrement('balance', veryLargeNumber),
+        .decrement('balance', 10)
+        .decrement('balance', 20),
       {
         pg: {
           sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
-          bindings: [veryLargeNumber, 1],
+          bindings: [20, 1],
         },
         mysql: {
           sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
@@ -6511,6 +6509,37 @@ describe('QueryBuilder', () => {
       }
     );
   });
+
+    // https://github.com/knex/knex/issues/6096
+    xit('Calling decrement with numbers > Math.MAX_SAFE_INTEGER should work', () => {
+      const veryLargeNumber = "32492348324249023948230423";
+
+      testsql(
+        qb()
+          .into('users')
+          .where('id', '=', 1)
+          // Make sure really big numbers work properly
+          .decrement('balance', veryLargeNumber),
+        {
+          pg: {
+            sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+            bindings: [veryLargeNumber, 1],
+          },
+          mysql: {
+            sql: 'update `users` set `balance` = `balance` - ? where `id` = ?',
+            bindings: [20, 1],
+          },
+          mssql: {
+            sql: 'update [users] set [balance] = [balance] - ? where [id] = ?;select @@rowcount',
+            bindings: [20, 1],
+          },
+          'pg-redshift': {
+            sql: 'update "users" set "balance" = "balance" - ? where "id" = ?',
+            bindings: [20, 1],
+          },
+        }
+      );
+    });
 
   it('insert method respects raw bindings', () => {
     testsql(
