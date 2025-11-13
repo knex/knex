@@ -18,9 +18,7 @@
 
 ## Documentation
 
-Documentation is no longer maintained in knex master repository. All the documentation pull requests should be sent to https://github.com/knex/documentation
-
-Documentation pull requests should not be merged before knex version which has the new documented feature is released.
+Documentation is maintained in the `/docs` folder. every pull request that changes the public API should also update the docs
 
 ## I would like to add support for new dialect to knex, is it possible?
 
@@ -95,7 +93,7 @@ main();
 Usually issues without reproduction code available are just closed and if the same issue is reported multiple
 times maybe someone looks into it.
 
-One easy way to setup database for your reproduction is to use database from knex's docker-compose setup (npm run db:start) and by checking the connection settings from tests' `test/knexfile.js`.
+One easy way to setup database for your reproduction is to use database from knex's docker compose setup (npm run db:start) and by checking the connection settings from tests' `test/knexfile.js`.
 
 ## Integration Tests
 
