@@ -4,7 +4,6 @@ const path = require('path');
 const tildify = require('tildify');
 
 const { FileTestHelper, execCommand } = require('cli-testlab');
-const color = require('colorette');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
