@@ -99,11 +99,9 @@ module.exports = {
           const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
 
           return execCommand(
-            `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
+            `NO_COLOR=true node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
             {
-              expectedOutput: `Working directory changed to ${color.magenta(
-                expectedCWD
-              )}`,
+              expectedOutput: `Working directory changed to ${expectedCWD}`,
             }
           );
         });
@@ -120,11 +118,9 @@ module.exports = {
               const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
 
               return execCommand(
-                `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
+                `NO_COLOR=true node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
                 {
-                  expectedOutput: `Working directory changed to ${color.magenta(
-                    expectedCWD
-                  )}`,
+                  expectedOutput: `Working directory changed to ${expectedCWD}`,
                 }
               );
             });
