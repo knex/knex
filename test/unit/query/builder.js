@@ -138,6 +138,19 @@ function testquery(chain, valuesToCheck, selectedClients) {
   });
 }
 
+function testFailure(chain, error, selectedClients) {
+  // array of strings - keys to "clients"
+  selectedClients = selectedClients || Object.keys(clients);
+
+  selectedClients.forEach((key) => {
+    const newChain = chain.clone();
+    newChain.client = clients[key];
+    expect(function newChain_toSQL() {
+      newChain.toSQL();
+    }).to.throw(error);
+  });
+}
+
 describe('Custom identifier wrapping', () => {
   const customWrapperConfig = {
     wrapIdentifier: (value, clientImpl, context) => {
@@ -6962,6 +6975,13 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('delete method with `having` throws', async function () {
+    testFailure(
+      qb().from('users').having('id', '>', 0).del(),
+      /^Refused to compile/
+    );
+  });
+
   it('delete method', () => {
     testsql(qb().from('users').where('email', '=', 'foo').delete(), {
       mysql: {
@@ -7025,6 +7045,20 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
     });
+  });
+
+  it('truncate method with `where` throws', async function () {
+    testFailure(
+      qb().from('users').where('id', '>', 0).truncate(),
+      /^Refused to compile/
+    );
+  });
+
+  it('truncate method with `having` throws', async function () {
+    testFailure(
+      qb().from('users').having('id', '>', 0).truncate(),
+      /^Refused to compile/
+    );
   });
 
   it('insert get id', () => {
