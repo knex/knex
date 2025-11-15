@@ -6978,7 +6978,7 @@ describe('QueryBuilder', () => {
   it('delete method with `having` throws', async function () {
     testFailure(
       qb().from('users').having('id', '>', 0).del(),
-      /^Refused to compile/
+      /^Refused to compile.*having.*delete/
     );
   });
 
@@ -7050,14 +7050,14 @@ describe('QueryBuilder', () => {
   it('truncate method with `where` throws', async function () {
     testFailure(
       qb().from('users').where('id', '>', 0).truncate(),
-      /^Refused to compile/
+      /^Refused to compile.*where.*truncate/
     );
   });
 
   it('truncate method with `having` throws', async function () {
     testFailure(
       qb().from('users').having('id', '>', 0).truncate(),
-      /^Refused to compile/
+      /^Refused to compile.*having.*truncate/
     );
   });
 
