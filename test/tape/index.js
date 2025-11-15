@@ -4,6 +4,7 @@ require('../util/chai-setup');
 const tape = require('tape');
 const makeKnex = require('../../knex');
 const knexfile = require('../knexfile');
+const { prepDB } = require('../prep-db');
 
 require('./parse-connection');
 require('./raw');
@@ -14,8 +15,10 @@ require('./pool');
 require('./knex');
 require('./invalid-db-setup')(knexfile);
 
-Object.keys(knexfile).forEach(function (key) {
+Object.keys(knexfile).forEach(async function (key) {
   const knex = makeKnex(knexfile[key]);
+
+  await prepDB(knex);
 
   require('./transactions')(knex);
   require('./stream')(knex);
