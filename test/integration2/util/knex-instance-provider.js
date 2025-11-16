@@ -1,9 +1,10 @@
 const { promisify } = require('util');
 const knex = require('../../../lib');
+
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
 
-const Db = {
+const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
   PgNative: 'pgnative',
   MySQL: 'mysql',
@@ -13,7 +14,9 @@ const Db = {
   Oracle: 'oracledb',
   CockroachDB: 'cockroachdb',
   BetterSqlite3: 'better-sqlite3',
-};
+});
+/** @typedef {typeof Db[keyof typeof Db]} DriverName */
+/** @typedef {import('../../../types/index').Knex} Knex*/
 
 const defaultDbs = [
   Db.PostgresSQL,
@@ -28,6 +31,36 @@ const defaultDbs = [
 
 function getAllDbs() {
   return process.env.DB ? process.env.DB.split(' ') : defaultDbs;
+}
+
+/**
+ * Conditionally execute the callback with a configured instance of knex
+ * for a subset of the available drivers, and only when those drivers are
+ * included in the `DB` environment variable.
+ *
+ * @param {DriverName[]} dbNames The list of drivers for which the callback
+ * should be executed.
+ * @param {(knex: Knex, name: DriverName) => void} cb
+ * @example
+ * withDbs([Db.SQLite], (knex) => {
+ *   describe('SQLite-specific tests', () => {
+ *     // ...
+ *   })
+ * })
+ */
+function withDbs(dbNames, cb) {
+  const configuredDbs = getAllDbs();
+
+  for (const name of dbNames) {
+    if (!defaultDbs.includes(name)) {
+      throw new Error(
+        `Unknown db: ${name} (supported: ${Object.values(Db).join(', ')})`
+      );
+    }
+    if (!configuredDbs.includes(name)) continue;
+    const knex = getKnexForDb(name);
+    cb(knex, name);
+  }
 }
 
 const pool = {
@@ -155,6 +188,7 @@ const testConfigs = {
     pool: poolSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false, // retain default behavior, silence warning
   },
 
   'better-sqlite3': {
@@ -163,6 +197,7 @@ const testConfigs = {
     pool: poolBetterSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false, // retain default behavior, silence warning
   },
 
   mssql: {
@@ -208,8 +243,38 @@ function getKnexForDb(db, configOverrides = {}) {
   });
 }
 
+/** @returns {import('../../../types/index').Knex} */
+function getKnexForSqlite(foreignKeys, configOverrides = {}) {
+  const sql = `PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'}`;
+  const config = {
+    ...testConfigs.sqlite3,
+    ...configOverrides,
+  };
+  config.pool.afterCreate = function (connection, callback) {
+    connection.run(sql, callback);
+  };
+  return knex(config);
+}
+
+/** @returns {import('../../../types/index').Knex} */
+function getKnexForBetterSqlite(foreignKeys, configOverrides = {}) {
+  const sql = `PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'}`;
+  const config = {
+    ...testConfigs.sqlite3,
+    ...configOverrides,
+  };
+  config.pool.afterCreate = function (connection, callback) {
+    connection.prepare(sql).run();
+    callback(null, connection);
+  };
+  return knex(config);
+}
+
 module.exports = {
   Db,
   getAllDbs,
   getKnexForDb,
+  getKnexForSqlite,
+  getKnexForBetterSqlite,
+  withDbs,
 };
