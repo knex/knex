@@ -186,7 +186,10 @@ const testConfigs = {
     client: 'sqlite3',
     connection: testConfig.sqlite3 || ':memory:',
     pool: poolSqlite,
-    migrations,
+    migrations: {
+      ...migrations,
+      disableTransactions: true,
+    },
     seeds,
     useNullAsDefault: false, // retain default behavior, silence warning
   },
@@ -195,7 +198,10 @@ const testConfigs = {
     client: 'better-sqlite3',
     connection: testConfig.sqlite3 || ':memory:',
     pool: poolBetterSqlite,
-    migrations,
+    migrations: {
+      ...migrations,
+      disableTransactions: true,
+    },
     seeds,
     useNullAsDefault: false, // retain default behavior, silence warning
   },
@@ -250,8 +256,11 @@ function getKnexForSqlite(foreignKeys, configOverrides = {}) {
     ...testConfigs.sqlite3,
     ...configOverrides,
   };
-  config.pool.afterCreate = function (connection, callback) {
-    connection.run(sql, callback);
+  config.pool = {
+    ...config.pool,
+    afterCreate: function (connection, callback) {
+      connection.run(sql, callback);
+    },
   };
   return knex(config);
 }
@@ -263,9 +272,12 @@ function getKnexForBetterSqlite(foreignKeys, configOverrides = {}) {
     ...testConfigs.sqlite3,
     ...configOverrides,
   };
-  config.pool.afterCreate = function (connection, callback) {
-    connection.prepare(sql).run();
-    callback(null, connection);
+  config.pool = {
+    ...config.pool,
+    afterCreate: function (connection, callback) {
+      connection.prepare(sql).run();
+      callback(null, connection);
+    },
   };
   return knex(config);
 }
