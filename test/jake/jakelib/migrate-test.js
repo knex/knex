@@ -270,6 +270,7 @@ test('migrate:rollback --all rolls back all completed migrations', (temp) => {
         `node ${KNEX} migrate:rollback --all \
       --client=sqlite3 \
       --connection=${temp}/db \
+      --disable-transactions \
       --migrations-directory=${temp}/migrations`
       ).then(({ stdout }) => {
         assert.include(stdout, 'Batch 3 rolled back: 3 migrations');
@@ -485,6 +486,7 @@ test('migrate:down undos only the last run migration', (temp) => {
         `node ${KNEX} migrate:down \
       --client=sqlite3 \
       --connection=${temp}/db \
+      --disable-transactions \
       --migrations-directory=${temp}/migrations`,
         'undo_migration_002'
       ).then(({ stdout }) => {
