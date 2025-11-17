@@ -9,3 +9,5 @@ exports.down = (knex) => {
     table.integer('foo').notNullable().default(0);
   });
 };
+
+exports.config = { transaction: 'false_if_sqlite' };

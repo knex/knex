@@ -186,10 +186,7 @@ const testConfigs = {
     client: 'sqlite3',
     connection: testConfig.sqlite3 || ':memory:',
     pool: poolSqlite,
-    migrations: {
-      ...migrations,
-      disableTransactions: true,
-    },
+    migrations,
     seeds,
     useNullAsDefault: false, // retain default behavior, silence warning
   },
@@ -198,10 +195,7 @@ const testConfigs = {
     client: 'better-sqlite3',
     connection: testConfig.sqlite3 || ':memory:',
     pool: poolBetterSqlite,
-    migrations: {
-      ...migrations,
-      disableTransactions: true,
-    },
+    migrations,
     seeds,
     useNullAsDefault: false, // retain default behavior, silence warning
   },

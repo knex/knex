@@ -165,13 +165,17 @@ const KNEX = resolve(__dirname, '..', '..', 'bin', 'cli.js');
  *
  * @typedef {import('../../types/index').Knex} Knex
  * @typedef {(knex: Knex) => Promise<void>} Migrate
- * @param {{up: Migrate, down: Migrate}} migrations
+ * @typedef {{transaction?: boolean|'false_if_sqlite'}} MigrationConfig
+ * @param {{up: Migrate, down: Migrate, config?: MigrationConfig}} migrations
  */
 function migration(migrations) {
-  return `
-exports.up = ${String(migrations.up)};
-exports.down = ${String(migrations.down)};
-`;
+  let str = '';
+  str += `exports.up = ${String(migrations.up)};`;
+  str += `exports.down = ${String(migrations.down)};`;
+  if (migrations.config) {
+    str += `exports.config = ${JSON.stringify(migrations.config)}`;
+  }
+  return str;
 }
 
 /**

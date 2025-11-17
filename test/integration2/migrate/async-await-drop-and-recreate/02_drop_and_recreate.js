@@ -9,3 +9,4 @@ exports.up = async (knex) => {
 };
 
 exports.down = async (knex) => {};
+exports.config = { transaction: 'false_if_sqlite' };
