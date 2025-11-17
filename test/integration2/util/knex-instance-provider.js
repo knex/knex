@@ -38,7 +38,7 @@ function getAllDbs() {
  * for a subset of the available drivers, and only when those drivers are
  * included in the `DB` environment variable.
  *
- * @param {DriverName[]} dbNames The list of drivers for which the callback
+ * @param {DriverName[]|'*'} dbNames The list of drivers for which the callback
  * should be executed.
  * @param {(knex: Knex, name: DriverName) => void} cb
  * @example
@@ -49,6 +49,8 @@ function getAllDbs() {
  * })
  */
 function withDbs(dbNames, cb) {
+  dbNames = dbNames === '*' ? Object.values(Db) : dbNames;
+
   const configuredDbs = getAllDbs();
 
   for (const name of dbNames) {
