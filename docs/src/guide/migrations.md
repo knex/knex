@@ -306,7 +306,52 @@ exports.down = function (knex) {
 exports.config = { transaction: false };
 ```
 
-The same config property can be used for enabling transaction per-migration in case the common configuration has `disableTransactions: true`.
+The same config property can be used for enabling transaction per-migration in case the common configuration has `disableTransactions: false`.
+
+#### Sqlite3-specific concerns
+
+In some cases, such as writing migrations that use `.dropColumn()`, migration-level transactions can result in data loss (see [this PR](https://github.com/knex/knex/pull/6315) for details). Knex now throws an error in these cases.
+
+Rather than disable transactions for all migrations, or disable them for a single migration file on all drivers, you may specify the string `"false_if_sqlite"` as the value of `config.transaction`. Transactions will be disabled if executing via the `sqlite3` or `better-sqlite3` drivers, and use the default global behavior on other drivers:
+
+```js
+exports.up = function (knex) {
+  return knex.schema.alterTable('users', function (table) {
+    table.string('website');
+  });
+};
+
+exports.down = function (knex) {
+  return knex.schema.alterTable('users', function (table) {
+    table.dropColumn('website');
+  });
+};
+exports.config = { transaction: 'false_if_sqlite' };
+```
+
+If you want to create a manual transaction for a migration involving `dropColumn`, you must supply `enforceForeignCheck: false` in the call to `knex.transaction()`:
+
+```js
+exports.up = function (knex) {
+  return knex.transaction(function (trx) {
+    return knex.schema.alterTable('users', function (table) {
+      table.string('website');
+    });
+  });
+};
+
+exports.down = function (knex) {
+  return knex.transaction(
+    function (trx) {
+      return knex.schema.alterTable('users', function (table) {
+        table.dropColumn('website');
+      });
+    },
+    { enforceForeignCheck: false }
+  );
+};
+exports.config = { transaction: 'false_if_sqlite' };
+```
 
 ### make
 
