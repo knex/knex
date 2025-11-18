@@ -7,6 +7,7 @@ const { FileTestHelper } = require('cli-testlab');
 
 const equal = require('assert').equal;
 const fs = require('fs');
+const fs$ = require('fs/promises');
 const path = require('path');
 const rimraf = require('rimraf');
 const knexLib = require('../../../knex');
@@ -15,28 +16,20 @@ const config = require('../../knexfile');
 const delay = require('../../../lib/execution/internal/delay');
 const _ = require('lodash');
 const testMemoryMigrations = require('./memory-migrations');
-const {
-  isPostgreSQL,
-  isOracle,
-  isMssql,
-  isMysql,
-  isSQLite,
-  isRedshift,
-} = require('../../util/db-helpers');
+
 const { assertNumber } = require('../../util/assertHelper');
-const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+
+const { dbs } = require('../util/test-harness/instance-provider');
+const { isMysql, isRedshift, isOracle } = require('../../util/db-helpers');
+
 const {
   ensureTable,
 } = require('../../../lib/migrations/migrate/table-creator');
-
-describe('Migrations', function () {
-  getAllDbs().forEach((db) => {
-    describe(db, () => {
-      let knex;
-
+{
+  dbs.each('*', (knex) => {
+    describe('Migrations', () => {
       before(async () => {
         rimraf.sync(path.join(__dirname, './migration'));
-        knex = logger(getKnexForDb(db));
         // make sure lock was not left from previous failed test run
         await knex.schema.dropTableIfExists('knex_migrations');
         await knex.schema.dropTableIfExists('migration_test_1');
@@ -81,7 +74,7 @@ describe('Migrations', function () {
             });
         });
 
-        if (isPostgreSQL(knex)) {
+        dbs.each('pg~', (knex) => {
           it('should not fail drop-and-recreate-column operation when using promise chain and schema', () => {
             return knex.migrate
               .latest({
@@ -95,27 +88,50 @@ describe('Migrations', function () {
                 });
               });
           });
-        }
+        });
 
-        if (isSQLite(knex)) {
+        dbs.each('sqlite~', (knex) => {
           it('should not fail rename-and-drop-column with multiline sql from legacy db', async () => {
-            const knexConfig = _.extend({}, config.sqlite3, {
-              connection: {
-                filename: __dirname + '/../../multilineCreateMaster.sqlite3',
-              },
-              migrations: {
-                directory:
-                  'test/integration2/migrate/rename-and-drop-column-with-multiline-sql-from-legacy-db',
-              },
-            });
-            const knexInstance = knexLib(knexConfig);
-            const db = logger(knexInstance);
+            const fixture = path.resolve(
+              __dirname,
+              '..',
+              '..',
+              'multilineCreateMasterSample.sqlite3'
+            );
+            const copy = path.resolve(
+              __dirname,
+              '..',
+              '..',
+              'multilineCreateMaster.sqlite3'
+            );
+            let knexInstance;
 
-            await db.migrate.latest();
-            await db.migrate.rollback();
-            await knexInstance.destroy();
+            try {
+              await fs$.copyFile(fixture, copy);
+
+              const knexConfig = _.extend({}, config.sqlite3, {
+                connection: {
+                  filename: copy,
+                },
+                migrations: {
+                  directory:
+                    'test/integration2/migrate/rename-and-drop-column-with-multiline-sql-from-legacy-db',
+                },
+              });
+              knexInstance = knexLib(knexConfig);
+              const db = logger(knexInstance);
+
+              await db.migrate.latest();
+              await db.migrate.rollback();
+
+              await knexInstance.destroy();
+            } finally {
+              await fs$.unlink(copy);
+            }
           });
+        });
 
+        dbs.each('sqlite~', (knex) => {
           it('should not fail alter-table-ignore-case-sensitive', async () => {
             await knex.migrate.latest({
               directory:
@@ -140,7 +156,7 @@ describe('Migrations', function () {
             expect(await knex.schema.hasTable('Some_Table')).to.be.false;
             expect(await knex.schema.hasTable('some_table')).to.be.false;
           });
-        }
+        });
 
         it('should not fail drop-and-recreate-column operation when using async/await', () => {
           return knex.migrate
@@ -156,7 +172,7 @@ describe('Migrations', function () {
             });
         });
 
-        if (isPostgreSQL(knex)) {
+        dbs.each('pg~', (knex) => {
           it('should not fail drop-and-recreate-column operation when using async/await and schema', () => {
             return knex.migrate
               .latest({
@@ -170,7 +186,7 @@ describe('Migrations', function () {
                 });
               });
           });
-        }
+        });
 
         it('should create a new migration file with the create method', function () {
           return knex.migrate.make('test').then(function (name) {
@@ -330,59 +346,55 @@ describe('Migrations', function () {
               });
           });
 
-          it('should work with concurent calls to _lockMigrations', async function () {
-            if (isSQLite(knex)) {
-              // sqlite doesn't support concurrency
-              this.skip();
-              return;
-            }
-
-            const migrator = knex.migrate;
-            try {
-              // Start two transactions and call _lockMigrations in each of them.
-              // Simulate a race condition by waiting until both are started before
-              // attempting to commit either one. Exactly one should succeed.
-              //
-              // Both orderings are legitimate, but in practice the first transaction
-              // to start will be the one that succeeds in all currently supported
-              // databases (CockroachDB 1.x is an example of a database where the
-              // second transaction would win, but this changed in 2.0). This test
-              // assumes the first transaction wins, but could be refactored to support
-              // both orderings if desired.
-              const trx1 = await knex.transaction();
-              await migrator._lockMigrations(trx1);
-              const trx2 = await knex.transaction();
-              // trx1 has a pending write lock, so the second call to _lockMigrations
-              // will block (unless we're on a DB that resolves the transaction in
-              // the other order as mentioned above).
-              // Save the promise, then wait a short time to ensure it's had time
-              // to start its query and get blocked.
-              const trx2Promise = migrator._lockMigrations(trx2);
-              await delay(100);
-              const isTrx2PromisePending = await Promise.race([
-                delay(10).then(() => true),
-                trx2Promise.catch(() => {}).then(() => false),
-              ]);
-              if (!isTrx2PromisePending) {
-                throw new Error('expected trx2 to be pending');
-              }
-              await trx1.commit();
-              // trx1 has completed and unblocked trx2, which should now fail.
+          dbs.except('sqlite~', (knex) => {
+            it('should work with concurent calls to _lockMigrations', async function () {
+              const migrator = knex.migrate;
               try {
-                await trx2Promise;
-                throw new Error('expected trx2 to fail');
-              } catch (error) {
-                expect(error)
-                  .to.have.property('message')
-                  .that.includes('already locked');
-                await trx2.rollback();
+                // Start two transactions and call _lockMigrations in each of them.
+                // Simulate a race condition by waiting until both are started before
+                // attempting to commit either one. Exactly one should succeed.
+                //
+                // Both orderings are legitimate, but in practice the first transaction
+                // to start will be the one that succeeds in all currently supported
+                // databases (CockroachDB 1.x is an example of a database where the
+                // second transaction would win, but this changed in 2.0). This test
+                // assumes the first transaction wins, but could be refactored to support
+                // both orderings if desired.
+                const trx1 = await knex.transaction();
+                await migrator._lockMigrations(trx1);
+                const trx2 = await knex.transaction();
+                // trx1 has a pending write lock, so the second call to _lockMigrations
+                // will block (unless we're on a DB that resolves the transaction in
+                // the other order as mentioned above).
+                // Save the promise, then wait a short time to ensure it's had time
+                // to start its query and get blocked.
+                const trx2Promise = migrator._lockMigrations(trx2);
+                await delay(100);
+                const isTrx2PromisePending = await Promise.race([
+                  delay(10).then(() => true),
+                  trx2Promise.catch(() => {}).then(() => false),
+                ]);
+                if (!isTrx2PromisePending) {
+                  throw new Error('expected trx2 to be pending');
+                }
+                await trx1.commit();
+                // trx1 has completed and unblocked trx2, which should now fail.
+                try {
+                  await trx2Promise;
+                  throw new Error('expected trx2 to fail');
+                } catch (error) {
+                  expect(error)
+                    .to.have.property('message')
+                    .that.includes('already locked');
+                  await trx2.rollback();
+                }
+              } finally {
+                // Clean up after ourselves (I'm not sure why the before() at the
+                // top of this file isn't doing it, but if this test fails without
+                // this call it tends to cause cascading failures).
+                await migrator._freeLock();
               }
-            } finally {
-              // Clean up after ourselves (I'm not sure why the before() at the
-              // top of this file isn't doing it, but if this test fails without
-              // this call it tends to cause cascading failures).
-              await migrator._freeLock();
-            }
+            });
           });
 
           it('should report failing migration', function () {
@@ -931,7 +943,7 @@ describe('Migrations', function () {
           });
         });
 
-        if (isPostgreSQL(knex) || isMssql(knex)) {
+        dbs.each(['pg~', 'mssql'], (knex) => {
           it('is able to run two migrations in parallel (if no implicit DDL commits)', function () {
             return Promise.all([
               knex.migrate.latest({
@@ -948,7 +960,7 @@ describe('Migrations', function () {
                 });
             });
           });
-        }
+        });
 
         /** TODO : fix me and enabled it.
          * Fail randomly with (mostly with PostgreSQL, PgNative, CockroachDb):
@@ -1109,7 +1121,7 @@ describe('Migrations', function () {
           });
         });
 
-        if (isPostgreSQL(knex)) {
+        dbs.each('pg~', (knex) => {
           describe('knex.migrate.latest with specific changelog schema', function () {
             before(() => {
               return knex.raw(`CREATE SCHEMA IF NOT EXISTS "testschema"`);
@@ -1160,7 +1172,7 @@ describe('Migrations', function () {
               });
             });
           });
-        }
+        });
       });
 
       describe('migrationSource config', function () {
@@ -1388,4 +1400,4 @@ describe('Migrations', function () {
       });
     });
   });
-});
+}
