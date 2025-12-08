@@ -66,9 +66,9 @@ describe('Oracle', () => {
       const sql = compiler.insert();
       expect(sql.sql).to.eql(
         'begin execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
-        '(:1, :2, :3, :4)\' using ?, ?, ?, ?; ' +
-        'execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
-        '(:1, DEFAULT, DEFAULT, DEFAULT)\' using ?;end;'
+          "(:1, :2, :3, :4)' using ?, ?, ?, ?; " +
+          'execute immediate \'insert into "fakeTable" ("value1", "value2", "value3", "value4") values ' +
+          "(:1, DEFAULT, DEFAULT, DEFAULT)' using ?;end;"
       );
     });
   });
@@ -241,7 +241,9 @@ describe('Oracle', () => {
       }
 
       expect(exception).not.to.equal(undefined);
-      expect(exception.message).to.include('NJS-003: invalid connection');
+      expect(exception.message).to.match(
+        /NJS-003: invalid (?:or closed )?connection/
+      );
       expect(spy.callCount).to.equal(1);
     });
 

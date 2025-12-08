@@ -1,0 +1,21 @@
+import { Knex } from "knex";
+
+<% if (d.tableName) { %>
+export async function up({schema}: Knex): Promise<Knex.SchemaBuilder> {
+    return schema.createTable("<%= d.tableName %>", (t) => {
+        t.increments();
+        t.timestamps();
+    });
+}
+<% } else { %>
+export async function up({schema}: Knex): Promise<void> {
+}
+<% } %>
+<% if (d.tableName) { %>
+export async function down({schema}: Knex): Promise<Knex.SchemaBuilder> {
+    return schema.dropTable("<%= d.tableName %>");
+}
+<% } else { %>
+export async function down({schema}: Knex): Promise<void> {
+}
+<% } %>

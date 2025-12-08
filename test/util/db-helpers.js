@@ -73,6 +73,7 @@ function isOneOfDbs(knex, supportedDbs) {
 }
 
 module.exports = {
+  getDriverName,
   isOneOfDbs,
   isCockroachDB,
   isMysql,

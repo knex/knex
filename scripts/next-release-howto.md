@@ -17,7 +17,7 @@
 ```
 
 4. Update package.json version to be e.g. 0.16.0-next1 or 0.16.0-next2 and commit yo master
-5. Publish it under @next tag 
+5. Publish it under @next tag
 
 ```sh
       npm publish --tag next

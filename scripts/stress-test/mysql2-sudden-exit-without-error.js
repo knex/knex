@@ -18,7 +18,7 @@ async function recreateProxy(serviceName, listenPort, proxyToPort) {
     // there was no proxy by that name... its ok
   }
 
-  const proxy = await toxicli.createProxy({
+  await toxicli.createProxy({
     name: serviceName,
     listen: `0.0.0.0:${listenPort}`,
     upstream: `${serviceName}:${proxyToPort}`,
@@ -69,6 +69,7 @@ async function main() {
   console.log('Proxy recreated... start waiting');
 
   // wait forever
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await delay(1000);
     try {

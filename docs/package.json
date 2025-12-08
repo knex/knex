@@ -1,0 +1,22 @@
+{
+  "name": "@knex/documentation",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Knex Documentation Builder",
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "vitepress build .",
+    "serve": "vitepress serve ."
+  },
+  "devDependencies": {
+    "knex": "^2.4.0",
+    "typescript": "^4.6.3",
+    "vitepress": "^0.22.4"
+  },
+  "dependencies": {},
+  "author": {
+    "name": "Tim Griesser",
+    "web": "https://github.com/tgriesser"
+  },
+  "license": "MIT"
+}

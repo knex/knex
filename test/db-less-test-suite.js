@@ -10,6 +10,7 @@ describe('Util Tests', function () {
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
+  require('./unit/util/security');
 });
 
 describe('Query Building Tests', function () {
@@ -20,7 +21,9 @@ describe('Query Building Tests', function () {
   require('./unit/query/string');
   require('./unit/schema-builder/mysql')('mysql');
   require('./unit/schema-builder/mysql')('mysql2');
+  require('./unit/schema-builder/extensions');
   require('./unit/schema-builder/postgres');
+  require('./unit/schema-builder/cockroachdb');
   require('./unit/schema-builder/redshift');
   require('./unit/schema-builder/sqlite3');
   require('./unit/schema-builder/oracle');
@@ -44,14 +47,16 @@ if (config.postgres) {
   require('./unit/dialects/postgres');
 }
 
-describe('CLI tests', function () {
-  this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-  require('./cli/help.spec');
-  require('./cli/knexfile-test.spec');
-  require('./cli/migrate.spec');
-  require('./cli/migrate-make.spec');
-  require('./cli/seed.spec');
-  require('./cli/seed-make.spec');
-  require('./cli/version.spec');
-  require('./cli/esm-interop.spec');
-});
+if (config.oracledb) {
+  require('./unit/dialects/oracledb');
+}
+
+if (config.mysql) {
+  require('./unit/dialects/mysql');
+}
+
+if (config['better-sqlite3']) {
+  require('./unit/dialects/better-sqlite3');
+}
+
+require('./cli-tests-suite');

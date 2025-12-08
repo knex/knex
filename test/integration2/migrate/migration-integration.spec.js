@@ -115,6 +115,31 @@ describe('Migrations', function () {
             await db.migrate.rollback();
             await knexInstance.destroy();
           });
+
+          it('should not fail alter-table-ignore-case-sensitive', async () => {
+            await knex.migrate.latest({
+              directory:
+                'test/integration2/migrate/alter-table-ignore-case-sensitive',
+            });
+            expect(await knex.schema.hasColumn('Some_Table', 'id')).to.be.true;
+            expect(await knex.schema.hasColumn('Some_Table', 'other_id')).to.be
+              .true;
+            expect(await knex.schema.hasColumn('Some_Table', 'name')).to.be
+              .true;
+            // try different case
+            expect(await knex.schema.hasColumn('some_table', 'id')).to.be.true;
+            expect(await knex.schema.hasColumn('some_table', 'other_id')).to.be
+              .true;
+            expect(await knex.schema.hasColumn('some_table', 'name')).to.be
+              .true;
+
+            await knex.migrate.rollback({
+              directory:
+                'test/integration2/migrate/alter-table-ignore-case-sensitive',
+            });
+            expect(await knex.schema.hasTable('Some_Table')).to.be.false;
+            expect(await knex.schema.hasTable('some_table')).to.be.false;
+          });
         }
 
         it('should not fail drop-and-recreate-column operation when using async/await', () => {

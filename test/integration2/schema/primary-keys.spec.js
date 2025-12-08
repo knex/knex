@@ -52,7 +52,7 @@ describe('Schema', () => {
                 );
               } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
-                  'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_four'
+                  'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
               }
               if (isPgBased(knex)) {
@@ -184,7 +184,7 @@ describe('Schema', () => {
                 );
               } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
-                  'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_four'
+                  'insert into `primary_table` (`id_four`) values (1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_four'
                 );
               }
               if (isPgBased(knex)) {
@@ -224,7 +224,7 @@ describe('Schema', () => {
                 );
               } else if (isSQLite(knex)) {
                 expect(err.message).to.equal(
-                  'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                  'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                 );
               }
               if (isPgBased(knex)) {
@@ -270,7 +270,7 @@ describe('Schema', () => {
                   );
                 } else if (isSQLite(knex)) {
                   expect(err.message).to.equal(
-                    'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT_PRIMARYKEY: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
+                    'insert into `primary_table` (`id_three`, `id_two`) values (1, 1) - SQLITE_CONSTRAINT: UNIQUE constraint failed: primary_table.id_two, primary_table.id_three'
                   );
                 }
                 if (isPgBased(knex)) {

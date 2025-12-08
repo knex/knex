@@ -556,7 +556,14 @@ describe('Where', function () {
 
       describe('where like', async function () {
         beforeEach(function () {
-          if (!(isPostgreSQL(knex) || isMssql(knex) || isMysql(knex))) {
+          if (
+            !(
+              isPostgreSQL(knex) ||
+              isSQLite(knex) ||
+              isMssql(knex) ||
+              isMysql(knex)
+            )
+          ) {
             return this.skip();
           }
         });
@@ -630,9 +637,22 @@ describe('Where', function () {
           expect(result[7].email).to.equal('test8@example.com');
         });
 
-        it("doesn't find data using whereLike when different case sensitivity", async () => {
+        it("doesn't find data using whereLike when different case sensitivity", async function () {
           const result = await knex('accounts').whereLike('email', 'Test1%');
+          // sqlite only supports case-insensitive search
+          if (isSQLite(knex)) {
+            this.skip();
+          }
           expect(result).to.deep.equal([]);
+        });
+
+        it('supports only case-insensitive searches in sqlite', async function () {
+          const result = await knex('accounts').whereILike('email', 'Test1%');
+          if (!isSQLite(knex)) {
+            this.skip();
+          }
+          expect(result.length).to.equal(1);
+          expect(result[0].email).to.equal('test1@example.com');
         });
       });
 
@@ -794,6 +814,33 @@ describe('Where', function () {
           ]);
         });
 
+        it('or where json superset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where descriptions json object contains type : 'bigcity' or 'city'
+            .whereJsonSupersetOf('descriptions', {
+              type: 'bigcity',
+            })
+            .orWhereJsonSupersetOf('descriptions', {
+              type: 'city',
+            });
+          expect(result.length).to.equal(3);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
+            },
+            {
+              name: 'Oslo',
+            },
+          ]);
+        });
+
         it('where json superset of with string', async function () {
           if (!(isPostgreSQL(knex) || isMysql(knex))) {
             this.skip();
@@ -827,6 +874,32 @@ describe('Where', function () {
           assertJsonEquals(result, [
             {
               name: 'Paris', // contains only desc: 'cold' but it's matched
+            },
+          ]);
+        });
+
+        it('or where json subset of', async function () {
+          if (!(isPostgreSQL(knex) || isMysql(knex))) {
+            this.skip();
+          }
+          const result = await knex('cities')
+            .select('name')
+            // where temperature json object is included in given object
+            .whereJsonSubsetOf('temperature', {
+              desc: 'cold',
+              desc2: 'very cold',
+            })
+            .orWhereJsonSubsetOf('temperature', {
+              desc: 'warm',
+              desc2: 'very warm',
+            });
+          expect(result.length).to.equal(2);
+          assertJsonEquals(result, [
+            {
+              name: 'Paris',
+            },
+            {
+              name: 'Milan',
             },
           ]);
         });

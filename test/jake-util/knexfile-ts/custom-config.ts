@@ -1,4 +1,3 @@
-
 export const client = 'sqlite3';
 
 export const connection = {

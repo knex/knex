@@ -6,7 +6,7 @@ const os = require('os');
 const fs = require('fs');
 const rimrafSync = require('rimraf').sync;
 const path = require('path');
-const sqlite3 = require('@vscode/sqlite3');
+const sqlite3 = require('sqlite3');
 const { assert } = require('chai');
 const {
   assertExec,
@@ -26,7 +26,7 @@ function test(description, func) {
   const tempFolder = fs.mkdtempSync(tmpDirPath);
   fs.mkdirSync(tempFolder + '/migrations');
   desc(description);
-  const taskName = description.replace(/[^a-z0-9]/g, '');
+  const taskName = description.replace(/[^a-z0-9]+/gi, '_').toLowerCase();
   taskList.push(taskName);
   task(taskName, { async: true }, () =>
     func(tempFolder)

@@ -1,4 +1,4 @@
-require('@vscode/sqlite3');
+require('sqlite3');
 const Knex = require('knex');
 
 const knexSqlite = Knex({
@@ -6,6 +6,7 @@ const knexSqlite = Knex({
   connection: ':memory:',
 });
 
+// eslint-disable-next-line no-unused-vars
 const knexMysql = Knex({
   client: 'mysql2',
 });

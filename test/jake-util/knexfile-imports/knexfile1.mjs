@@ -1,12 +1,6 @@
-import config from '../knexfile-esm'
+import config from '../knexfile-esm';
 /** Named exports */
-export const {
-  client,
-  connection,
-  useNullAsDefault,
-  migrations,
-  seeds
-} = {
+export const { client, connection, useNullAsDefault, migrations, seeds } = {
   ...config,
   migrations: {
     ...config.migrations,
@@ -15,5 +9,5 @@ export const {
   seeds: {
     ...config.seeds,
     directory: './mjs/seeds',
-  }
+  },
 };

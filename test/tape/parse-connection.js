@@ -237,12 +237,12 @@ test('parse windows path as sqlite config', function (t) {
 test('#852, ssl param with PG query string', function (t) {
   t.plan(1);
   t.deepLooseEqual(
-    parseConnection('postgres://user:password@host:0000/database?ssl=true'),
+    parseConnection('postgres://user:password@host:1234/database?ssl=true'),
     {
       client: 'postgres',
       connection: {
         host: 'host',
-        port: '0000',
+        port: '1234',
         user: 'user',
         password: 'password',
         database: 'database',
@@ -255,12 +255,12 @@ test('#852, ssl param with PG query string', function (t) {
 test('support postgresql connection protocol', function (t) {
   t.plan(1);
   t.deepLooseEqual(
-    parseConnection('postgresql://user:password@host:0000/database?ssl=true'),
+    parseConnection('postgresql://user:password@host:1234/database?ssl=true'),
     {
       client: 'postgresql',
       connection: {
         host: 'host',
-        port: '0000',
+        port: '1234',
         user: 'user',
         password: 'password',
         database: 'database',
@@ -306,6 +306,30 @@ test('#4628, supports mysql / mariadb client JSON parameters', function (t) {
         database: 'database',
         ssl: {
           ca: 'should exist',
+        },
+      },
+    }
+  );
+});
+
+test('support MSSQL JSON parameters for config object', function (t) {
+  t.plan(1);
+  t.deepLooseEqual(
+    parseConnection(
+      'mssql://user:password@host/database?domain=testDomain&options={"instanceName": "TestInstance001", "readOnlyIntent": true}'
+    ),
+
+    {
+      client: 'mssql',
+      connection: {
+        server: 'host',
+        user: 'user',
+        password: 'password',
+        database: 'database',
+        domain: 'testDomain',
+        options: {
+          instanceName: 'TestInstance001',
+          readOnlyIntent: true,
         },
       },
     }

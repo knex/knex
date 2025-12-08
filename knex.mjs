@@ -7,5 +7,5 @@
 
 import knex from './lib/index.js';
 
-export { knex }
-export default knex
+export { knex };
+export default knex;

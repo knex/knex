@@ -36,7 +36,7 @@ expectType<any>(knexCjs({}));
 // eslint-disable-next-line
 expectType<any>(knexCjsNamed({}));
 
-knex({}).schema.createTable("table", (t: Knex.AlterTableBuilder) => {})
+knex({}).schema.createTable('table', (t: Knex.AlterTableBuilder) => {});
 
 const knexInstance = knexDefault(clientConfig);
 
@@ -123,35 +123,63 @@ expectAssignable<QueryBuilder>(
     .debug(true)
 );
 
-knexInstance.withWrapped('qb', knexInstance.select('column').from('table'))
-knexInstance.withWrapped('callback', (qb) => qb.select('column').from('table'))
+knexInstance.withWrapped('qb', knexInstance.select('column').from('table'));
+knexInstance.withWrapped('callback', (qb) => qb.select('column').from('table'));
 
-knexInstance.withWrapped('columnList+qb', ['columnName'], (qb) => qb.select('column').from('table'))
-knexInstance.withWrapped('columnList+callback', ['columnName'], (qb) => qb.select('column').from('table'))
+knexInstance.withWrapped('columnList+qb', ['columnName'], (qb) =>
+  qb.select('column').from('table')
+);
+knexInstance.withWrapped('columnList+callback', ['columnName'], (qb) =>
+  qb.select('column').from('table')
+);
 
 // FIXME: The withRaw function does not exist any more. with handles raw directly now.
-knexInstance.withRaw('raw', knexInstance.raw('raw'))
-knexInstance.withRaw('sql', 'just sql')
-knexInstance.withRaw('sql+bindingsObj', 'sql with named bindings', {x: 1})
-knexInstance.withRaw('sql+bindingsArr', 'sql with positional bindings', [1])
+knexInstance.withRaw('raw', knexInstance.raw('raw'));
+knexInstance.withRaw('sql', 'just sql');
+knexInstance.withRaw('sql+bindingsObj', 'sql with named bindings', { x: 1 });
+knexInstance.withRaw('sql+bindingsArr', 'sql with positional bindings', [1]);
 
-knexInstance.withRaw('columnList+raw', ['columnName'], knexInstance.raw('raw'))
-knexInstance.withRaw('columnList+sql', ['columnName'], 'just sql')
-knexInstance.withRaw('columnList+sql+bindingsObj', ['columnName'], 'sql with named bindings', {x: 1})
-knexInstance.withRaw('columnList+sql+bindingsArr', ['columnName'], 'sql with positional bindings', [1])
+knexInstance.withRaw('columnList+raw', ['columnName'], knexInstance.raw('raw'));
+knexInstance.withRaw('columnList+sql', ['columnName'], 'just sql');
+knexInstance.withRaw(
+  'columnList+sql+bindingsObj',
+  ['columnName'],
+  'sql with named bindings',
+  { x: 1 }
+);
+knexInstance.withRaw(
+  'columnList+sql+bindingsArr',
+  ['columnName'],
+  'sql with positional bindings',
+  [1]
+);
 
 // the With type is used both for with and withRecursive. With extends both withWrapped and withRaw, so should support all the same variants:
 // those inherited from WithWrapped
-knexInstance.with('qb', knexInstance.select('column').from('table'))
-knexInstance.with('callback', (qb) => qb.select('column').from('table'))
-knexInstance.with('columnList+qb', ['columnName'], (qb) => qb.select('column').from('table'))
-knexInstance.with('columnList+callback', ['columnName'], (qb) => qb.select('column').from('table'))
+knexInstance.with('qb', knexInstance.select('column').from('table'));
+knexInstance.with('callback', (qb) => qb.select('column').from('table'));
+knexInstance.with('columnList+qb', ['columnName'], (qb) =>
+  qb.select('column').from('table')
+);
+knexInstance.with('columnList+callback', ['columnName'], (qb) =>
+  qb.select('column').from('table')
+);
 // those inherited from withRaw
-knexInstance.with('raw', knexInstance.raw('raw'))
-knexInstance.with('sql', 'just sql')
-knexInstance.with('sql+bindingsObj', 'sql with named bindings', {x: 1})
-knexInstance.with('sql+bindingsArr', 'sql with positional bindings', [1])
-knexInstance.with('columnList+raw', ['columnName'], knexInstance.raw('raw'))
-knexInstance.with('columnList+sql', ['columnName'], 'just sql')
-knexInstance.with('columnList+sql+bindingsObj', ['columnName'], 'sql with named bindings', {x: 1})
-knexInstance.with('columnList+sql+bindingsArr', ['columnName'], 'sql with positional bindings', [1])
+knexInstance.with('raw', knexInstance.raw('raw'));
+knexInstance.with('sql', 'just sql');
+knexInstance.with('sql+bindingsObj', 'sql with named bindings', { x: 1 });
+knexInstance.with('sql+bindingsArr', 'sql with positional bindings', [1]);
+knexInstance.with('columnList+raw', ['columnName'], knexInstance.raw('raw'));
+knexInstance.with('columnList+sql', ['columnName'], 'just sql');
+knexInstance.with(
+  'columnList+sql+bindingsObj',
+  ['columnName'],
+  'sql with named bindings',
+  { x: 1 }
+);
+knexInstance.with(
+  'columnList+sql+bindingsArr',
+  ['columnName'],
+  'sql with positional bindings',
+  [1]
+);
