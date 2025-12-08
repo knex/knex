@@ -1578,6 +1578,31 @@ describe('Schema (misc)', () => {
           });
         });
 
+        // https://github.com/knex/knex/issues/6097
+        xit('allows CURRENT_TIMESTAMP', async () => {
+          if (
+            isSQLite(knex) ||
+            isRedshift(knex) ||
+            isOracle(knex) ||
+            isCockroachDB(knex)
+          ) {
+            return;
+          }
+
+          await knex.schema.createTableIfNotExists('curr_timestamp', (t) => {
+            t.integer('remove_not_null').notNull().defaultTo(1);
+            t.string('remove_default').notNull().defaultTo(1);
+            t.dateTime('datetime_to_date').notNull().defaultTo(knex.fn.now());
+          });
+
+          const info = await knex('curr_timestamp').columnInfo();
+
+          // TODO: Needs assertion
+          console.log(info)
+
+          await knex.schema.dropTable('curr_timestamp');
+        });
+
         it('allows adding a field with custom collation after another field', () =>
           knex.schema
             .table('test_table_two', (t) => {

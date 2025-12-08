@@ -1,0 +1,71 @@
+const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
+const tableName = 'users_jsonb';
+
+describe('Postgres dialect', () => {
+  const db = getAllDbs().filter((db) => db.startsWith('postgres'))
+
+  db.forEach((db) => {
+    describe(db, () => {
+      describe('Postgres', () => {
+        let knex;
+
+        before(async () => {
+          knex = getKnexForDb(db);
+
+
+          await knex.schema.dropTableIfExists(tableName);
+
+          await knex.schema.createTable(tableName, t => {
+            t.increments('id').primary();
+            t.string('name').notNullable();
+            t.string('email').notNullable();
+            t.string('password').notNullable();
+            t.datetime('created_at').notNullable();
+            t.jsonb('json_key').notNullable();
+          });
+        });
+
+        after(() => {
+          return knex.destroy();
+        });
+
+        // https://github.com/knex/knex/issues/5189
+        it('Should correctly interpret ? in where clause as JSONB query clause', async () => {
+          const k = knex.select('*')
+            .from(tableName)
+            .where('json_key', '\\?', 'json_value')
+
+          // TODO: Needs assertion. Currently doesn't throw which implicitly shows previous syntax error is fixed.
+          await k;
+        });
+
+        // https://github.com/knex/knex/issues/6011
+        it('Should correctly map json key & value in JSONB raw SQL', async () => {
+          const binding = ['json_key', 'json_value'];
+          const k = knex.select('*')
+            .from(tableName)
+            .where('id', '=', 1)
+            .whereRaw('?? \\? ?', binding)
+
+          // TODO: Needs assertion. Currently doesn't throw which implicitly shows previous syntax error is fixed.
+          await k;
+        });
+
+        // As it stands, this throws an error
+        // https://github.com/knex/knex/issues/5091
+        xit('Should correctly interpret string literal in JSONB raw SQL', async () => {
+          // Is the presence of "?" in postgres dialect enough to always replace with %L for pg-format?
+          // https://github.com/rubengmurray/knex/blob/2c809e38fb417e43946f9ffa07b749f165b9fc6c/lib/dialects/postgres/index.js#L144
+          // https://www.npmjs.com/package/pg-format#arrays-and-objects
+          const binding = 'bar_bind';
+          const k = knex.select('*')
+            .from(tableName)
+            .whereRaw('json_key.json_value @\\? \'$.*.bar \\? (@ == "?")\'', binding);
+
+          // TODO: Needs assertion.
+          await k;
+        });
+      });
+    });
+  });
+});

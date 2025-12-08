@@ -31,6 +31,21 @@ module.exports = function (knex) {
         });
     });
 
+    // https://github.com/knex/knex/issues/6074
+    it('should reject delete with limit in postgres', async function () {
+      if (!isPostgreSQL(knex)) {
+        this.skip();
+      }
+
+      await expect(knex('accounts')
+        .where('id', 75)
+        .del()
+        .limit(1)
+      ).to.eventually.be.rejectedWith(
+        'PostgreSQL does not support limit on delete'
+      );
+    });
+
     it('should allow returning for deletes in postgresql and mssql', function () {
       return knex('accounts')
         .where('id', 2)

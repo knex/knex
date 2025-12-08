@@ -784,6 +784,25 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  // https://github.com/knex/knex/issues/5995 - needs test case
+  xit('adds foreign key onDelete cascade', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person_random', function (table) {
+        table
+          .integer('account_id')
+          .notNull()
+          .references('id')
+          .inTable('accounts')
+          .onDelete('cascade');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'CREATE TABLE [person_random] ([account_id] int not null, CONSTRAINT [person_random_account_id_foreign] FOREIGN KEY ([account_id]) REFERENCES [accounts] ([id]) ON DELETE cascade)'
+    );
+  });
+
   it('test adding incrementing id', function () {
     tableSql = client
       .schemaBuilder()

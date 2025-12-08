@@ -97,6 +97,9 @@
     },
     "better-sqlite3": {
       "optional": true
+    },
+    "pg-query-stream": {
+      "optional": true
     }
   },
   "lint-staged": {
