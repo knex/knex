@@ -313,7 +313,9 @@ describe('Where', function () {
 
       it('handles "where in" raw cases', async () => {
         await knex('accounts')
-          .whereIn(knex.raw('?', [9]), [1, 2, 3])
+          // COALESCE() is used here simply to generate a valid left-hand-side
+          // to the expression lhs IN rhs that can take a value parameter
+          .whereIn(knex.raw('COALESCE(??, ?)', ['id', 9]), [1, 2, 3])
           .select();
       });
 
