@@ -63,4 +63,55 @@ describe('Client pool settings', () => {
 
     expect(warnSpy.called).to.be.false;
   });
+
+  it('logs and rejects when user validate throws', async () => {
+    const client = new TestClient();
+    const warnSpy = sinon.spy(client.logger, 'warn');
+    const userValidate = sinon.stub().rejects(new Error('boom'));
+
+    const poolConfig = client.getPoolSettings({ validate: userValidate });
+    const result = await poolConfig.validate({});
+
+    expect(userValidate.calledOnce).to.be.true;
+    expect(warnSpy.calledOnce).to.be.true;
+    expect(result).to.be.false;
+  });
+
+  it('assigns lifetime with jitter when missing and keeps valid', async () => {
+    const clock = sinon.useFakeTimers({ now: 1000 });
+    const client = new TestClient();
+    sinon.stub(Math, 'random').returns(0.5); // halfway jitter
+    const poolConfig = client.getPoolSettings({
+      maxConnectionLifetimeMillis: 1000,
+      maxConnectionLifetimeJitterMillis: 1000,
+    });
+    const connection = {};
+
+    const result = await poolConfig.validate(connection);
+
+    expect(connection.__knexLifetimeLimit).to.equal(1000 + 1000 + 500);
+    expect(result).to.be.true;
+    clock.restore();
+  });
+
+  it('disables expiration checker if refresh still reports expired', async () => {
+    const client = new TestClient();
+    const providerResult = { host: 'newer' };
+    client.connectionConfigProvider = sinon.stub().resolves(providerResult);
+    const checker = sinon.stub().returns(true);
+    client.connectionConfigExpirationChecker = checker;
+
+    const poolConfig = client.getPoolSettings({});
+    const firstResult = await poolConfig.validate({});
+
+    expect(firstResult).to.be.false;
+    expect(client.connectionSettings).to.deep.equal(providerResult);
+    expect(client.connectionConfigExpirationChecker).to.equal(null);
+    expect(client.connectionConfigProvider.calledOnce).to.be.true;
+
+    const secondResult = await poolConfig.validate({});
+
+    expect(secondResult).to.be.true;
+    expect(client.connectionConfigProvider.calledOnce).to.be.true;
+  });
 });
