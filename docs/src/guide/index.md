@@ -391,13 +391,13 @@ You can provide a `pool.validate` function to decide if a pooled connection shou
 ```js
 const knex = require('knex')({
   client: 'mysql2',
-  connection: { /*...*/ },
+  connection: {
+    /*...*/
+  },
   pool: {
     validate: async (conn) => {
       // Evict connections that flipped to read-only after a failover
-      const [row] = await conn.query(
-        'SELECT @@global.read_only as read_only'
-      );
+      const [row] = await conn.query('SELECT @@global.read_only as read_only');
       return row.read_only === 0;
     },
   },
@@ -411,10 +411,12 @@ To force periodic churn (e.g., to rebalance traffic to new reader instances), se
 ```js
 const knex = require('knex')({
   client: 'pg',
-  connection: { /*...*/ },
+  connection: {
+    /*...*/
+  },
   pool: {
-    maxConnectionLifetimeMillis: 5 * 60_000,       // 5 minutes
-    maxConnectionLifetimeJitterMillis: 60_000,     // up to +1 minute random
+    maxConnectionLifetimeMillis: 5 * 60_000, // 5 minutes
+    maxConnectionLifetimeJitterMillis: 60_000, // up to +1 minute random
   },
 });
 ```
