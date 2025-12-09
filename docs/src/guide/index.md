@@ -276,6 +276,23 @@ const knex = require('knex')({
 });
 ```
 
+The `expirationChecker` is consulted both when creating a new connection and before reusing an existing one from the pool. If it returns `true`, Knex refreshes the connection settings from your provider and discards the old connection so the pool can create a new one with the updated configuration.
+
+For example, if your reader endpoints or credentials rotate every 10 minutes:
+
+```js
+const knex = require('knex')({
+  client: 'postgres',
+  connection: async () => {
+    const cfg = await fetchConfigFromVault(); // returns { settings, expiresAt }
+    return {
+      ...cfg.settings,
+      expirationChecker: () => Date.now() > cfg.expiresAt,
+    };
+  },
+});
+```
+
 You can also connect via a unix domain socket, which will ignore host and port.
 
 ```js
@@ -364,6 +381,41 @@ const knex = require('knex')({
     database: 'myapp_test',
   },
   pool: { min: 0, max: 7 },
+});
+```
+
+#### Custom validation (`pool.validate`)
+
+You can provide a `pool.validate` function to decide if a pooled connection should be reused. It can be sync or async; return/resolve `false` (or throw) to veto reuse and force the pool to create a fresh connection.
+
+```js
+const knex = require('knex')({
+  client: 'mysql2',
+  connection: { /*...*/ },
+  pool: {
+    validate: async (conn) => {
+      // Evict connections that flipped to read-only after a failover
+      const [row] = await conn.query(
+        'SELECT @@global.read_only as read_only'
+      );
+      return row.read_only === 0;
+    },
+  },
+});
+```
+
+#### Max connection lifetime (with optional jitter)
+
+To force periodic churn (e.g., to rebalance traffic to new reader instances), set `maxConnectionLifetimeMillis`. Optionally add `maxConnectionLifetimeJitterMillis` to spread reconnections out and avoid a thundering herd.
+
+```js
+const knex = require('knex')({
+  client: 'pg',
+  connection: { /*...*/ },
+  pool: {
+    maxConnectionLifetimeMillis: 5 * 60_000,       // 5 minutes
+    maxConnectionLifetimeJitterMillis: 60_000,     // up to +1 minute random
+  },
 });
 ```
 
