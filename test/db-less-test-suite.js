@@ -11,6 +11,7 @@ describe('Util Tests', function () {
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
   require('./unit/util/security');
+  require('./unit/client/pool-config');
 });
 
 describe('Query Building Tests', function () {
