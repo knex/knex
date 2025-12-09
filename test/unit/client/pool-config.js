@@ -41,7 +41,7 @@ describe('Client pool settings', () => {
     expect(result).to.be.false;
   });
 
-  it('runs connection expiration checker during validation', async () => {
+  it('refreshes config and drops connection when expired on validate', async () => {
     const client = new TestClient();
     const providerResult = { host: 'new-host' };
     client.connectionConfigProvider = sinon.stub().resolves(providerResult);
