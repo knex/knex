@@ -74,6 +74,9 @@ describe('Client pool settings', () => {
 
     expect(userValidate.calledOnce).to.be.true;
     expect(warnSpy.calledOnce).to.be.true;
+    expect(warnSpy.firstCall.args[0]).to.contain(
+      'Pool validate threw an error: boom'
+    );
     expect(result).to.be.false;
   });
 
@@ -87,31 +90,38 @@ describe('Client pool settings', () => {
     });
     const connection = {};
 
-    const result = await poolConfig.validate(connection);
-
-    expect(connection.__knexLifetimeLimit).to.equal(1000 + 1000 + 500);
+    let result = await poolConfig.validate(connection);
     expect(result).to.be.true;
+
+    // Advance to just before expiry (base + jitter/2)
+    clock.tick(1000 + 500 - 1);
+    result = await poolConfig.validate(connection);
+    expect(result).to.be.true;
+
+    // Advance past expiry
+    clock.tick(2);
+    result = await poolConfig.validate(connection);
+    expect(result).to.be.false;
+
     clock.restore();
   });
 
-  it('disables expiration checker if refresh still reports expired', async () => {
+  it('throws when expiration checker stays true after refresh', async () => {
     const client = new TestClient();
-    const providerResult = { host: 'newer' };
+    const providerResult = {
+      host: 'newer',
+      expirationChecker: () => true,
+    };
     client.connectionConfigProvider = sinon.stub().resolves(providerResult);
     const checker = sinon.stub().returns(true);
     client.connectionConfigExpirationChecker = checker;
 
     const poolConfig = client.getPoolSettings({});
-    const firstResult = await poolConfig.validate({});
-
-    expect(firstResult).to.be.false;
-    expect(client.connectionSettings).to.deep.equal(providerResult);
-    expect(client.connectionConfigExpirationChecker).to.equal(null);
-    expect(client.connectionConfigProvider.calledOnce).to.be.true;
-
-    const secondResult = await poolConfig.validate({});
-
-    expect(secondResult).to.be.true;
+    await expect(poolConfig.validate({})).to.be.rejectedWith(
+      'Connection configuration still reported expired after refresh'
+    );
+    expect(client.connectionSettings).to.deep.equal({ host: 'newer' });
+    expect(client.connectionConfigExpirationChecker).to.be.a('function');
     expect(client.connectionConfigProvider.calledOnce).to.be.true;
   });
 });
