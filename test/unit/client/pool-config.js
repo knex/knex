@@ -34,7 +34,7 @@ describe('Client pool settings', () => {
     const poolConfig = client.getPoolSettings({
       maxConnectionLifetimeMillis: 1,
     });
-    const connection = { __knexLifetimeLimit: Date.now() - 1000 };
+    const connection = { __knexLifetimeLimit: -1 };
 
     const result = await poolConfig.validate(connection);
 
