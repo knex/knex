@@ -117,7 +117,14 @@ describe('Client pool settings', () => {
     client.connectionConfigExpirationChecker = checker;
 
     const poolConfig = client.getPoolSettings({});
-    await expect(poolConfig.validate({})).to.be.rejectedWith(
+    let caught;
+    try {
+      await poolConfig.validate({});
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught).to.be.an('error');
+    expect(caught.message).to.contain(
       'Connection configuration still reported expired after refresh'
     );
     expect(client.connectionSettings).to.deep.equal({ host: 'newer' });

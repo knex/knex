@@ -60,7 +60,28 @@ module.exports = function (config) {
           expirationChecker: () => true,
         });
       };
-      return runTwoConcurrentTransactions(2);
+      const knex = makeKnex(configWorkingCopy);
+      let caught;
+      try {
+        const initial = await knex.client.connectionConfigProvider();
+        knex.client.connectionSettings = initial;
+        if (initial.expirationChecker) {
+          knex.client.connectionConfigExpirationChecker =
+            initial.expirationChecker;
+          delete initial.expirationChecker;
+        }
+        const poolConfig = knex.client.getPoolSettings(knex.client.config.pool);
+        await poolConfig.validate({});
+      } catch (err) {
+        caught = err;
+      } finally {
+        await knex.destroy();
+      }
+      expect(caught).to.be.an('error');
+      expect(caught.message).to.contain(
+        'Connection configuration still reported expired after refresh'
+      );
+      expect(providerInvocationCount).equals(2);
     });
 
     async function runTwoConcurrentTransactions(expectedInvocationCount) {
