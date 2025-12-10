@@ -402,7 +402,7 @@ If you ever need to explicitly teardown the connection pool, you may use `knex.d
 
 #### Custom validation (`pool.validate`)
 
-You can provide a `pool.validate` function to decide if a pooled connection should be reused. It can be sync or async; return/resolve `false` (or throw) to veto reuse and force the pool to create a fresh connection.
+You can provide a `pool.validate` function to decide if a pooled connection should be reused. It can be sync or async; return/resolve `false` (or throw) to discard the connection and force the pool to replace it.
 
 ```js
 const knex = require('knex')({
