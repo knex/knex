@@ -26,7 +26,7 @@ function test(description, func) {
   const tempFolder = fs.mkdtempSync(tmpDirPath);
   fs.mkdirSync(tempFolder + '/migrations');
   desc(description);
-  const taskName = description.replace(/[^a-z0-9]/g, '');
+  const taskName = description.replace(/[^a-z0-9]+/gi, '_').toLowerCase();
   taskList.push(taskName);
   task(taskName, { async: true }, () =>
     func(tempFolder)
