@@ -1,5 +1,6 @@
 const { promisify } = require('util');
 const knex = require('../../../lib');
+const { cloneDeep } = require('lodash');
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
 
@@ -208,8 +209,13 @@ function getKnexForDb(db, configOverrides = {}) {
   });
 }
 
+function getTestConnectionConfig(db) {
+  return cloneDeep(testConfigs[db].connection || {})
+}
+
 module.exports = {
   Db,
   getAllDbs,
   getKnexForDb,
+  getTestConnectionConfig,
 };
