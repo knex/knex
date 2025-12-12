@@ -23,6 +23,7 @@ const {
   findUpModulePath,
   findUpConfig,
 } = require('./utils/cli-config-utils');
+const { KnexfileRuntimeError } = require('./knexfile-runtime-error');
 const {
   existsSync,
   readFile,
@@ -33,14 +34,26 @@ const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
   const importFile = require('../lib/migrations/util/import-file'); // require me late!
-  let config = await importFile(configPath);
-  if (config && config.default) {
-    config = config.default;
+
+  try {
+    let config = await importFile(configPath);
+
+    if (config && config.default) {
+      config = config.default;
+    }
+    if (typeof config === 'function') {
+      config = await config();
+    }
+    return config;
+  } catch (err) {
+    // Ensure that anything thrown by user code while loading the knexfile
+    // becomes an instance of Error. This ensures that `exit()` behaves correctly.
+    throw new KnexfileRuntimeError(
+      'Failed to read config from knexfile',
+      configPath,
+      err
+    );
   }
-  if (typeof config === 'function') {
-    config = await config();
-  }
-  return config;
 }
 
 async function initKnex(env, opts, useDefaultClientIfNotSpecified) {
