@@ -1,9 +1,11 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
 const { resolveClientNameWithAliases } = require('../../lib/util/helpers');
 const path = require('path');
+const { inspect } = require('util');
 const escalade = require('escalade/sync');
 const tildify = require('tildify');
 const color = require('colorette');
+const { KnexfileRuntimeError } = require('../knexfile-runtime-error');
 const argv = require('getopts')(process.argv.slice(2));
 
 function parseConfigObj(opts) {
@@ -70,28 +72,20 @@ function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
   return result;
 }
 
-function exit(text) {
-  if (text instanceof Error) {
-    if (text.message) {
-      console.error(color.red(text.message));
-    }
-    console.error(
-      color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
-    );
-    // give whatever info we can about a non-error value that was thrown
-    if (text.nonErrorValue) {
-      console.error(text.nonErrorValue);
-    }
-  } else if (typeof text === 'string') {
-    console.error(color.red(text));
+function exit(reason) {
+  let exitMessage;
+
+  if (reason instanceof KnexfileRuntimeError) {
+    exitMessage = reason.message;
+  } else if (reason instanceof Error) {
+    exitMessage = reason.stack ?? reason.message;
+  } else if (typeof reason === 'string') {
+    exitMessage = reason;
   } else {
-    // We shouldn't get here, but we should avoid failing if we do.
-    // This information can also help users report other problems to us.
-    console.error(
-      color.red('[BUG] exit() was called with an unexpected value:')
-    );
-    console.error(text);
+    exitMessage = inspect(reason);
   }
+
+  console.error(color.red(exitMessage));
   process.exit(1);
 }
 
