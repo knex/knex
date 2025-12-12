@@ -30,6 +30,7 @@ describe('Query Building Tests', function () {
   require('./unit/schema-builder/mssql');
   require('./unit/schema-builder/oracledb');
   require('./unit/migrations/migrate/migration-list-resolver');
+  require('./unit/migrations/migrate/migrator-use-transaction');
   require('./unit/migrations/seed/seeder');
   // require('./unit/interface'); ToDo Uncomment after fixed
   require('./unit/knex');
