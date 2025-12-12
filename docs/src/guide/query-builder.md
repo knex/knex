@@ -1637,7 +1637,8 @@ knex('accounts').where('login', undefined).select().toSQL();
 
 ### where
 
-**.where(~mixed~)**  
+**.where(~mixed~)**
+**.andWhere**
 **.orWhere**
 
 Object Syntax:
@@ -1708,6 +1709,7 @@ knex('users').where('id', 1).orWhere({ votes: 100, user: 'knex' });
 ### whereNot
 
 **.whereNot(~mixed~)**
+**.andWhereNot**
 **.orWhereNot**
 
 Object Syntax:
@@ -1760,9 +1762,10 @@ knex('accounts').where('id', 'not in', subquery);
 ### whereIn
 
 **.whereIn(column|columns, array|callback|builder)**  
+**.andWhereIn**
 **.orWhereIn**
 
-Shorthand for .where('id', 'in', obj), the .whereIn and .orWhereIn methods add a "where in" clause to the query. Note that passing empty array as the value results in a query that never returns any rows (`WHERE 1 = 0`)
+Shorthand for .where('id', 'in', obj), the .whereIn, .andWhereIn, and .orWhereIn methods add a "where in" clause to the query. Note that passing empty array as the value results in a query that never returns any rows (`WHERE 1 = 0`)
 
 ```js
 knex
@@ -1800,40 +1803,58 @@ knex
     ['account_id', 'email'],
     knex.select('id', 'email').from('accounts')
   );
+
+knex
+  .select('name')
+  .from('users')
+  .whereIn('id', [1, 2, 3])
+  .andWhereIn('status', ['active', 'pending']);
 ```
 
 ### whereNotIn
 
 **.whereNotIn(column, array|callback|builder)**
+**.andWhereNotIn**
 **.orWhereNotIn**
 
 ```js
 knex('users').whereNotIn('id', [1, 2, 3]);
 
 knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3]);
+
+knex('users')
+  .whereNotIn('id', [1, 2, 3])
+  .andWhereNotIn('status', ['inactive', 'banned']);
 ```
 
 ### whereNull
 
-**.whereNull(column)**  
+**.whereNull(column)**
+**.andWhereNull**
 **.orWhereNull**
 
 ```js
 knex('users').whereNull('updated_at');
+
+knex('users').where('name', 'John').andWhereNull('deleted_at');
 ```
 
 ### whereNotNull
 
-**.whereNotNull(column)**  
+**.whereNotNull(column)**
+**.andWhereNotNull**
 **.orWhereNotNull**
 
 ```js
 knex('users').whereNotNull('created_at');
+
+knex('users').where('active', true).andWhereNotNull('email');
 ```
 
 ### whereExists
 
-**.whereExists(builder | callback)**  
+**.whereExists(builder | callback)**
+**.andWhereExists**
 **.orWhereExists**
 
 ```js
@@ -1844,11 +1865,20 @@ knex('users').whereExists(function () {
 knex('users').whereExists(
   knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id')
 );
+
+knex('users')
+  .where('active', true)
+  .andWhereExists(function () {
+    this.select('*')
+      .from('accounts')
+      .whereRaw('users.account_id = accounts.id');
+  });
 ```
 
 ### whereNotExists
 
-**.whereNotExists(builder | callback)**  
+**.whereNotExists(builder | callback)**
+**.andWhereNotExists**
 **.orWhereNotExists**
 
 ```js
@@ -1859,11 +1889,20 @@ knex('users').whereNotExists(function () {
 knex('users').whereNotExists(
   knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id')
 );
+
+knex('users')
+  .where('active', true)
+  .andWhereNotExists(function () {
+    this.select('*')
+      .from('accounts')
+      .whereRaw('users.account_id = accounts.id');
+  });
 ```
 
 ### whereBetween
 
-**.whereBetween(column, range)**  
+**.whereBetween(column, range)**
+**.andWhereBetween**
 **.orWhereBetween**
 
 ```js
@@ -1872,7 +1911,8 @@ knex('users').whereBetween('votes', [1, 100]);
 
 ### whereNotBetween
 
-**.whereNotBetween(column, range)**  
+**.whereNotBetween(column, range)**
+**.andWhereNotBetween**
 **.orWhereNotBetween**
 
 ```js
@@ -1892,6 +1932,7 @@ knex('users').whereRaw('id = ?', [1]);
 ### whereLike
 
 **.whereLike(column, string|builder|raw)**  
+**.andWhereLike**
 **.orWhereLike**
 
 Adds a where clause with case-sensitive substring comparison on a given column with a given value.
@@ -1908,6 +1949,7 @@ knex('users')
 ### whereILike
 
 **.whereILike(column, string|builder|raw)**  
+**.andWhereILike**
 **.orWhereILike**
 
 Adds a where clause with case-insensitive substring comparison on a given column with a given value.
@@ -1924,6 +1966,8 @@ knex('users')
 ### whereJsonObject
 
 **.whereJsonObject(column, string|json|builder|raw)**
+**.andWhereJsonObject**
+**.orWhereJsonObject**
 
 Adds a where clause with json object comparison on given json column.
 
@@ -1934,6 +1978,8 @@ knex('users').whereJsonObject('json_col', { name: 'user_name' });
 ### whereJsonPath
 
 **.whereJsonPath(column, jsonPath, operator, value)**
+**.andWhereJsonPath**
+**.orWhereJsonPath**
 
 Adds a where clause with comparison of a value returned by a JsonPath given an operator and a value.
 
@@ -1946,16 +1992,24 @@ knex('users').whereJsonPath('json_col', '$.name', '=', 'username');
 ### whereJsonSupersetOf
 
 **.whereJsonSupersetOf(column, string|json|builder|raw)**
+**.orWhereJsonSupersetOf**
+**.andWhereJsonSupersetOf**
 
 Adds a where clause where the comparison is true if a json given by the column include a given value. Only on MySQL, PostgreSQL and CockroachDB.
 
 ```js
 knex('users').whereJsonSupersetOf('hobbies', { sport: 'foot' });
+
+knex('users')
+  .where('active', true)
+  .andWhereJsonSupersetOf('hobbies', { sport: 'foot' });
 ```
 
 ### whereJsonSubsetOf
 
 **.whereJsonSubsetOf(column, string|json|builder|raw)**
+**.andWhereJsonSubsetOf**
+**.orWhereJsonSubsetOf**
 
 Adds a where clause where the comparison is true if a json given by the column is included in a given value. Only on MySQL, PostgreSQL and CockroachDB.
 
@@ -1963,6 +2017,45 @@ Adds a where clause where the comparison is true if a json given by the column i
 // given a hobby column with { "sport" : "tennis" },
 // the where clause is true
 knex('users').whereJsonSubsetOf('hobby', { sport: 'tennis', book: 'fantasy' });
+
+knex('users')
+  .where('active', true)
+  .andWhereJsonSubsetOf('hobby', { sport: 'tennis', book: 'fantasy' });
+```
+
+### whereJsonNotSupersetOf
+
+**.whereJsonNotSupersetOf(column, string|json|builder|raw)**
+**.andWhereJsonNotSupersetOf**
+**.orWhereJsonNotSupersetOf**
+
+Adds a where clause where the comparison is true if a json given by the column does not include a given value. Only on MySQL, PostgreSQL and CockroachDB.
+
+```js
+knex('users').whereJsonNotSupersetOf('hobbies', { sport: 'foot' });
+
+knex('users')
+  .where('active', true)
+  .andWhereJsonNotSupersetOf('hobbies', { sport: 'foot' });
+```
+
+### whereJsonNotSubsetOf
+
+**.whereJsonNotSubsetOf(column, string|json|builder|raw)**
+**.andWhereJsonNotSubsetOf**
+**.orWhereJsonNotSubsetOf**
+
+Adds a where clause where the comparison is true if a json given by the column is not included in a given value. Only on MySQL, PostgreSQL and CockroachDB.
+
+```js
+knex('users').whereJsonNotSubsetOf('hobby', {
+  sport: 'tennis',
+  book: 'fantasy',
+});
+
+knex('users')
+  .where('active', true)
+  .andWhereJsonNotSubsetOf('hobby', { sport: 'tennis', book: 'fantasy' });
 ```
 
 ## Join Methods
