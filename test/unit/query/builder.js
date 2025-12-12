@@ -6975,11 +6975,44 @@ describe('QueryBuilder', () => {
     });
   });
 
-  it('delete method with `having` throws', async function () {
-    testFailure(
-      qb().from('users').having('id', '>', 0).del(),
-      /^Refused to compile.*having.*delete/
-    );
+  describe('invalid statement / clause combinations throw', () => {
+    const _where = [
+      { name: 'where', msg: 'where', fn: (qb) => qb.where('id', '>', 0) },
+      // ensure the same behavior for where variants
+      { name: 'whereIn', msg: 'where', fn: (qb) => qb.whereIn('id', [0]) },
+    ];
+    const _having = [
+      { name: 'having', msg: 'having', fn: (qb) => qb.having('id', '>', 0) },
+      // ensure the same behavior for having variants
+      { name: 'havingIn', msg: 'having', fn: (qb) => qb.havingIn('id', [0]) },
+    ];
+    const _limit = [
+      { name: 'limit', msg: 'limit', fn: (qb) => qb.limit(1) },
+      // FUTURE: plausibly we should also throw on limit without offset, but that
+      // doesn't directly address any open issues and may be a surprising breakage
+      // for users / doesn't prevent data loss
+    ];
+
+    const statements = [
+      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having, _limit] },
+      {
+        name: 'truncate',
+        fn: (qb) => qb.truncate(),
+        invalid: [_where, _having, _limit],
+      },
+    ];
+
+    for (const stmt of statements) {
+      for (const clause of stmt.invalid.flat()) {
+        it(`${clause.name} method with ${stmt.name} throws`, async () => {
+          const query = stmt.fn(clause.fn(qb().from('users')));
+          testFailure(
+            query,
+            new RegExp(`Aborted.*${clause.msg}.*${stmt.name}`)
+          );
+        });
+      }
+    }
   });
 
   it('delete method', () => {
@@ -7045,20 +7078,6 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
     });
-  });
-
-  it('truncate method with `where` throws', async function () {
-    testFailure(
-      qb().from('users').where('id', '>', 0).truncate(),
-      /^Refused to compile.*where.*truncate/
-    );
-  });
-
-  it('truncate method with `having` throws', async function () {
-    testFailure(
-      qb().from('users').having('id', '>', 0).truncate(),
-      /^Refused to compile.*having.*truncate/
-    );
   });
 
   it('insert get id', () => {
