@@ -208,7 +208,8 @@ describe('Custom identifier wrapping', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`',
+          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) values (?, ?), (?, ?) returning `id_wrapper_was_here`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         pg: {
           sql: 'insert into "users_wrapper_was_here" ("email_wrapper_was_here", "name_wrapper_was_here") values (?, ?), (?, ?) returning "id_wrapper_was_here"',
@@ -260,7 +261,7 @@ describe('Custom identifier wrapping', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` union all select ? as `email_wrapper_was_here`, ? as `name_wrapper_was_here` returning `id_wrapper_was_here`, `name_wrapper_was_here`',
+          sql: 'insert into `users_wrapper_was_here` (`email_wrapper_was_here`, `name_wrapper_was_here`) values (?, ?), (?, ?) returning `id_wrapper_was_here`, `name_wrapper_was_here`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         pg: {
@@ -5733,7 +5734,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
+          sql: 'insert into `users` (`email`, `name`) values (?, ?), (?, ?)',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         mssql: {
@@ -5765,7 +5766,7 @@ describe('QueryBuilder', () => {
         mysql:
           "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",
         sqlite3:
-          "insert into `users` (`email`, `name`) select 'foo' as `email`, 'taylor' as `name` union all select NULL as `email`, 'dayle' as `name`",
+          "insert into `users` (`email`, `name`) values ('foo', 'taylor'), (NULL, 'dayle')",
         mssql:
           "insert into [users] ([email], [name]) values ('foo', 'taylor'), (NULL, 'dayle')",
         oracledb:
@@ -5829,7 +5830,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`',
+          sql: 'insert into `users` (`email`, `name`) values (?, ?), (?, ?) returning `id`',
         },
         pg: {
           sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?) returning "id"',
@@ -5880,7 +5881,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` returning `id`, `name`',
+          sql: 'insert into `users` (`email`, `name`) values (?, ?), (?, ?) returning `id`, `name`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         pg: {
@@ -5962,18 +5963,8 @@ describe('QueryBuilder', () => {
         bindings: [1, 2, 2, 3],
       },
       sqlite3: {
-        sql: 'insert into `table` (`a`, `b`, `c`) select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c` union all select ? as `a`, ? as `b`, ? as `c`',
-        bindings: [
-          1,
-          undefined,
-          undefined,
-          undefined,
-          2,
-          undefined,
-          2,
-          undefined,
-          3,
-        ],
+        sql: 'insert into `table` (`a`, `b`, `c`) values (?, ?, ?), (?, ?, ?), (?, ?, ?)',
+        bindings: [1, null, null, null, 2, null, 2, null, 3],
       },
       mssql: {
         sql: 'insert into [table] ([a], [b], [c]) values (?, DEFAULT, DEFAULT), (DEFAULT, ?, DEFAULT), (?, DEFAULT, ?)',
@@ -6601,7 +6592,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (`email`) do nothing',
+          sql: 'insert into `users` (`email`) values (?), (?) on conflict (`email`) do nothing',
           bindings: ['foo', 'bar'],
         },
       }
@@ -6625,7 +6616,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`) select ? as `email` union all select ? as `email` where true on conflict (value) WHERE deleted_at IS NULL do nothing',
+          sql: 'insert into `users` (`email`) values (?), (?) on conflict (value) WHERE deleted_at IS NULL do nothing',
           bindings: ['foo', 'bar'],
         },
       }
@@ -6672,7 +6663,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `name` = ?',
+          sql: 'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on conflict (`email`) do update set `name` = ?',
           bindings: ['foo', 'taylor', 'bar', 'dayle', 'overidden'],
         },
         pg: {
@@ -6699,7 +6690,7 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         sqlite3: {
-          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+          sql: 'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
           bindings: ['foo', 'taylor', 'bar', 'dayle'],
         },
         pg: {
@@ -10098,7 +10089,7 @@ describe('QueryBuilder', () => {
           bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack'],
         },
         sqlite3: {
-          sql: 'with `withClause` as (select `foo` from `users` where `name` = ?) insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name`',
+          sql: 'with `withClause` as (select `foo` from `users` where `name` = ?) insert into `users` (`email`, `name`) values (?, ?), (?, ?)',
           bindings: ['bob', 'thisMail', 'sam', 'thatMail', 'jack'],
         },
         pg: {

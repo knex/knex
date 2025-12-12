@@ -14,6 +14,7 @@ const {
   isRedshift,
   isPostgreSQL,
   isSQLite,
+  isSQLite3,
   isMssql,
   isMysql,
   isOracle,
@@ -256,7 +257,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` returning `id`',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -474,7 +475,7 @@ describe('Inserts', function () {
             );
             tester(
               'sqlite3',
-              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` union all select ? as `about`, ? as `created_at`, ? as `email`, ? as `first_name`, ? as `last_name`, ? as `logins`, ? as `updated_at` returning `id`',
+              'insert into `accounts` (`about`, `created_at`, `email`, `first_name`, `last_name`, `logins`, `updated_at`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?) returning `id`',
               [
                 'Lorem ipsum Dolore labore incididunt enim.',
                 TEST_TIMESTAMP,
@@ -1974,7 +1975,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
+                'insert into `upsert_tests` (`email`, `name`) values (?, ?), (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
                 ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
               );
             });
@@ -2055,8 +2056,7 @@ describe('Inserts', function () {
               );
               tester(
                 'sqlite3',
-                'insert into `upsert_tests` (`email`, `name`, `type`) select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` union all select ? as `email`, ? as `name`, ? as `type` where true ' +
-                  "on conflict (email) where type = 'type1' do update set `email` = excluded.`email`, `name` = excluded.`name`, `type` = excluded.`type`",
+                "insert into `upsert_tests` (`email`, `name`, `type`) values (?, ?, ?), (?, ?, ?), (?, ?, ?) on conflict (email) where type = 'type1' do update set `email` = excluded.`email`, `name` = excluded.`name`, `type` = excluded.`type`",
                 [
                   'one@example.com',
                   'AFTER',
@@ -2314,6 +2314,72 @@ describe('Inserts', function () {
               expect(result.length).to.equal(1);
               assertJsonEquals(result[0].content, arrayOfObject);
             });
+        });
+
+        describe(`#5769 sqlite multi-insert uses standard syntax and supports JSON (does NOT include better-sqlite3)`, function () {
+          it(`should JSON.stringify Sqlite multi-insert of Objects`, async function () {
+            if (!isSQLite3(knex)) {
+              return this.skip();
+            }
+
+            knex(tableName)
+              .insert([{ data: { a: 1 } }, { data: { b: 2 } }])
+              .testSql(function (tester) {
+                tester(
+                  'sqlite3',
+                  `insert into \`${tableName}\` (\`data\`) values (?), (?)`,
+                  ['{"a":1}', '{"b":2}'],
+                  []
+                );
+              });
+          });
+
+          it(`should throw error if doing Sqlite multi-insert on pre-3.7.11 version`, async function () {
+            if (!isSQLite3(knex)) {
+              return this.skip();
+            }
+
+            const realClientVersion = knex.client._clientVersion;
+            knex.client._clientVersion = () => [3, 7, 10];
+
+            try {
+              expect(() => {
+                knex(tableName)
+                  .insert([{ a: 1 }, { a: 2 }])
+                  .testSql(function (tester) {
+                    tester('sqlite3', 'NA', [], []);
+                  });
+              }).to.throw('Requires Sqlite 3.7.11 or newer to do multi-insert');
+            } finally {
+              knex.client._clientVersion = realClientVersion;
+              expect(knex.client._clientVersion()).to.not.equal([3, 7, 10]);
+            }
+          });
+
+          it(`should NOT throw error if doing Sqlite multi-insert on 3.7.11 version`, async function () {
+            if (!isSQLite3(knex)) {
+              return this.skip();
+            }
+
+            const realClientVersion = knex.client._clientVersion;
+            knex.client._clientVersion = () => [3, 7, 11];
+
+            try {
+              knex(tableName)
+                .insert([{ id: 1 }, { id: 2 }], 'id')
+                .testSql(function (tester) {
+                  tester(
+                    'sqlite3',
+                    `insert into \`${tableName}\` (\`id\`) values (?), (?) returning \`id\``,
+                    [1, 2],
+                    []
+                  );
+                });
+            } finally {
+              knex.client._clientVersion = realClientVersion;
+              expect(knex.client._clientVersion()).to.not.equal([3, 7, 11]);
+            }
+          });
         });
       });
     });

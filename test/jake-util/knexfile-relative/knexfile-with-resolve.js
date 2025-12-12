@@ -15,6 +15,7 @@ module.exports = {
   connection: {
     filename: __dirname + '/../test.sqlite3',
   },
+  useNullAsDefault: true,
   migrations: {
     directory: MIGRATIONS_DIR,
   },

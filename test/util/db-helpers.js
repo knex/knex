@@ -51,8 +51,13 @@ function isRedshift(knex) {
   return getDriverName(knex) === drivers.Redshift;
 }
 
+/** Checks for ONLY the sqlite3 client and NOT better-sqlite3 */
+function isSQLite3(knex) {
+  return getDriverName(knex) === drivers.SQLite;
+}
+
 function isSQLite(knex) {
-  return getDriverName(knex) === drivers.SQLite || isBetterSQLite3(knex);
+  return isSQLite3(knex) || isBetterSQLite3(knex);
 }
 
 function isCockroachDB(knex) {
@@ -86,5 +91,6 @@ module.exports = {
   isPgBasedDriverName,
   isRedshift,
   isSQLite,
+  isSQLite3,
   isBetterSQLite3,
 };
