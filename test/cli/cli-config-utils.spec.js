@@ -5,7 +5,7 @@ const { execFile } = require('child_process');
 const { expect } = require('chai');
 
 /**
- * Execute a command, return a promise for its stdout/stderr
+ * Execute _justexit.js as a child process, return a promise for its stdout/stderr
  *
  * @param {...string} args
  * @returns {Promise<{error: import('child_process').ExecException|null, stdout: string, stderr: string}>}
