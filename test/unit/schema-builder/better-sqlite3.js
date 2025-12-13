@@ -301,7 +301,7 @@ describe('BetterSQLite3 SchemaBuilder', function () {
       .toSQL();
 
     equal(1, tableSql.length);
-    equal(tableSql[0].sql, 'drop index `foo`');
+    equal(tableSql[0].sql, 'drop index if exists `foo`');
   });
 
   it('drop index', function () {

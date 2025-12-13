@@ -1,7 +1,7 @@
 'use strict';
 const tape = require('tape');
 const { expect } = require('chai');
-const { isOracle } = require('../util/db-helpers');
+const { isOracle, isMysql } = require('../util/db-helpers');
 
 /**
  * Collection of tests for making sure that certain features are cross database compatible
@@ -115,6 +115,11 @@ module.exports = function (knex) {
       ' - create and drop index works in different cases, with dropUniqueIfExists',
     async (t) => {
       t.plan(1);
+      if (isMysql(knex)) {
+        t.pass('dropUniqueIfExists not supported on mysql');
+        t.end();
+        return;
+      }
       try {
         await knex.schema
           .dropTableIfExists('test_table_drop_unique_if_exists')

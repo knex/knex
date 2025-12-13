@@ -1623,7 +1623,7 @@ describe('Schema (misc)', () => {
             if (isOracle(knex) || isMysql(knex)) {
               return this.skip();
             }
-            knex.schema.table('composite_key_test', (t) => {
+            await knex.schema.table('composite_key_test', (t) => {
               t.dropUniqueIfExists(['column_a', 'column_b']);
             });
           });
@@ -1632,7 +1632,7 @@ describe('Schema (misc)', () => {
             if (isOracle(knex) || isMysql(knex)) {
               return this.skip();
             }
-            knex.schema.table('composite_key_test', (t) => {
+            await knex.schema.table('composite_key_test', (t) => {
               t.dropUniqueIfExists('foo');
             });
           });
