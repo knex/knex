@@ -388,6 +388,17 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop primary key');
     });
 
+    it('test drop primary if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropPrimaryIfExists();
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
+    });
+
     it('test drop unique', function () {
       tableSql = client
         .schemaBuilder()
@@ -412,6 +423,17 @@ module.exports = function (dialect) {
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
+    });
+
+    it('test drop unique if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropUniqueIfExists('foo');
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
     });
 
     it('test drop index', function () {
@@ -466,6 +488,17 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal(
         'alter table `users` drop foreign key `foo`'
       );
+    });
+
+    it('test drop foreign if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropForeignIfExists('foo');
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
     });
 
     it('test drop timestamps', function () {
@@ -1370,6 +1403,17 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal(
         'alter table `composite_key_test` drop index `composite_key_test_column_a_column_b_unique`'
       );
+    });
+
+    it('allows dropping a unique compound index if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('composite_key_test', function (t) {
+            t.dropUniqueIfExists(['column_a', 'column_b']);
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
     });
 
     it('allows default as alias for defaultTo', function () {
