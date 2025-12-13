@@ -2,7 +2,11 @@ const { get } = require('lodash');
 const { DRIVER_NAMES: drivers } = require('../../lib/constants');
 
 function getDriverName(knex) {
-  return get(knex, 'client.driverName', '');
+  const driverName = get(knex, 'client.driverName', null);
+  if (driverName === null) {
+    throw new Error('getDriverName(): invalid knex instance');
+  }
+  return driverName;
 }
 
 function isPostgreSQL(knex) {
