@@ -1385,9 +1385,12 @@ module.exports = function (dialect) {
 
     it('allows dropping a unique compound index if exists', function () {
       expect(() => {
-        client.schemaBuilder().table('composite_key_test', function (t) {
-          t.dropUniqueIfExists(['column_a', 'column_b']);
-        }).toSQL();
+        client
+          .schemaBuilder()
+          .table('composite_key_test', function (t) {
+            t.dropUniqueIfExists(['column_a', 'column_b']);
+          })
+          .toSQL();
       }).to.throw(/not supported/);
     });
 

@@ -202,17 +202,23 @@ describe('Oracle SchemaBuilder', function () {
 
   it('test drop unique if exists', function () {
     expect(() => {
-      client.schemaBuilder().table('users', function () {
-        this.dropUniqueIfExists('foo');
-      }).toSQL();
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropUniqueIfExists('foo');
+        })
+        .toSQL();
     }).to.throw(/not supported/);
   });
 
   it('test drop unique if exists, custom', function () {
     expect(() => {
-      client.schemaBuilder().table('users', function () {
-        this.dropUniqueIfExists(null, 'foo');
-      }).toSQL();
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropUniqueIfExists(null, 'foo');
+        })
+        .toSQL();
     }).to.throw(/not supported/);
   });
 
