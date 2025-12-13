@@ -3143,6 +3143,7 @@ declare namespace Knex {
     stub?: string;
     tableName?: string;
     schemaName?: string;
+    createSchema?: boolean;
     disableTransactions?: boolean;
     disableMigrationsListValidation?: boolean;
     sortDirsSeparately?: boolean;
