@@ -172,6 +172,17 @@ describe('Oracle SchemaBuilder', function () {
     );
   });
 
+  it('test drop primary if exists', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropPrimaryIfExists();
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
   it('test drop unique', function () {
     tableSql = client
       .schemaBuilder()
@@ -272,6 +283,17 @@ describe('Oracle SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'alter table "users" drop constraint "foo"'
     );
+  });
+
+  it('test drop foreign if exists', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropForeignIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
   });
 
   it('test drop timestamps', function () {

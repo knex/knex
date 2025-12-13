@@ -305,6 +305,17 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('test drop primary if exists', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropPrimaryIfExists('testconstraintname');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
   it('test drop unique', function () {
     tableSql = client
       .schemaBuilder()
@@ -475,6 +486,17 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'ALTER TABLE [users] DROP CONSTRAINT [foo]'
     );
+  });
+
+  it('test drop foreign if exists', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropForeignIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
   });
 
   it('test drop timestamps', function () {

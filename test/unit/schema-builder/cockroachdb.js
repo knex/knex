@@ -46,4 +46,30 @@ describe('CockroachDB SchemaBuilder', function () {
       'drop index if exists "users"@"foo" cascade '
     );
   });
+
+  it('drop foreign if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropForeignIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "users_foo_foreign"'
+    );
+  });
+
+  it('drop primary if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropPrimaryIfExists();
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "users_pkey"'
+    );
+  });
 });
