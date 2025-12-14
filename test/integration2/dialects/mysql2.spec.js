@@ -79,7 +79,7 @@ describe('MySQL dialect', () => {
             const result = await knex.schema.raw(
               "SHOW STATUS LIKE 'Ssl_cipher'"
             );
-            expect(result[0][0].Value).not.to.be.empty;
+            expect(result[0].Value).not.to.be.empty;
           });
         });
       });
