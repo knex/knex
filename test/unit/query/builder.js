@@ -1553,6 +1553,35 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('correctly orders value placeholders for .whereIn(knex.raw())', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        // COALESCE() is used here simply to generate a valid left-hand-side
+        // to the expression lhs IN rhs that can take a value parameter
+        .whereIn(raw('COALESCE(??, ?)', ['id', 9]), [1, 2, 3]),
+      {
+        mysql: {
+          sql: 'select * from `users` where COALESCE(`id`, ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        mssql: {
+          sql: 'select * from [users] where COALESCE([id], ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        pg: {
+          sql: 'select * from "users" where COALESCE("id", ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" where COALESCE("id", ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+      }
+    );
+  });
+
   it('orWhereIn', () => {
     testsql(
       qb()
