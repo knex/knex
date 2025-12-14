@@ -1561,6 +1561,26 @@ knex('accounts as a1')
   });
 ```
 
+::: info Better-SQLite3
+`better-sqlite3` can return integers as either plain JS `number` (the default) or as `bigint`. You can configure this per-query with `.options({safeIntegers: boolean})`.
+
+Example:
+
+```js
+// {balance: bigint}[]
+const rows = await knex('accounts')
+  .select('balance')
+  .options({ safeIntegers: true });
+
+// {balance: number}[]
+const rows = await knex('accounts')
+  .select('balance')
+  .options({ safeIntegers: false });
+```
+
+The default for all queries can be set via [global configuration options](/guide/#configuration-options)
+:::
+
 ### queryContext
 
 **.queryContext(context)**
