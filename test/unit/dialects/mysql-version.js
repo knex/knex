@@ -115,4 +115,43 @@ describe('MySQL/MariaDB version detection', () => {
     expect(client.isMariaDB).to.equal(true);
     expect(tracker.count).to.equal(2);
   });
+
+  it('destroys connection on version detection failure during acquire', async () => {
+    const client = new Client_MySQL({ client: 'mysql', connection: {} });
+    const tracker = { destroyed: false, listenersCleared: false };
+    const connection = {
+      state: 'connected',
+      on() {},
+      connect(callback) {
+        callback(null);
+      },
+      destroy() {
+        tracker.destroyed = true;
+      },
+      removeAllListeners() {
+        tracker.listenersCleared = true;
+      },
+    };
+
+    // Force checkVersion to throw
+    client.checkVersion = async () => {
+      throw new Error('boom');
+    };
+
+    // Stub driver
+    client.driver = {
+      createConnection() {
+        return connection;
+      },
+    };
+
+    try {
+      await client.acquireRawConnection();
+      throw new Error('expected acquireRawConnection to reject');
+    } catch (err) {
+      expect(err.message).to.equal('boom');
+      expect(tracker.destroyed).to.equal(true);
+      expect(tracker.listenersCleared).to.equal(true);
+    }
+  });
 });

@@ -45,4 +45,18 @@ describe('Base TableCompiler', () => {
       /implemented in the dialect driver/
     );
   });
+
+  it('dropUnique throws by default', () => {
+    const compiler = createCompiler();
+    expect(() => compiler.dropUnique()).to.throw(
+      /implemented in the dialect driver/
+    );
+  });
+
+  it('dropForeign throws by default', () => {
+    const compiler = createCompiler();
+    expect(() => compiler.dropForeign()).to.throw(
+      /implemented in the dialect driver/
+    );
+  });
 });
