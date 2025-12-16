@@ -1420,6 +1420,21 @@ module.exports = function (dialect) {
       );
     });
 
+    it('allows dropping a single-column unique index if exists on MariaDB', function () {
+      client.isMariaDB = true;
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (t) {
+          t.dropUniqueIfExists('email');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` drop index if exists `users_email_unique`'
+      );
+    });
+
     it('allows default as alias for defaultTo', function () {
       tableSql = client
         .schemaBuilder()
