@@ -27,16 +27,22 @@ describe('Base TableCompiler', () => {
 
   it('dropUniqueIfExists throws by default', () => {
     const compiler = createCompiler();
-    expect(() => compiler.dropUniqueIfExists()).to.throw(/implemented in the dialect driver/);
+    expect(() => compiler.dropUniqueIfExists()).to.throw(
+      /implemented in the dialect driver/
+    );
   });
 
   it('dropForeignIfExists throws by default', () => {
     const compiler = createCompiler();
-    expect(() => compiler.dropForeignIfExists()).to.throw(/implemented in the dialect driver/);
+    expect(() => compiler.dropForeignIfExists()).to.throw(
+      /implemented in the dialect driver/
+    );
   });
 
   it('dropPrimaryIfExists throws by default', () => {
     const compiler = createCompiler();
-    expect(() => compiler.dropPrimaryIfExists()).to.throw(/implemented in the dialect driver/);
+    expect(() => compiler.dropPrimaryIfExists()).to.throw(
+      /implemented in the dialect driver/
+    );
   });
 });
