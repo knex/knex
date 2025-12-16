@@ -1406,14 +1406,18 @@ module.exports = function (dialect) {
     });
 
     it('allows dropping a unique compound index if exists', function () {
-      expect(() => {
-        client
-          .schemaBuilder()
-          .table('composite_key_test', function (t) {
-            t.dropUniqueIfExists(['column_a', 'column_b']);
-          })
-          .toSQL();
-      }).to.throw(/not supported/);
+      client.isMariaDB = true;
+      tableSql = client
+        .schemaBuilder()
+        .table('composite_key_test', function (t) {
+          t.dropUniqueIfExists(['column_a', 'column_b']);
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `composite_key_test` drop index if exists `composite_key_test_column_a_column_b_unique`'
+      );
     });
 
     it('allows default as alias for defaultTo', function () {

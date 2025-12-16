@@ -826,7 +826,7 @@ Drops a unique key constraint from a table. A default unique key name using the 
 
 **table.dropUniqueIfExists(columns, [indexName])**
 
-Like dropUnique, but does not error if the constraint does not exist. Supported in PostgreSQL, CockroachDB, MSSQL, and SQLite/better-sqlite3. Not supported in MySQL, Oracle, or Redshift; calling it there throws a “not supported” error.
+Like dropUnique, but does not error if the constraint does not exist. Supported in PostgreSQL, CockroachDB, MariaDB, MSSQL, and SQLite/better-sqlite3. Not supported in MySQL, Oracle, or Redshift; calling it there throws a “not supported” error.
 
 ### dropPrimary
 
