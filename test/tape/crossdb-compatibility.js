@@ -115,8 +115,8 @@ module.exports = function (knex) {
       ' - create and drop index works in different cases, with dropUniqueIfExists',
     async (t) => {
       t.plan(1);
-      if (isMysql(knex)) {
-        t.pass('dropUniqueIfExists not supported on mysql');
+      if (isMysql(knex) || isOracle(knex)) {
+        t.pass('dropUniqueIfExists not supported on mysql/oracle');
         t.end();
         return;
       }
