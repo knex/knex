@@ -3097,6 +3097,7 @@ declare namespace Knex {
   interface PoolConfig {
     name?: string;
     afterCreate?: Function;
+    validate?: (connection: any) => boolean | Promise<boolean>;
     min?: number;
     max?: number;
     refreshIdle?: boolean;
@@ -3112,6 +3113,8 @@ declare namespace Knex {
     createTimeoutMillis?: number;
     destroyTimeoutMillis?: number;
     acquireTimeoutMillis?: number;
+    maxConnectionLifetimeMillis?: number;
+    maxConnectionLifetimeJitterMillis?: number;
   }
 
   type LogFn = (message: any) => void;
