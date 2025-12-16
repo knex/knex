@@ -29,6 +29,7 @@ describe('Query Building Tests', function () {
   require('./unit/schema-builder/oracle');
   require('./unit/schema-builder/mssql');
   require('./unit/schema-builder/oracledb');
+  require('./unit/schema/tablecompiler-base');
   require('./unit/migrations/migrate/migration-list-resolver');
   require('./unit/migrations/seed/seeder');
   // require('./unit/interface'); ToDo Uncomment after fixed
@@ -53,6 +54,7 @@ if (config.oracledb) {
 
 if (config.mysql) {
   require('./unit/dialects/mysql');
+  require('./unit/dialects/mysql-version');
 }
 
 if (config['better-sqlite3']) {

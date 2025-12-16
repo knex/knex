@@ -154,4 +154,64 @@ describe('MySQL/MariaDB version detection', () => {
       expect(tracker.listenersCleared).to.equal(true);
     }
   });
+
+  it('acquireRawConnection resolves and runs version check once connected', async () => {
+    const client = new Client_MySQL({ client: 'mysql', connection: {} });
+    const connection = {
+      state: 'connected',
+      removeAllListenersCalled: false,
+      on() {},
+      connect(callback) {
+        callback(null);
+      },
+      removeAllListeners() {
+        this.removeAllListenersCalled = true;
+      },
+    };
+
+    const versionCalls = [];
+    client.checkVersion = async (conn) => {
+      versionCalls.push(conn);
+      return '8.0.36';
+    };
+    client.driver = {
+      createConnection() {
+        return connection;
+      },
+    };
+
+    const acquired = await client.acquireRawConnection();
+
+    expect(acquired).to.equal(connection);
+    expect(versionCalls).to.have.length(1);
+    expect(connection.removeAllListenersCalled).to.equal(false);
+  });
+
+  it('acquireRawConnection rejects on connect error and clears listeners', async () => {
+    const client = new Client_MySQL({ client: 'mysql', connection: {} });
+    const connection = {
+      state: 'disconnected',
+      removed: false,
+      on() {},
+      connect(callback) {
+        callback(new Error('connect failed'));
+      },
+      removeAllListeners() {
+        this.removed = true;
+      },
+    };
+    client.driver = {
+      createConnection() {
+        return connection;
+      },
+    };
+
+    try {
+      await client.acquireRawConnection();
+      throw new Error('expected acquireRawConnection to reject');
+    } catch (err) {
+      expect(err.message).to.equal('connect failed');
+      expect(connection.removed).to.equal(true);
+    }
+  });
 });
