@@ -30,7 +30,7 @@ describe('CockroachDB SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'drop index if exists "users"@"users_foo_unique" cascade '
+      'drop index if exists "users"@"users_foo_unique" cascade'
     );
   });
 
@@ -43,7 +43,7 @@ describe('CockroachDB SchemaBuilder', function () {
       .toSQL();
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
-      'drop index if exists "users"@"foo" cascade '
+      'drop index if exists "users"@"foo" cascade'
     );
   });
 
