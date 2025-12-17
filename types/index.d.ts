@@ -759,6 +759,11 @@ declare namespace Knex {
     clearCounters(): QueryBuilder<TRecord, TResult>;
     clear(statement: ClearStatements): QueryBuilder<TRecord, TResult>;
 
+    // Casting
+    cast: (
+      spec: Record<TResult, 'bigint' | 'number'>
+    ) => QueryBuilder<TRecord, TResult>;
+
     // Paging
     offset(
       offset: number,
