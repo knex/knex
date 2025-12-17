@@ -241,7 +241,9 @@ describe('Oracle', () => {
       }
 
       expect(exception).not.to.equal(undefined);
-      expect(exception.message).to.include('NJS-003: invalid connection');
+      expect(exception.message).to.match(
+        /NJS-003: invalid (?:or closed )?connection/
+      );
       expect(spy.callCount).to.equal(1);
     });
 
