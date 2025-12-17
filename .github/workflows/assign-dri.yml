@@ -1,7 +1,8 @@
 name: Assign PR to DRI
+
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   pull-requests: write
@@ -10,16 +11,41 @@ jobs:
   assign:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - name: Assign based on DRI label or body
+        uses: actions/github-script@v7
         with:
           script: |
-            const body = context.payload.pull_request.body || '';
-            const match = body.match(/DRI:\s*@([^\s]+)/i);
-            if (!match) return core.info('No DRI token found.');
-            const dri = match[1];
-            await github.rest.issues.addAssignees({
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.info('No pull request payload; exiting.');
+              return;
+            }
+
+            const labels = (pr.labels || []).map(l => l.name);
+            const labelMatch = labels.find((name) => /^DRI:@/i.test(name));
+            let driUser = null;
+
+            if (labelMatch) {
+              driUser = labelMatch.replace(/^DRI:@/i, '').trim().replace(/^@+/, '');
+              core.info(`Found DRI label: ${labelMatch} -> ${driUser}`);
+            } else {
+              const body = pr.body || '';
+              const match = body.match(/DRI:\s*@([^\s]+)/i);
+              if (match?.[1]) {
+                driUser = match[1].replace(/^@+/, '');
+                core.info(`Found DRI in body: ${driUser}`);
+              }
+            }
+
+            if (!driUser) {
+              core.info('No DRI label or body tag found; skipping assignment.');
+              return;
+            }
+
+            await github.rest.issues.setAssignees({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              assignees: [dri],
+              issue_number: pr.number,
+              assignees: [driUser],
             });
+            core.info(`Set assignee for PR #${pr.number} to ${driUser}`);
