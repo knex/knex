@@ -42,7 +42,7 @@ jobs:
               return;
             }
 
-            await github.rest.issues.setAssignees({
+            await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: pr.number,
