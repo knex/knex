@@ -268,7 +268,7 @@ const knex = require('knex')({
 });
 ```
 
-By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object. 
+By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object.
 
 ```js
 const knex = require('knex')({
