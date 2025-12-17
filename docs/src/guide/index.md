@@ -268,7 +268,7 @@ const knex = require('knex')({
 });
 ```
 
-By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object. The `expirationChecker` is consulted both when creating new connections and before reusing a pooled connection. If it returns `true`, Knex refreshes the connection settings from your provider and drops the current connection so the pool can create a new one with the updated configuration. If the checker still reports expired after a refresh, Knex throws to avoid repeated churn.
+By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object. 
 
 ```js
 const knex = require('knex')({
