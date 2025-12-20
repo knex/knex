@@ -2,6 +2,7 @@
 import { watch, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vitepress';
 import { useDialect } from './dialect';
+import { syncDialectErrors } from './sidebarDialectErrors';
 const { dialect } = useDialect();
 const route = useRoute();
 
@@ -15,6 +16,7 @@ const switchExamples = () => {
       .forEach((el) => {
         el.style.display = 'block';
       });
+    syncDialectErrors(dialect.value);
   });
 };
 
@@ -24,7 +26,7 @@ onMounted(switchExamples);
 </script>
 
 <template>
-  <select v-model="dialect" class="sql-dropdown item nav-link">
+  <select v-model="dialect" class="sql-dropdown">
     <option value="mysql">MySQL / MariaDB</option>
     <option value="mysql2">MySQL2</option>
     <option value="postgres">PostgreSQL</option>
@@ -40,11 +42,14 @@ onMounted(switchExamples);
 <style>
 .sql-dropdown {
   border-radius: 8px;
-  margin-left: 1rem;
-  padding: 0.5rem 0.4rem;
+  margin-right: 0.75rem;
+  padding: 0.35rem 0.6rem;
   cursor: pointer;
-  color: var(--c-text);
+  color: var(--vp-c-text-1);
   outline: none;
-  background: var(--c-white-dark);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  font-size: 0.9rem;
+  margin-left: 20px;
 }
 </style>

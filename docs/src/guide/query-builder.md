@@ -1808,7 +1808,6 @@ Several methods exist to assist in dynamic where clauses. In many places functio
 **Important:** Supplying knex with an `undefined` value to any of the `where` functions will cause knex to throw an error during sql compilation. This is both for yours and our sake. Knex cannot know what to do with undefined values in a where clause, and generally it would be a programmatic error to supply one to begin with. The error will throw a message containing the type of query and the compiled query-string. Example:
 
 ```js
-// @sql
 knex('accounts').where('login', undefined).select().toSQL();
 ```
 

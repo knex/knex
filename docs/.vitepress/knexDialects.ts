@@ -17,6 +17,11 @@ const dialects = {
 
 const SQL_MARKER_LINE = /^\s*\/\/\s*@sql\b/m;
 const FENCE_LANGUAGES = new Set(['js', 'javascript', 'ts', 'typescript']);
+const HEADING_RE = /^(#{2,3})\s+(.+)$/;
+const FENCE_RE = /^(```|~~~)/;
+const rControl = /[\u0000-\u001f]/g;
+const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'“”‘’<>,.?/]+/g;
+const rCombining = /[\u0300-\u036f]/g;
 
 export default function knexDialects(): PluginOption {
   const sqlOutputTagRegex = /<SqlOutput[\s]*code="([^"]+)"[\s]*\/>/gi;
@@ -32,12 +37,15 @@ export default function knexDialects(): PluginOption {
         for (const match of matches) {
           let markdown = '';
           const getCode = Function('knex', `return knex.raw(${match[1]});`);
+          const headingId = findNearestHeadingId(src, match.index ?? 0);
 
           for (const [dialect, knex] of Object.entries(dialects)) {
             const { sql } = getCode(knex);
             const output = sql.toString();
 
-            markdown += `<div class="sql-output" data-dialect="${dialect}">\n\n\`\`\`sql\n${output}\n\`\`\`\n\n</div>\n`;
+            markdown += `<div class="sql-output" data-dialect="${dialect}"${formatHeadingAttr(
+              headingId
+            )}>\n\n\`\`\`sql\n${output}\n\`\`\`\n\n</div>\n`;
           }
 
           src = src.replace(match[0], markdown);
@@ -45,7 +53,7 @@ export default function knexDialects(): PluginOption {
 
         src = src.replace(
           codeFenceRegex,
-          (match, lang, meta, code: string): string => {
+          (match, lang, meta, code: string, offset: number): string => {
             const normalizedLang = String(lang).toLowerCase();
             if (!FENCE_LANGUAGES.has(normalizedLang)) {
               return match;
@@ -57,7 +65,8 @@ export default function knexDialects(): PluginOption {
 
             const cleanedCode = stripSqlMarkers(code);
             const fenced = `\`\`\`${lang}${meta}\n${cleanedCode}\`\`\``;
-            const outputs = renderSqlOutputs(code, normalizedLang);
+            const headingId = findNearestHeadingId(src, offset);
+            const outputs = renderSqlOutputs(code, normalizedLang, headingId);
             if (!outputs) {
               return fenced;
             }
@@ -76,7 +85,11 @@ function stripSqlMarkers(code: string): string {
   return code.replace(/^\s*\/\/\s*@sql\b.*(?:\r?\n|$)/gm, '');
 }
 
-function renderSqlOutputs(code: string, lang: string): string | null {
+function renderSqlOutputs(
+  code: string,
+  lang: string,
+  headingId?: string | null
+): string | null {
   const instrumented = instrumentMarkedStatements(code, lang);
   if (!instrumented) {
     return null;
@@ -105,18 +118,18 @@ function renderSqlOutputs(code: string, lang: string): string | null {
     const hasError = chunks.some((chunk) => chunk.type === 'error');
     if (hasError) {
       outputs.push(
-        `<div class="sql-output" data-dialect="${dialect}">\n\n${renderPlainOutput(
-          chunks
-        )}\n\n</div>`
+        `<div class="sql-output" data-dialect="${dialect}"${formatHeadingAttr(
+          headingId
+        )}>\n\n${renderPlainOutput(chunks)}\n\n</div>`
       );
       continue;
     }
 
     const sqlBlocks = chunks.map((chunk) => chunk.text);
     outputs.push(
-      `<div class="sql-output" data-dialect="${dialect}">\n\n\`\`\`sql\n${sqlBlocks.join(
-        '\n\n'
-      )}\n\`\`\`\n\n</div>`
+      `<div class="sql-output" data-dialect="${dialect}"${formatHeadingAttr(
+        headingId
+      )}>\n\n\`\`\`sql\n${sqlBlocks.join('\n\n')}\n\`\`\`\n\n</div>`
     );
   }
 
@@ -412,6 +425,59 @@ function renderPlainOutput(chunks: RenderChunk[]): string {
     })
     .join('\n\n');
   return `<pre class="sql-output-plain"><code>${body}</code></pre>`;
+}
+
+function formatHeadingAttr(headingId?: string | null): string {
+  return headingId ? ` data-heading="${headingId}"` : '';
+}
+
+function findNearestHeadingId(source: string, offset: number): string | null {
+  const prefix = source.slice(0, offset);
+  const lines = prefix.split(/\r?\n/);
+  let inFence = false;
+  let lastHeading: { text: string; explicitId?: string } | null = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (FENCE_RE.test(trimmed)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) {
+      continue;
+    }
+    const match = line.match(HEADING_RE);
+    if (!match) {
+      continue;
+    }
+    let text = match[2].trim();
+    let explicitId: string | undefined;
+    const explicitMatch = text.match(/\s*\{#([^}]+)\}\s*$/);
+    if (explicitMatch) {
+      explicitId = explicitMatch[1];
+      text = text.replace(/\s*\{#([^}]+)\}\s*$/, '').trim();
+    }
+    text = text.replace(/\s+#+\s*$/, '').trim();
+    lastHeading = { text, explicitId };
+  }
+
+  if (!lastHeading) {
+    return null;
+  }
+
+  return lastHeading.explicitId ?? slugify(lastHeading.text);
+}
+
+function slugify(text: string): string {
+  return text
+    .normalize('NFKD')
+    .replace(rCombining, '')
+    .replace(rControl, '')
+    .replace(rSpecial, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/^(\d)/, '_$1')
+    .toLowerCase();
 }
 
 function escapeHtml(value: string): string {

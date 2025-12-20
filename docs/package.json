@@ -10,8 +10,8 @@
   },
   "devDependencies": {
     "knex": "latest",
-    "typescript": "^4.6.3",
-    "vitepress": "^0.22.4"
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4"
   },
   "dependencies": {},
   "author": {
