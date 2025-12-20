@@ -11,9 +11,9 @@ let activeSidebarLink = null;
 let lastActiveHeading = null;
 
 const getHeadings = () => {
-  return Array.from(
-    document.querySelectorAll('.VPDoc :where(h2,h3)')
-  ).filter((el) => el.id);
+  return Array.from(document.querySelectorAll('.VPDoc :where(h2,h3)')).filter(
+    (el) => el.id
+  );
 };
 
 const findActiveHeading = () => {

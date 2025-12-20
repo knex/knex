@@ -280,7 +280,8 @@ a.header-anchor {
   border-color: rgb(210 106 56 / 40%);
 }
 
-div.language-ts, div.language-js  {
+div.language-ts,
+div.language-js {
   margin-bottom: 0 !important;
 }
 

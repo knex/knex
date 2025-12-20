@@ -21,41 +21,39 @@ export function syncDialectErrors(activeDialect) {
     });
 
   const currentPath = window.location.pathname;
-  document
-    .querySelectorAll('.VPSidebar a.link[href*="#"]')
-    .forEach((link) => {
-      const href = link.getAttribute('href') || '';
-      const hashIndex = href.indexOf('#');
-      if (hashIndex === -1) {
-        return;
-      }
-      const textEl = link.querySelector('.text') || link;
-      const existing = textEl.querySelector('.dialect-error-badge');
-      const url = new URL(href, window.location.origin);
-      if (url.pathname !== currentPath) {
-        if (existing) {
-          existing.remove();
-        }
-        return;
-      }
-      const headingId = decodeURIComponent(href.slice(hashIndex + 1));
-      const hasError = errorHeadings.has(headingId);
-
-      if (!hasError) {
-        if (existing) {
-          existing.remove();
-        }
-        return;
-      }
-
+  document.querySelectorAll('.VPSidebar a.link[href*="#"]').forEach((link) => {
+    const href = link.getAttribute('href') || '';
+    const hashIndex = href.indexOf('#');
+    if (hashIndex === -1) {
+      return;
+    }
+    const textEl = link.querySelector('.text') || link;
+    const existing = textEl.querySelector('.dialect-error-badge');
+    const url = new URL(href, window.location.origin);
+    if (url.pathname !== currentPath) {
       if (existing) {
-        return;
+        existing.remove();
       }
+      return;
+    }
+    const headingId = decodeURIComponent(href.slice(hashIndex + 1));
+    const hasError = errorHeadings.has(headingId);
 
-      const badge = document.createElement('span');
-      badge.className = 'dialect-error-badge';
-      badge.textContent = '!';
-      badge.title = 'Unsupported for this dialect';
-      textEl.appendChild(badge);
-    });
+    if (!hasError) {
+      if (existing) {
+        existing.remove();
+      }
+      return;
+    }
+
+    if (existing) {
+      return;
+    }
+
+    const badge = document.createElement('span');
+    badge.className = 'dialect-error-badge';
+    badge.textContent = '!';
+    badge.title = 'Unsupported for this dialect';
+    textEl.appendChild(badge);
+  });
 }

@@ -157,8 +157,7 @@ function instrumentMarkedStatements(code: string, lang: string): string | null {
 
   const statementInfos = sourceFile.statements.map((statement) => {
     const start = statement.getStart(sourceFile);
-    const startLine =
-      sourceFile.getLineAndCharacterOfPosition(start).line;
+    const startLine = sourceFile.getLineAndCharacterOfPosition(start).line;
     return {
       statement,
       startLine,
@@ -181,7 +180,10 @@ function instrumentMarkedStatements(code: string, lang: string): string | null {
 
     if (ts.isExpressionStatement(statement)) {
       const expr = statement.expression;
-      inserts.push({ pos: expr.getStart(sourceFile), text: '__capture(() => ' });
+      inserts.push({
+        pos: expr.getStart(sourceFile),
+        text: '__capture(() => ',
+      });
       inserts.push({ pos: expr.getEnd(), text: ')' });
       captures += 1;
       continue;
@@ -396,10 +398,7 @@ function formatSqlError(error: unknown): string {
     .filter((line) => line && !line.startsWith('at '));
   let message = lines[0] || 'Unknown error';
 
-  if (
-    /^Error evaluating SQL snippet$/i.test(message) &&
-    lines.length > 1
-  ) {
+  if (/^Error evaluating SQL snippet$/i.test(message) && lines.length > 1) {
     message = lines[1];
   }
 

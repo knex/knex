@@ -63,9 +63,21 @@ export default defineConfig({
 function getGuideSidebar() {
   const guidePages = [
     { text: 'Installation', link: '/guide/', file: 'index.md' },
-    { text: 'Query Builder', link: '/guide/query-builder', file: 'query-builder.md' },
-    { text: 'Transactions', link: '/guide/transactions', file: 'transactions.md' },
-    { text: 'Schema Builder', link: '/guide/schema-builder', file: 'schema-builder.md' },
+    {
+      text: 'Query Builder',
+      link: '/guide/query-builder',
+      file: 'query-builder.md',
+    },
+    {
+      text: 'Transactions',
+      link: '/guide/transactions',
+      file: 'transactions.md',
+    },
+    {
+      text: 'Schema Builder',
+      link: '/guide/schema-builder',
+      file: 'schema-builder.md',
+    },
     { text: 'Raw', link: '/guide/raw', file: 'raw.md' },
     { text: 'Ref', link: '/guide/ref', file: 'ref.md' },
     { text: 'Utility', link: '/guide/utility', file: 'utility.md' },
@@ -139,8 +151,11 @@ function extractHeaders(filePath: string, pageLink: string) {
     link: string;
     items?: Array<{ text: string; link: string }>;
   }> = [];
-  let currentGroup: { text: string; link: string; items?: Array<{ text: string; link: string }> } | null =
-    null;
+  let currentGroup: {
+    text: string;
+    link: string;
+    items?: Array<{ text: string; link: string }>;
+  } | null = null;
 
   for (const header of headers) {
     const slugBase = header.explicitId ?? slugify(header.text);
