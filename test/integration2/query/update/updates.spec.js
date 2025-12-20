@@ -100,6 +100,12 @@ describe('Updates', function () {
               ['User', 'Test', 'test100@example.com', 1],
               1
             );
+            tester(
+              'pg',
+              '/* update in account */ update "accounts" set "first_name" = ?, "last_name" = ?, "email" = ? where "id" = ?',
+              ['User', 'Test', 'test100@example.com', 1],
+              1
+            );
           });
       });
 
