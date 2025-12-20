@@ -28,6 +28,7 @@ const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const {
   ensureTable,
 } = require('../../../lib/migrations/migrate/table-creator');
+const { DRIVER_NAMES } = require('../../../lib/constants');
 
 describe('Migrations', function () {
   getAllDbs().forEach((db) => {
@@ -80,6 +81,27 @@ describe('Migrations', function () {
               });
             });
         });
+
+        if(db === DRIVER_NAMES.MsSQL
+          || db === DRIVER_NAMES.PostgreSQL
+          // note that for these to work, we would want to run as a more privileged user
+          // || db === DRIVER_NAMES.MySQL2
+          // || db === DRIVER_NAMES.Oracle
+        ) {
+          it('should not fail creating a foreign key referencing a schema', () => {
+            return knex.migrate
+              .latest({
+                directory:
+                  'test/integration2/migrate/test_foreign_key_with_schema',
+              })
+              .then(() => {
+                return knex.migrate.rollback({
+                  directory:
+                    'test/integration2/migrate/test_foreign_key_with_schema',
+                });
+              });
+          });
+        }
 
         if (isPostgreSQL(knex)) {
           it('should not fail drop-and-recreate-column operation when using promise chain and schema', () => {
