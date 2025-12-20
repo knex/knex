@@ -17,7 +17,6 @@ const dialects = {
 
 const SQL_MARKER_LINE = /^\s*\/\/\s*@sql\b/m;
 const FENCE_LANGUAGES = new Set(['js', 'javascript', 'ts', 'typescript']);
-const ERROR_STACK_LINES = 3;
 
 export default function knexDialects(): PluginOption {
   const sqlOutputTagRegex = /<SqlOutput[\s]*code="([^"]+)"[\s]*\/>/gi;
@@ -87,22 +86,33 @@ function renderSqlOutputs(code: string, lang: string): string | null {
   for (const [dialect, knex] of Object.entries(dialects)) {
     const captures = evaluateSnippet(instrumented, lang, knex);
 
-    const sqlBlocks: string[] = [];
+    const chunks: RenderChunk[] = [];
     for (const capture of captures) {
       try {
         const rendered = renderCaptureOutput(capture);
         if (rendered.length) {
-          sqlBlocks.push(...rendered);
+          chunks.push(...rendered);
         }
       } catch (error) {
-        sqlBlocks.push(formatSqlError(error));
+        chunks.push({ type: 'error', text: formatSqlError(error) });
       }
     }
 
-    if (!sqlBlocks.length) {
+    if (!chunks.length) {
       continue;
     }
 
+    const hasError = chunks.some((chunk) => chunk.type === 'error');
+    if (hasError) {
+      outputs.push(
+        `<div class="sql-output" data-dialect="${dialect}">\n\n${renderPlainOutput(
+          chunks
+        )}\n\n</div>`
+      );
+      continue;
+    }
+
+    const sqlBlocks = chunks.map((chunk) => chunk.text);
     outputs.push(
       `<div class="sql-output" data-dialect="${dialect}">\n\n\`\`\`sql\n${sqlBlocks.join(
         '\n\n'
@@ -297,12 +307,12 @@ function isTypeScript(lang: string): boolean {
   return lang === 'ts' || lang === 'typescript';
 }
 
-function renderCaptureOutput(capture: Capture): string[] {
+function renderCaptureOutput(capture: Capture): RenderChunk[] {
   if ('error' in capture) {
-    return [formatSqlError(capture.error)];
+    return [{ type: 'error', text: formatSqlError(capture.error) }];
   }
 
-  return toSqlStrings(capture.value);
+  return toSqlStrings(capture.value).map((text) => ({ type: 'sql', text }));
 }
 
 function toSqlStrings(value: unknown): string[] {
@@ -366,26 +376,49 @@ function normalizeError(error: unknown): Error {
 
 function formatSqlError(error: unknown): string {
   const normalized = normalizeError(error);
-  const lines = ['-- Error evaluating SQL snippet'];
+  const raw = normalized.stack || normalized.message || String(normalized);
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('at '));
+  let message = lines[0] || 'Unknown error';
 
-  if (normalized.message) {
-    for (const line of normalized.message.split(/\r?\n/)) {
-      if (line.trim()) {
-        lines.push(`-- ${line}`);
-      }
-    }
+  if (
+    /^Error evaluating SQL snippet$/i.test(message) &&
+    lines.length > 1
+  ) {
+    message = lines[1];
   }
 
-  if (normalized.stack) {
-    const stackLines = normalized.stack.split(/\r?\n/).slice(1, 1 + ERROR_STACK_LINES);
-    for (const line of stackLines) {
-      if (line.trim()) {
-        lines.push(`-- ${line.trim()}`);
-      }
-    }
+  if (!message.startsWith('Error:')) {
+    message = `Error: ${message}`;
   }
 
-  return lines.join('\n');
+  return message;
 }
 
 type Capture = { value: unknown } | { error: Error };
+
+type RenderChunk = { type: 'sql' | 'error'; text: string };
+
+function renderPlainOutput(chunks: RenderChunk[]): string {
+  const body = chunks
+    .map((chunk) => {
+      const escaped = escapeHtml(chunk.text);
+      if (chunk.type === 'error') {
+        return `<span class="sql-output-error-line">${escaped}</span>`;
+      }
+      return escaped;
+    })
+    .join('\n\n');
+  return `<pre class="sql-output-plain"><code>${body}</code></pre>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}

@@ -151,6 +151,28 @@ a.header-anchor {
 .sql-output .language-sql .lang {
   display: none;
 }
+.sql-output .sql-output-plain {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgb(210 106 56 / 25%);
+  box-shadow: 0 0 0 1px rgb(210 106 56 / 8%);
+  background: var(--code-bg-color);
+  overflow-x: auto;
+}
+.sql-output .sql-output-plain code {
+  font-family: var(--font-family-mono);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  color: #ccc;
+  white-space: pre;
+}
+.sql-output .sql-output-error-line {
+  color: #d44a4a;
+  font-weight: 600;
+}
+.dark .sql-output .sql-output-error-line {
+  color: #ff6b6b;
+}
 .dark .sql-output::before {
   color: var(--c-text-light-2);
   background: rgb(210 106 56 / 20%);
