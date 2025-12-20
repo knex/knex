@@ -115,10 +115,48 @@ a.header-anchor {
   }
 }
 
-[data-dialect]::before {
-  content: attr(data-dialect);
-}
-
 .language-sql code {
   color: #ccc;
+}
+
+.sql-output {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+}
+.sql-output::before {
+  content: 'SQL • ' attr(data-dialect);
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--c-brand);
+  background: rgb(210 106 56 / 12%);
+  border: 1px solid rgb(210 106 56 / 35%);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  margin: 0;
+}
+.sql-output .language-sql {
+  margin: 0;
+  border: 1px solid rgb(210 106 56 / 25%);
+  box-shadow: 0 0 0 1px rgb(210 106 56 / 8%);
+}
+.sql-output .language-sql .lang {
+  display: none;
+}
+.dark .sql-output::before {
+  color: var(--c-text-light-2);
+  background: rgb(210 106 56 / 20%);
+  border-color: rgb(210 106 56 / 40%);
+}
+
+div.language-ts, div.language-js  {
+  margin-bottom: 0 !important;
 }
