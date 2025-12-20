@@ -1,7 +1,6 @@
 'use strict';
 
 const tape = require('tape');
-const omit = require('lodash/omit');
 const QueryBuilder = require('../../lib/query/querybuilder');
 const Client = require('../../lib/client');
 
@@ -39,9 +38,10 @@ tape('clones correctly', function (t) {
 
   t.notEqual(original, cloned);
 
-  // `deepEqual` freezes when it encounters circular references,
-  // so they must be omitted.
-  t.deepEqual(omit(cloned, 'client', 'and'), omit(original, 'client', 'and'));
+  t.deepEqual(
+    removeCircularReferences(cloned),
+    removeCircularReferences(original)
+  );
 
   t.equal(cloned.client, original.client, 'clone references same client');
 
@@ -49,3 +49,11 @@ tape('clones correctly', function (t) {
 
   t.end();
 });
+
+function removeCircularReferences(obj) {
+  // `deepEqual` freezes when it encounters circular references,
+  // so they must be omitted.
+  // eslint-disable-next-line no-unused-vars
+  const { client: _c2, and: _a2, ...withoutCircularReferences } = obj;
+  return withoutCircularReferences;
+}
