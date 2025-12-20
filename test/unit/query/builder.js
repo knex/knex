@@ -10041,6 +10041,22 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('ignores ? in string tokens', () => {
+    testNativeSql(
+      qb()
+        .select('*')
+        .from('table')
+        .whereRaw("a = '?'")
+        .whereRaw('b = ?', ['?']),
+      {
+        pg: {
+          sql: `select * from "table" where a = '?' and b = $1`,
+          bindings: ['?'],
+        },
+      }
+    );
+  });
+
   it("wrapped 'with' clause select", () => {
     testsql(
       qb()
