@@ -31,10 +31,10 @@ knex({ a: 'table', b: 'table' })
 
 ### knex
 
-**knex(tableName, options={only: boolean})**
+**knex(tableName, options)**
 **knex.[methodName]**
 
-The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data.
+The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream.
 
 #### Usage with TypeScript
 
@@ -120,11 +120,16 @@ If you don't want to manually specify the result type, it is recommended to alwa
 
 ### only (knex/from option) [-MY -SQ -MS -OR -CR -RS]
 
-The `only` option uses the `ONLY` keyword before the table name to discard inheriting tables' data.
+The `only` option is a second argument you can pass to `knex(tableName, options)` or `.from(tableName, options)`. When `only: true` is set, Knex prefixes the table name with the `ONLY` keyword, which tells PostgreSQL to read rows from the named table only, excluding rows inherited from child tables. This is useful when table inheritance is in use and you want to avoid pulling in data from descendants.
 
 ::: warning
 Only supported in PostgreSQL for now.
 :::
+
+```js
+knex('users', { only: true }).select('*');
+knex.select('*').from('users', { only: true });
+```
 
 ### timeout [-SQ -MS -OR -CR -RS]
 
@@ -137,10 +142,7 @@ Only supported in MySQL and PostgreSQL for now.
 :::
 
 ```js
-// @sql
 knex.select().from('books').timeout(1000);
-
-// @sql
 knex.select().from('books').timeout(1000, {
   cancel: true, // MySQL and PostgreSQL only
 });
