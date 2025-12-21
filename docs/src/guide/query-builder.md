@@ -36,10 +36,6 @@ knex({ a: 'table', b: 'table' })
 
 The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data.
 
-::: warning
-Only supported in PostgreSQL for now.
-:::
-
 #### Usage with TypeScript
 
 If using TypeScript, you can pass the type of database row as a type parameter to get better autocompletion support down the chain.
@@ -122,7 +118,15 @@ queryBuilder.select('name').then((users) => {
 
 If you don't want to manually specify the result type, it is recommended to always use the type of last value of the chain and assign result of any future chain continuation to a separate variable (which will have a different type).
 
-#### timeout
+### only (knex/from option) [-MY -SQ -MS -OR -CR -RS]
+
+The `only` option uses the `ONLY` keyword before the table name to discard inheriting tables' data.
+
+::: warning
+Only supported in PostgreSQL for now.
+:::
+
+### timeout [-SQ -MS -OR -CR -RS]
 
 **.timeout(ms, options={cancel: boolean})**
 
@@ -250,7 +254,7 @@ knex.select('id').from<User>('users'); // Results to Pick<User, "id">[]
 knex.select('*').fromRaw('(select * from "users" where "age" > ?)', '18');
 ```
 
-### with
+### with [-MY -CR -RS]
 
 **.with(alias, [columns], callback|builder|raw)**
 
@@ -285,7 +289,7 @@ knex
   .from('with_alias');
 ```
 
-### withRecursive
+### withRecursive [-MY -CR -RS]
 
 **.withRecursive(alias, [columns], callback|builder|raw)**
 
@@ -324,7 +328,7 @@ knex
   .from('family');
 ```
 
-### withMaterialized
+### withMaterialized [-MY -MS -OR -CR -RS]
 
 **.withMaterialized(alias, [columns], callback|builder|raw)**
 
@@ -359,7 +363,7 @@ knex
   .from('with_alias');
 ```
 
-### withNotMaterialized
+### withNotMaterialized [-MY -MS -OR -CR -RS]
 
 **.withNotMaterialized(alias, [columns], callback|builder|raw)**
 
@@ -439,7 +443,7 @@ knex('cities').jsonExtract([
 ]);
 ```
 
-### jsonSet
+### jsonSet [-RS]
 
 **.jsonSet(column|builder|raw, path, value, [alias])**
 
@@ -458,7 +462,7 @@ knex('accounts').jsonSet(
 );
 ```
 
-### jsonInsert
+### jsonInsert [-RS]
 
 **.jsonInsert(column|builder|raw, path, value, [alias])**
 
@@ -485,7 +489,7 @@ knex('accounts').jsonInsert(
 );
 ```
 
-### jsonRemove
+### jsonRemove [-RS]
 
 **.jsonRemove(column|builder|raw, path, [alias])**
 
@@ -758,7 +762,7 @@ knex('coords').insert([{ x: 20 }, { y: 30 }, { x: 10, y: 20 }]);
 insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)"
 ```
 
-### onConflict
+### onConflict [-MS -OR -CR -RS]
 
 **insert(..).onConflict(column)**
 **insert(..).onConflict([column1, column2, ...])**
@@ -890,7 +894,7 @@ knex('tableName')
   .where('updated_at', '<', timestamp);
 ```
 
-### upsert
+### upsert [-PG -SQ -MS -OR -RS]
 
 **.upsert(data, [returning], [options])**
 
@@ -962,7 +966,7 @@ knex('books').update({ title: 'Alice in Wonderland' }, ['id', 'title'], {
 });
 ```
 
-### updateFrom
+### updateFrom [-MY -SQ -MS -OR -CR -RS]
 
 **.updateFrom(tableName)**
 
@@ -1010,7 +1014,7 @@ knex('accounts')
   .del();
 ```
 
-### using
+### using [-MY -SQ -MS -OR -CR -RS]
 
 **.using(tableName|tableNames)**
 
@@ -1025,7 +1029,7 @@ knex('accounts')
   .del();
 ```
 
-### returning
+### returning [-MY -CR -RS]
 
 **.returning(column, [options])**
 **.returning([column1, column2, ...], [options])**
@@ -1091,7 +1095,7 @@ knex
   });
 ```
 
-#### forUpdate
+### forUpdate [-SQ -MS -OR -CR -RS]
 
 **.transacting(t).forUpdate()**
 
@@ -1101,7 +1105,7 @@ Dynamically added after a transaction is specified, the forUpdate adds a FOR UPD
 knex('tableName').transacting(trx).forUpdate().select('*');
 ```
 
-#### forShare
+### forShare [-SQ -MS -OR -CR -RS]
 
 **.transacting(t).forShare()**
 
@@ -1111,7 +1115,7 @@ Dynamically added after a transaction is specified, the forShare adds a FOR SHAR
 knex('tableName').transacting(trx).forShare().select('*');
 ```
 
-#### forNoKeyUpdate
+### forNoKeyUpdate [-MY -SQ -MS -OR -CR -RS]
 
 **.transacting(t).forNoKeyUpdate()**
 
@@ -1121,7 +1125,7 @@ Dynamically added after a transaction is specified, the forNoKeyUpdate adds a FO
 knex('tableName').transacting(trx).forNoKeyUpdate().select('*');
 ```
 
-#### forKeyShare
+### forKeyShare [-MY -SQ -MS -OR -CR -RS]
 
 **.transacting(t).forKeyShare()**
 
@@ -1131,7 +1135,7 @@ Dynamically added after a transaction is specified, the forKeyShare adds a FOR K
 knex('tableName').transacting(trx).forKeyShare().select('*');
 ```
 
-### skipLocked
+### skipLocked [-SQ -MS -OR -CR -RS]
 
 **.skipLocked()**
 
@@ -1142,7 +1146,7 @@ MySQL 8.0+, MariaDB-10.6+ and PostgreSQL 9.5+ only. This method can be used afte
 knex('tableName').select('*').forUpdate().skipLocked();
 ```
 
-### noWait
+### noWait [-SQ -MS -OR -CR -RS]
 
 **.noWait()**
 
@@ -1425,7 +1429,7 @@ knex
   });
 ```
 
-### hintComment
+### hintComment [-PG -SQ -MS -CR -RS]
 
 **.hintComment(hint|hints)**
 
@@ -2155,7 +2159,7 @@ knex('users').whereJsonPath('json_col', '$.age', '>', 18);
 knex('users').whereJsonPath('json_col', '$.name', '=', 'username');
 ```
 
-### whereJsonSupersetOf
+### whereJsonSupersetOf [-SQ -MS -OR -RS]
 
 **.whereJsonSupersetOf(column, string|json|builder|raw)**
 
@@ -2166,7 +2170,7 @@ Adds a where clause where the comparison is true if a json given by the column i
 knex('users').whereJsonSupersetOf('hobbies', { sport: 'foot' });
 ```
 
-### whereJsonSubsetOf
+### whereJsonSubsetOf [-SQ -MS -OR -RS]
 
 **.whereJsonSubsetOf(column, string|json|builder|raw)**
 
@@ -2396,6 +2400,10 @@ knex
 ### crossJoin
 
 **.crossJoin(table, ~mixed~)**
+
+Cross join conditions are only supported in MySQL and SQLite3. For join conditions rather use innerJoin.
+
+### crossJoin conditions [-PG -MS -OR -CR -RS]
 
 Cross join conditions are only supported in MySQL and SQLite3. For join conditions rather use innerJoin.
 
@@ -2719,7 +2727,7 @@ knex('customers').distinct('first_name', 'last_name');
 knex('customers').distinct();
 ```
 
-### distinctOn
+### distinctOn [-MY -SQ -MS -OR -CR -RS]
 
 **.distinctOn([\*columns])**
 

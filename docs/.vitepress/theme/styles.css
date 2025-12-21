@@ -301,3 +301,45 @@ div.language-js {
 .dark .dialect-error-badge {
   background: #ff6b6b;
 }
+
+.dialect-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+}
+
+.dialect-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.16rem;
+  border-radius: 1px;
+  border: 1px solid rgba(214, 70, 70, 0.55);
+  background: rgba(214, 70, 70, 0.12);
+  color: #d64646;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.dark .dialect-badge {
+  border-color: rgba(255, 107, 107, 0.7);
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff9a9a;
+}
+
+.dialect-badge-only {
+  border-color: rgba(212, 162, 60, 0.65);
+  background: rgba(212, 162, 60, 0.2);
+  color: #d4a23c;
+}
+
+.dark .dialect-badge-only {
+  border-color: rgba(255, 204, 90, 0.8);
+  background: rgba(255, 204, 90, 0.2);
+  color: #ffd479;
+}

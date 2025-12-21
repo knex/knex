@@ -19,9 +19,11 @@ const SQL_MARKER_LINE = /^\s*\/\/\s*@sql\b/m;
 const FENCE_LANGUAGES = new Set(['js', 'javascript', 'ts', 'typescript']);
 const HEADING_RE = /^(#{2,3})\s+(.+)$/;
 const FENCE_RE = /^(```|~~~)/;
+const BADGE_RE = /\s*\[((?:-[A-Z]{2}\s*)+)\]\s*$/;
 const rControl = /[\u0000-\u001f]/g;
 const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'“”‘’<>,.?/]+/g;
 const rCombining = /[\u0300-\u036f]/g;
+const DIALECT_CODES = ['PG', 'MY', 'SQ', 'MS', 'OR', 'CR', 'RS'];
 
 export default function knexDialects(): PluginOption {
   const sqlOutputTagRegex = /<SqlOutput[\s]*code="([^"]+)"[\s]*\/>/gi;
@@ -33,6 +35,7 @@ export default function knexDialects(): PluginOption {
 
     transform(src, id) {
       if (id.endsWith('.md')) {
+        src = replaceBadgeTokens(src);
         const matches = src.matchAll(sqlOutputTagRegex);
         for (const match of matches) {
           let markdown = '';
@@ -79,6 +82,114 @@ export default function knexDialects(): PluginOption {
       return src;
     },
   };
+}
+
+function replaceBadgeTokens(source: string): string {
+  const lines = source.split(/\r?\n/);
+  let inFence = false;
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (FENCE_RE.test(trimmed)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) {
+      continue;
+    }
+
+    const headingMatch = line.match(/^(#{2,6})\s+(.+)$/);
+    if (!headingMatch) {
+      continue;
+    }
+
+    let text = headingMatch[2].trim();
+    let explicitId: string | null = null;
+    const explicitMatch = text.match(/\s*\{#([^}]+)\}\s*$/);
+    if (explicitMatch) {
+      explicitId = explicitMatch[1];
+      text = text.replace(/\s*\{#([^}]+)\}\s*$/, '').trim();
+    }
+
+    const badgeMatch = text.match(BADGE_RE);
+    if (!badgeMatch) {
+      continue;
+    }
+
+    const items = badgeMatch[1]
+      .trim()
+      .split(/\s+/)
+      .map((entry) => entry.replace(/^-/, ''))
+      .filter(Boolean);
+    if (!items.length) {
+      continue;
+    }
+
+    const cleaned = text.replace(BADGE_RE, '').trim();
+    const headingId = explicitId ?? slugify(cleaned);
+    lines[i] = `${headingMatch[1]} ${cleaned} ${renderBadges(
+      items
+    )} {#${headingId}}`;
+  }
+
+  return lines.join('\n');
+}
+
+function renderBadges(codes: string[]): string {
+  const onlyBadge = renderOnlyBadge(codes);
+  if (onlyBadge) {
+    return onlyBadge;
+  }
+
+  const badges = codes
+    .map(
+      (code) =>
+        `<span class="dialect-badge" title="Not supported by ${dialectLabel(
+          code
+        )}">${code}</span>`
+    )
+    .join('');
+  return `<span class="dialect-badges">${badges}</span>`;
+}
+
+function renderOnlyBadge(codes: string[]): string | null {
+  const supported = DIALECT_CODES.filter((code) => !codes.includes(code));
+  if (supported.length === 1) {
+    const onlyCode = supported[0];
+    return `<span class="dialect-badges"><span class="dialect-badge dialect-badge-only" title="Only supported by ${dialectLabel(
+      onlyCode
+    )}">${onlyCode} only</span></span>`;
+  }
+  if (supported.length === 2) {
+    const [first, second] = supported;
+    return `<span class="dialect-badges"><span class="dialect-badge dialect-badge-only" title="Only supported by ${dialectLabel(
+      first
+    )}, ${dialectLabel(second)}">${first}+${second} only</span></span>`;
+  }
+
+  return null;
+}
+
+function dialectLabel(code: string): string {
+  switch (code) {
+    case 'PG':
+      return 'PostgreSQL';
+    case 'MY':
+      return 'MySQL';
+    case 'SQ':
+      return 'SQLite';
+    case 'MS':
+      return 'MSSQL';
+    case 'OR':
+      return 'Oracle';
+    case 'CR':
+      return 'CockroachDB';
+    case 'RS':
+      return 'Redshift';
+    default:
+      return code;
+  }
 }
 
 function stripSqlMarkers(code: string): string {
