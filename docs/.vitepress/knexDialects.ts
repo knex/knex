@@ -42,6 +42,9 @@ export default function knexDialects(): PluginOption {
           const getCode = Function('knex', `return knex.raw(${match[1]});`);
           const headingId = findNearestHeadingId(src, match.index ?? 0);
 
+          markdown += `<div class="sql-output-group"${formatHeadingAttr(
+            headingId
+          )}>\n`;
           for (const [dialect, knex] of Object.entries(dialects)) {
             const { sql } = getCode(knex);
             const output = sql.toString();
@@ -50,6 +53,7 @@ export default function knexDialects(): PluginOption {
               headingId
             )}>\n\n\`\`\`sql\n${output}\n\`\`\`\n\n</div>\n`;
           }
+          markdown += `</div>\n`;
 
           src = src.replace(match[0], markdown);
         }
@@ -248,7 +252,9 @@ function renderSqlOutputs(
     return null;
   }
 
-  return `${outputs.join('\n')}\n`;
+  return `<div class="sql-output-group"${formatHeadingAttr(
+    headingId
+  )}>\n${outputs.join('\n')}\n</div>\n`;
 }
 
 function instrumentMarkedStatements(code: string, lang: string): string | null {

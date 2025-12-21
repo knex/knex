@@ -8,7 +8,23 @@ const route = useRoute();
 
 const switchExamples = () => {
   nextTick(() => {
-    document.querySelectorAll('[data-dialect]').forEach((el) => {
+    const outputs = document.querySelectorAll('.sql-output[data-dialect]');
+    outputs.forEach((el) => {
+      el.style.display = 'block';
+    });
+
+    document.querySelectorAll('.sql-output-group').forEach((group) => {
+      let maxHeight = 0;
+      group.querySelectorAll('.sql-output').forEach((el) => {
+        const height = el.scrollHeight || 0;
+        if (height > maxHeight) {
+          maxHeight = height;
+        }
+      });
+      group.style.minHeight = maxHeight ? `${maxHeight}px` : '';
+    });
+
+    outputs.forEach((el) => {
       el.style.display = 'none';
     });
     document

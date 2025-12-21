@@ -40,8 +40,8 @@
   --vp-c-divider: #e0d4ce;
   --vp-c-divider-light: #ede3de;
   --vp-code-block-bg: var(--code-bg-color);
-  --vp-sidebar-width: 320px;
-  --vp-sidebar-width-mobile: 280px;
+  --vp-sidebar-width: 340px;
+  --vp-sidebar-width-mobile: 300px;
 }
 html {
   font-size: 14px;
@@ -268,6 +268,9 @@ a.header-anchor {
   line-height: var(--code-line-height);
   color: #ccc;
   white-space: pre;
+}
+.sql-output-group {
+  position: relative;
 }
 .sql-output .sql-output-error-line {
   color: #d44a4a;
