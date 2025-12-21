@@ -241,7 +241,6 @@ describe('runner', () => {
     describe('result casting', () => {
       it('casts result columns (ad-hoc)', async () => {
         const { client, knex } = mockKnex();
-
         client._nextResponse([{ foo: 1 }, { foo: 1n }]);
         await expect(
           knex.select('foo').cast({ foo: 'bigint' })

@@ -15,6 +15,7 @@ import { Tables } from './tables';
 
 import { Stream } from 'stream';
 import { ConnectionOptions } from 'tls';
+import { type CastArg } from '../lib/query/cast';
 
 // # Generic type-level utilities
 
@@ -737,6 +738,9 @@ declare namespace Knex {
     orHavingNull: HavingNull<TRecord, TResult>;
     orHavingNotNull: HavingNull<TRecord, TResult>;
 
+    // Casting
+    cast: Cast<TRecord, TResult>;
+
     // Clear
     clearSelect(): QueryBuilder<
       TRecord,
@@ -758,11 +762,6 @@ declare namespace Knex {
     clearHaving(): QueryBuilder<TRecord, TResult>;
     clearCounters(): QueryBuilder<TRecord, TResult>;
     clear(statement: ClearStatements): QueryBuilder<TRecord, TResult>;
-
-    // Casting
-    cast: (
-      spec: Record<TResult, 'bigint' | 'number'>
-    ) => QueryBuilder<TRecord, TResult>;
 
     // Paging
     offset(
@@ -2024,6 +2023,10 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
 
     (raw: Raw): QueryBuilder<TRecord, TResult>;
+  }
+
+  interface Cast<TRecord extends {} = any, TResult = unknown[]> {
+    (spec: CastArg): QueryBuilder<TRecord, TResult>;
   }
 
   interface HavingRange<TRecord extends {} = any, TResult = unknown[]> {
