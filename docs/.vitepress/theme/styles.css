@@ -40,6 +40,8 @@
   --vp-c-divider: #e0d4ce;
   --vp-c-divider-light: #ede3de;
   --vp-code-block-bg: var(--code-bg-color);
+  --vp-sidebar-width: 320px;
+  --vp-sidebar-width-mobile: 280px;
 }
 html {
   font-size: 14px;
@@ -342,4 +344,23 @@ div.language-js {
   border-color: rgba(255, 204, 90, 0.8);
   background: rgba(255, 204, 90, 0.2);
   color: #ffd479;
+}
+
+.VPDoc h3 + p > strong,
+.VPDoc h4 + p > strong {
+  display: block;
+  padding: 0.08rem 0.3rem;
+  margin-bottom: 0.3rem;
+  border-radius: 4px;
+  font-family: var(--font-family-mono);
+  font-size: 0.85em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+}
+.VPDoc h3 + p > strong:last-child,
+.VPDoc h4 + p > strong:last-child {
+  margin-bottom: 0;
 }
