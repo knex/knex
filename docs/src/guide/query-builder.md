@@ -1104,6 +1104,7 @@ knex
 Dynamically added after a transaction is specified, the forUpdate adds a FOR UPDATE in PostgreSQL and MySQL during a select statement. Not supported on Amazon Redshift due to lack of table locks.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forUpdate().select('*');
 ```
 
@@ -1114,6 +1115,7 @@ knex('tableName').transacting(trx).forUpdate().select('*');
 Dynamically added after a transaction is specified, the forShare adds a FOR SHARE in PostgreSQL and a LOCK IN SHARE MODE for MySQL during a select statement. Not supported on Amazon Redshift due to lack of table locks.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forShare().select('*');
 ```
 
@@ -1124,6 +1126,7 @@ knex('tableName').transacting(trx).forShare().select('*');
 Dynamically added after a transaction is specified, the forNoKeyUpdate adds a FOR NO KEY UPDATE in PostgreSQL.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forNoKeyUpdate().select('*');
 ```
 
@@ -1134,6 +1137,7 @@ knex('tableName').transacting(trx).forNoKeyUpdate().select('*');
 Dynamically added after a transaction is specified, the forKeyShare adds a FOR KEY SHARE in PostgreSQL.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forKeyShare().select('*');
 ```
 

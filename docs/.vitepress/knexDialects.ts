@@ -402,6 +402,8 @@ function evaluateSnippet(
       'knex',
       `"use strict";
       const captures = [];
+      const trx = { client: knex.client };
+      trx.client.transacting = true;
       const __capture = (fn) => {
         try {
           const value = fn();
