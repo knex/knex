@@ -1,9 +1,10 @@
 const { promisify } = require('util');
 const knex = require('../../../lib');
+const { DRIVER_NAMES } = require('../../util/constants');
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
 
-const Db = {
+const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
   PgNative: 'pgnative',
   MySQL: 'mysql',
@@ -13,7 +14,7 @@ const Db = {
   Oracle: 'oracledb',
   CockroachDB: 'cockroachdb',
   BetterSqlite3: 'better-sqlite3',
-};
+});
 
 const defaultDbs = [
   Db.PostgresSQL,
@@ -155,6 +156,7 @@ const testConfigs = {
     pool: poolSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false, // behave like before, but silence the warning
   },
 
   'better-sqlite3': {
@@ -163,6 +165,7 @@ const testConfigs = {
     pool: poolBetterSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false, // behave like before, but silence the warning
   },
 
   mssql: {
@@ -200,8 +203,20 @@ const testConfigs = {
   },
 };
 
+const misaligned = {
+  [DRIVER_NAMES.PostgreSQL]: Db.PostgresSQL,
+  [DRIVER_NAMES.PgNative]: Db.PgNative,
+  [DRIVER_NAMES.MySQL]: Db.MySQL,
+  [DRIVER_NAMES.MySQL2]: Db.MySQL2,
+  [DRIVER_NAMES.MsSQL]: Db.MSSQL,
+  [DRIVER_NAMES.SQLite]: Db.SQLite,
+  [DRIVER_NAMES.Oracle]: Db.Oracle,
+  [DRIVER_NAMES.CockroachDB]: Db.CockroachDB,
+  [DRIVER_NAMES.BetterSQLite3]: Db.BetterSqlite3,
+};
+
 function getKnexForDb(db, configOverrides = {}) {
-  const config = testConfigs[db];
+  const config = testConfigs[db] || testConfigs[misaligned[db]];
   return knex({
     ...config,
     ...configOverrides,
@@ -210,6 +225,7 @@ function getKnexForDb(db, configOverrides = {}) {
 
 module.exports = {
   Db,
+  defaultDbs,
   getAllDbs,
   getKnexForDb,
 };
