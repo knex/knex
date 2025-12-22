@@ -25,8 +25,7 @@ knex('users').where(knex.raw('?? = ?', ['user.name', 1]));
 Named bindings such as `:name` are interpreted as values and `:name:` interpreted as identifiers. Named bindings are processed so long as the value is anything other than `undefined`. If a placeholder is left unresolved, knex will throw.
 
 ```js
-const raw =
-  ':name: = :thisGuy or :name: = :otherGuy';
+const raw = ':name: = :thisGuy or :name: = :otherGuy';
 
 // @sql
 knex('users').where(
@@ -41,8 +40,7 @@ knex('users').where(
 Error case (unresolved placeholder):
 
 ```js
-const raw =
-  ':name: = :thisGuy or :name: = :otherGuy or :name: = :missing';
+const raw = ':name: = :thisGuy or :name: = :otherGuy or :name: = :missing';
 
 knex('users').where(
   knex.raw(raw, {
