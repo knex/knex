@@ -272,6 +272,23 @@ a.header-anchor {
 .sql-output-group {
   position: relative;
 }
+.sql-output.sql-output-empty {
+  margin: 0 0 0.8rem;
+  padding: 1.25rem 1.5rem;
+  min-height: 5.5rem;
+  border: 1px dashed rgb(210 106 56 / 35%);
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.sql-output.sql-output-empty::before {
+  display: none;
+}
 .sql-output .sql-output-error-line {
   color: #d44a4a;
   font-weight: 600;
