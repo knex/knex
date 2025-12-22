@@ -2,6 +2,13 @@
 
 The vitepress documentation for [http://knexjs.org](http://knexjs.org)
 
+#### SQL outputs in code fences:
+
+Add `// @sql` on its own line immediately before a statement in a JS/TS fenced
+code block to have the docs build render the dialect-specific SQL below the
+snippet. Use multiple markers to capture multiple statements; marker lines are
+stripped from the rendered output.
+
 #### Development:
 
 ```bash
