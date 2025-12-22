@@ -624,7 +624,7 @@ describe('Additional', function () {
           if (isMysql(knex)) {
             const metadata = await knex.raw('SHOW FULL COLUMNS FROM accounts');
             // Store the column metadata
-            aboutCol = metadata[0].filter((t) => t.Field === 'about')[0];
+            aboutCol = metadata.filter((t) => t.Field === 'about')[0];
             delete aboutCol.Field;
           }
 
@@ -660,7 +660,7 @@ describe('Additional', function () {
 
           if (isMysql(knex)) {
             const values = await knex.raw('SHOW FULL COLUMNS FROM accounts');
-            const newAboutCol = values[0].filter(
+            const newAboutCol = values.filter(
               (t) => t.Field === 'about_col'
             )[0];
             // Check if all metadata excepted the Field name (DEFAULT, COLLATION, EXTRA, etc.) are preserved after rename.
@@ -1130,11 +1130,11 @@ describe('Additional', function () {
             },
             [drivers.MySQL]: async () => {
               const results = await knex.raw('SHOW PROCESSLIST');
-              return _.map(results[0], 'Info');
+              return _.map(results, 'Info');
             },
             [drivers.MySQL2]: async () => {
               const results = await knex.raw('SHOW PROCESSLIST');
-              return _.map(results[0], 'Info');
+              return _.map(results, 'Info');
             },
           };
 

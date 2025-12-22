@@ -586,7 +586,7 @@ describe('Schema (misc)', () => {
             return knex
               .raw(query, [table_name, expected_column])
               .then((res) => {
-                const comment = res[0][0].COLUMN_COMMENT;
+                const comment = res[0].COLUMN_COMMENT;
                 expect(comment).to.equal(expected_comment);
               });
           });
@@ -610,7 +610,7 @@ describe('Schema (misc)', () => {
             return knex
               .raw(query, [table_name, expected_column])
               .then((res) => {
-                const comment = res[0][0].COLUMN_COMMENT;
+                const comment = res[0].COLUMN_COMMENT;
                 expect(comment).to.equal(expected_comment);
               });
           });
@@ -1848,7 +1848,7 @@ describe('Schema (misc)', () => {
               .raw('SHOW CREATE TABLE `add_column_test_mysql`')
               .then((schema) => {
                 // .columnInfo() keys does not guaranteed fields order.
-                const fields = schema[0][0]['Create Table']
+                const fields = schema[0]['Create Table']
                   .split('\n')
                   .filter((e) => e.trim().indexOf('`field_') === 0)
                   .map((e) => e.trim())
@@ -1862,7 +1862,7 @@ describe('Schema (misc)', () => {
                 expect(fields[4]).to.equal('field_nondefault_increments');
 
                 // .columnInfo() does not included fields comment.
-                const comments = schema[0][0]['Create Table']
+                const comments = schema[0]['Create Table']
                   .split('\n')
                   .filter((e) => e.trim().indexOf('`field_') === 0)
                   .map((e) => e.slice(e.indexOf("'")).trim())
@@ -1982,7 +1982,7 @@ describe('Schema (misc)', () => {
               expect(autoinc).to.equal(1);
             } else if (isMysql(knex)) {
               const res = await knex.raw(`show fields from ${tableName}`);
-              const autoinc = res[0][0].Extra;
+              const autoinc = res[0].Extra;
               expect(autoinc).to.equal('auto_increment');
             } else if (isPostgreSQL(knex)) {
               const res = await knex.raw(
