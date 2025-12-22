@@ -24,7 +24,7 @@ export default defineConfig({
   head: [['link', { rel: 'icon', type: 'image/png', href: '/knex-logo.png' }]],
   themeConfig: {
     logo: '/knex-logo.png',
-    repo: 'knex/knex',
+    socialLinks: [{ icon: 'github', link: 'https://github.com/knex/knex' }],
     editLink: {
       pattern: 'https://github.com/knex/knex/edit/master/docs/src/:path',
       text: 'Edit this page on GitHub',
