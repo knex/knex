@@ -9,9 +9,9 @@
     "serve": "vitepress serve ."
   },
   "devDependencies": {
-    "knex": "^2.4.0",
-    "typescript": "^4.6.3",
-    "vitepress": "^0.22.4"
+    "knex": "latest",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4"
   },
   "dependencies": {},
   "author": {
