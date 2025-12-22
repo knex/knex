@@ -60,6 +60,28 @@ const setSidebarActive = (headingId) => {
   }
 };
 
+const updateUrlHash = (headingId) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const pathname = window.location.pathname;
+  const currentHash = window.location.hash.replace(/^#/, '');
+  if (!headingId) {
+    if (!window.location.hash) {
+      return;
+    }
+    window.history.replaceState(null, '', pathname);
+    return;
+  }
+
+  if (currentHash === headingId) {
+    return;
+  }
+
+  window.history.replaceState(null, '', `${pathname}#${headingId}`);
+};
+
 const updateSidebarActive = () => {
   const activeHeading = findActiveHeading();
   const headingId = activeHeading ? activeHeading.id : null;
@@ -68,6 +90,7 @@ const updateSidebarActive = () => {
   }
   lastActiveHeading = headingId;
   setSidebarActive(headingId);
+  updateUrlHash(headingId);
 };
 
 let isTicking = false;
