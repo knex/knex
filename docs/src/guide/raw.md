@@ -22,19 +22,34 @@ Positional bindings `?` are interpreted as values and `??` are interpreted as id
 knex('users').where(knex.raw('?? = ?', ['user.name', 1]));
 ```
 
-Named bindings such as `:name` are interpreted as values and `:name:` interpreted as identifiers. Named bindings are processed so long as the value is anything other than `undefined`.
+Named bindings such as `:name` are interpreted as values and `:name:` interpreted as identifiers. Named bindings are processed so long as the value is anything other than `undefined`. If a placeholder is left unresolved, knex will throw.
 
 ```js
-// @sql
 const raw =
-  ':name: = :thisGuy or :name: = :otherGuy or :name: = :undefinedBinding';
+  ':name: = :thisGuy or :name: = :otherGuy';
+
+// @sql
+knex('users').where(
+  knex.raw(raw, {
+    name: 'users.name',
+    thisGuy: 'Bob',
+    otherGuy: 'Jay',
+  })
+);
+```
+
+Error case (unresolved placeholder):
+
+```js
+const raw =
+  ':name: = :thisGuy or :name: = :otherGuy or :name: = :missing';
 
 knex('users').where(
   knex.raw(raw, {
     name: 'users.name',
     thisGuy: 'Bob',
     otherGuy: 'Jay',
-    undefinedBinding: undefined,
+    missing: undefined,
   })
 );
 ```
@@ -52,20 +67,43 @@ knex('users')
 Since there is no unified syntax for array bindings, instead you need to treat them as multiple values by adding `?` directly in your query.
 
 ```js
-// @sql
 const myArray = [1, 2, 3];
+// @sql
 knex.raw(
   'select * from users where id in (' + myArray.map((_) => '?').join(',') + ')',
   [...myArray]
 );
 ```
 
-query will become:
+### Named bindings with array values
+
+If you need named bindings and one of the bindings is an array used in an `IN` list,
+you can pass a `knex.raw(...)` as the named binding. This lets knex expand the array
+as placeholders instead of building SQL by string concatenation.
 
 ```js
+const names = ['Sally', 'Jay', 'Foobar'];
+const bindings = {
+  names: knex.raw(names.map(() => '?').join(', '), names),
+  age: 21,
+  limit: 100,
+};
+
 // @sql
-select * from users where id in (?, ?, ?) /* with bindings [1,2,3] */
+knex.raw(
+  `
+  select * from people
+  where "name" in (:names)
+  and "age" > :age
+  limit :limit
+  `,
+  bindings
+);
 ```
+
+> **Security note:** Avoid interpolating raw strings for lists when values come
+> from users. Using `knex.raw(..., names)` as shown above keeps values bound as
+> parameters.
 
 To prevent replacement of `?` one can use the escape sequence `\\?`.
 
@@ -90,6 +128,40 @@ knex
     value: 'Bob',
   });
 ```
+
+#### PostgreSQL: `ANY()` alternative
+
+PostgreSQL supports `ANY()` for array bindings, which keeps the binding as an
+array rather than expanding into many placeholders.
+
+```js
+const names = ['Sally', 'Jay', 'Foobar'];
+const bindings = {
+  names,
+  age: 21,
+  limit: 100,
+};
+
+// @sql
+(() => {
+  // Only valid for PostgreSQL.
+  if (!['postgres', 'pgnative'].includes(knex.client.config.client)) {
+    return;
+  }
+
+  return knex.raw(
+    `
+    select * from people
+    where "name" = any(:names)
+    and "age" > :age
+    limit :limit
+    `,
+    bindings
+  );
+})();
+```
+
+> **Note:** `ANY()` is PostgreSQL-specific.
 
 ## Raw Expressions
 

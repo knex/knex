@@ -227,6 +227,11 @@ function renderSqlOutputs(
     }
 
     if (!chunks.length) {
+      outputs.push(
+        `<div class="sql-output sql-output-empty" data-dialect="${dialect}"${formatHeadingAttr(
+          headingId
+        )}>No output for this dialect. Try selecting a different one.</div>`
+      );
       continue;
     }
 
