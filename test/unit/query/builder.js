@@ -138,6 +138,19 @@ function testquery(chain, valuesToCheck, selectedClients) {
   });
 }
 
+function testFailure(chain, error, selectedClients) {
+  // array of strings - keys to "clients"
+  selectedClients = selectedClients || Object.keys(clients);
+
+  selectedClients.forEach((key) => {
+    const newChain = chain.clone();
+    newChain.client = clients[key];
+    expect(function newChain_toSQL() {
+      newChain.toSQL();
+    }).to.throw(error);
+  });
+}
+
 describe('Custom identifier wrapping', () => {
   const customWrapperConfig = {
     wrapIdentifier: (value, clientImpl, context) => {
@@ -6960,6 +6973,46 @@ describe('QueryBuilder', () => {
         bindings: [1.23, 1],
       },
     });
+  });
+
+  describe('invalid statement / clause combinations throw', () => {
+    const _where = [
+      { name: 'where', msg: 'where', fn: (qb) => qb.where('id', '>', 0) },
+      // ensure the same behavior for where variants
+      { name: 'whereIn', msg: 'where', fn: (qb) => qb.whereIn('id', [0]) },
+    ];
+    const _having = [
+      { name: 'having', msg: 'having', fn: (qb) => qb.having('id', '>', 0) },
+      // ensure the same behavior for having variants
+      { name: 'havingIn', msg: 'having', fn: (qb) => qb.havingIn('id', [0]) },
+    ];
+    const _limit = [
+      { name: 'limit', msg: 'limit', fn: (qb) => qb.limit(1) },
+      // FUTURE: plausibly we should also throw on limit without offset, but that
+      // doesn't directly address any open issues and may be a surprising breakage
+      // for users / doesn't prevent data loss
+    ];
+
+    const statements = [
+      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having, _limit] },
+      {
+        name: 'truncate',
+        fn: (qb) => qb.truncate(),
+        invalid: [_where, _having, _limit],
+      },
+    ];
+
+    for (const stmt of statements) {
+      for (const clause of stmt.invalid.flat()) {
+        it(`${clause.name} method with ${stmt.name} throws`, async () => {
+          const query = stmt.fn(clause.fn(qb().from('users')));
+          testFailure(
+            query,
+            new RegExp(`Aborted.*${clause.msg}.*${stmt.name}`)
+          );
+        });
+      }
+    }
   });
 
   it('delete method', () => {
