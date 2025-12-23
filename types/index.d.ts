@@ -2318,6 +2318,8 @@ declare namespace Knex {
     doNotRejectOnRollback?: boolean;
     connection?: any;
     readOnly?: boolean;
+    /** sqlite3 only */
+    enforceForeignCheck?: boolean | null;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any[]>
