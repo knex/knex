@@ -458,17 +458,16 @@ test('migrate:up <name> handles already completed migration gracefully', async (
     --connection=${temp}/db \
     --migrations-directory=${temp}/migrations`,
     'run_all_migrations'
-  )
-    .then(async () => {
-      const { stdout } = await assertExec(
-        `node ${KNEX} migrate:up ${migrationFile1} \
+  ).then(async () => {
+    const { stdout } = await assertExec(
+      `node ${KNEX} migrate:up ${migrationFile1} \
         --client=sqlite3 \
         --connection=${temp}/db \
         --migrations-directory=${migrationsPath}`,
-        'run_migration_001'
-      );
-      assert.include(stdout, 'Already up to date');
-    });
+      'run_migration_001'
+    );
+    assert.include(stdout, 'Already up to date');
+  });
 });
 
 test('migrate:down undos only the last run migration', (temp) => {
