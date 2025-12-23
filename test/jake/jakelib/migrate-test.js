@@ -442,6 +442,35 @@ test('migrate:up <name> throw an error', async (temp) => {
   assert.include(stderr, `Migration "${migrationFile1}" not found.`);
 });
 
+test('migrate:up <name> handles already completed migration gracefully', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+  const migrationData = `
+      exports.up = () => Promise.resolve();
+      exports.down = () => Promise.resolve();
+    `;
+
+  fs.writeFileSync(`${migrationsPath}/${migrationFile1}`, migrationData);
+
+  return assertExec(
+    `node ${KNEX} migrate:latest \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${temp}/migrations`,
+    'run_all_migrations'
+  )
+    .then(async () => {
+      const { stdout } = await assertExec(
+        `node ${KNEX} migrate:up ${migrationFile1} \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${migrationsPath}`,
+        'run_migration_001'
+      );
+      assert.include(stdout, 'Already up to date');
+    });
+});
+
 test('migrate:down undos only the last run migration', (temp) => {
   const migrationFile1 = '001_create_address_table.js';
   const migrationFile2 = '002_add_zip_to_address_table.js';
