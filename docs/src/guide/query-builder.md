@@ -893,7 +893,7 @@ knex('tableName')
     name: 'John Doe',
     updated_at: timestamp,
   })
-  .where('updated_at', '<', timestamp);
+  .where('tableName.updated_at', '<', timestamp);
 ```
 
 ### upsert [-PG -SQ -MS -OR -RS]
