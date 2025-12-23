@@ -2613,9 +2613,9 @@ declare namespace Knex {
     index(
       indexName?: string,
       options?: Readonly<{
-        indexType?: string,
-        storageEngineIndexType?: storageEngineIndexType,
-        predicate?: QueryBuilder
+        indexType?: string;
+        storageEngineIndexType?: storageEngineIndexType;
+        predicate?: QueryBuilder;
       }>
     ): ColumnBuilder;
     primary(
