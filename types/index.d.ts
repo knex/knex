@@ -2610,7 +2610,7 @@ declare namespace Knex {
   type lengthOperator = '>' | '<' | '<=' | '>=' | '!=' | '=';
 
   interface ColumnBuilder {
-    index(indexName?: string): ColumnBuilder;
+    index(indexName?: string, options?: { indexType?: string, storageEngineIndexType?: "btree"| "hash", predicate?: QueryBuilder}): ColumnBuilder;
     primary(
       options?: Readonly<{
         constraintName?: string;
