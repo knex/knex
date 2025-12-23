@@ -15,6 +15,7 @@ import { Tables } from './tables';
 
 import { Stream } from 'stream';
 import { ConnectionOptions } from 'tls';
+import { type CastArg } from '../lib/query/cast';
 
 // # Generic type-level utilities
 
@@ -736,6 +737,9 @@ declare namespace Knex {
     havingNotNull: HavingNull<TRecord, TResult>;
     orHavingNull: HavingNull<TRecord, TResult>;
     orHavingNotNull: HavingNull<TRecord, TResult>;
+
+    // Casting
+    cast: Cast<TRecord, TResult>;
 
     // Clear
     clearSelect(): QueryBuilder<
@@ -2021,6 +2025,10 @@ declare namespace Knex {
     (raw: Raw): QueryBuilder<TRecord, TResult>;
   }
 
+  interface Cast<TRecord extends {} = any, TResult = unknown[]> {
+    (spec: CastArg): QueryBuilder<TRecord, TResult>;
+  }
+
   interface HavingRange<TRecord extends {} = any, TResult = unknown[]> {
     <K extends keyof TRecord>(
       columnName: K,
@@ -3082,6 +3090,7 @@ declare namespace Knex {
     options?: {
       nativeBinding?: string;
       readonly?: boolean;
+      safeIntegers?: boolean;
     };
   }
 

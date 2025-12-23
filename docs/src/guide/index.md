@@ -125,9 +125,14 @@ const knex = require('knex')({
 :::
 
 ::: info Better-SQLite3
-With the Better-SQLite3 adapter, you can use `options.nativeBinding` to specify the location of the adapter's compiled C++ addon. This can be useful when your build system does a lot of transformation/relocation of files.
 
-Example use:
+For more information on connection options, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
+
+The `better-sqlite3` adapter supports the following options:
+
+`options.nativeBinding`: specify the location of the adapter's compiled C++ addon. This can be useful when your build system does a lot of transformation/relocation of files.
+
+Example:
 
 ```js
 const knex = require('knex')({
@@ -141,7 +146,9 @@ const knex = require('knex')({
 });
 ```
 
-Additionally, you can open the database in read-only mode using `options.readonly`:
+`options.readonly`: open the database in read-only mode.
+
+Example:
 
 ```js
 const knex = require('knex')({
@@ -155,7 +162,23 @@ const knex = require('knex')({
 });
 ```
 
-For more information, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
+`options.safeIntegers`: Configure the default type to use for integer columns. See [better-sqlite3's documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/integer.md#getting-bigints-from-the-database) for more information about this behavior.
+
+Example:
+
+```js
+const knex = require('knex')({
+  client: 'better-sqlite3',
+  connection: {
+    filename: '/path/to/db.sqlite3',
+    options: {
+      safeIntegers: true, // return integers as bigint
+    },
+  },
+});
+```
+
+Use [the `.options()` method](/guide/query-builder.html#options) on a query builder to override the default for a specific query.
 
 :::
 

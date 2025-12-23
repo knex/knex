@@ -1,0 +1,6 @@
+/.nyc_output
+/coverage
+/docs/.vitepress/dist
+/test/integration/migrate/migration/
+pnpm-lock.yaml
+package-lock.json

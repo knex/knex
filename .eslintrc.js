@@ -35,5 +35,6 @@ module.exports = {
     node: true,
     mocha: true,
     es6: true,
+    es2020: true,
   },
 };

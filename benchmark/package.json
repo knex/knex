@@ -1,0 +1,24 @@
+{
+  "name": "benchmark",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "bench": "tsx src/index.ts",
+    "debug": "tsx --inspect-brk=0.0.0.0:9229 src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.24.0",
+  "devDependencies": {
+    "@mitata/counters": "^0.0.8",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.0.3",
+    "better-sqlite3": "^12.5.0",
+    "mitata": "^1.0.34",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
