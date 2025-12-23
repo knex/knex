@@ -1,8 +1,6 @@
 const { expect } = require('chai');
-const { DRIVER_NAMES } = require('../../../util/constants');
 const { isBoolean } = require('../../../../lib/util/is');
 const { Migrator } = require('../../../../lib/migrations/migrate/Migrator');
-const { getDriverName } = require('../../../util/db-helpers');
 
 describe('Migrator', () => {
   describe('_useTransaction', () => {
@@ -11,8 +9,7 @@ describe('Migrator', () => {
     });
 
     // eslint-disable-next-line no-undef
-    const knexSqlite = mockKnex(DRIVER_NAMES.SQLite);
-    const knexNotSqlite = mockKnex('no such thing');
+    const fakeKnex = mockKnex('no such thing');
 
     const mockMigrationContent = (transaction) => {
       const content = {
@@ -50,7 +47,7 @@ describe('Migrator', () => {
       it(`allTransactionsDisabled=${allTransactionsDisabled} config.transactions=${local} _useTransaction() = ${expected}`, () => {
         const migrationContent = mockMigrationContent(local);
         const mocked = {
-          knex: knexNotSqlite,
+          knex: fakeKnex,
         };
         const result = Migrator.prototype._useTransaction.call(
           mocked,
