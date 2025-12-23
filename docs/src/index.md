@@ -1,14 +1,19 @@
 ---
-home: true
-heroImage: /knex-logo.png
-heroAlt: Logo knex
-heroText: Knex.js
-tagline: SQL query builder
-actionText: View guide
-actionLink: /guide/
-altActionText: Star on GitHub
-altActionLink: https://github.com/knex/knex
+layout: home
 title: SQL Query Builder for Javascript
+hero:
+  name: Knex.js
+  text: SQL query builder
+  image:
+    src: /knex-logo.png
+    alt: Logo knex
+  actions:
+    - theme: brand
+      text: View guide
+      link: /guide/
+    - theme: alt
+      text: Star on GitHub
+      link: https://github.com/knex/knex
 ---
 
 <div class="container-home">
