@@ -1,11 +1,19 @@
 import { knex, Knex } from '../types';
 import { clientConfig, User, Department, Article } from './common';
-import { expectType, expectAssignable } from 'tsd';
+import { expectType } from 'tsd';
 import { expectTypeOf } from 'expect-type';
+import type { Tables } from '../types/tables';
 
 const knexInstance = knex(clientConfig);
 
 declare module '../types/tables' {
+  type CompositeDiscrete = {
+    col_select: 'selectable';
+    col_insert: 'insertable';
+    col_update: 'updateable';
+    col_upsert: 'upsertable';
+  };
+
   interface Tables {
     users_inferred: User;
     departments_inferred: Department;
@@ -25,10 +33,31 @@ declare module '../types/tables' {
       { insert: 'insert' },
       { update: 'update' }
     >;
+    composite: Knex.CompositeTableType<
+      CompositeDiscrete,
+      Pick<CompositeDiscrete, 'col_insert'>,
+      Pick<CompositeDiscrete, 'col_update'>,
+      Pick<CompositeDiscrete, 'col_upsert'>
+    >;
   }
 }
 
+type Values<T> = T[keyof T];
+type Simplify<T> = { [K in keyof T]: T[K] } & {};
+type Scopes = Simplify<keyof Knex.CompositeTableType<any>>;
+type Columns<Table extends keyof Tables, Scope extends Scopes> = Values<
+  Knex.ResolveTableType<Tables[Table], Scope>
+>;
+
 const main = async () => {
+  // validate Tables.composite
+  expectTypeOf<
+    'selectable' | 'insertable' | 'updateable' | 'upsertable'
+  >().toEqualTypeOf<Columns<'composite', 'base'>>();
+  expectTypeOf<'insertable'>().toEqualTypeOf<Columns<'composite', 'insert'>>();
+  expectTypeOf<'updateable'>().toEqualTypeOf<Columns<'composite', 'update'>>();
+  expectTypeOf<'upsertable'>().toEqualTypeOf<Columns<'composite', 'upsert'>>();
+
   // # Select:
 
   expectType<any[]>(await knexInstance('users'));
@@ -77,6 +106,27 @@ const main = async () => {
   expectTypeOf(
     await knexInstance.from('users_composite').pluck('id')
   ).toEqualTypeOf<number[]>();
+
+  // these assertions can't currently fail, since `string` is an overload on increment/decrement
+  expectTypeOf(
+    await knexInstance.from('composite').increment('col_update')
+  ).toEqualTypeOf<number>();
+  expectTypeOf(
+    await knexInstance.from('composite').decrement('col_update')
+  ).toEqualTypeOf<number>();
+
+  // these can, since they use the record form
+  expectTypeOf(
+    await knexInstance.from('composite').increment({ col_update: 1 })
+  ).toEqualTypeOf<number>();
+  expectTypeOf(
+    await knexInstance.from('composite').decrement({ col_update: 1 })
+  ).toEqualTypeOf<number>();
+
+  // @ts-expect-error
+  knexInstance.from('composite').increment({ col_select: 1 });
+  // @ts-expect-error
+  knexInstance.from('composite').decrement({ col_select: 1 });
 
   expectType<Record<keyof User, Knex.ColumnInfo>>(
     await knexInstance<User>('users').columnInfo()
