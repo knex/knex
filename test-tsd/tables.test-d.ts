@@ -1,6 +1,7 @@
 import { knex, Knex } from '../types';
 import { clientConfig, User, Department, Article } from './common';
 import { expectType, expectAssignable } from 'tsd';
+import { expectTypeOf } from 'expect-type';
 
 const knexInstance = knex(clientConfig);
 
@@ -69,6 +70,13 @@ const main = async () => {
   expectType<Pick<User, 'id'> | undefined>(
     await knexInstance.first('id').from('users_composite')
   );
+
+  expectTypeOf(
+    await knexInstance.from('users_inferred').pluck('id')
+  ).toEqualTypeOf<number[]>();
+  expectTypeOf(
+    await knexInstance.from('users_composite').pluck('id')
+  ).toEqualTypeOf<number[]>();
 
   expectType<Record<keyof User, Knex.ColumnInfo>>(
     await knexInstance<User>('users').columnInfo()

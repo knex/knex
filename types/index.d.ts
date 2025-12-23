@@ -822,9 +822,9 @@ declare namespace Knex {
       DeferredKeySelection.AddUnionMember<UnwrapArrayMember<TResult>, undefined>
     >;
 
-    pluck<K extends keyof TRecord>(
+    pluck<K extends keyof ResolveTableType<TRecord>>(
       column: K
-    ): QueryBuilder<TRecord, TRecord[K][]>;
+    ): QueryBuilder<TRecord, ResolveTableType<TRecord>[K][]>;
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
     insert(
