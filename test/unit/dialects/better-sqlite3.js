@@ -104,4 +104,76 @@ describe('better-sqlite3 unit tests', () => {
       expect(connection.readonly).to.equal(false);
     });
   });
+
+  describe('defaultSafeIntegers', () => {
+    let knexInstance;
+
+    afterEach(async () => {
+      if (knexInstance) {
+        await knexInstance.destroy();
+        knexInstance = null;
+      }
+    });
+
+    it('should return BigInt when `defaultSafeIntegers` is enabled', async () => {
+      knexInstance = knex({
+        client: 'better-sqlite3',
+        useNullAsDefault: true,
+        connection: {
+          filename: ':memory:',
+          options: {
+            defaultSafeIntegers: true,
+          },
+        },
+      });
+
+      await knexInstance.schema.createTable('test_bigint', (table) => {
+        table.bigInteger('id').primary();
+        table.string('name');
+      });
+
+      const largeId = 9007199254740993n;
+
+      await knexInstance('test_bigint').insert({
+        id: largeId,
+        name: 'test',
+      });
+
+      const result = await knexInstance('test_bigint')
+        .select('id', 'name')
+        .first();
+
+      expect(typeof result.id).to.equal('bigint');
+      expect(result.id).to.equal(largeId);
+    });
+
+    it('should return Number when `defaultSafeIntegers` is not set', async () => {
+      knexInstance = knex({
+        client: 'better-sqlite3',
+        useNullAsDefault: true,
+        connection: {
+          filename: ':memory:',
+        },
+      });
+
+      await knexInstance.schema.createTable('test_number', (table) => {
+        table.integer('id').primary();
+        table.string('name');
+      });
+
+      const smallId = 123;
+
+      await knexInstance('test_number').insert({
+        id: smallId,
+        name: 'test',
+      });
+
+      const result = await knexInstance('test_number')
+        .select('id', 'name')
+        .first();
+
+      expect(typeof result.id).to.equal('number');
+      expect(result.id).to.equal(smallId);
+    });
+  });
 });
