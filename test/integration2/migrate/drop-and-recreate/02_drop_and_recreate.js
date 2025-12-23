@@ -11,4 +11,4 @@ exports.up = (knex) => {
 };
 
 exports.down = (knex) => {};
-exports.config = { transaction: 'false_if_sqlite' };
+exports.config = { transaction: false };

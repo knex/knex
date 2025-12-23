@@ -789,50 +789,6 @@ describe('Migrations', function () {
           });
         });
 
-        describe('conditional migration transactions', () => {
-          const tableName = 'knex_test_cond_mig_trans';
-
-          beforeEach(async () => {
-            await knex.schema.dropTableIfExists(tableName);
-          });
-
-          after(async () => {
-            await knex.schema.dropTableIfExists(tableName);
-          });
-
-          it(
-            ['sqlite3', 'better-sqlite3'].includes(db)
-              ? 'should NOT used a transaction'
-              : 'should have used a transaction',
-            async function () {
-              if (isMysql(knex) || isMssql(knex)) {
-                this.skip();
-                return;
-              }
-
-              const expectedTransaction = !isSQLite(knex);
-
-              await expect(
-                knex.migrate.up({
-                  directory:
-                    'test/integration2/migrate/migration-conditional-transactions',
-                  disableTransactions: false,
-                })
-              ).to.eventually.be.rejectedWith(/oh noes/);
-
-              if (expectedTransaction) {
-                await expect(
-                  knex.select('*').from(tableName)
-                ).to.eventually.be.rejectedWith(tableName);
-              } else {
-                await expect(
-                  knex.select('*').from(tableName)
-                ).to.eventually.be.fulfilled.and.deep.equal([{ id: 1 }]);
-              }
-            }
-          );
-        });
-
         describe('knex.migrate.down', () => {
           describe('with transactions enabled', () => {
             beforeEach(async () => {

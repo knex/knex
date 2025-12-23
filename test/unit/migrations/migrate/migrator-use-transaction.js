@@ -60,34 +60,5 @@ describe('Migrator', () => {
         expect(result).to.equal(expected);
       });
     });
-
-    const table2 = [
-      // when using sqlite, no transactions
-      { knex: knexSqlite, global: undefined, expected: false },
-      { knex: knexSqlite, global: true, expected: false },
-      { knex: knexSqlite, global: false, expected: false },
-
-      // when not using sqlite, use the global value
-      { knex: knexNotSqlite, global: undefined, expected: true },
-      { knex: knexNotSqlite, global: true, expected: true },
-      { knex: knexNotSqlite, global: false, expected: false },
-    ];
-
-    // verify conditional behavior
-    table2.forEach(({ knex, global, expected }) => {
-      const allTransactionsDisabled = isBoolean(global) ? !global : undefined;
-      it(`driver=${getDriverName(
-        knex
-      )} allTransactionsDisabled=${allTransactionsDisabled} config.transactions='false_if_sqlite' _useTransaction() = ${expected}`, () => {
-        const migrationContent = mockMigrationContent('false_if_sqlite');
-        const mocked = { knex };
-        const result = Migrator.prototype._useTransaction.call(
-          mocked,
-          migrationContent,
-          allTransactionsDisabled
-        );
-        expect(result).to.equal(expected);
-      });
-    });
   });
 });

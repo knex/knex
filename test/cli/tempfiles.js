@@ -165,7 +165,7 @@ const KNEX = resolve(__dirname, '..', '..', 'bin', 'cli.js');
  *
  * @typedef {import('../../types/index').Knex} Knex
  * @typedef {(knex: Knex) => Promise<void>} Migrate
- * @typedef {{transaction?: boolean|'false_if_sqlite'}} MigrationConfig
+ * @typedef {{transaction?: boolean}} MigrationConfig
  * @param {{up: Migrate, down: Migrate, config?: MigrationConfig}} migrations
  */
 function migration(migrations) {

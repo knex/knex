@@ -32,4 +32,4 @@ exports.down = function (knex, promise) {
     });
 };
 
-exports.config = { transaction: 'false_if_sqlite' };
+exports.config = { transaction: false };
