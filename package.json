@@ -119,6 +119,7 @@
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-prettier": "^4.2.1",
+    "expect-type": "^1.3.0",
     "faucet": "^0.0.4",
     "husky": "^8.0.1",
     "jake": "^10.8.5",
