@@ -1,16 +1,8 @@
 import { defineConfig } from 'vitepress';
 import fs from 'node:fs';
 import path from 'node:path';
-import { webcrypto } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import KnexDialectsPlugins from './knexDialects';
-
-if (
-  !globalThis.crypto ||
-  typeof globalThis.crypto.getRandomValues !== 'function'
-) {
-  (globalThis as { crypto?: unknown }).crypto = webcrypto;
-}
 
 const HEADING_RE = /^(#{2,3})\s+(.+)$/;
 const FENCE_RE = /^(```|~~~)/;
