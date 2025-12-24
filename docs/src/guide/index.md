@@ -155,6 +155,20 @@ const knex = require('knex')({
 });
 ```
 
+For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `options.defaultSafeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
+
+```js
+const knex = require('knex')({
+  client: 'better-sqlite3',
+  connection: {
+    filename: './mydb.sqlite',
+    options: {
+      defaultSafeIntegers: true,
+    },
+  },
+});
+```
+
 For more information, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
 
 :::
