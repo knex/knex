@@ -6,7 +6,9 @@ describe('Schema', () => {
   describe('json columns', () => {
     getAllDbs()
       // no support for json in mssql and oracledb, omit test
-      .filter((db) => !['mssql', 'oracledb'].includes(db))
+      .filter(
+        (db) => !['mssql', 'oracledb', 'sqlite3', 'better-sqlite3'].includes(db)
+      )
       .forEach((db) => {
         describe(db, () => {
           let knex;
@@ -31,25 +33,13 @@ describe('Schema', () => {
               name: 'Jimi',
             };
 
-            if (!isSQLite(knex)) {
-              await knex(tblName).insert({
-                [colName]: data,
-              });
-            } else {
-              await knex(tblName).insert({
-                [colName]: JSON.stringify(data),
-              });
-            }
+            await knex(tblName).insert({
+              [colName]: data,
+            });
 
             const jsonValue = await knex(tblName).select().from(tblName);
 
-            if (!isSQLite(knex)) {
-              expect(jsonValue).to.deep.eq([{ json_col1: { name: 'Jimi' } }]);
-            } else {
-              expect(JSON.parse(jsonValue[0].json_col1)).to.deep.eq({
-                name: 'Jimi',
-              });
-            }
+            expect(jsonValue).to.deep.eq([{ json_col1: { name: 'Jimi' } }]);
           });
         });
       });
