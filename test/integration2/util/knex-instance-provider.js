@@ -120,7 +120,7 @@ const testConfigs = {
       password: 'testpassword',
       charset: 'utf8',
       typeCast: function (field, next) {
-        if (field.type == 'JSON') {
+        if (field.type === 'JSON') {
           return JSON.parse(field.string());
         }
         return next();
