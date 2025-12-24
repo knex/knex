@@ -1,6 +1,5 @@
 const { expect } = require('chai');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
-const { isSQLite } = require('../../util/db-helpers');
 
 describe('Schema', () => {
   describe('json columns', () => {
