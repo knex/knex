@@ -17,8 +17,9 @@
   --c-text-light-2: #cd7244;
   --c-text-light-3: #d26a38;
   --c-text-dark-1: #7f7f7f;
-  --code-bg-color: #362f2d;
+  --code-bg-color: #f3ece9;
   --code-inline-bg-color: rgb(68 52 47 / 5%);
+  --code-text-color: #2f2a27;
 
   --vp-c-brand-1: var(--c-brand);
   --vp-c-brand-2: #e07a48;
@@ -57,6 +58,7 @@ html {
   --c-text-dark-1: #9f9f9f;
   --code-bg-color: #201d1c;
   --code-inline-bg-color: #201d1c;
+  --code-text-color: #ccc;
 
   --vp-c-bg: #201d1c;
   --vp-c-bg-alt: #2a2420;
@@ -219,7 +221,7 @@ a.header-anchor {
 }
 
 .language-sql code {
-  color: #ccc;
+  color: var(--code-text-color);
 }
 
 .sql-output {
@@ -266,7 +268,7 @@ a.header-anchor {
   font-family: var(--font-family-mono);
   font-size: var(--code-font-size);
   line-height: var(--code-line-height);
-  color: #ccc;
+  color: var(--code-text-color);
   white-space: pre;
 }
 .sql-output-group {
