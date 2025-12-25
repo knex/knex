@@ -696,7 +696,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('connection should contain __knexTxId which is also exposed in query event', function () {
+    it('should expose __knexTxId in query event', function () {
       return knex.transaction(function (trx) {
         const builder = trx.select().from('accounts');
 
