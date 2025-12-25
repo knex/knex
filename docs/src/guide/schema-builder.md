@@ -832,17 +832,35 @@ knex.schema.table('users', function (table) {
 
 Drops a foreign key constraint from a table. A default foreign key name using the columns is used unless foreignKeyName is specified (in which case columns is ignored).
 
+### dropForeignIfExists
+
+**table.dropForeignIfExists(columns, [foreignKeyName])**
+
+Like dropForeign, but does not error if the constraint does not exist. Supported on PostgreSQL and other Postgres-based dialects that accept `DROP CONSTRAINT IF EXISTS` (including CockroachDB). For Redshift, MySQL, MSSQL, Oracle, and SQLite (including better-sqlite3) this method throws “not supported” because those engines do not provide an IF EXISTS form.
+
 ### dropUnique
 
 **table.dropUnique(columns, [indexName])**
 
 Drops a unique key constraint from a table. A default unique key name using the columns is used unless indexName is specified (in which case columns is ignored).
 
+### dropUniqueIfExists
+
+**table.dropUniqueIfExists(columns, [indexName])**
+
+Like dropUnique, but does not error if the constraint does not exist. Supported in PostgreSQL, CockroachDB, MariaDB, MSSQL, and SQLite/better-sqlite3. Not supported in MySQL, Oracle, or Redshift; calling it there throws a “not supported” error.
+
 ### dropPrimary
 
 **table.dropPrimary([constraintName])**
 
 Drops the primary key constraint on a table. Defaults to tablename_pkey unless constraintName is specified.
+
+### dropPrimaryIfExists
+
+**table.dropPrimaryIfExists([constraintName])**
+
+Like dropPrimary, but does not error if the constraint does not exist. Supported on PostgreSQL and other Postgres-based dialects that accept `DROP CONSTRAINT IF EXISTS` (including CockroachDB). Not supported in Redshift, MySQL, MSSQL, Oracle, or SQLite (including better-sqlite3); calling it there throws a “not supported” error.
 
 ### queryContext
 

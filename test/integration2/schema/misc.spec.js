@@ -13,6 +13,7 @@ const {
   isMssql,
   isCockroachDB,
   isPostgreSQL,
+  isPgNative,
   isBetterSQLite3,
 } = require('../../util/db-helpers');
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
@@ -1617,6 +1618,60 @@ describe('Schema (misc)', () => {
           knex.schema.table('composite_key_test', (t) => {
             t.dropUnique(['column_a', 'column_b']);
           }));
+
+        describe('except mysql and oracle', () => {
+          it('allows dropping a unique index if exists', async function () {
+            if (isOracle(knex) || isMysql(knex)) {
+              return this.skip();
+            }
+            await knex.schema.table('composite_key_test', (t) => {
+              t.dropUniqueIfExists(['column_a', 'column_b']);
+            });
+          });
+
+          it("allows dropping a unique index if exists, when it doesn't exist", async function () {
+            if (isOracle(knex) || isMysql(knex)) {
+              return this.skip();
+            }
+            await knex.schema.table('composite_key_test', (t) => {
+              t.dropUniqueIfExists('foo');
+            });
+          });
+        });
+
+        describe('postgres, pgnative, cockroachdb', () => {
+          it('allows dropping a foreign key if exists', async function () {
+            if (
+              !(isPostgreSQL(knex) || isPgNative(knex) || isCockroachDB(knex))
+            ) {
+              return this.skip();
+            }
+            await knex.schema
+              .dropTableIfExists('dfie_child')
+              .dropTableIfExists('dfie_parent')
+              .createTable('dfie_parent', (t) => {
+                t.increments('id').primary();
+              })
+              .createTable('dfie_child', (t) => {
+                t.increments('id').primary();
+                t.integer('parent_id')
+                  .unsigned()
+                  .references('id')
+                  .inTable('dfie_parent');
+              });
+
+            await knex.schema.table('dfie_child', (t) => {
+              t.dropForeignIfExists('parent_id');
+            });
+            await knex.schema.table('dfie_child', (t) => {
+              t.dropForeignIfExists('parent_id');
+            });
+
+            await knex.schema
+              .dropTableIfExists('dfie_child')
+              .dropTableIfExists('dfie_parent');
+          });
+        });
 
         it('allows dropping a index', () =>
           knex.schema.table('test_table_one', (t) => {
