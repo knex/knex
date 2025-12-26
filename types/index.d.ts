@@ -503,7 +503,7 @@ declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
-    | object
+    | Record<string, unknown>
     | Knex.Raw;
 
   interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
@@ -571,7 +571,10 @@ declare namespace Knex {
       mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]
     ): QueryBuilder<TRecord, TResult>;
     merge(
-      data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>
+      data?: Extract<
+        DbRecord<ResolveTableType<TRecord, 'update'>>,
+        Record<string, any>
+      >
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -1650,7 +1653,7 @@ declare namespace Knex {
     (
       alias: string,
       sql: string,
-      bindings?: readonly Value[] | Object
+      bindings?: readonly Value[] | Record<string, Value>
     ): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
@@ -1661,7 +1664,7 @@ declare namespace Knex {
       alias: string,
       columnList: string[],
       sql: string,
-      bindings?: readonly Value[] | Object
+      bindings?: readonly Value[] | Record<string, Value>
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -1700,7 +1703,7 @@ declare namespace Knex {
       TResult
     >;
 
-    (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
+    (object: Readonly<Record<string, any>>): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof ResolveTableType<TRecord>>(
       columnName: T,
