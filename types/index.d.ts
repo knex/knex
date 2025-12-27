@@ -3093,6 +3093,7 @@ declare namespace Knex {
     options?: {
       nativeBinding?: string;
       readonly?: boolean;
+      safeIntegers?: boolean;
     };
   }
 
