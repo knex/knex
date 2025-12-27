@@ -255,7 +255,9 @@ function createKnex(dialect, allowDb) {
       }
     } catch (error) {
       console.warn(
-        `sqlite3: unable to patch dropColumn normalization (${error?.message || error})`
+        `sqlite3: unable to patch dropColumn normalization (${
+          error?.message || error
+        })`
       );
     }
     return Knex({

@@ -31,13 +31,7 @@ function getPlaceholderStyle(dialect) {
   return style;
 }
 
-function replaceNumberedPlaceholders(
-  sql,
-  bindings,
-  escape,
-  regex,
-  baseIndex
-) {
+function replaceNumberedPlaceholders(sql, bindings, escape, regex, baseIndex) {
   let replaced = false;
   const output = sql.replace(regex, (match, rawIndex) => {
     const parsed = Number(rawIndex);
@@ -56,31 +50,13 @@ function replaceNumberedPlaceholders(
 
 function formatPositionalBindings(sql, bindings, escape, style) {
   if (style === 'dollar') {
-    return replaceNumberedPlaceholders(
-      sql,
-      bindings,
-      escape,
-      /\$(\d+)/g,
-      1
-    );
+    return replaceNumberedPlaceholders(sql, bindings, escape, /\$(\d+)/g, 1);
   }
   if (style === 'colon') {
-    return replaceNumberedPlaceholders(
-      sql,
-      bindings,
-      escape,
-      /:(\d+)/g,
-      1
-    );
+    return replaceNumberedPlaceholders(sql, bindings, escape, /:(\d+)/g, 1);
   }
   if (style === 'at') {
-    return replaceNumberedPlaceholders(
-      sql,
-      bindings,
-      escape,
-      /@p(\d+)/gi,
-      0
-    );
+    return replaceNumberedPlaceholders(sql, bindings, escape, /@p(\d+)/gi, 0);
   }
   return null;
 }
