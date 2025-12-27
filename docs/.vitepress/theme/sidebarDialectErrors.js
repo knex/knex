@@ -8,6 +8,7 @@ export function syncDialectErrors(activeDialect) {
     return;
   }
 
+  // Track headings with dialect-specific SQL errors to badge in the sidebar.
   const errorHeadings = new Set();
   document
     .querySelectorAll(`.sql-output[data-dialect="${dialect}"]`)
