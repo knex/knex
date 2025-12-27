@@ -2329,6 +2329,7 @@ declare namespace Knex {
     executionPromise: Promise<TResult>;
     parentTransaction?: Transaction;
     isCompleted: () => boolean;
+    addFunctionOnAfterTransaction: (cb: Promise<void>) => void;
 
     query<TRecord extends {} = any, TResult = void>(
       conn: any,
