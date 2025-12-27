@@ -100,9 +100,7 @@ describe('better-sqlite3 safeIntegers', () => {
 
       expect(typeof resultWithBigInt.value).to.equal('bigint');
 
-      const resultWithNumber = await knex('test_override')
-        .select('*')
-        .first();
+      const resultWithNumber = await knex('test_override').select('*').first();
 
       expect(typeof resultWithNumber.value).to.equal('number');
 
