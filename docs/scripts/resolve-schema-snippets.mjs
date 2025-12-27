@@ -8,6 +8,7 @@ import {
   formatSqlError,
   instrumentMarkedStatements,
 } from './snippet-utils.mjs';
+import formatSqlWithBindings from './format-sql-bindings.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -743,7 +744,7 @@ function collectSqlFromValue(value, knex, bindingsOverride) {
     if (!bindingsOverride || bindingsOverride.length === 0) {
       return [value];
     }
-    return [knex.raw(value, bindingsOverride).toString()];
+    return [formatSqlWithBindings(value, bindingsOverride, knex)];
   }
 
   if (typeof value === 'object') {
