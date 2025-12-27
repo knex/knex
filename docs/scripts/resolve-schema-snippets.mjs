@@ -569,15 +569,31 @@ async function resolveSchemaQuery(query, knex, options = {}) {
 
 async function resolveOutputQuery(query, knex, connection) {
   const recorded = [];
-  const runner = createCaptureRunner(knex, connection, recorded);
-  const response = await knex.client.query(connection, query);
+  const onQuery = (data) => {
+    if (!data || typeof data.sql !== 'string') {
+      return;
+    }
+    recorded.push(
+      ...collectSqlFromValue(
+        { sql: data.sql, bindings: data.bindings },
+        knex
+      )
+    );
+  };
+  knex.on('query', onQuery);
+  try {
+    const runner = createCaptureRunner(knex, connection, recorded);
+    const response = await knex.client.query(connection, query);
 
-  const processed = await withRawPatch(query, knex, async () => {
-    return knex.client.processResponse(response, runner);
-  });
+    const processed = await withRawPatch(query, knex, async () => {
+      return knex.client.processResponse(response, runner);
+    });
 
-  const processedSql = collectSqlFromValue(processed, knex);
-  return mergeOutputSql(recorded, processedSql);
+    const processedSql = collectSqlFromValue(processed, knex);
+    return mergeOutputSql(recorded, processedSql);
+  } finally {
+    knex.removeListener('query', onQuery);
+  }
 }
 
 function createCaptureRunner(knex, connection, recorded) {
