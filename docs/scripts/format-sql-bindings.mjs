@@ -1,4 +1,16 @@
-const PLACEHOLDER_STYLE_CACHE = new WeakMap();
+const DIALECT_PLACEHOLDER_STYLE = new Map([
+  ['mysql', 'question'],
+  ['mysql2', 'question'],
+  ['sqlite3', 'question'],
+  ['better-sqlite3', 'question'],
+  ['postgres', 'dollar'],
+  ['postgresql', 'dollar'],
+  ['cockroachdb', 'dollar'],
+  ['redshift', 'dollar'],
+  ['mssql', 'at'],
+  ['oracledb', 'colon'],
+  ['oracle', 'colon'],
+]);
 
 function hasQuestionBindings(sql) {
   const regex = /\\?\?\??/g;
@@ -11,27 +23,11 @@ function hasQuestionBindings(sql) {
   return false;
 }
 
-function getPlaceholderStyle(knex) {
-  const client = knex?.client;
-  if (!client || typeof client.positionBindings !== 'function') {
-    return 'question';
+function getPlaceholderStyle(dialect) {
+  const style = DIALECT_PLACEHOLDER_STYLE.get(dialect);
+  if (!style) {
+    throw new Error(`Unknown dialect for SQL bindings: ${dialect}`);
   }
-
-  const cached = PLACEHOLDER_STYLE_CACHE.get(client);
-  if (cached) {
-    return cached;
-  }
-
-  const sample = client.positionBindings('select ? as a, ? as b');
-  let style = 'question';
-  if (/\$1\b/.test(sample)) {
-    style = 'dollar';
-  } else if (/:1\b/.test(sample)) {
-    style = 'colon';
-  } else if (/@p0\b/i.test(sample)) {
-    style = 'at';
-  }
-  PLACEHOLDER_STYLE_CACHE.set(client, style);
   return style;
 }
 
@@ -58,15 +54,7 @@ function replaceNumberedPlaceholders(
   return replaced ? output : null;
 }
 
-function formatPositionalBindings(sql, bindings, knex) {
-  const client = knex?.client;
-  if (!client || typeof client._escapeBinding !== 'function') {
-    return null;
-  }
-
-  const style = getPlaceholderStyle(knex);
-  const escape = (value) => client._escapeBinding(value, {});
-
+function formatPositionalBindings(sql, bindings, escape, style) {
   if (style === 'dollar') {
     return replaceNumberedPlaceholders(
       sql,
@@ -94,11 +82,14 @@ function formatPositionalBindings(sql, bindings, knex) {
       0
     );
   }
-
   return null;
 }
 
-export default function formatSqlWithBindings(sql, bindings, knex) {
+export default function formatSqlWithBindings(sql, bindings, dialect, knex) {
+  if (!dialect) {
+    throw new Error('formatSqlWithBindings requires a dialect');
+  }
+
   if (!bindings) {
     return sql;
   }
@@ -119,12 +110,19 @@ export default function formatSqlWithBindings(sql, bindings, knex) {
     return sql;
   }
 
+  const style = getPlaceholderStyle(dialect);
+
   if (hasQuestionBindings(sql)) {
     return knex.raw(sql, bindings).toString();
   }
 
   if (Array.isArray(bindings)) {
-    const formatted = formatPositionalBindings(sql, bindings, knex);
+    const client = knex?.client;
+    if (!client || typeof client._escapeBinding !== 'function') {
+      return sql;
+    }
+    const escape = (value) => client._escapeBinding(value, {});
+    const formatted = formatPositionalBindings(sql, bindings, escape, style);
     if (formatted) {
       return formatted;
     }
