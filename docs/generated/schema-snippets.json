@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2025-12-27T06:44:38.158Z",
+  "generatedAt": "2025-12-27T06:55:53.667Z",
   "files": {
     "docs/src/guide/schema-builder.md": {
       "snippets": {
@@ -703,11 +703,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter477` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter439` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter477\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter439\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -715,7 +715,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter477\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter439\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
@@ -863,11 +863,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter246` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter421` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter246\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter421\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -875,7 +875,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter246\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter421\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
@@ -1675,11 +1675,11 @@
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter867` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), CONSTRAINT `fk_fkey_company` FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter569` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), CONSTRAINT `fk_fkey_company` FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter867\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter569\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -1687,7 +1687,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter867\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter569\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -1799,11 +1799,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter181` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter469` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter181\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter469\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -1811,7 +1811,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter181\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter469\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
@@ -2339,11 +2339,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter949` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter822` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter949\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter822\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -2351,7 +2351,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter949\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter822\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
@@ -2447,11 +2447,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter981` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter406` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter981\" SELECT \"id\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter406\" SELECT \"id\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -2459,7 +2459,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter981\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter406\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
@@ -4191,11 +4191,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter748` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL)"
+                "text": "CREATE TABLE `_knex_temp_alter308` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter748\" SELECT \"id\" FROM \"timestamps_example\";"
+                "text": "INSERT INTO \"_knex_temp_alter308\" SELECT \"id\" FROM \"timestamps_example\";"
               },
               {
                 "type": "sql",
@@ -4203,7 +4203,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter748\" RENAME TO \"timestamps_example\""
+                "text": "ALTER TABLE \"_knex_temp_alter308\" RENAME TO \"timestamps_example\""
               },
               {
                 "type": "sql",
@@ -5549,11 +5549,11 @@
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter047` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter298` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter047\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter298\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -5561,7 +5561,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter047\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter298\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -5665,11 +5665,11 @@
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter637` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255) NOT NULL, `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter570` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255) NOT NULL, `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter637\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter570\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -5677,7 +5677,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter637\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter570\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -6161,11 +6161,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter592` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
+                "text": "CREATE TABLE `_knex_temp_alter730` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter592\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter730\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6173,7 +6173,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter592\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter730\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -6293,11 +6293,11 @@
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter723` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
+                "text": "CREATE TABLE `_knex_temp_alter551` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter723\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter551\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6305,7 +6305,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter723\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter551\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -6393,11 +6393,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter471` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
+                "text": "CREATE TABLE `_knex_temp_alter562` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter471\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter562\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6405,7 +6405,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter471\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter562\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
@@ -6561,11 +6561,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter766` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
+                "text": "CREATE TABLE `_knex_temp_alter093` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter766\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter093\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6573,7 +6573,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter766\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter093\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
@@ -6901,11 +6901,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter598` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `username` varchar(35) NOT NULL, `age` integer)"
+                "text": "CREATE TABLE `_knex_temp_alter966` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `username` varchar(35) NOT NULL, `age` integer)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter598\" SELECT * FROM \"user\";"
+                "text": "INSERT INTO \"_knex_temp_alter966\" SELECT * FROM \"user\";"
               },
               {
                 "type": "sql",
@@ -6913,7 +6913,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter598\" RENAME TO \"user\""
+                "text": "ALTER TABLE \"_knex_temp_alter966\" RENAME TO \"user\""
               }
             ],
             "postgres": [

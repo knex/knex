@@ -4,7 +4,10 @@ export function syncDialectErrors(activeDialect) {
   }
 
   const dialect = String(activeDialect || '');
-  if (!dialect) {
+  if (!dialect || dialect === 'all') {
+    document.querySelectorAll('.dialect-error-badge').forEach((badge) => {
+      badge.remove();
+    });
     return;
   }
 
