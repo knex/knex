@@ -356,6 +356,18 @@ div.language-js {
   color: #ff9a9a;
 }
 
+.dialect-badge-emulated {
+  border-color: rgba(46, 119, 139, 0.55);
+  background: rgba(46, 119, 139, 0.12);
+  color: #2e778b;
+}
+
+.dark .dialect-badge-emulated {
+  border-color: rgba(98, 175, 199, 0.8);
+  background: rgba(98, 175, 199, 0.2);
+  color: #8fd3e6;
+}
+
 .dialect-badge-only {
   border-color: rgba(212, 162, 60, 0.65);
   background: rgba(212, 162, 60, 0.2);
