@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Knex from 'knex';
@@ -9,6 +10,7 @@ import {
 } from './snippet-utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 const repoRoot = path.resolve(__dirname, '..', '..');
 // Only schema builder docs need resolved outputs.
 const schemaDocs = [
@@ -232,6 +234,29 @@ function writeOutput(filePath, data) {
 
 function createKnex(dialect, allowDb) {
   if (dialect.sqlite) {
+    // Docs builds run against the published Knex package (not repo source).
+    // Older releases pass nested arrays to SQLite dropColumn; patch here so
+    // schema snippets render correctly until a fixed Knex release is used.
+    try {
+      const SqliteDdl = require('knex/lib/dialects/sqlite3/schema/ddl');
+      if (SqliteDdl?.prototype && !SqliteDdl.prototype.__knexDocsPatched) {
+        const originalDropColumn = SqliteDdl.prototype.dropColumn;
+        SqliteDdl.prototype.dropColumn = function (columns) {
+          const normalized =
+            Array.isArray(columns) &&
+            columns.length === 1 &&
+            Array.isArray(columns[0])
+              ? columns[0]
+              : columns;
+          return originalDropColumn.call(this, normalized);
+        };
+        SqliteDdl.prototype.__knexDocsPatched = true;
+      }
+    } catch (error) {
+      console.warn(
+        `sqlite3: unable to patch dropColumn normalization (${error?.message || error})`
+      );
+    }
     return Knex({
       client: dialect.client,
       connection: { filename: ':memory:' },
