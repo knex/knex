@@ -11,10 +11,10 @@
   },
   "devDependencies": {
     "knex": "latest",
+    "sqlite3": "5.0.11",
     "typescript": "^5.9.3",
     "vitepress": "^1.6.4"
   },
-  "dependencies": {},
   "author": {
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"
