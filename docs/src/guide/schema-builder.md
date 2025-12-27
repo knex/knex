@@ -311,8 +311,7 @@ The context configured will be passed to `wrapIdentifier` for each identifier th
 
 Calling `queryContext` with no arguments will return any context configured for the schema builder instance.
 
-<<<<<<< HEAD
-### createSchema
+### createSchema [-MY -SQ -MS -OR -CR -RS]
 
 **knex.schema.createSchema(schemaName)**
 
@@ -323,7 +322,7 @@ Creates a new schema. Only supported by PostgreSQL.
 knex.schema.createSchema('public');
 ```
 
-### createSchemaIfNotExists
+### createSchemaIfNotExists [-MY -SQ -MS -OR -CR -RS]
 
 **knex.schema.createSchemaIfNotExists(schemaName)**
 
