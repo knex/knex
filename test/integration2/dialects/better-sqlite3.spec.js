@@ -84,8 +84,7 @@ describe('better-sqlite3 safeIntegers', () => {
           table.bigInteger('value');
         });
 
-        const largeValue = 9007199254740992n; // Number.MAX_SAFE_INTEGER + 1
-        await knex('test_table').insert({ id: 1n, value: largeValue });
+        await knex('test_table').insert({ id: 1n, value: BIGINT });
 
         let queryBuilder = knex('test_table').select('*');
 
