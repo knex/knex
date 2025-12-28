@@ -6241,6 +6241,15 @@ describe('QueryBuilder', () => {
       'pg-redshift': {
         sql: 'select * from "users" order by "foo" desc nulls first',
       },
+      oracledb: {
+        sql: 'select * from "users" order by "foo" desc nulls first',
+      },
+      sqlite3: {
+        sql: 'select * from `users` order by (`foo` is not null), `foo` desc',
+      },
+      cockroachdb: {
+        sql: 'select * from "users" order by ("foo" is not null), "foo" desc',
+      },
     });
   });
 
@@ -6262,6 +6271,15 @@ describe('QueryBuilder', () => {
         'pg-redshift': {
           sql: 'select * from "users" order by "foo" desc nulls first',
         },
+        oracledb: {
+          sql: 'select * from "users" order by "foo" desc nulls first',
+        },
+        sqlite3: {
+          sql: 'select * from `users` order by (`foo` is not null), `foo` desc',
+        },
+        cockroachdb: {
+          sql: 'select * from "users" order by ("foo" is not null), "foo" desc',
+        },
       }
     );
   });
@@ -6279,6 +6297,15 @@ describe('QueryBuilder', () => {
       },
       'pg-redshift': {
         sql: 'select * from "users" order by "foo" desc nulls last',
+      },
+      oracledb: {
+        sql: 'select * from "users" order by "foo" desc nulls last',
+      },
+      sqlite3: {
+        sql: 'select * from `users` order by (`foo` is null), `foo` desc',
+      },
+      cockroachdb: {
+        sql: 'select * from "users" order by ("foo" is null), "foo" desc',
       },
     });
   });
@@ -6300,6 +6327,15 @@ describe('QueryBuilder', () => {
         },
         'pg-redshift': {
           sql: 'select * from "users" order by "foo" desc nulls last',
+        },
+        oracledb: {
+          sql: 'select * from "users" order by "foo" desc nulls last',
+        },
+        sqlite3: {
+          sql: 'select * from `users` order by (`foo` is null), `foo` desc',
+        },
+        cockroachdb: {
+          sql: 'select * from "users" order by ("foo" is null), "foo" desc',
         },
       }
     );
