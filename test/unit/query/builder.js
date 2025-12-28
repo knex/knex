@@ -6227,6 +6227,18 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('order by, invalid null', () => {
+    expect(() =>
+      qb().from('users').orderBy('foo', 'bar', 'baz').toSQL()
+    ).to.throw(/unknown.*nulls.*baz/i);
+    expect(() =>
+      qb()
+        .from('users')
+        .orderBy([{ column: 'foo', order: 'bar', nulls: 'baz' }])
+        .toSQL()
+    ).to.throw(/unknown.*nulls.*baz/i);
+  });
+
   it('order by, null first', () => {
     testsql(qb().from('users').orderBy('foo', 'desc', 'first'), {
       mysql: {
