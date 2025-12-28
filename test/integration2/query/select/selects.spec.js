@@ -1,6 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const { inspect } = require('util');
 
 const assert = require('assert');
 const Runner = require('../../../../lib/execution/runner');
@@ -597,251 +598,116 @@ describe('Selects', function () {
           });
       });
 
-      it('order by with null', async () => {
-        await knex.schema
-          .dropTableIfExists('OrderByNullTest')
-          .createTable('OrderByNullTest', function (table) {
-            table.increments('id').primary();
-            table.string('null_col').nullable().defaultTo(null);
-            // string col to have some order of records with nulls
-            table.string('string_col');
-          });
+      describe('order by nulls', async () => {
+        before(async () => {
+          await knex.schema
+            .dropTableIfExists('OrderByNullTest')
+            .createTable('OrderByNullTest', function (table) {
+              table.increments('id').primary();
+              table.string('nullable_string').nullable().defaultTo(null);
+              table.integer('nullable_int').nullable().defaultTo(null);
+              // string col to have some order of records with nulls
+              table.string('result_order');
+            });
 
-        await knex('OrderByNullTest').insert([
+          await knex('OrderByNullTest').insert([
+            {
+              nullable_string: 'test_y',
+              nullable_int: 100,
+              result_order: 'a',
+            },
+            {
+              nullable_string: null,
+              nullable_int: null,
+              result_order: 'b',
+            },
+            {
+              nullable_string: 'test_z',
+              nullable_int: 200,
+              result_order: 'c',
+            },
+            {
+              nullable_string: null,
+              nullable_int: null,
+              result_order: 'd',
+            },
+          ]);
+        });
+
+        after(async () => {
+          await knex.schema.dropTable('OrderByNullTest');
+        });
+
+        const assertRows = async (values, qb) => {
+          const sql = qb.toSQL();
+          const result = await qb;
+          const result_order = result.map((row) => row.result_order);
+          try {
+            expect(result_order).to.deep.eq(values);
+          } catch (e) {
+            const extra = `Query result: ${inspect(result, {
+              depth: null,
+              color: true,
+            })}`.split('\n');
+            extra.unshift(`SQL: ${sql.sql}`);
+
+            e.message += '\n' + extra.map((str) => `        ${str}`).join('\n');
+            throw e;
+          }
+        };
+
+        const table = [
           {
-            null_col: 'test',
-            string_col: 'a',
+            nulls: 'first',
+            order: 'asc',
+            expected: ['b', 'd', 'a', 'c'],
           },
           {
-            null_col: null,
-            string_col: 'b',
+            nulls: 'last',
+            order: 'asc',
+            expected: ['a', 'c', 'b', 'd'],
           },
           {
-            null_col: 'test2',
-            string_col: 'c',
+            nulls: 'first',
+            order: 'desc',
+            expected: ['b', 'd', 'c', 'a'],
           },
           {
-            null_col: null,
-            string_col: 'd',
+            nulls: 'last',
+            order: 'desc',
+            expected: ['c', 'a', 'b', 'd'],
           },
-        ]);
+        ];
 
-        await knex('OrderByNullTest')
-          .pluck('id')
-          .orderBy([
-            { column: 'null_col', order: 'asc', nulls: 'first' },
-            { column: 'string_col' },
-          ])
-          .testSql(function (tester) {
-            tester(
-              'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null), `null_col` asc, `string_col` asc',
-              [],
-              [2, 4, 1, 3]
-            );
-            tester(
-              'pg',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
-              [],
-              [2, 4, 1, 3]
-            );
-            tester(
-              'pgnative',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
-              [],
-              [2, 4, 1, 3]
-            );
-            tester(
-              'pg-redshift',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
-              [],
-              ['2', '4', '1', '3']
-            );
-            tester(
-              'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is not null), `null_col` asc, `string_col` asc',
-              [],
-              [2, 4, 1, 3]
-            );
-            tester(
-              'oracledb',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls first, "null_col" asc, "string_col" asc',
-              [],
-              [2, 4, 1, 3]
-            );
-            tester(
-              'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,1,0), [null_col] asc, [string_col] asc',
-              [],
-              [2, 4, 1, 3]
-            );
-          });
+        // test mixed strings and nulls, mixed ints and nulls
+        for (const type of ['string', 'int']) {
+          // test all combinations of null-order and value-order
+          const column = `nullable_${type}`;
 
-        await knex('OrderByNullTest')
-          .pluck('id')
-          .orderBy([
-            { column: 'null_col', order: 'asc', nulls: 'last' },
-            { column: 'string_col' },
-          ])
-          .testSql(function (tester) {
-            tester(
-              'mysql',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null), `null_col` asc, `string_col` asc',
-              [],
-              [1, 3, 2, 4]
-            );
-            tester(
-              'pg',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "null_col" asc, "string_col" asc',
-              [],
-              [1, 3, 2, 4]
-            );
-            tester(
-              'pgnative',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "null_col" asc, "string_col" asc',
-              [],
-              [1, 3, 2, 4]
-            );
-            tester(
-              'pg-redshift',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last,"null_col" asc, "string_col" asc',
-              [],
-              ['1', '3', '2', '4']
-            );
-            tester(
-              'sqlite3',
-              'select `id` from `OrderByNullTest` order by (`null_col` is null), `null_col` asc, `string_col` asc',
-              [],
-              [1, 3, 2, 4]
-            );
-            tester(
-              'oracledb',
-              'select "id" from "OrderByNullTest" order by "null_col" asc nulls last, "null_col" asc, "string_col" asc',
-              [],
-              [1, 3, 2, 4]
-            );
-            tester(
-              'mssql',
-              'select [id] from [OrderByNullTest] order by IIF([null_col] is null,0,1),[null_col] asc, [string_col] asc',
-              [],
-              [1, 3, 2, 4]
-            );
-          });
-        await knex.schema.dropTable('OrderByNullTest');
-      });
+          for (const { nulls, order, expected } of table) {
+            it(`nulls ${nulls}, order ${order}, values ${type}, array-of-objects syntax`, async () => {
+              await assertRows(
+                expected,
+                knex('OrderByNullTest')
+                  .select(column, 'result_order')
+                  .orderBy([
+                    { column, order, nulls },
+                    { column: 'result_order', order: 'asc' }, // ensure consistent ordering
+                  ])
+              );
+            });
 
-      it('order by with null desc on integer column', async () => {
-        await knex.schema
-          .dropTableIfExists('OrderByNullTest')
-          .createTable('OrderByNullTest', function (table) {
-            table.increments('id').primary();
-            table.integer('score').nullable().defaultTo(null);
-          });
-
-        await knex('OrderByNullTest').insert([
-          { score: 2 },
-          { score: 1 },
-          { score: null },
-          { score: null },
-          { score: 5 },
-        ]);
-
-        await knex('OrderByNullTest')
-          .pluck('score')
-          .orderBy('score', 'desc', 'first')
-          .testSql(function (tester) {
-            tester(
-              'mysql',
-              'select `score` from `OrderByNullTest` order by (`score` is not null), `score` desc',
-              [],
-              [null, null, 5, 2, 1]
-            );
-            tester(
-              'pg',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
-              [],
-              [null, null, 5, 2, 1]
-            );
-            tester(
-              'pgnative',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
-              [],
-              [null, null, 5, 2, 1]
-            );
-            tester(
-              'pg-redshift',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
-              [],
-              [null, null, 5, 2, 1]
-            );
-            tester(
-              'sqlite3',
-              'select `score` from `OrderByNullTest` order by (`score` is not null), `score` desc',
-              [],
-              [null, null, 5, 2, 1]
-            );
-            tester(
-              'oracledb',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls first, "score" desc',
-              [],
-              [null, null, 5, 2, 1]
-            );
-            tester(
-              'mssql',
-              'select [score] from [OrderByNullTest] order by IIF([score] is null,1,0) desc, [score] desc',
-              [],
-              [null, null, 5, 2, 1]
-            );
-          });
-
-        await knex('OrderByNullTest')
-          .pluck('score')
-          .orderBy('score', 'desc', 'last')
-          .testSql(function (tester) {
-            tester(
-              'mysql',
-              'select `score` from `OrderByNullTest` order by (`score` is null), `score` desc',
-              [],
-              [5, 2, 1, null, null]
-            );
-            tester(
-              'pg',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
-              [],
-              [5, 2, 1, null, null]
-            );
-            tester(
-              'pgnative',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
-              [],
-              [5, 2, 1, null, null]
-            );
-            tester(
-              'pg-redshift',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
-              [],
-              [5, 2, 1, null, null]
-            );
-            tester(
-              'sqlite3',
-              'select `score` from `OrderByNullTest` order by (`score` is null), `score` desc',
-              [],
-              [5, 2, 1, null, null]
-            );
-            tester(
-              'oracledb',
-              'select "score" from "OrderByNullTest" order by "score" desc nulls last, "score" desc',
-              [],
-              [5, 2, 1, null, null]
-            );
-            tester(
-              'mssql',
-              'select [score] from [OrderByNullTest] order by IIF([score] is null,0,1) desc, [score] desc',
-              [],
-              [5, 2, 1, null, null]
-            );
-          });
-        await knex.schema.dropTable('OrderByNullTest');
+            it(`nulls ${nulls}, order ${order}, values ${type}, convenience syntax`, async () => {
+              await assertRows(
+                expected,
+                knex('OrderByNullTest')
+                  .select(column, 'result_order')
+                  .orderBy(column, order, nulls)
+                  .orderBy('result_order', 'asc') // ensure consistent ordering
+              );
+            });
+          }
+        }
       });
 
       it('#1276 - Dates NULL should be returned as NULL, not as new Date(null)', async function () {
