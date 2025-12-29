@@ -3,20 +3,26 @@
 
 const { expect } = require('chai');
 const MySQL_Client = require('../../../lib/dialects/mysql');
+const MySQL2_Client = require('../../../lib/dialects/mysql2');
 const PG_Client = require('../../../lib/dialects/postgres');
+const PGNative_Client = require('../../../lib/dialects/pgnative');
 const Redshift_Client = require('../../../lib/dialects/redshift');
 const Oracledb_Client = require('../../../lib/dialects/oracledb');
 const SQLite3_Client = require('../../../lib/dialects/sqlite3');
+const BetterSQLite3_Client = require('../../../lib/dialects/better-sqlite3');
 const MSSQL_Client = require('../../../lib/dialects/mssql');
 const CockroachDB_Client = require('../../../lib/dialects/cockroachdb');
 
 // use driverName as key
 const clients = {
   mysql: new MySQL_Client({ client: 'mysql' }),
+  mysql2: new MySQL2_Client({ client: 'mysql2' }),
   pg: new PG_Client({ client: 'pg' }),
+  pgnative: new PGNative_Client({ client: 'pgnative' }),
   'pg-redshift': new Redshift_Client({ client: 'redshift' }),
   oracledb: new Oracledb_Client({ client: 'oracledb' }),
   sqlite3: new SQLite3_Client({ client: 'sqlite3' }),
+  'better-sqlite3': new BetterSQLite3_Client({ client: 'better-sqlite3' }),
   mssql: new MSSQL_Client({ client: 'mssql' }),
   cockroachdb: new CockroachDB_Client({ client: 'cockroachdb' }),
 };
@@ -103,6 +109,9 @@ function verifySqlResult(dialect, expectedObj, sqlObj) {
 function testsql(chain, valuesToCheck, selectedClients) {
   selectedClients = selectedClients || clients;
   Object.keys(valuesToCheck).forEach((key) => {
+    if (!(key in clients)) {
+      throw new Error(`Invalid client: ${key}`);
+    }
     const newChain = chain.clone();
     newChain.client = selectedClients[key];
     const sqlAndBindings = newChain.toSQL();
@@ -3528,6 +3537,57 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
     });
+  });
+
+  it('order bys with nulls and parameter bindings', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .orderBy(raw('?', ['foo']), raw('?', ['bar']), 'first'),
+      {
+        mysql: {
+          sql: 'select * from `users` order by ? is not null, ? ?',
+          bindings: ['foo', 'foo', 'bar'],
+        },
+        mysql2: {
+          sql: 'select * from `users` order by ? is not null, ? ?',
+          bindings: ['foo', 'foo', 'bar'],
+        },
+        sqlite3: {
+          sql: 'select * from `users` order by ? is not null, ? ?',
+          bindings: ['foo', 'foo', 'bar'],
+        },
+        'better-sqlite3': {
+          sql: 'select * from `users` order by ? is not null, ? ?',
+          bindings: ['foo', 'foo', 'bar'],
+        },
+        mssql: {
+          sql: 'select * from [users] order by IIF(? is null,1,0) desc, ? ?',
+          bindings: ['foo', 'foo', 'bar'],
+        },
+        pg: {
+          sql: 'select * from "users" order by ? ? nulls first',
+          bindings: ['foo', 'bar'],
+        },
+        pgnative: {
+          sql: 'select * from "users" order by ? ? nulls first',
+          bindings: ['foo', 'bar'],
+        },
+        cockroachdb: {
+          sql: 'select * from "users" order by ? is not null, ? ?',
+          bindings: ['foo', 'foo', 'bar'],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" order by ? ? nulls first',
+          bindings: ['foo', 'bar'],
+        },
+        oracledb: {
+          sql: 'select * from "users" order by ? ? nulls first',
+          bindings: ['foo', 'bar'],
+        },
+      }
+    );
   });
 
   it('havings', () => {
