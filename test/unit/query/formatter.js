@@ -259,4 +259,53 @@ describe('formatter', () => {
       }
     });
   });
+
+  // these tests are less complete than 'wrap' because they just farm out
+  // to wrap anyway, depending on the passed-in value (function, QueryBuilder,
+  // or anything else)
+  describe('wrapForExpressionList', () => {
+    it('wraps an identifier as a string', () => {
+      const value = formatter().wrapForExpressionList('foo');
+      expect(value).to.equal('"foo"');
+    });
+
+    it("always wraps a QueryBuilder's output in parenthesis", () => {
+      for (const isParameter of [true, false, undefined]) {
+        const builder = client.queryBuilder();
+        const value = formatter().wrapForExpressionList(
+          builder.select('foo'),
+          isParameter
+        );
+        expect(value).to.equal('(select "foo")');
+      }
+    });
+
+    it("always wraps a callback's output in parenthesis", () => {
+      for (const isParameter of [true, false, undefined]) {
+        const value = formatter().wrapForExpressionList(
+          (builder) => builder.select('foo'),
+          isParameter
+        );
+        expect(value).to.equal('(select "foo")');
+      }
+    });
+
+    it('does not push to bindings when isParameter is falsy', () => {
+      for (const isParameter of [undefined, false]) {
+        const inst = formatter();
+        inst.wrapForExpressionList('foo', isParameter);
+        expect(inst.bindings).to.deep.eq([]);
+      }
+    });
+
+    it('pushes plain values to bindings when isParameter is true', () => {
+      for (const val of [123, 'foo']) {
+        const inst = formatter();
+        // this is a mostly-nonsensical syntax, but we are just checking
+        // that it gets passed through correctly
+        inst.wrapForExpressionList(val, true);
+        expect(inst.bindings).to.deep.eq([val]);
+      }
+    });
+  });
 });
