@@ -1696,38 +1696,51 @@ describe('Schema (misc)', () => {
             }
           };
 
+          beforeEach(async () => {
+            await cleanup();
+          });
+          afterEach(async () => {
+            await cleanup();
+          });
+
           /** @param {() => Promise<void>} cb */
           /** @param {(tb: CreateTableBuilder) => void} [builder] */
           const withTable = async (cb, builder) => {
-            // in case we have a dirty database after previous tests
-            await cleanup();
-
             // verify create table
-            try {
-              await knex.schema.createTable(tblname, (tb) => {
-                tb.increments('id');
-                builder?.(tb);
-              });
-              await cb();
-            } finally {
-              // clean up explicitly after we've done our test
-              await cleanup();
-            }
+            await cleanup();
+            await knex.schema.createTable(tblname, (tb) => {
+              tb.increments('id');
+              builder?.(tb);
+            });
+            await cb();
 
             // verify alter table
-            try {
-              await knex.schema.createTable(tblname, (tb) => {
-                tb.increments('id');
-              });
-              await knex.schema.alterTable(tblname, (tb) => {
-                builder?.(tb);
-              });
-              await cb();
-            } finally {
-              // clean up explicitly after we've done our test
-              await cleanup();
-            }
+            await cleanup();
+            await knex.schema.createTable(tblname, (tb) => {
+              tb.increments('id');
+            });
+            await knex.schema.alterTable(tblname, (tb) => {
+              builder?.(tb);
+            });
+            await cb();
           };
+
+          it('throws on unsupported dialects', async function () {
+            if (isPostgreSQL(knex)) {
+              return this.skip();
+            }
+
+            await expect(
+              knex.schema.createTable(tblname, (tb) => {
+                tb.increments('id');
+                tb.unique('id', {
+                  nullsNotDistinct: 'anything',
+                });
+              })
+            ).to.eventually.be.rejectedWith(
+              /cannot make unique with nullsNotDistinct/
+            );
+          });
 
           it('allows creating indexes with NULLS NOT DISTINCT', async function () {
             if (!isPostgreSQL(knex)) {
