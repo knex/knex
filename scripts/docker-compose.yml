@@ -64,7 +64,7 @@ services:
       - 'until /usr/bin/mysql -hmysql -utestuser -ptestpassword -e "SELECT 1"; do sleep 5; done'
 
   postgres:
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     # see https://www.postgresql.org/docs/current/non-durability.html
     command: '-c full_page_writes=off -c fsync=off -c synchronous_commit=off'
     ports:
@@ -74,7 +74,7 @@ services:
       - POSTGRES_PASSWORD=knextest
       - POSTGRES_DB=knex_test
   waitpostgres:
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     links:
       - postgres
     depends_on:
@@ -105,7 +105,7 @@ services:
       - cockroachdb
 
   pgnative:
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     # see https://www.postgresql.org/docs/current/non-durability.html
     command: '-c full_page_writes=off -c fsync=off -c synchronous_commit=off'
     ports:
@@ -115,7 +115,7 @@ services:
       - POSTGRES_PASSWORD=knextest
       - POSTGRES_DB=knex_test
   waitpgnative:
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     links:
       - pgnative
     depends_on:
