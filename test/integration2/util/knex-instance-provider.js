@@ -3,7 +3,7 @@ const knex = require('../../../lib');
 
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
-const { cloneDeep } = require('lodash');
+const { cloneDeep, merge } = require('lodash');
 
 const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
@@ -238,16 +238,10 @@ const testConfigs = {
   },
 };
 
-function getDbTestConfig(db) {
-  return cloneDeep(testConfigs[db]);
-}
-
 function getKnexForDb(db, configOverrides = {}) {
-  const config = testConfigs[db];
-  return knex({
-    ...config,
-    ...configOverrides,
-  });
+  const config = cloneDeep(testConfigs[db]);
+  merge(config, configOverrides);
+  return knex(config);
 }
 
 /** @returns {import('../../../types/index').Knex} */
@@ -290,5 +284,4 @@ module.exports = {
   getKnexForSqlite,
   getKnexForBetterSqlite,
   withDbs,
-  getDbTestConfig,
 };
