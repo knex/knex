@@ -1,10 +1,9 @@
-
 const { promisify } = require('util');
 const knex = require('../../../lib');
 
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
-const {cloneDeep} = require('lodash');
+const { cloneDeep } = require('lodash');
 
 const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
