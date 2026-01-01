@@ -24,6 +24,21 @@ describe('migrate:latest', () => {
     fileHelper.cleanup();
   });
 
+  it('Rejects excess arguments', async () => {
+    await execCommand(
+      `node ${KNEX} migrate:latest --client=sqlite3 --connection=:memory: --migrations-directory=${rootDir}/migrations foo`,
+      {
+        expectedErrorMessage: 'Expected 0 arguments',
+      }
+    );
+    await execCommand(
+      `node ${KNEX} migrate:rollback --client=sqlite3 --connection=:memory: --migrations-directory=${rootDir}/migrations foo`,
+      {
+        expectedErrorMessage: 'Expected 0 arguments',
+      }
+    );
+  });
+
   it('Run migrations', async () => {
     fileHelper.createFile(
       'migrations/000_create_rule_table.js',
