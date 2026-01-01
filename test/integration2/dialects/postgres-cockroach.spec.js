@@ -34,9 +34,7 @@ describe('PostgreSQL & Cockroach DB', () => {
           let knex;
           before(() => {
             knex = getKnexForDb(db, {
-              connection: {
-                defaultDateTimePrecision: CONFIGURED_DEFAULT_DATETIME_PRECISION,
-              },
+              defaultDateTimePrecision: CONFIGURED_DEFAULT_DATETIME_PRECISION,
             });
           });
 

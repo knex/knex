@@ -2760,6 +2760,11 @@ declare namespace Knex {
     log?: Logger;
     compileSqlOnError?: boolean;
     fetchAsString?: string[];
+    /**
+     * If set, will be used as the default precision for datetime & timestamp columns.
+     * Valid only on PostgreSQL and CockroachDB
+     */
+    defaultDateTimePrecision?: number;
   }
 
   type StaticConnectionConfig =
@@ -3060,10 +3065,6 @@ declare namespace Knex {
     stream?: () => stream.Duplex | stream.Duplex | undefined;
     statement_timeout?: false | number;
     parseInputDatesAsUTC?: boolean;
-    /**
-     * If set, will be used as the default precision for datetime & timestamp columns
-     */
-    defaultDateTimePrecision?: number;
     ssl?: boolean | ConnectionOptions;
     query_timeout?: number;
     keepAliveInitialDelayMillis?: number;
