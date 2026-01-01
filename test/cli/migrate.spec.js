@@ -54,8 +54,7 @@ describe('migrate:latest', () => {
     expect(fileHelper.fileExists(dbPath)).to.equal(false);
     await execCommand(`node ${KNEX} migrate:latest \
                  --client=sqlite3 --connection=${dbPath} \
-                 --migrations-directory=${rootDir}/migrations \
-                 create_rule_table`);
+                 --migrations-directory=${rootDir}/migrations`);
     expect(fileHelper.fileExists(dbPath)).to.equal(true);
     const db = await new sqlite3.Database(dbPath);
 
@@ -106,8 +105,7 @@ module.exports = {
     await execCommand(`node ${KNEX} migrate:latest \
                  --knexpath=../knexfile.js \
                  --migrations-directory=${rootDir}/migrations/subdirectory/ \
-                 --migrations-table-name=migration_table \
-                 create_rule_table`);
+                 --migrations-table-name=migration_table`);
     expect(fileHelper.fileExists(dbPath)).to.equal(true);
 
     const db = await new sqlite3.Database(dbPath);
