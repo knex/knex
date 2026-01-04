@@ -155,7 +155,7 @@ const knex = require('knex')({
 });
 ```
 
-For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `options.defaultSafeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
+For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `connection.options.safeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
 
 ```js
 const knex = require('knex')({
@@ -163,7 +163,7 @@ const knex = require('knex')({
   connection: {
     filename: './mydb.sqlite',
     options: {
-      defaultSafeIntegers: true,
+      safeIntegers: true, // Returns bigint for large integers
     },
   },
 });

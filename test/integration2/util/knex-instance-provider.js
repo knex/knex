@@ -193,10 +193,9 @@ const testConfigs = {
     seeds,
     useNullAsDefault: false, // retain default behavior, silence warning
   },
-
   'better-sqlite3': {
     client: 'better-sqlite3',
-    connection: testConfig.sqlite3 || ':memory:',
+    connection: testConfig['better-sqlite3'] || ':memory:',
     pool: poolBetterSqlite,
     migrations,
     seeds,
@@ -264,7 +263,7 @@ function getKnexForSqlite(foreignKeys, configOverrides = {}) {
 function getKnexForBetterSqlite(foreignKeys, configOverrides = {}) {
   const sql = `PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'}`;
   const config = {
-    ...testConfigs.sqlite3,
+    ...testConfigs['better-sqlite3'],
     ...configOverrides,
   };
   config.pool = {
