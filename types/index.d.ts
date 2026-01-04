@@ -2760,6 +2760,11 @@ declare namespace Knex {
     log?: Logger;
     compileSqlOnError?: boolean;
     fetchAsString?: string[];
+    /**
+     * If set, will be used as the default precision for datetime & timestamp columns.
+     * Valid only on PostgreSQL and CockroachDB
+     */
+    defaultDateTimePrecision?: number;
   }
 
   type StaticConnectionConfig =
