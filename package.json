@@ -20,10 +20,9 @@
     "node": ">=16"
   },
   "scripts": {
-    "build": "npm run build:gitignore && npm run build:ts && npm run format",
+    "build": "npm run build:ts && npm run format",
     "clean": "node scripts/clean.js",
     "build:ts": "tsc",
-    "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
     "format": "prettier --write --list-different .",
     "format:check": "prettier --list-different .",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
