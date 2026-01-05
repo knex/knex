@@ -19,8 +19,7 @@ jobs:
     permissions: {}
 
     # determine the semver bump to perform later, according to the PR labels.
-    # empty output will prevent the build job (and its dependent jobs) from
-    # running
+    # empty output will prevent the build job (and its dependent jobs) from running
     outputs:
       bump: ${{ steps.version.outputs.bump }}
     steps:
