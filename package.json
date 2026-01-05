@@ -245,7 +245,6 @@
     "!lib/**/*.d.ts",
     "!lib/**/*.js.map",
     "!lib/.gitignore",
-    "scripts/*",
     "types/index.d.ts",
     "types/result.d.ts",
     "types/tables.d.ts",
