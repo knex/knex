@@ -14,4 +14,6 @@ else
   exit 1
 fi
 
-act --artifact-server-path /tmp/artifacts -e "$evtfile" -W "$HERE/../../.github/workflows/publish.yml"
+shift
+
+act --artifact-server-path /tmp/artifacts -e "$evtfile" -W "$HERE/../../.github/workflows/publish.yml" "$@"
