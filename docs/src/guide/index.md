@@ -398,7 +398,7 @@ const knex = require('knex')({
 });
 ```
 
-If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use `knex.initialize(\[config\])`, if no config is passed, it will use the first knex configuration used.
+If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use `knex.initialize([config])`, if no config is passed, it will use the first knex configuration used.
 
 #### Custom validation (`pool.validate`)
 
