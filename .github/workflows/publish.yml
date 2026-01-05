@@ -118,14 +118,17 @@ jobs:
         with:
           subject-path: ${{ needs.build.outputs.tarball }}
 
-      # incorporate the auto-format changes and version bump from
-      # the artifact into the repository by re-extracting the published
-      # files into the source directory
+      # extract the contents of the artifact we will publish back into the
+      # git root so that we can commit back the version bump and formatted
+      # typescript output. assert that the only changes are to package.json
+      # and lib/** to limit the blast radius of any errors
       - name: Extract artifact
         run: |
-          tar zxf "${{ needs.build.outputs.tarball }}"
-          git diff --name-only
-          exit 1
+          tar zxf "${{ needs.build.outputs.tarball }}" --strip-components=1 -C .
+          if git diff --name-only HEAD -- ':(exclude)lib/**' ':(exclude)package.json'; then
+            echo "Tarball contained unexpected differences, aborting"
+            exit 1
+          fi
 
       - name: Commit and push
         run: |
@@ -134,7 +137,6 @@ jobs:
           git tag "v$(node -p "require('./package.json').version")"
           echo :::: git push
           echo :::: git push --tags
-
       - name: Publish to npm
         run: |
           echo :::: npm publish --provenance --access public
