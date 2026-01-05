@@ -114,10 +114,6 @@ jobs:
           name: ${{ needs.build.outputs.tarball }}
           path: .
 
-      - uses: actions/attest-build-provenance@v3
-        with:
-          subject-path: ${{ needs.build.outputs.tarball }}
-
       # extract the contents of the artifact we will publish back into the
       # git root so that we can commit back the version bump and formatted
       # typescript output. assert that the only changes are to package.json
@@ -137,6 +133,11 @@ jobs:
           git tag "v$(node -p "require('./package.json').version")"
           echo :::: git push
           echo :::: git push --tags
+
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: ${{ needs.build.outputs.tarball }}
+
       - name: Publish to npm
         run: |
           echo :::: npm publish --provenance --access public
