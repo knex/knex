@@ -1,0 +1,12 @@
+{
+  "pull_request": {
+    "head": {
+      "ref": "pr-getting-merged"
+    },
+    "base": {
+      "ref": "master"
+    },
+    "merged": true,
+    "labels": [{ "name": "patch" }]
+  }
+}
