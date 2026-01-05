@@ -115,6 +115,7 @@
     "*.js": "eslint --cache --fix"
   },
   "devDependencies": {
+    "@tsconfig/node12": "^1.0.11",
     "@tsconfig/recommended": "^1.0.1",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^20.4.0",
