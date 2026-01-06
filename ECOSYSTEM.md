@@ -5,7 +5,7 @@ Plugins and tools maintained by the knex team are listed under [Core](#core) whi
 #### [Dialects](#dialects)
 
 - [`knex-firebird-dialect`](https://github.com/Tomas2D/knex-firebird-dialect) Dialect for a Firebird database.
-- [`knex-ibmi`]([https://github.com/Tomas2D/knex-firebird-dialect](https://github.com/bdkinc/knex-ibmi)) Dialect for IBMi DB2.
+- [`knex-ibmi`](https://github.com/bdkinc/knex-ibmi) Dialect for IBMi DB2.
 
 #### [Core](#core)
 
