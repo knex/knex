@@ -3112,9 +3112,13 @@ declare namespace Knex {
     expirationChecker?(): boolean;
   }
 
+  type AfterCreate =
+    | ((conn: any) => Promise<any>)
+    | ((conn: any, done: (err?: null | Error) => void) => void);
+
   interface PoolConfig {
     name?: string;
-    afterCreate?: Function;
+    afterCreate?: AfterCreate;
     min?: number;
     max?: number;
     refreshIdle?: boolean;
