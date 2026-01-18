@@ -145,4 +145,46 @@ describe('Postgres Unit Tests', function () {
       knexInstance.destroy();
     });
   });
+
+  it("throws a helpful error when pg-query-stream isn't installed", async () => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      version: '10.5',
+      connection: {
+        pool: {},
+      },
+    });
+
+    const Module = require('module');
+    const originalLoad = Module._load;
+    const loadStub = sinon
+      .stub(Module, '_load')
+      .callsFake((request, parent, isMain) => {
+        if (request === 'pg-query-stream') {
+          const err = new Error("Cannot find module 'pg-query-stream'");
+          err.code = 'MODULE_NOT_FOUND';
+          throw err;
+        }
+        return originalLoad(request, parent, isMain);
+      });
+
+    try {
+      expect(() =>
+        knexInstance.client._stream(
+          {
+            query() {
+              throw new Error('connection.query should not be called');
+            },
+          },
+          { sql: 'select 1', bindings: [] },
+          { on: _.noop, emit: _.noop }
+        )
+      ).to.throw(
+        "knex PostgreSQL query streaming requires the 'pg-query-stream' package. Please install it (e.g. `npm i pg-query-stream`)."
+      );
+    } finally {
+      loadStub.restore();
+      await knexInstance.destroy();
+    }
+  });
 });
