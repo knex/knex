@@ -47,4 +47,72 @@ describe('formatSqlWithBindings', function () {
     expect(rawCalls).to.have.lengthOf(0);
     expect(result).to.equal('select \\? as q, <42> as v');
   });
+
+  it('returns sql for missing or empty bindings and missing helpers', function () {
+    const sql = 'select $1';
+    const knexWithRawOnly = { raw: () => ({ toString: () => 'RAW' }) };
+
+    expect(
+      formatSqlWithBindings(sql, null, 'postgres', knexWithRawOnly)
+    ).to.equal(sql);
+    expect(
+      formatSqlWithBindings(sql, [], 'postgres', knexWithRawOnly)
+    ).to.equal(sql);
+    expect(
+      formatSqlWithBindings(sql, {}, 'postgres', knexWithRawOnly)
+    ).to.equal(sql);
+    expect(
+      formatSqlWithBindings(sql, 123, 'postgres', knexWithRawOnly)
+    ).to.equal(sql);
+
+    expect(formatSqlWithBindings(sql, [1], 'postgres', {})).to.equal(sql);
+    expect(
+      formatSqlWithBindings(sql, [1], 'postgres', knexWithRawOnly)
+    ).to.equal(sql);
+  });
+
+  it('formats colon/at placeholders and falls back when no replacement is possible', function () {
+    const knex = {
+      raw: () => {
+        throw new Error('unexpected raw');
+      },
+      client: {
+        _escapeBinding: (value) => `<${value}>`,
+      },
+    };
+    const knexForObject = {
+      raw: (sql, bindings) => ({ toString: () => `RAW:${bindings.named}` }),
+    };
+
+    expect(
+      formatSqlWithBindings('select :1 as v', [7], 'oracle', knex)
+    ).to.equal('select <7> as v');
+    expect(
+      formatSqlWithBindings('select @p0 as v', [8], 'mssql', knex)
+    ).to.equal('select <8> as v');
+    expect(
+      formatSqlWithBindings(
+        'select ? as v',
+        { named: 'ok' },
+        'sqlite3',
+        knexForObject
+      )
+    ).to.equal('RAW:ok');
+    expect(
+      formatSqlWithBindings('select $2 as v', [9], 'postgres', knex)
+    ).to.equal('select $2 as v');
+    expect(
+      formatSqlWithBindings('select 1 as v', [10], 'sqlite3', knex)
+    ).to.equal('select 1 as v');
+  });
+
+  it('throws for missing or unknown dialects', function () {
+    expect(() =>
+      formatSqlWithBindings('select 1', [1], null, { raw: () => ({}) })
+    ).to.throw('formatSqlWithBindings requires a dialect');
+
+    expect(() =>
+      formatSqlWithBindings('select 1', [1], 'unknown', { raw: () => ({}) })
+    ).to.throw('Unknown dialect for SQL bindings: unknown');
+  });
 });
