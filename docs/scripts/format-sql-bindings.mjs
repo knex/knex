@@ -13,10 +13,17 @@ const DIALECT_PLACEHOLDER_STYLE = new Map([
 ]);
 
 function hasQuestionBindings(sql) {
-  const regex = /\\?\?\??/g;
-  let match = null;
-  while ((match = regex.exec(sql)) !== null) {
-    if (match[0] !== '\\?') {
+  let escaped = false;
+  for (const chr of sql) {
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (chr === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (chr === '?') {
       return true;
     }
   }
