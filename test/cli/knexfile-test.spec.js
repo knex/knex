@@ -4,7 +4,6 @@ const path = require('path');
 const tildify = require('tildify');
 
 const { FileTestHelper, execCommand } = require('cli-testlab');
-const color = require('colorette');
 
 const KNEX = path.normalize(__dirname + '/../../bin/cli.js');
 
@@ -99,11 +98,9 @@ module.exports = {
           const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
 
           return execCommand(
-            `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
+            `cross-env NO_COLOR=true node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile.js --knexpath=../knex.js`,
             {
-              expectedOutput: `Working directory changed to ${color.magenta(
-                expectedCWD
-              )}`,
+              expectedOutput: `Working directory changed to ${expectedCWD}`,
             }
           );
         });
@@ -120,11 +117,9 @@ module.exports = {
               const expectedCWD = tildify(path.resolve(path.dirname(knexfile)));
 
               return execCommand(
-                `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
+                `cross-env NO_COLOR=true node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-relative/knexfile-with-resolve.js --knexpath=../knex.js`,
                 {
-                  expectedOutput: `Working directory changed to ${color.magenta(
-                    expectedCWD
-                  )}`,
+                  expectedOutput: `Working directory changed to ${expectedCWD}`,
                 }
               );
             });
@@ -222,6 +217,66 @@ module.exports = {
             'Batch 1 run: 1 migrations',
             'FS-related option specified for migration configuration. This resets migrationSource to default FsMigrations',
           ],
+        }
+      );
+    });
+  });
+
+  describe('reports a clear error if the knexfile throws an error', () => {
+    it('when importing throws (Error)', () => {
+      return execCommand(
+        `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-errors/knexfile_import_throw.js --knexpath=../knex.js`,
+        {
+          expectedErrorMessage: [
+            'Failed to read config from knexfile',
+            'threw on import',
+          ],
+        }
+      );
+    });
+
+    it('when importing throws (string)', () => {
+      return execCommand(
+        `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-errors/knexfile_non_error_throw.js --knexpath=../knex.js`,
+        {
+          expectedErrorMessage: [
+            'A non-Error value was thrown',
+            'threw string',
+          ],
+        }
+      );
+    });
+
+    it('when importing throws', () => {
+      return execCommand(
+        `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-errors/knexfile_non_stringable_throw.js --knexpath=../knex.js`,
+        {
+          expectedErrorMessage: [
+            'A non-Error value was thrown',
+            'Object: null prototype',
+            'threw non-stringable object',
+          ],
+        }
+      );
+    });
+
+    it('when an exported function throws', () => {
+      return execCommand(
+        `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-errors/knexfile_function_throw.js --knexpath=../knex.js`,
+        {
+          expectedErrorMessage: [
+            'Failed to read config from knexfile',
+            'threw on function call',
+          ],
+        }
+      );
+    });
+
+    it('when an exported object throws (object getter)', () => {
+      return execCommand(
+        `node ${KNEX} migrate:latest --knexfile=test/jake-util/knexfile-errors/knexfile_object_throw.js --knexpath=../knex.js`,
+        {
+          expectedErrorMessage: ['threw on .client access'],
         }
       );
     });

@@ -6,14 +6,15 @@
   "scripts": {
     "dev": "vitepress dev .",
     "build": "vitepress build .",
-    "serve": "vitepress serve ."
+    "serve": "vitepress serve .",
+    "resolve-schema-snippets": "node scripts/resolve-schema-snippets-docker.mjs"
   },
   "devDependencies": {
-    "knex": "^2.4.0",
-    "typescript": "^4.6.3",
-    "vitepress": "^0.22.4"
+    "knex": "latest",
+    "sqlite3": "5.0.11",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4"
   },
-  "dependencies": {},
   "author": {
     "name": "Tim Griesser",
     "web": "https://github.com/tgriesser"

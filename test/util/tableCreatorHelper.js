@@ -113,6 +113,11 @@ async function createCountry(knex) {
 }
 
 async function dropTables(knex) {
+  // created but not cleaned up correctly in test/integration2/schema/misc.spec.js
+  // "allows for setting foreign keys on schema creation"
+  await knex.schema.dropTableIfExists('test_foreign_table_two');
+  await knex.schema.dropTableIfExists('check_test');
+
   await knex.schema.dropTableIfExists('accounts');
   await knex.schema.dropTableIfExists('users');
   await knex.schema.dropTableIfExists('test_default_table');

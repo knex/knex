@@ -1,9 +1,11 @@
 const { DEFAULT_EXT, DEFAULT_TABLE_NAME } = require('./constants');
 const { resolveClientNameWithAliases } = require('../../lib/util/helpers');
 const path = require('path');
+const { inspect } = require('util');
 const escalade = require('escalade/sync');
 const tildify = require('tildify');
 const color = require('colorette');
+const { KnexfileRuntimeError } = require('../knexfile-runtime-error');
 const argv = require('getopts')(process.argv.slice(2));
 
 function parseConfigObj(opts) {
@@ -70,17 +72,20 @@ function resolveEnvironmentConfig(opts, allConfigs, configFilePath) {
   return result;
 }
 
-function exit(text) {
-  if (text instanceof Error) {
-    if (text.message) {
-      console.error(color.red(text.message));
-    }
-    console.error(
-      color.red(`${text.detail ? `${text.detail}\n` : ''}${text.stack}`)
-    );
+function exit(reason) {
+  let exitMessage;
+
+  if (reason instanceof KnexfileRuntimeError) {
+    exitMessage = reason.message;
+  } else if (reason instanceof Error) {
+    exitMessage = reason.stack ?? reason.message;
+  } else if (typeof reason === 'string') {
+    exitMessage = reason;
   } else {
-    console.error(color.red(text));
+    exitMessage = inspect(reason);
   }
+
+  console.error(color.red(exitMessage));
   process.exit(1);
 }
 

@@ -155,6 +155,20 @@ const knex = require('knex')({
 });
 ```
 
+For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `connection.options.safeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
+
+```js
+const knex = require('knex')({
+  client: 'better-sqlite3',
+  connection: {
+    filename: './mydb.sqlite',
+    options: {
+      safeIntegers: true, // Returns bigint for large integers
+    },
+  },
+});
+```
+
 For more information, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
 
 :::
@@ -367,7 +381,7 @@ const knex = require('knex')({
 });
 ```
 
-If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use knex.initialize(\[config\]), if no config is passed, it will use the first knex configuration used.
+If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use `knex.initialize(\[config\])`, if no config is passed, it will use the first knex configuration used.
 
 ### afterCreate
 
@@ -431,6 +445,22 @@ const knex = require('knex')({
     /*...*/
   },
   fetchAsString: ['number', 'clob'],
+});
+```
+
+### defaultDateTimePrecision
+
+Utilized by PostgreSQL and CockroachDB. The default value of `precision` to use when creating a [datetime](schema-builder.html#datetime) column with the schema builder.
+
+When the precision of a timestamp column is unspecified in postgres, it defaults to 6 (microseconds), which is finer-grained than Javascript's `Date` class (milliseconds). This can lead to unexpected behavior when database-generated values (such as default "now" timestamp values) are read into JS and written back to the database. As a workaround, timestamp columns can be created with a lower precision that matches the JS runtime. To specify this behavior across all migrations, you can configure it at the knex level:
+
+```js
+const knex = require('knex')({
+  client: 'postgres',
+  connection: {
+    /* ... */
+  },
+  defaultDateTimePrecision: 3,
 });
 ```
 

@@ -9,18 +9,18 @@
 
 > **A SQL query builder that is _flexible_, _portable_, and _fun_ to use!**
 
-A batteries-included, multi-dialect (PostgreSQL, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
+A batteries-included, multi-dialect (PostgreSQL, MariaDB, MySQL, CockroachDB, MSSQL, SQLite3, Oracle (including Oracle Wallet Authentication)) query builder for
 Node.js, featuring:
 
-- [transactions](https://knex.github.io/documentation/#Transactions)
-- [connection pooling](https://knex.github.io/documentation/#Installation-pooling)
-- [streaming queries](https://knex.github.io/documentation/#Interfaces-Streams)
-- both a [promise](https://knex.github.io/documentation/#Interfaces-Promises) and [callback](https://knex.github.io/documentation/#Interfaces-Callbacks) API
+- [transactions](https://knexjs.org/guide/transactions.html)
+- [connection pooling](https://knexjs.org/guide/#pool)
+- [streaming queries](https://knexjs.org/guide/interfaces.html#streams)
+- both a [promise](https://knexjs.org/#Interfaces-Promises) and [callback](https://knexjs.org/guide/interfaces.html#callbacks) API
 - a [thorough test suite](https://github.com/knex/knex/actions)
 
-Node.js versions 12+ are supported.
+Node.js versions 16+ are supported.
 
-- Take a look at the [full documentation](https://knex.github.io/documentation) to get started!
+- Take a look at the [full documentation](https://knexjs.org/) to get started!
 - Browse the [list of plugins and tools](https://github.com/knex/knex/blob/master/ECOSYSTEM.md) built for knex
 - Check out our [recipes wiki](https://github.com/knex/knex/wiki/Recipes) to search for solutions to some specific problems
 - In case of upgrading from an older version, see [migration guide](https://github.com/knex/knex/blob/master/UPGRADING.md)
@@ -104,15 +104,22 @@ const config: Knex.Config = {
   connection: {
     filename: './data.db',
   },
+  useNullAsDefault: true,
 };
 
 const knexInstance = knex(config);
 
-try {
-  const users = await knex<User>('users').select('id', 'age');
-} catch (err) {
-  // error handling
-}
+knexInstance<User>('users')
+  .select()
+  .then((users) => {
+    console.log(users);
+  })
+  .catch((err) => {
+    console.error(err);
+  })
+  .finally(() => {
+    knexInstance.destroy();
+  });
 ```
 
 ## Usage as ESM module

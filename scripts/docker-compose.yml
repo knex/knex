@@ -23,7 +23,7 @@ services:
       - 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P S0meVeryHardPassword -d master -Q "CREATE DATABASE knex_test; ALTER DATABASE knex_test SET ALLOW_SNAPSHOT_ISOLATION ON; ALTER DATABASE knex_test SET DELAYED_DURABILITY = FORCED"; do sleep 5; done'
 
   mysql:
-    image: mysql
+    image: mysql:8.0.40
     # https://dev.mysql.com/doc/refman/8.0/en/mysql-acid.html
     # https://dev.mysql.com/doc/refman/8.0/en/innodb-parameters.html#sysvar_innodb_flush_method
     # nosync only for unix, edit for local start on other systems
@@ -53,7 +53,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
   waitmysql:
-    image: mysql
+    image: mysql:8.0.40
     links:
       - mysql
     depends_on:
@@ -88,7 +88,7 @@ services:
     image: cockroachdb/cockroach:latest-v21.2
     container_name: crdb
     hostname: crdb
-    command: start-single-node --cluster-name=example-single-node --insecure
+    command: start-single-node --cluster-name=example-single-node --insecure --store=type=mem,size=0.25
     ports:
       - '26257:26257'
       - '8080:8080'

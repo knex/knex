@@ -766,6 +766,29 @@ describe('Migrations', function () {
           });
         });
 
+        describe('explicit migration transactions', () => {
+          const tableName = 'knex_test_exp_mig_trans';
+
+          it('should have used a transaction', async function () {
+            if (isMysql(knex) || isMssql(knex)) {
+              this.skip();
+              return;
+            }
+
+            await expect(
+              knex.migrate.up({
+                directory:
+                  'test/integration2/migrate/migration-explicit-transactions',
+                disableTransactions: true,
+              })
+            ).to.eventually.be.rejectedWith(/oh noes/);
+
+            await expect(
+              knex.select('*').from(tableName)
+            ).to.eventually.be.rejectedWith(tableName);
+          });
+        });
+
         describe('knex.migrate.down', () => {
           describe('with transactions enabled', () => {
             beforeEach(async () => {
