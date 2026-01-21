@@ -3,6 +3,7 @@ const knex = require('../../../lib');
 
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
+const { cloneDeep, merge } = require('lodash');
 
 const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
@@ -192,10 +193,9 @@ const testConfigs = {
     seeds,
     useNullAsDefault: false, // retain default behavior, silence warning
   },
-
   'better-sqlite3': {
     client: 'better-sqlite3',
-    connection: testConfig.sqlite3 || ':memory:',
+    connection: testConfig['better-sqlite3'] || ':memory:',
     pool: poolBetterSqlite,
     migrations,
     seeds,
@@ -238,11 +238,9 @@ const testConfigs = {
 };
 
 function getKnexForDb(db, configOverrides = {}) {
-  const config = testConfigs[db];
-  return knex({
-    ...config,
-    ...configOverrides,
-  });
+  const config = cloneDeep(testConfigs[db]);
+  merge(config, configOverrides);
+  return knex(config);
 }
 
 /** @returns {import('../../../types/index').Knex} */
@@ -265,7 +263,7 @@ function getKnexForSqlite(foreignKeys, configOverrides = {}) {
 function getKnexForBetterSqlite(foreignKeys, configOverrides = {}) {
   const sql = `PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'}`;
   const config = {
-    ...testConfigs.sqlite3,
+    ...testConfigs['better-sqlite3'],
     ...configOverrides,
   };
   config.pool = {

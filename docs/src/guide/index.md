@@ -155,7 +155,7 @@ const knex = require('knex')({
 });
 ```
 
-For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `options.defaultSafeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
+For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `connection.options.safeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
 
 ```js
 const knex = require('knex')({
@@ -163,7 +163,7 @@ const knex = require('knex')({
   connection: {
     filename: './mydb.sqlite',
     options: {
-      defaultSafeIntegers: true,
+      safeIntegers: true, // Returns bigint for large integers
     },
   },
 });
@@ -445,6 +445,22 @@ const knex = require('knex')({
     /*...*/
   },
   fetchAsString: ['number', 'clob'],
+});
+```
+
+### defaultDateTimePrecision
+
+Utilized by PostgreSQL and CockroachDB. The default value of `precision` to use when creating a [datetime](schema-builder.html#datetime) column with the schema builder.
+
+When the precision of a timestamp column is unspecified in postgres, it defaults to 6 (microseconds), which is finer-grained than Javascript's `Date` class (milliseconds). This can lead to unexpected behavior when database-generated values (such as default "now" timestamp values) are read into JS and written back to the database. As a workaround, timestamp columns can be created with a lower precision that matches the JS runtime. To specify this behavior across all migrations, you can configure it at the knex level:
+
+```js
+const knex = require('knex')({
+  client: 'postgres',
+  connection: {
+    /* ... */
+  },
+  defaultDateTimePrecision: 3,
 });
 ```
 

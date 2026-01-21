@@ -88,7 +88,7 @@ services:
     image: cockroachdb/cockroach:latest-v21.2
     container_name: crdb
     hostname: crdb
-    command: start-single-node --cluster-name=example-single-node --insecure
+    command: start-single-node --cluster-name=example-single-node --insecure --store=type=mem,size=0.25
     ports:
       - '26257:26257'
       - '8080:8080'
