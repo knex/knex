@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Knex from 'knex';
@@ -7,8 +8,10 @@ import {
   formatSqlError,
   instrumentMarkedStatements,
 } from './snippet-utils.mjs';
+import formatSqlWithBindings from './format-sql-bindings.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 const repoRoot = path.resolve(__dirname, '..', '..');
 // Only schema builder docs need resolved outputs.
 const schemaDocs = [
@@ -232,6 +235,31 @@ function writeOutput(filePath, data) {
 
 function createKnex(dialect, allowDb) {
   if (dialect.sqlite) {
+    // Docs builds run against the published Knex package (not repo source).
+    // Older releases pass nested arrays to SQLite dropColumn; patch here so
+    // schema snippets render correctly until a fixed Knex release is used.
+    try {
+      const SqliteDdl = require('knex/lib/dialects/sqlite3/schema/ddl');
+      if (SqliteDdl?.prototype && !SqliteDdl.prototype.__knexDocsPatched) {
+        const originalDropColumn = SqliteDdl.prototype.dropColumn;
+        SqliteDdl.prototype.dropColumn = function (columns) {
+          const normalized =
+            Array.isArray(columns) &&
+            columns.length === 1 &&
+            Array.isArray(columns[0])
+              ? columns[0]
+              : columns;
+          return originalDropColumn.call(this, normalized);
+        };
+        SqliteDdl.prototype.__knexDocsPatched = true;
+      }
+    } catch (error) {
+      console.warn(
+        `sqlite3: unable to patch dropColumn normalization (${
+          error?.message || error
+        })`
+      );
+    }
     return Knex({
       client: dialect.client,
       connection: { filename: ':memory:' },
@@ -277,6 +305,7 @@ async function resolveDialect(dialect, snippets, data, allowDb) {
     }
     await resolveDialectSnippets(knex, dialect.name, snippets, data, {
       allowDb,
+      dialect: dialect.name,
       warn: (message) => {
         console.warn(`${dialect.name}: ${message}`);
       },
@@ -470,16 +499,18 @@ async function resolveDialectSnippets(
   }
 }
 
-async function resolveCaptureSql(value, knex, options) {
+async function resolveCaptureSql(value, knex, options = {}) {
   if (!value) {
     return [];
   }
+
+  const dialect = options.dialect;
 
   if (isKnexBuilder(value)) {
     if (isSchemaBuilder(value)) {
       return resolveSchemaBuilder(value, knex, options);
     }
-    return toSqlStrings(value, knex);
+    return toSqlStrings(value, knex, dialect);
   }
 
   let resolved = value;
@@ -496,18 +527,18 @@ async function resolveCaptureSql(value, knex, options) {
   }
 
   if (isKnexBuilder(resolved)) {
-    return toSqlStrings(resolved, knex);
+    return toSqlStrings(resolved, knex, dialect);
   }
 
   if (typeof resolved === 'string' || Array.isArray(resolved)) {
-    return collectSqlFromValue(resolved, knex);
+    return collectSqlFromValue(resolved, knex, dialect);
   }
 
   if (isDdlResult(resolved)) {
-    return collectSqlFromValue(resolved, knex);
+    return collectSqlFromValue(resolved, knex, dialect);
   }
 
-  return toSqlStrings(resolved, knex);
+  return toSqlStrings(resolved, knex, dialect);
 }
 
 async function resolveSchemaBuilder(builder, knex, options = {}) {
@@ -526,6 +557,8 @@ async function resolveSchemaQuery(query, knex, options = {}) {
   if (!query) {
     return [];
   }
+
+  const dialect = options.dialect;
 
   if (typeof query === 'string') {
     return [query];
@@ -547,15 +580,15 @@ async function resolveSchemaQuery(query, knex, options = {}) {
     }
     return withConnection(knex, async (connection) => {
       const statements = await query.statementsProducer(undefined, connection);
-      return collectSqlFromValue(statements, knex);
+      return collectSqlFromValue(statements, knex, dialect);
     });
   }
 
   if (query.output) {
-    const fallbackSql = collectSqlFromValue(query, knex);
+    const fallbackSql = collectSqlFromValue(query, knex, dialect);
     if (options.allowDb) {
       const outputSql = await withConnection(knex, async (connection) => {
-        return resolveOutputQuery(query, knex, connection);
+        return resolveOutputQuery(query, knex, connection, dialect);
       });
       if (outputSql.length) {
         return outputSql;
@@ -564,23 +597,40 @@ async function resolveSchemaQuery(query, knex, options = {}) {
     return fallbackSql;
   }
 
-  return collectSqlFromValue(query, knex);
+  return collectSqlFromValue(query, knex, dialect);
 }
 
-async function resolveOutputQuery(query, knex, connection) {
+async function resolveOutputQuery(query, knex, connection, dialect) {
   const recorded = [];
-  const runner = createCaptureRunner(knex, connection, recorded);
-  const response = await knex.client.query(connection, query);
+  const onQuery = (data) => {
+    if (!data || typeof data.sql !== 'string') {
+      return;
+    }
+    recorded.push(
+      ...collectSqlFromValue(
+        { sql: data.sql, bindings: data.bindings },
+        knex,
+        dialect
+      )
+    );
+  };
+  knex.on('query', onQuery);
+  try {
+    const runner = createCaptureRunner(knex, connection, recorded, dialect);
+    const response = await knex.client.query(connection, query);
 
-  const processed = await withRawPatch(query, knex, async () => {
-    return knex.client.processResponse(response, runner);
-  });
+    const processed = await withRawPatch(query, knex, async () => {
+      return knex.client.processResponse(response, runner);
+    });
 
-  const processedSql = collectSqlFromValue(processed, knex);
-  return mergeOutputSql(recorded, processedSql);
+    const processedSql = collectSqlFromValue(processed, knex, dialect);
+    return mergeOutputSql(recorded, processedSql);
+  } finally {
+    knex.removeListener('query', onQuery);
+  }
 }
 
-function createCaptureRunner(knex, connection, recorded) {
+function createCaptureRunner(knex, connection, recorded, dialect) {
   const runner = {
     client: knex.client,
     connection,
@@ -593,7 +643,7 @@ function createCaptureRunner(knex, connection, recorded) {
           undefined,
           connection
         );
-        recorded.push(...collectSqlFromValue(statements, knex));
+        recorded.push(...collectSqlFromValue(statements, knex, dialect));
         return [];
       }
       const sql = getSqlString(queryObj);
@@ -603,7 +653,7 @@ function createCaptureRunner(knex, connection, recorded) {
         const processed = await knex.client.processResponse(response, runner);
         return knex.client.postProcessResponse(processed);
       }
-      recorded.push(...collectSqlFromValue(queryObj, knex));
+      recorded.push(...collectSqlFromValue(queryObj, knex, dialect));
       return [];
     },
     queryArray: async (queries) => {
@@ -684,14 +734,14 @@ function shouldPatchRaw(query) {
   return query.sql.trim().toLowerCase() === 'select 1';
 }
 
-function collectSqlFromValue(value, knex, bindingsOverride) {
+function collectSqlFromValue(value, knex, dialect, bindingsOverride) {
   if (!value) {
     return [];
   }
 
   if (Array.isArray(value)) {
     return value.flatMap((entry) =>
-      collectSqlFromValue(entry, knex, bindingsOverride)
+      collectSqlFromValue(entry, knex, dialect, bindingsOverride)
     );
   }
 
@@ -702,7 +752,7 @@ function collectSqlFromValue(value, knex, bindingsOverride) {
     if (!bindingsOverride || bindingsOverride.length === 0) {
       return [value];
     }
-    return [knex.raw(value, bindingsOverride).toString()];
+    return [formatSqlWithBindings(value, bindingsOverride, dialect, knex)];
   }
 
   if (typeof value === 'object') {
@@ -712,10 +762,10 @@ function collectSqlFromValue(value, knex, bindingsOverride) {
       const check = value.check;
       const post = value.post;
       return [
-        ...collectSqlFromValue(pre, knex, bindingsOverride),
-        ...collectSqlFromValue(sql, knex, bindingsOverride),
-        ...collectSqlFromValue(check, knex, bindingsOverride),
-        ...collectSqlFromValue(post, knex, bindingsOverride),
+        ...collectSqlFromValue(pre, knex, dialect, bindingsOverride),
+        ...collectSqlFromValue(sql, knex, dialect, bindingsOverride),
+        ...collectSqlFromValue(check, knex, dialect, bindingsOverride),
+        ...collectSqlFromValue(post, knex, dialect, bindingsOverride),
       ];
     }
 
@@ -725,11 +775,11 @@ function collectSqlFromValue(value, knex, bindingsOverride) {
         'bindings' in value && value.bindings
           ? value.bindings
           : bindingsOverride;
-      return collectSqlFromValue(sqlValue, knex, bindings);
+      return collectSqlFromValue(sqlValue, knex, dialect, bindings);
     }
 
     if (typeof value.toSQL === 'function') {
-      return collectSqlFromValue(value.toSQL(), knex);
+      return collectSqlFromValue(value.toSQL(), knex, dialect);
     }
 
     if (typeof value.toString === 'function') {
@@ -777,10 +827,10 @@ function isKnexBuilder(value) {
   );
 }
 
-function toSqlStrings(value, knex) {
+function toSqlStrings(value, knex, dialect) {
   if (!value || typeof value.toSQL !== 'function') {
     return [];
   }
   const sqlValue = value.toSQL();
-  return collectSqlFromValue(sqlValue, knex);
+  return collectSqlFromValue(sqlValue, knex, dialect);
 }

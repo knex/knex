@@ -107,6 +107,7 @@ main().catch((error) => {
 });
 
 async function main() {
+  logKnexVersion();
   const args = process.argv.slice(2);
   if (args.includes('--help') || args.includes('-h')) {
     printHelp();
@@ -163,6 +164,17 @@ async function main() {
         await dockerDown();
       }
     }
+  }
+}
+
+function logKnexVersion() {
+  try {
+    const pkg = require('knex/package.json');
+    console.log(`[docs] Using knex ${pkg.version} for schema snippets.`);
+  } catch (error) {
+    console.warn(
+      `[docs] Unable to read knex version (${error?.message || error}).`
+    );
   }
 }
 
