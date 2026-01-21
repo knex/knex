@@ -107,9 +107,12 @@ describe('formatSqlWithBindings', function () {
         knexForObject
       )
     ).to.equal('RAW:ok');
-    expect(knexForObject.raw).to.have.been.calledOnceWithExactly('select ? as v', {
-      named: 'ok',
-    });
+    expect(knexForObject.raw).to.have.been.calledOnceWithExactly(
+      'select ? as v',
+      {
+        named: 'ok',
+      }
+    );
     expect(rawObjectReturn.toString).to.have.been.calledOnceWithExactly();
     expect(
       formatSqlWithBindings('select $2 as v', [9], 'postgres', knex)
