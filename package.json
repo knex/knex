@@ -72,7 +72,7 @@
     "stress:destroy": "docker compose -f scripts/stress-test/docker-compose.yml stop"
   },
   "dependencies": {
-    "colorette": "2.0.19",
+    "colorette": "2.0.20",
     "commander": "^10.0.0",
     "debug": "4.3.4",
     "escalade": "^3.1.1",
