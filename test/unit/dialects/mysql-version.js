@@ -53,8 +53,25 @@ describe('MySQL/MariaDB version detection', () => {
 
     expect(version).to.equal('5.7.30');
     expect(client.version).to.equal('5.7.30');
+    expect(client.isMariaDB).to.equal(false);
+    expect(tracker.count).to.equal(0);
+  });
+
+  it('detects MariaDB from a user-specified version string', async () => {
+    const tracker = { count: 0 };
+    const client = new Client_MySQL({
+      client: 'mysql',
+      connection: null,
+      version: '10.11.6-MariaDB',
+    });
+    const connection = createConnection('8.0.36', tracker);
+
+    const version = await client.checkVersion(connection);
+
+    expect(version).to.equal('10.11.6-MariaDB');
+    expect(client.version).to.equal('10.11.6-MariaDB');
     expect(client.isMariaDB).to.equal(true);
-    expect(tracker.count).to.equal(1);
+    expect(tracker.count).to.equal(0);
   });
 
   it('only runs the version query once per client', async () => {
@@ -71,9 +88,11 @@ describe('MySQL/MariaDB version detection', () => {
     expect(tracker.count).to.equal(1);
   });
 
-  it('resets version check promise on missing version result', async () => {
+  it('falls back to latest when version cannot be retrieved', async () => {
     const tracker = { count: 0 };
     const client = new Client_MySQL({ client: 'mysql', connection: null });
+    const warnings = [];
+    client.logger.warn = (message) => warnings.push(message);
     const badConn = {
       query(sql, callback) {
         tracker.count += 1;
@@ -81,44 +100,55 @@ describe('MySQL/MariaDB version detection', () => {
       },
     };
 
-    try {
-      await client.checkVersion(badConn);
-      throw new Error('expected checkVersion to throw');
-    } catch (err) {
-      expect(err.message).to.match(/Unable to retrieve MySQL\/MariaDB version/);
-      expect(tracker.count).to.equal(1);
-    }
+    const version = await client.checkVersion(badConn);
 
-    const goodConn = createConnection('8.0.36', tracker);
-    const version = await client.checkVersion(goodConn);
-    expect(version).to.equal('8.0.36');
-    expect(client.isMariaDB).to.equal(false);
-    expect(tracker.count).to.equal(2);
+    expect(version).to.equal(null);
+    expect(client.version).to.equal(null);
+    expect(Boolean(client.isMariaDB)).to.equal(false);
+    expect(tracker.count).to.equal(1);
+    expect(warnings).to.have.length(1);
   });
 
-  it('throws on unparsable version string and allows retry', async () => {
+  it('falls back to latest when version string is unparseable', async () => {
     const tracker = { count: 0 };
     const client = new Client_MySQL({ client: 'mysql', connection: null });
-    const badConn = createConnection('not-a-version', tracker);
+    const warnings = [];
+    client.logger.warn = (message) => warnings.push(message);
+    const badConn = createConnection('not-a-version-MariaDB', tracker);
 
-    try {
-      await client.checkVersion(badConn);
-      throw new Error('expected checkVersion to throw');
-    } catch (err) {
-      expect(err.message).to.match(/Unable to parse MySQL\/MariaDB version/);
-      expect(tracker.count).to.equal(1);
-    }
+    const version = await client.checkVersion(badConn);
 
-    const goodConn = createConnection('10.5.17-MariaDB', tracker);
-    const version = await client.checkVersion(goodConn);
-    expect(version).to.equal('10.5.17');
+    expect(version).to.equal(null);
+    expect(client.version).to.equal(null);
     expect(client.isMariaDB).to.equal(true);
-    expect(tracker.count).to.equal(2);
+    expect(tracker.count).to.equal(1);
+    expect(warnings).to.have.length(1);
   });
 
-  it('destroys connection on version detection failure during acquire', async () => {
+  it('treats configured version \"latest\" as an escape hatch', async () => {
+    const tracker = { count: 0 };
+    const client = new Client_MySQL({
+      client: 'mysql',
+      connection: null,
+      version: 'latest',
+    });
+    const warnings = [];
+    client.logger.warn = (message) => warnings.push(message);
+    const connection = createConnection('8.0.36', tracker);
+
+    const version = await client.checkVersion(connection);
+
+    expect(version).to.equal(null);
+    expect(client.version).to.equal(null);
+    expect(tracker.count).to.equal(0);
+    expect(warnings).to.have.length(0);
+  });
+
+  it('acquireRawConnection resolves when version detection throws', async () => {
     const client = new Client_MySQL({ client: 'mysql', connection: {} });
     const tracker = { destroyed: false, listenersCleared: false };
+    const warnings = [];
+    client.logger.warn = (message) => warnings.push(message);
     const connection = {
       state: 'connected',
       on() {},
@@ -145,14 +175,12 @@ describe('MySQL/MariaDB version detection', () => {
       },
     };
 
-    try {
-      await client.acquireRawConnection();
-      throw new Error('expected acquireRawConnection to reject');
-    } catch (err) {
-      expect(err.message).to.equal('boom');
-      expect(tracker.destroyed).to.equal(true);
-      expect(tracker.listenersCleared).to.equal(true);
-    }
+    const acquired = await client.acquireRawConnection();
+
+    expect(acquired).to.equal(connection);
+    expect(tracker.destroyed).to.equal(false);
+    expect(tracker.listenersCleared).to.equal(false);
+    expect(warnings).to.have.length(1);
   });
 
   it('acquireRawConnection resolves and runs version check once connected', async () => {
