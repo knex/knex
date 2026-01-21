@@ -12,6 +12,7 @@ describe('Util Tests', function () {
   require('./unit/util/comma-no-paren-regex');
   require('./unit/util/format-sql-bindings');
   require('./unit/util/security');
+  require('./unit/client/pool-config');
 });
 
 describe('Query Building Tests', function () {
