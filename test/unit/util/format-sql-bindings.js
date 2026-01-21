@@ -1,4 +1,10 @@
 const { expect } = require('chai');
+const sinon = require('sinon');
+const {
+  makeKnexWithRawReturn,
+  makeKnexWithClient,
+  makeEscapeBinding,
+} = require('../../util/format-sql-bindings-helpers');
 
 describe('formatSqlWithBindings', function () {
   let formatSqlWithBindings;
@@ -10,47 +16,31 @@ describe('formatSqlWithBindings', function () {
   });
 
   it('treats ? after an escaped backslash as a binding placeholder', function () {
-    const rawCalls = [];
-    const knex = {
-      raw: (sql, bindings) => {
-        rawCalls.push({ sql, bindings });
-        return { toString: () => `RAW:${sql}` };
-      },
-      client: {
-        _escapeBinding: () => {
-          throw new Error('unexpected escape binding');
-        },
-      },
-    };
     const sql = 'select \\\\? as q';
+    const { knex, raw } = makeKnexWithRawReturn(`RAW:${sql}`);
+    knex.client = {
+      _escapeBinding: sinon.stub().throws(new Error('unexpected escape binding')),
+    };
     const result = formatSqlWithBindings(sql, [1], 'sqlite3', knex);
 
-    expect(rawCalls).to.have.lengthOf(1);
-    expect(rawCalls[0]).to.deep.equal({ sql, bindings: [1] });
+    expect(raw).to.have.been.calledOnceWithExactly(sql, [1]);
     expect(result).to.equal(`RAW:${sql}`);
   });
 
   it('ignores escaped question marks and formats numbered placeholders', function () {
-    const rawCalls = [];
-    const knex = {
-      raw: () => {
-        rawCalls.push(true);
-        return { toString: () => 'RAW' };
-      },
-      client: {
-        _escapeBinding: (value) => `<${value}>`,
-      },
-    };
+    const escapeBinding = makeEscapeBinding();
+    const { knex, raw } = makeKnexWithClient(escapeBinding);
     const sql = 'select \\? as q, $1 as v';
     const result = formatSqlWithBindings(sql, [42], 'postgres', knex);
 
-    expect(rawCalls).to.have.lengthOf(0);
+    expect(raw).to.not.have.been.called;
+    expect(escapeBinding).to.have.been.calledOnceWithExactly(42, {});
     expect(result).to.equal('select \\? as q, <42> as v');
   });
 
   it('returns sql for missing or empty bindings and missing helpers', function () {
     const sql = 'select $1';
-    const knexWithRawOnly = { raw: () => ({ toString: () => 'RAW' }) };
+    const { knex: knexWithRawOnly } = makeKnexWithRawReturn('RAW');
 
     expect(
       formatSqlWithBindings(sql, null, 'postgres', knexWithRawOnly)
@@ -72,16 +62,14 @@ describe('formatSqlWithBindings', function () {
   });
 
   it('formats colon/at placeholders and falls back when no replacement is possible', function () {
-    const knex = {
-      raw: () => {
-        throw new Error('unexpected raw');
-      },
-      client: {
-        _escapeBinding: (value) => `<${value}>`,
-      },
-    };
+    const escapeBinding = makeEscapeBinding();
+    const { knex, raw } = makeKnexWithClient(escapeBinding);
     const knexForObject = {
-      raw: (sql, bindings) => ({ toString: () => `RAW:${bindings.named}` }),
+      raw: sinon
+        .stub()
+        .callsFake((sql, bindings) => ({
+          toString: sinon.stub().returns(`RAW:${bindings.named}`),
+        })),
     };
 
     expect(
@@ -104,15 +92,17 @@ describe('formatSqlWithBindings', function () {
     expect(
       formatSqlWithBindings('select 1 as v', [10], 'sqlite3', knex)
     ).to.equal('select 1 as v');
+    expect(raw).to.not.have.been.called;
   });
 
   it('throws for missing or unknown dialects', function () {
+    const raw = sinon.stub();
     expect(() =>
-      formatSqlWithBindings('select 1', [1], null, { raw: () => ({}) })
+      formatSqlWithBindings('select 1', [1], null, { raw })
     ).to.throw('formatSqlWithBindings requires a dialect');
 
     expect(() =>
-      formatSqlWithBindings('select 1', [1], 'unknown', { raw: () => ({}) })
+      formatSqlWithBindings('select 1', [1], 'unknown', { raw })
     ).to.throw('Unknown dialect for SQL bindings: unknown');
   });
 });
