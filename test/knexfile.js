@@ -17,7 +17,7 @@ console.log(`ENV DB: ${process.env.DB}`);
 
 const pool = {
   afterCreate: function (connection, callback) {
-    assert.ok(typeof connection.__knexUid !== 'undefined');
+    assert.ok(typeof connection.__knexUid === 'undefined');
     callback(null, connection);
   },
 };
@@ -27,7 +27,7 @@ const poolSqlite = {
   max: 1,
   acquireTimeoutMillis: 1000,
   afterCreate: function (connection, callback) {
-    assert.ok(typeof connection.__knexUid !== 'undefined');
+    assert.ok(typeof connection.__knexUid === 'undefined');
     connection.run('PRAGMA foreign_keys = ON', callback);
   },
 };
@@ -37,7 +37,7 @@ const poolBetterSqlite = {
   max: 1,
   acquireTimeoutMillis: 1000,
   afterCreate: function (connection, callback) {
-    assert.ok(typeof connection.__knexUid !== 'undefined');
+    assert.ok(typeof connection.__knexUid === 'undefined');
     connection.prepare('PRAGMA foreign_keys = ON').run();
     callback(null, connection);
   },

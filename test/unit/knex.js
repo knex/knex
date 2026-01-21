@@ -17,14 +17,13 @@ describe('knex', () => {
       connection.close();
     });
 
-    it('happy path', (done) => {
+    it('happy path', () => {
       const knex = Knex({ client: 'sqlite3' });
-      knex
+      return knex
         .connection(connection)
         .select(knex.raw('"0" as value'))
         .then((result) => {
           expect(result[0].value).to.equal('0');
-          done();
         });
     });
   });
@@ -656,18 +655,17 @@ describe('knex', () => {
       delete QueryBuilder.prototype.customSelect;
     });
 
-    it('should extend default queryBuilder', (done) => {
+    it('should extend default queryBuilder', () => {
       Knex.QueryBuilder.extend('customSelect', function (value) {
         return this.select(this.client.raw(`${value} as value`));
       });
 
       const knex = Knex({ client: 'sqlite3' });
-      knex
+      return knex
         .connection(connection)
         .customSelect(42)
         .then((result) => {
           expect(result[0].value).to.equal(42);
-          done();
         });
     });
 
