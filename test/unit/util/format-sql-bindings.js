@@ -19,7 +19,9 @@ describe('formatSqlWithBindings', function () {
     const sql = 'select \\\\? as q';
     const { knex, raw } = makeKnexWithRawReturn(`RAW:${sql}`);
     knex.client = {
-      _escapeBinding: sinon.stub().throws(new Error('unexpected escape binding')),
+      _escapeBinding: sinon
+        .stub()
+        .throws(new Error('unexpected escape binding')),
     };
     const result = formatSqlWithBindings(sql, [1], 'sqlite3', knex);
 
@@ -65,11 +67,9 @@ describe('formatSqlWithBindings', function () {
     const escapeBinding = makeEscapeBinding();
     const { knex, raw } = makeKnexWithClient(escapeBinding);
     const knexForObject = {
-      raw: sinon
-        .stub()
-        .callsFake((sql, bindings) => ({
-          toString: sinon.stub().returns(`RAW:${bindings.named}`),
-        })),
+      raw: sinon.stub().callsFake((sql, bindings) => ({
+        toString: sinon.stub().returns(`RAW:${bindings.named}`),
+      })),
     };
 
     expect(
