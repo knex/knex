@@ -73,7 +73,7 @@
   },
   "dependencies": {
     "colorette": "2.0.19",
-    "commander": "^10.0.0",
+    "commander": "^11.1.0",
     "debug": "4.3.4",
     "escalade": "^3.1.1",
     "esm": "^3.2.25",
