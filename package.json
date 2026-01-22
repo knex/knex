@@ -2,16 +2,27 @@
   "name": "knex",
   "version": "3.1.0",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
-  "main": "knex",
+  "main": "knex.js",
   "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./types/index.d.mts",
+        "default": "./knex.mjs"
+      },
+      "require": {
+        "types": "./types/index.d.ts",
+        "default": "./knex.js"
+      }
+    }
+  },
   "engines": {
     "node": ">=16"
   },
   "scripts": {
-    "build": "npm run build:gitignore && npm run build:ts && npm run format",
+    "build": "npm run build:ts && npm run format",
     "clean": "node scripts/clean.js",
     "build:ts": "tsc",
-    "build:gitignore": "node scripts/update_gitignore_for_tsc_output.js run",
     "format": "prettier --write --list-different .",
     "format:check": "prettier --list-different .",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
@@ -119,6 +130,7 @@
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-prettier": "^4.2.1",
+    "expect-type": "^1.3.0",
     "faucet": "^0.0.4",
     "husky": "^8.0.1",
     "jake": "^10.8.5",

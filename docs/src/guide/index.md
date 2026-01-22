@@ -155,6 +155,20 @@ const knex = require('knex')({
 });
 ```
 
+For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `connection.options.safeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
+
+```js
+const knex = require('knex')({
+  client: 'better-sqlite3',
+  connection: {
+    filename: './mydb.sqlite',
+    options: {
+      safeIntegers: true, // Returns bigint for large integers
+    },
+  },
+});
+```
+
 For more information, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
 
 :::
@@ -254,7 +268,7 @@ const knex = require('knex')({
 });
 ```
 
-By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object. The `expirationChecker` is consulted before trying to create new connections, and in case it returns `true`, a new configuration object is retrieved. For example, to work with an authentication token that has a limited lifespan:
+By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object.
 
 ```js
 const knex = require('knex')({
@@ -271,6 +285,23 @@ const knex = require('knex')({
       expirationChecker: () => {
         return tokenExpiration <= Date.now();
       },
+    };
+  },
+});
+```
+
+The `expirationChecker` is consulted both when creating a new connection and before reusing an existing one from the pool. If it returns `true`, Knex refreshes the connection settings from your provider and discards the old connection so the pool can create a new one with the updated configuration.
+
+For example, if your reader endpoints or credentials rotate every 10 minutes:
+
+```js
+const knex = require('knex')({
+  client: 'postgres',
+  connection: async () => {
+    const cfg = await fetchConfigFromVault(); // returns { settings, expiresAt }
+    return {
+      ...cfg.settings,
+      expirationChecker: () => Date.now() > cfg.expiresAt,
     };
   },
 });
@@ -367,7 +398,44 @@ const knex = require('knex')({
 });
 ```
 
-If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use `knex.initialize(\[config\])`, if no config is passed, it will use the first knex configuration used.
+If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use `knex.initialize([config])`, if no config is passed, it will use the first knex configuration used.
+
+#### Custom validation (`pool.validate`)
+
+You can provide a `pool.validate` function to decide if a pooled connection should be reused. It can be sync or async; return/resolve `false` (or throw) to discard the connection and force the pool to replace it.
+
+```js
+const knex = require('knex')({
+  client: 'mysql2',
+  connection: {
+    /*...*/
+  },
+  pool: {
+    validate: async (conn) => {
+      // Evict connections that flipped to read-only after a failover
+      const [row] = await conn.query('SELECT @@global.read_only as read_only');
+      return row.read_only === 0;
+    },
+  },
+});
+```
+
+#### Max connection lifetime (with optional jitter)
+
+To force periodic churn (e.g., to rebalance traffic to new reader instances), set `maxConnectionLifetimeMillis`. Optionally add `maxConnectionLifetimeJitterMillis` to spread reconnections out and avoid a thundering herd.
+
+```js
+const knex = require('knex')({
+  client: 'pg',
+  connection: {
+    /*...*/
+  },
+  pool: {
+    maxConnectionLifetimeMillis: 5 * 60_000, // 5 minutes
+    maxConnectionLifetimeJitterMillis: 60_000, // up to +1 minute random
+  },
+});
+```
 
 ### afterCreate
 
@@ -431,6 +499,22 @@ const knex = require('knex')({
     /*...*/
   },
   fetchAsString: ['number', 'clob'],
+});
+```
+
+### defaultDateTimePrecision
+
+Utilized by PostgreSQL and CockroachDB. The default value of `precision` to use when creating a [datetime](schema-builder.html#datetime) column with the schema builder.
+
+When the precision of a timestamp column is unspecified in postgres, it defaults to 6 (microseconds), which is finer-grained than Javascript's `Date` class (milliseconds). This can lead to unexpected behavior when database-generated values (such as default "now" timestamp values) are read into JS and written back to the database. As a workaround, timestamp columns can be created with a lower precision that matches the JS runtime. To specify this behavior across all migrations, you can configure it at the knex level:
+
+```js
+const knex = require('knex')({
+  client: 'postgres',
+  connection: {
+    /* ... */
+  },
+  defaultDateTimePrecision: 3,
 });
 ```
 

@@ -10,7 +10,9 @@ describe('Util Tests', function () {
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
+  require('./unit/util/format-sql-bindings');
   require('./unit/util/security');
+  require('./unit/client/pool-config');
 });
 
 describe('Query Building Tests', function () {
@@ -31,6 +33,7 @@ describe('Query Building Tests', function () {
   require('./unit/schema-builder/oracledb');
   require('./unit/schema/tablecompiler-base');
   require('./unit/migrations/migrate/migration-list-resolver');
+  require('./unit/migrations/migrate/migrator-use-transaction');
   require('./unit/migrations/seed/seeder');
   // require('./unit/interface'); ToDo Uncomment after fixed
   require('./unit/knex');

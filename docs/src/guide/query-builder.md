@@ -295,17 +295,17 @@ knex
 
 **.withRecursive(alias, [columns], callback|builder|raw)**
 
-Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE.
+Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE. When using `union`/`unionAll`, both terms must return the same columns and types; avoid `select('*')` in the recursive term if it introduces a join.
 
 ```js
 // @sql
 knex
   .withRecursive('ancestors', (qb) => {
-    qb.select('*')
+    qb.select('people.*')
       .from('people')
       .where('people.id', 1)
-      .union((qb) => {
-        qb.select('*')
+      .unionAll((qb) => {
+        qb.select('people.*')
           .from('people')
           .join('ancestors', 'ancestors.parentId', 'people.id');
       });
@@ -529,6 +529,17 @@ knex.select('*').from('users').offset(10, { skipBinding: true }).toSQL().sql;
 ```
 
 ### limit
+
+**Important:** Knex may throw errors during SQL compilation when the query is unsound. This prevents unexpected data loss or unexpected behavior. "Limit" clauses may throw when:
+
+- A "limit" clause is present on a "delete" or "truncate" statement
+
+Examples of queries that would throw:
+
+```js
+knex('accounts').limit(10).del().toSQL();
+knex('logs').limit(10).truncate().toSQL();
+```
 
 **.limit(value, options={skipBinding: boolean})**
 
@@ -893,7 +904,7 @@ knex('tableName')
     name: 'John Doe',
     updated_at: timestamp,
   })
-  .where('updated_at', '<', timestamp);
+  .where('tableName.updated_at', '<', timestamp);
 ```
 
 ### upsert [-PG -SQ -MS -OR -RS]
@@ -1815,10 +1826,16 @@ declare module 'knex' {
 
 Several methods exist to assist in dynamic where clauses. In many places functions may be used in place of values, constructing subqueries. In most places existing knex queries may be used to compose sub-queries, etc. Take a look at a few of the examples for each method for instruction on use:
 
-**Important:** Supplying knex with an `undefined` value to any of the `where` functions will cause knex to throw an error during sql compilation. This is both for yours and our sake. Knex cannot know what to do with undefined values in a where clause, and generally it would be a programmatic error to supply one to begin with. The error will throw a message containing the type of query and the compiled query-string. Example:
+**Important:** Knex may throw errors during SQL compilation when the query is unsound. This prevents unexpected data loss or unexpected behavior. "Where" clauses may throw when:
+
+- Any "undefined" value is passed to a where clause
+- A "where" clause is present on a "truncate" statement
+
+Examples of queries that would throw:
 
 ```js
 knex('accounts').where('login', undefined).select().toSQL();
+knex('logs').where('server', 'dev').truncate().toSQL();
 ```
 
 ### where
@@ -2816,6 +2833,17 @@ knex.select('*').from('table').orderByRaw('col DESC NULLS LAST');
 ```
 
 ## Having Clauses
+
+**Important:** Knex may throw errors during SQL compilation when the query is unsound. This prevents unexpected data loss or unexpected behavior. "Having" clauses may throw when:
+
+- A "having" clause is present on a "delete" or "truncate" statement
+
+Examples of queries that would throw:
+
+```js
+knex('accounts').having('login', '=', 'user').del().toSQL();
+knex('logs').having('server', '=', 'dev').truncate().toSQL();
+```
 
 ### having
 
