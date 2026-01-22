@@ -76,6 +76,39 @@ describe('Redshift SchemaBuilder', function () {
     );
   });
 
+  it('drop primary if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropPrimaryIfExists();
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
+  it('drop foreign if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropForeignIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
+  it('drop unique if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropUniqueIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
   describe('views', function () {
     let knexRedShift;
 

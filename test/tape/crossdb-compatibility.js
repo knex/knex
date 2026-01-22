@@ -1,7 +1,7 @@
 'use strict';
 const tape = require('tape');
 const { expect } = require('chai');
-const { isOracle } = require('../util/db-helpers');
+const { isOracle, isMysql } = require('../util/db-helpers');
 
 /**
  * Collection of tests for making sure that certain features are cross database compatible
@@ -96,6 +96,49 @@ module.exports = function (knex) {
             t.dropUnique(['first', 'second']);
           })
           .alterTable('test_table_drop_unique', (t) => {
+            t.unique(['first', 'second']);
+            t.unique('third');
+            t.unique('fourth');
+          });
+        t.assert(
+          true,
+          'Creating / dropping / creating unique constraint was a success'
+        );
+      } finally {
+        t.end();
+      }
+    }
+  );
+
+  tape(
+    driverName +
+      ' - create and drop index works in different cases, with dropUniqueIfExists',
+    async (t) => {
+      t.plan(1);
+      if (isMysql(knex) || isOracle(knex)) {
+        t.pass('dropUniqueIfExists not supported on mysql/oracle');
+        t.end();
+        return;
+      }
+      try {
+        await knex.schema
+          .dropTableIfExists('test_table_drop_unique_if_exists')
+          .createTable('test_table_drop_unique_if_exists', (t) => {
+            t.integer('id');
+            t.string('first');
+            t.string('second');
+            t.string('third').unique();
+            t.string('fourth');
+            t.unique(['first', 'second']);
+            t.unique('fourth');
+          })
+          .alterTable('test_table_drop_unique_if_exists', (t) => {
+            t.dropUniqueIfExists('third');
+            t.dropUniqueIfExists('fourth');
+            t.dropUniqueIfExists(['first', 'second']);
+            t.dropUniqueIfExists('foo');
+          })
+          .alterTable('test_table_drop_unique_if_exists', (t) => {
             t.unique(['first', 'second']);
             t.unique('third');
             t.unique('fourth');
