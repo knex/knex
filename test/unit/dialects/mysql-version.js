@@ -125,7 +125,7 @@ describe('MySQL/MariaDB version detection', () => {
     expect(warnings).to.have.length(1);
   });
 
-  it('treats configured version \"latest\" as an escape hatch', async () => {
+  it('treats configured version "latest" as an escape hatch', async () => {
     const tracker = { count: 0 };
     const client = new Client_MySQL({
       client: 'mysql',
