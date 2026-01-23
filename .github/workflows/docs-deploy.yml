@@ -7,6 +7,12 @@ on:
     paths:
       - docs/**
       - .github/workflows/**
+  workflow_dispatch:
+    inputs:
+      deploy:
+        type: boolean
+        default: false
+        description: 'Deploy to gh-pages?'
 
 concurrency:
   group: ${{ github.workflow }}
@@ -34,6 +40,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to gh-pages
+        if: github.event_name == 'push' || github.event.inputs.deploy == 'true'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
