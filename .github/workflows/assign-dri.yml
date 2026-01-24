@@ -35,6 +35,14 @@ jobs:
               .replace(/^@+/, '');
             core.info(`Found DRI label: ${labelMatch} -> ${driUser}`);
 
+            if (context.payload.action === 'synchronize') {
+              const sender = context.payload.sender?.login || '';
+              if (sender.toLowerCase() === driUser.toLowerCase()) {
+                core.info('Latest commit by DRI; skipping assignment.');
+                return;
+              }
+            }
+
             await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
