@@ -35,9 +35,18 @@ jobs:
               .replace(/^@+/, '');
             core.info(`Found DRI label: ${labelMatch} -> ${driUser}`);
 
+            const driUserLower = driUser.toLowerCase();
+            const assignees = (pr.assignees || [])
+              .map((assignee) => assignee.login?.toLowerCase())
+              .filter(Boolean);
+            if (assignees.includes(driUserLower)) {
+              core.info('DRI already assigned; skipping assignment.');
+              return;
+            }
+
             if (context.payload.action === 'synchronize') {
               const sender = context.payload.sender?.login || '';
-              if (sender.toLowerCase() === driUser.toLowerCase()) {
+              if (sender.toLowerCase() === driUserLower) {
                 core.info('Latest commit by DRI; skipping assignment.');
                 return;
               }
