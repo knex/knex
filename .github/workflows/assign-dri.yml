@@ -2,7 +2,7 @@ name: Assign PR to DRI
 
 on:
   pull_request_target:
-    types: [opened, labeled, unlabeled]
+    types: [opened, labeled, unlabeled, synchronize]
 
 permissions:
   issues: write
