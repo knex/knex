@@ -3061,6 +3061,7 @@ declare namespace Knex {
     requestTimeout?: number;
     connectString?: string;
     expirationChecker?(): boolean;
+    fetchArraySize?: number;
   }
 
   // Config object for pg: https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/pg/index.d.ts
