@@ -1,12 +1,9 @@
 name: Knex / Documentation deployment
 
 on:
-  push:
-    branches:
-      - 'master'
-    paths:
-      - docs/**
-      - .github/workflows/**
+  release:
+    types:
+      - released
 
 concurrency:
   group: ${{ github.workflow }}
@@ -40,6 +37,12 @@ jobs:
       - name: Install dependencies
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Install released knex for docs build
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          npm install --no-save --no-package-lock "knex@${VERSION}"
 
       - name: Build documentation
         run: npm run build

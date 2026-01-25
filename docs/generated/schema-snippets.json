@@ -1,17 +1,11 @@
 {
   "version": 1,
-  "generatedAt": "2025-12-27T06:55:53.667Z",
+  "generatedAt": "2026-01-25T04:26:59.536Z",
   "files": {
     "docs/src/guide/schema-builder.md": {
       "snippets": {
         "0": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `public`.`users` (`id` integer not null primary key autoincrement)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -24,19 +18,7 @@
                 "text": "create table \"public\".\"users\" (\"id\" serial primary key)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"public\".\"users\" (\"id\" serial primary key)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `public`.`users` (`id` int unsigned not null auto_increment primary key)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `public`.`users` (`id` int unsigned not null auto_increment primary key)"
@@ -74,12 +56,6 @@
         },
         "1": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`id` integer not null primary key autoincrement, `name` varchar(255), `created_at` datetime, `updated_at` datetime)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -92,19 +68,7 @@
                 "text": "create table \"users\" (\"id\" serial primary key, \"name\" varchar(255), \"created_at\" timestamptz, \"updated_at\" timestamptz)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"id\" serial primary key, \"name\" varchar(255), \"created_at\" timestamptz, \"updated_at\" timestamptz)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`id` int unsigned not null auto_increment primary key, `name` varchar(255), `created_at` datetime, `updated_at` datetime)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`id` int unsigned not null auto_increment primary key, `name` varchar(255), `created_at` datetime, `updated_at` datetime)"
@@ -142,28 +106,6 @@
         },
         "2": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `new_users` as select * from `users` where 0=1"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `new_users` as select * from `users` where 0=1"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `new_users` add column `age` integer"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `new_users` add column `last_name` varchar(255)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -200,39 +142,7 @@
                 "text": "create table \"new_users\" (like \"users\" including all, \"age\" integer, \"last_name\" varchar(255))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"new_users\" (like \"users\" including all)"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table \"new_users\" (like \"users\" including all, \"age\" integer, \"last_name\" varchar(255))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `new_users` like `users`"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `new_users` like `users`"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `new_users` add `age` int, add `last_name` varchar(255)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `new_users` like `users`"
@@ -326,12 +236,6 @@
         },
         "3": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "drop table `users`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -344,19 +248,7 @@
                 "text": "drop table \"users\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop table \"users\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "drop table `users`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "drop table `users`"
@@ -394,12 +286,6 @@
         },
         "4": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "drop table if exists `users`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -412,19 +298,7 @@
                 "text": "drop table if exists \"users\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop table if exists \"users\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "drop table if exists `users`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "drop table if exists `users`"
@@ -462,12 +336,6 @@
         },
         "5": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `old_users` rename to `users`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -480,19 +348,7 @@
                 "text": "alter table \"old_users\" rename to \"users\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"old_users\" rename to \"users\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "rename table `old_users` to `users`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "rename table `old_users` to `users`"
@@ -526,12 +382,6 @@
         },
         "6": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "select * from sqlite_master where type = 'table' and name = 'users'"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -544,19 +394,7 @@
                 "text": "select * from information_schema.tables where table_name = 'users' and table_schema = current_schema()"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "select * from information_schema.tables where table_name = 'users' and table_schema = current_schema()"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "select * from information_schema.tables where table_name = 'users' and table_schema = database()"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "select * from information_schema.tables where table_name = 'users' and table_schema = database()"
@@ -590,12 +428,6 @@
         },
         "7": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -608,19 +440,7 @@
                 "text": "select * from information_schema.columns where table_name = 'users' and column_name = 'email' and table_schema = current_schema()"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "select * from information_schema.columns where table_name = 'users' and column_name = 'email' and table_schema = current_schema()"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "show columns from `users`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "show columns from `users`"
@@ -654,20 +474,6 @@
         },
         "8": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -683,7 +489,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx2;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -691,7 +497,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx2;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -699,15 +505,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx3;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter439` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter709` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter439\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter709\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -715,11 +521,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter439\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter709\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx3;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -732,27 +538,7 @@
                 "text": "alter table \"users\" drop column \"name\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" drop column \"name\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` drop `name`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
@@ -814,20 +600,6 @@
         },
         "9": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -843,7 +615,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx4;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -851,7 +623,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx4;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -859,15 +631,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx5;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter421` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter152` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter421\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter152\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -875,11 +647,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter421\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter152\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx5;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -892,27 +664,7 @@
                 "text": "alter table \"users\" drop column \"name\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" drop column \"name\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` drop `name`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
@@ -974,12 +726,6 @@
         },
         "10": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` (`first_name`) as select `first_name` from `users` where `age` > '18'"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -992,19 +738,7 @@
                 "text": "create view \"users_view\" (\"first_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" (\"first_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` (`first_name`) as select `first_name` from `users` where `age` > '18'"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create view `users_view` (`first_name`) as select `first_name` from `users` where `age` > '18'"
@@ -1038,16 +772,6 @@
         },
         "11": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "drop view if exists `users_view`"
-              },
-              {
-                "type": "sql",
-                "text": "create view `users_view` (`first_name`) as select `first_name` from `users` where `age` > '18'"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -1064,19 +788,7 @@
                 "text": "create or replace view \"users_view\" (\"first_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create or replace view \"users_view\" (\"first_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create or replace view `users_view` (`first_name`) as select `first_name` from `users` where `age` > '18'"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create or replace view `users_view` (`first_name`) as select `first_name` from `users` where `age` > '18'"
@@ -1110,12 +822,6 @@
         },
         "12": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -1128,19 +834,7 @@
                 "text": "create materialized view \"users_view\" (\"first_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create materialized view \"users_view\" (\"first_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: materialized views are not supported by this dialect."
@@ -1174,12 +868,6 @@
         },
         "13": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -1192,19 +880,7 @@
                 "text": "refresh materialized view \"users_view\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "refresh materialized view \"users_view\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: materialized views are not supported by this dialect."
@@ -1238,12 +914,6 @@
         },
         "14": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "drop view `users_view`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -1256,19 +926,7 @@
                 "text": "drop view \"users_view\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop view \"users_view\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "drop view `users_view`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "drop view `users_view`"
@@ -1302,12 +960,6 @@
         },
         "15": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "drop view if exists `users_view`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -1320,19 +972,7 @@
                 "text": "drop view if exists \"users_view\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop view if exists \"users_view\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "drop view if exists `users_view`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "drop view if exists `users_view`"
@@ -1370,12 +1010,6 @@
         },
         "16": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -1388,19 +1022,7 @@
                 "text": "drop materialized view \"users_view\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop materialized view \"users_view\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: materialized views are not supported by this dialect."
@@ -1434,12 +1056,6 @@
         },
         "17": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -1452,19 +1068,7 @@
                 "text": "drop materialized view if exists \"users_view\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop materialized view if exists \"users_view\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: materialized views are not supported by this dialect."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: materialized views are not supported by this dialect."
@@ -1502,12 +1106,6 @@
         },
         "18": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: rename view is not supported by this dialect (instead drop then create another view)."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -1520,19 +1118,7 @@
                 "text": "alter view \"users_view\" rename to \"undefined\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter view \"users_view\" rename to \"undefined\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "rename table `users_view` to `undefined`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "rename table `users_view` to `undefined`"
@@ -1566,12 +1152,6 @@
         },
         "19": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: rename column of views is not supported by this dialect."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -1588,23 +1168,7 @@
                 "text": "alter view \"view_test\" alter \"bio\" set default empty"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter view \"view_test\" rename \"first_name\" to \"name_user\""
-              },
-              {
-                "type": "sql",
-                "text": "alter view \"view_test\" alter \"bio\" set default empty"
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: rename column of views is not supported by this dialect."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: rename column of views is not supported by this dialect."
@@ -1642,44 +1206,14 @@
         },
         "20": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = OFF"
-              },
-              {
-                "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter530` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), CONSTRAINT `fk_fkey_company` FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
-              },
-              {
-                "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter530\" SELECT * FROM \"users\";"
-              },
-              {
-                "type": "sql",
-                "text": "DROP TABLE \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter530\" RENAME TO \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_key_check"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = ON"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter569` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), CONSTRAINT `fk_fkey_company` FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter868` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), CONSTRAINT `fk_fkey_company` FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter569\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter868\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -1687,7 +1221,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter569\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter868\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -1696,19 +1230,7 @@
                 "text": "alter table \"users\" add constraint \"fk_fkey_company\" foreign key (\"companyId\") references \"company\" (\"companyId\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add constraint \"fk_fkey_company\" foreign key (\"companyId\") references \"company\" (\"companyId\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add constraint `fk_fkey_company` foreign key (`companyId`) references `company` (`companyId`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add constraint `fk_fkey_company` foreign key (`companyId`) references `company` (`companyId`)"
@@ -1742,24 +1264,6 @@
         },
         "21": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "SET sql_mode='TRADITIONAL'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -1779,7 +1283,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx7;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -1787,7 +1291,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx7;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -1795,15 +1299,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx8;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter469` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter431` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter469\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter431\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -1811,11 +1315,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter469\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter431\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx8;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -1832,35 +1336,7 @@
                 "text": "alter table \"users\" drop column \"name\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "SET sql_mode='TRADITIONAL'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" drop column \"name\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "SET sql_mode='TRADITIONAL'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` drop `name`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "SET sql_mode='TRADITIONAL'"
@@ -1942,16 +1418,6 @@
         },
         "22": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -1968,19 +1434,7 @@
                 "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
@@ -2018,20 +1472,6 @@
         },
         "23": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: dropSchema is not supported for this dialect (only PostgreSQL supports it currently)."
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "error",
-                "text": "Error: dropSchema is not supported for this dialect (only PostgreSQL supports it currently)."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -2060,35 +1500,7 @@
                 "text": "drop schema \"public\" cascade"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop schema \"public\""
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "drop schema \"public\" cascade"
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: dropSchema is not supported for this dialect (only PostgreSQL supports it currently)."
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "error",
-                "text": "Error: dropSchema is not supported for this dialect (only PostgreSQL supports it currently)."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: dropSchema is not supported for this dialect (only PostgreSQL supports it currently)."
@@ -2162,20 +1574,6 @@
         },
         "24": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: dropSchemaIfExists is not supported for this dialect (only PostgreSQL supports it currently)."
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "error",
-                "text": "Error: dropSchemaIfExists is not supported for this dialect (only PostgreSQL supports it currently)."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -2204,35 +1602,7 @@
                 "text": "drop schema if exists \"public\" cascade"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop schema if exists \"public\""
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "drop schema if exists \"public\" cascade"
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: dropSchemaIfExists is not supported for this dialect (only PostgreSQL supports it currently)."
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "error",
-                "text": "Error: dropSchemaIfExists is not supported for this dialect (only PostgreSQL supports it currently)."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: dropSchemaIfExists is not supported for this dialect (only PostgreSQL supports it currently)."
@@ -2306,12 +1676,6 @@
         },
         "25": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -2319,7 +1683,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx9;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -2327,7 +1691,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx9;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -2335,15 +1699,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx10;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter822` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter225` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter822\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter225\" SELECT \"id\", \"first_name\", \"last_name\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -2351,11 +1715,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter822\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter225\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx10;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -2364,19 +1728,7 @@
                 "text": "alter table \"users\" drop column \"name\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" drop column \"name\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` drop `name`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` drop `name`"
@@ -2414,12 +1766,6 @@
         },
         "26": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -2427,7 +1773,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx11;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -2435,7 +1781,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx11;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -2443,15 +1789,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx12;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter406` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter281` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter406\" SELECT \"id\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter281\" SELECT \"id\", \"email\", \"age\", \"companyId\", \"user_id\" FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -2459,11 +1805,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter406\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter281\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx12;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -2472,19 +1818,7 @@
                 "text": "alter table \"users\" drop column \"first_name\", drop column \"last_name\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" drop column \"first_name\", drop column \"last_name\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` drop `first_name`, drop `last_name`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` drop `first_name`, drop `last_name`"
@@ -2526,12 +1860,6 @@
         },
         "27": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` rename `name` to `username`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -2544,30 +1872,10 @@
                 "text": "alter table \"users\" rename \"name\" to \"username\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" rename \"name\" to \"username\""
-              }
-            ],
             "mysql": [
               {
                 "type": "sql",
                 "text": "show full fields from `users` where field = 'name'"
-              },
-              {
-                "type": "sql",
-                "text": "SELECT KCU.CONSTRAINT_NAME, KCU.TABLE_NAME, KCU.COLUMN_NAME,        KCU.REFERENCED_TABLE_NAME, KCU.REFERENCED_COLUMN_NAME,        RC.UPDATE_RULE, RC.DELETE_RULE FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS KCU JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS AS RC        USING(CONSTRAINT_NAME)WHERE KCU.REFERENCED_TABLE_NAME = 'users'   AND KCU.CONSTRAINT_SCHEMA = 'knex_test'   AND RC.CONSTRAINT_SCHEMA = 'knex_test'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` change `name` `username` varchar(255) NULL COLLATE 'utf8mb4_0900_ai_ci'"
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "alter table `users` change `name` `username` varchar(255) NULL COLLATE 'utf8mb4_0900_ai_ci'"
               }
             ],
             "mssql": [
@@ -2598,28 +1906,6 @@
         },
         "28": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`userId` integer not null primary key autoincrement, `name` varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `users` (`userId` integer not null primary key autoincrement, `name` varchar(255), unique (`userId`, `name`))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `posts` (`author` integer not null, `title` varchar(30), `content` varchar(255), foreign key(`author`) references `users`(`userId`))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -2668,63 +1954,7 @@
                 "text": "alter table \"posts\" add constraint \"posts_author_foreign\" foreign key (\"author\") references \"users\" (\"userId\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"userId\" serial primary key, \"name\" varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"userId\" serial, \"name\" varchar(255), constraint \"users_pkey\" primary key (\"userId\", \"name\"))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table \"posts\" (\"author\" integer not null, \"title\" varchar(30), \"content\" varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"posts\" add constraint \"posts_author_foreign\" foreign key (\"author\") references \"users\" (\"userId\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`userId` int unsigned not null auto_increment primary key, `name` varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `users` (`userId` int unsigned not null, `name` varchar(255), primary key (`userId`, `name`))"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` modify column `userId` int unsigned not null auto_increment"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `posts` (`author` int unsigned not null, `title` varchar(30), `content` varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `posts` add constraint `posts_author_foreign` foreign key (`author`) references `users` (`userId`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`userId` int unsigned not null auto_increment primary key, `name` varchar(255))"
@@ -2870,12 +2100,6 @@
         },
         "29": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`id` integer not null primary key autoincrement, `other_id` integer not null primary key autoincrement)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -2888,19 +2112,7 @@
                 "text": "create table \"users\" (\"id\" serial primary key, \"other_id\" serial)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"id\" serial primary key, \"other_id\" serial)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null)"
@@ -2942,12 +2154,6 @@
         },
         "30": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `integer_example` (`age` integer)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -2960,19 +2166,7 @@
                 "text": "create table \"integer_example\" (\"age\" integer)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"integer_example\" (\"age\" integer)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `integer_example` (`age` int)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `integer_example` (`age` int)"
@@ -3006,12 +2200,6 @@
         },
         "31": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `big_integer_example` (`total` bigint)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3024,19 +2212,7 @@
                 "text": "create table \"big_integer_example\" (\"total\" bigint)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"big_integer_example\" (\"total\" bigint)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `big_integer_example` (`total` bigint)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `big_integer_example` (`total` bigint)"
@@ -3070,12 +2246,6 @@
         },
         "32": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `tinyint_example` (`flag` tinyint)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3088,19 +2258,7 @@
                 "text": "create table \"tinyint_example\" (\"flag\" smallint)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"tinyint_example\" (\"flag\" smallint)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `tinyint_example` (`flag` tinyint)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `tinyint_example` (`flag` tinyint)"
@@ -3134,12 +2292,6 @@
         },
         "33": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `smallint_example` (`rank` integer)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3152,19 +2304,7 @@
                 "text": "create table \"smallint_example\" (\"rank\" smallint)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"smallint_example\" (\"rank\" smallint)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `smallint_example` (`rank` smallint)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `smallint_example` (`rank` smallint)"
@@ -3198,12 +2338,6 @@
         },
         "34": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `mediumint_example` (`counter` integer)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3216,19 +2350,7 @@
                 "text": "create table \"mediumint_example\" (\"counter\" integer)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"mediumint_example\" (\"counter\" integer)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `mediumint_example` (`counter` mediumint)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `mediumint_example` (`counter` mediumint)"
@@ -3262,12 +2384,6 @@
         },
         "35": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `bigint_example` (`counter` bigint)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3280,19 +2396,7 @@
                 "text": "create table \"bigint_example\" (\"counter\" bigint)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"bigint_example\" (\"counter\" bigint)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `bigint_example` (`counter` bigint)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `bigint_example` (`counter` bigint)"
@@ -3326,12 +2430,6 @@
         },
         "36": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `text_example` (`bio` text)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3344,19 +2442,7 @@
                 "text": "create table \"text_example\" (\"bio\" text)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"text_example\" (\"bio\" text)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `text_example` (`bio` text)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `text_example` (`bio` text)"
@@ -3390,12 +2476,6 @@
         },
         "37": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `string_example` (`name` varchar(100))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3408,19 +2488,7 @@
                 "text": "create table \"string_example\" (\"name\" varchar(100))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"string_example\" (\"name\" varchar(100))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `string_example` (`name` varchar(100))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `string_example` (`name` varchar(100))"
@@ -3454,12 +2522,6 @@
         },
         "38": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `float_example` (`rating` float)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3472,19 +2534,7 @@
                 "text": "create table \"float_example\" (\"rating\" real)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"float_example\" (\"rating\" real)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `float_example` (`rating` float(5, 2))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `float_example` (`rating` float(5, 2))"
@@ -3518,12 +2568,6 @@
         },
         "39": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `double_example` (`score` float)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3536,19 +2580,7 @@
                 "text": "create table \"double_example\" (\"score\" double precision)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"double_example\" (\"score\" double precision)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `double_example` (`score` double(8, 2))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `double_example` (`score` double(8, 2))"
@@ -3582,12 +2614,6 @@
         },
         "40": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `decimal_example` (`amount` float)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3600,19 +2626,7 @@
                 "text": "create table \"decimal_example\" (\"amount\" decimal(8, 2))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"decimal_example\" (\"amount\" decimal(8, 2))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `decimal_example` (`amount` decimal(8, 2))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `decimal_example` (`amount` decimal(8, 2))"
@@ -3646,12 +2660,6 @@
         },
         "41": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `boolean_example` (`is_active` boolean)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3664,19 +2672,7 @@
                 "text": "create table \"boolean_example\" (\"is_active\" boolean)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"boolean_example\" (\"is_active\" boolean)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `boolean_example` (`is_active` boolean)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `boolean_example` (`is_active` boolean)"
@@ -3710,12 +2706,6 @@
         },
         "42": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `date_example` (`birthdate` date)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3728,19 +2718,7 @@
                 "text": "create table \"date_example\" (\"birthdate\" date)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"date_example\" (\"birthdate\" date)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `date_example` (`birthdate` date)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `date_example` (`birthdate` date)"
@@ -3774,12 +2752,6 @@
         },
         "43": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`some_time` datetime default CURRENT_TIMESTAMP(6))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3792,19 +2764,7 @@
                 "text": "create table \"events\" (\"some_time\" timestamptz(6) default CURRENT_TIMESTAMP(6))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"events\" (\"some_time\" timestamptz(6) default CURRENT_TIMESTAMP(6))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`some_time` datetime(6) default CURRENT_TIMESTAMP(6))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `events` (`some_time` datetime(6) default CURRENT_TIMESTAMP(6))"
@@ -3838,12 +2798,6 @@
         },
         "44": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`some_time` time)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3856,19 +2810,7 @@
                 "text": "create table \"events\" (\"some_time\" time)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"events\" (\"some_time\" time)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`some_time` time(6))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `events` (`some_time` time(6))"
@@ -3902,12 +2844,6 @@
         },
         "45": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`created_at` datetime default CURRENT_TIMESTAMP)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3920,19 +2856,7 @@
                 "text": "create table \"events\" (\"created_at\" timestamptz default CURRENT_TIMESTAMP)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"events\" (\"created_at\" timestamptz default CURRENT_TIMESTAMP)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`created_at` timestamp default CURRENT_TIMESTAMP)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `events` (`created_at` timestamp default CURRENT_TIMESTAMP)"
@@ -3966,12 +2890,6 @@
         },
         "46": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`created_at` datetime default CURRENT_TIMESTAMP(6))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -3984,19 +2902,7 @@
                 "text": "create table \"events\" (\"created_at\" timestamptz(6) default CURRENT_TIMESTAMP(6))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"events\" (\"created_at\" timestamptz(6) default CURRENT_TIMESTAMP(6))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`created_at` timestamp(6) default CURRENT_TIMESTAMP(6))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `events` (`created_at` timestamp(6) default CURRENT_TIMESTAMP(6))"
@@ -4030,12 +2936,6 @@
         },
         "47": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`created_at` datetime)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4048,19 +2948,7 @@
                 "text": "create table \"events\" (\"created_at\" timestamptz)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"events\" (\"created_at\" timestamptz)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `events` (`created_at` timestamp)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `events` (`created_at` timestamp)"
@@ -4094,12 +2982,6 @@
         },
         "48": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `timestamps_example` (`created_at` datetime not null default CURRENT_TIMESTAMP, `updated_at` datetime not null default CURRENT_TIMESTAMP)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4112,19 +2994,7 @@
                 "text": "create table \"timestamps_example\" (\"created_at\" timestamptz not null default CURRENT_TIMESTAMP, \"updated_at\" timestamptz not null default CURRENT_TIMESTAMP)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"timestamps_example\" (\"created_at\" timestamptz not null default CURRENT_TIMESTAMP, \"updated_at\" timestamptz not null default CURRENT_TIMESTAMP)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `timestamps_example` (`created_at` timestamp not null default CURRENT_TIMESTAMP, `updated_at` timestamp not null default CURRENT_TIMESTAMP)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `timestamps_example` (`created_at` timestamp not null default CURRENT_TIMESTAMP, `updated_at` timestamp not null default CURRENT_TIMESTAMP)"
@@ -4158,12 +3028,6 @@
         },
         "49": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: TypeError: first.toLowerCase is not a function"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4171,7 +3035,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx13;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -4179,7 +3043,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx13;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -4187,15 +3051,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx14;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter308` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL)"
+                "text": "CREATE TABLE `_knex_temp_alter732` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter308\" SELECT \"id\" FROM \"timestamps_example\";"
+                "text": "INSERT INTO \"_knex_temp_alter732\" SELECT \"id\" FROM \"timestamps_example\";"
               },
               {
                 "type": "sql",
@@ -4203,11 +3067,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter308\" RENAME TO \"timestamps_example\""
+                "text": "ALTER TABLE \"_knex_temp_alter732\" RENAME TO \"timestamps_example\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx14;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -4216,19 +3080,7 @@
                 "text": "alter table \"timestamps_example\" drop column \"created_at\", drop column \"updated_at\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"timestamps_example\" drop column \"created_at\", drop column \"updated_at\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `timestamps_example` drop `created_at`, drop `updated_at`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `timestamps_example` drop `created_at`, drop `updated_at`"
@@ -4270,12 +3122,6 @@
         },
         "50": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `binary_example` (`payload` blob)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4288,19 +3134,7 @@
                 "text": "create table \"binary_example\" (\"payload\" bytea)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"binary_example\" (\"payload\" bytea)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `binary_example` (`payload` blob)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `binary_example` (`payload` blob)"
@@ -4334,12 +3168,6 @@
         },
         "51": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` text check (`column` in ('value1', 'value2')))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4352,19 +3180,7 @@
                 "text": "create table \"users\" (\"column\" text check (\"column\" in ('value1', 'value2')))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"column\" text check (\"column\" in ('value1', 'value2')))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` enum('value1', 'value2'))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`column` enum('value1', 'value2'))"
@@ -4398,12 +3214,6 @@
         },
         "52": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` text check (`column` in ('value1', 'value2')))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4420,23 +3230,7 @@
                 "text": "create table \"users\" (\"column\" \"foo_type\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create type \"foo_type\" as enum ('value1', 'value2')"
-              },
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"column\" \"foo_type\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` enum('value1', 'value2'))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`column` enum('value1', 'value2'))"
@@ -4474,12 +3268,6 @@
         },
         "53": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` text check (`column` in ('value1')))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4492,19 +3280,7 @@
                 "text": "create table \"users\" (\"column\" \"foo_type\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"column\" \"foo_type\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` enum('value1'))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`column` enum('value1'))"
@@ -4538,12 +3314,6 @@
         },
         "54": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` text check (`column` in ('value1')))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4556,19 +3326,7 @@
                 "text": "create table \"users\" (\"column\" \"public\".\"foo_type\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"column\" \"public\".\"foo_type\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` enum('value1'))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`column` enum('value1'))"
@@ -4602,12 +3360,6 @@
         },
         "55": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "update `users` set `json_data` = '[\"a\",\"b\"]' where `id` = 1"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4620,19 +3372,7 @@
                 "text": "update \"users\" set \"json_data\" = '[\"a\",\"b\"]' where \"id\" = 1"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "update \"users\" set \"json_data\" = '[\"a\",\"b\"]' where \"id\" = 1"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "update `users` set `json_data` = '[\\\"a\\\",\\\"b\\\"]' where `id` = 1"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "update `users` set `json_data` = '[\\\"a\\\",\\\"b\\\"]' where `id` = 1"
@@ -4666,12 +3406,6 @@
         },
         "56": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `jsonb_example` (`metadata` json)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4684,19 +3418,7 @@
                 "text": "create table \"jsonb_example\" (\"metadata\" jsonb)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"jsonb_example\" (\"metadata\" jsonb)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `jsonb_example` (`metadata` json)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `jsonb_example` (`metadata` json)"
@@ -4730,12 +3452,6 @@
         },
         "57": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `uuid_table` (`uuidColumn` char(36) default (lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6)))))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4748,19 +3464,7 @@
                 "text": "create table \"uuid_table\" (\"uuidColumn\" uuid default (gen_random_uuid()))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"uuid_table\" (\"uuidColumn\" uuid default (gen_random_uuid()))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `uuid_table` (`uuidColumn` char(36) default (UUID()))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `uuid_table` (`uuidColumn` char(36) default (UUID()))"
@@ -4794,12 +3498,6 @@
         },
         "58": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `geo_table` (`geometryColumn` geometry)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4812,19 +3510,7 @@
                 "text": "create table \"geo_table\" (\"geometryColumn\" geometry)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"geo_table\" (\"geometryColumn\" geometry)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `geo_table` (`geometryColumn` geometry)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `geo_table` (`geometryColumn` geometry)"
@@ -4858,12 +3544,6 @@
         },
         "59": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `geo_table` (`geographyColumn` geography)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4876,19 +3556,7 @@
                 "text": "create table \"geo_table\" (\"geographyColumn\" geography)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"geo_table\" (\"geographyColumn\" geography)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `geo_table` (`geographyColumn` geography)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `geo_table` (`geographyColumn` geography)"
@@ -4922,12 +3590,6 @@
         },
         "60": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `point_table` (`pointColumn` point)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -4940,19 +3602,7 @@
                 "text": "create table \"point_table\" (\"pointColumn\" point)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"point_table\" (\"pointColumn\" point)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `point_table` (`pointColumn` point)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `point_table` (`pointColumn` point)"
@@ -4986,12 +3636,6 @@
         },
         "61": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `comment_example` (`id` integer not null primary key autoincrement)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -5008,23 +3652,7 @@
                 "text": "comment on table \"comment_example\" is 'Stores example rows'"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"comment_example\" (\"id\" serial primary key)"
-              },
-              {
-                "type": "sql",
-                "text": "comment on table \"comment_example\" is 'Stores example rows'"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `comment_example` (`id` int unsigned not null auto_increment primary key) comment = 'Stores example rows'"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `comment_example` (`id` int unsigned not null auto_increment primary key) comment = 'Stores example rows'"
@@ -5078,12 +3706,6 @@
         },
         "62": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports engine statement with mysql."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -5096,19 +3718,7 @@
                 "text": "Error: Knex only supports engine statement with mysql."
               }
             ],
-            "pgnative": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports engine statement with mysql."
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `engine_example` (`id` int unsigned not null auto_increment primary key) engine = InnoDB"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `engine_example` (`id` int unsigned not null auto_increment primary key) engine = InnoDB"
@@ -5142,12 +3752,6 @@
         },
         "63": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports charset statement with mysql."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -5160,19 +3764,7 @@
                 "text": "Error: Knex only supports charset statement with mysql."
               }
             ],
-            "pgnative": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports charset statement with mysql."
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `charset_example` (`id` int unsigned not null auto_increment primary key) default character set utf8mb4"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `charset_example` (`id` int unsigned not null auto_increment primary key) default character set utf8mb4"
@@ -5206,12 +3798,6 @@
         },
         "64": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports collate statement with mysql."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -5224,19 +3810,7 @@
                 "text": "Error: Knex only supports collate statement with mysql."
               }
             ],
-            "pgnative": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports collate statement with mysql."
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `collate_example` (`id` int unsigned not null auto_increment primary key) collate utf8mb4_unicode_ci"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `collate_example` (`id` int unsigned not null auto_increment primary key) collate utf8mb4_unicode_ci"
@@ -5248,13 +3822,13 @@
                 "text": "Error: Knex only supports collate statement with mysql."
               }
             ],
-            "cockroachdb": [
+            "oracledb": [
               {
                 "type": "error",
                 "text": "Error: Knex only supports collate statement with mysql."
               }
             ],
-            "oracledb": [
+            "cockroachdb": [
               {
                 "type": "error",
                 "text": "Error: Knex only supports collate statement with mysql."
@@ -5270,12 +3844,6 @@
         },
         "65": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports inherits statement with postgresql."
-              }
-            ],
             "sqlite3": [
               {
                 "type": "error",
@@ -5288,19 +3856,7 @@
                 "text": "create table \"inherits_example\" (\"id\" serial primary key) inherits (\"parent_table\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"inherits_example\" (\"id\" serial primary key) inherits (\"parent_table\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: Knex only supports inherits statement with postgresql."
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: Knex only supports inherits statement with postgresql."
@@ -5312,16 +3868,16 @@
                 "text": "Error: Knex only supports inherits statement with postgresql."
               }
             ],
-            "cockroachdb": [
-              {
-                "type": "sql",
-                "text": "create table \"inherits_example\" (\"id\" serial primary key) inherits (\"parent_table\")"
-              }
-            ],
             "oracledb": [
               {
                 "type": "error",
                 "text": "Error: Knex only supports inherits statement with postgresql."
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "create table \"inherits_example\" (\"id\" serial primary key) inherits (\"parent_table\")"
               }
             ],
             "redshift": [
@@ -5334,12 +3890,6 @@
         },
         "66": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `specific_type_example` (`ip_address` inet)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -5352,19 +3902,7 @@
                 "text": "create table \"specific_type_example\" (\"ip_address\" inet)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"specific_type_example\" (\"ip_address\" inet)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `specific_type_example` (`ip_address` inet)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `specific_type_example` (`ip_address` inet)"
@@ -5376,13 +3914,13 @@
                 "text": "CREATE TABLE [specific_type_example] ([ip_address] inet)"
               }
             ],
-            "cockroachdb": [
+            "oracledb": [
               {
                 "type": "sql",
                 "text": "create table \"specific_type_example\" (\"ip_address\" inet)"
               }
             ],
-            "oracledb": [
+            "cockroachdb": [
               {
                 "type": "sql",
                 "text": "create table \"specific_type_example\" (\"ip_address\" inet)"
@@ -5398,12 +3936,6 @@
         },
         "67": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create index `idx_name_last_name` on `users` (`name`, `last_name`) where `email` is not null"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -5416,19 +3948,7 @@
                 "text": "create index \"idx_name_last_name\" on \"users\" using hash (\"name\", \"last_name\") where \"email\" is not null"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create index \"idx_name_last_name\" on \"users\" using hash (\"name\", \"last_name\") where \"email\" is not null"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add FULLTEXT index `idx_name_last_name`(`name`, `last_name`) using hash"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add FULLTEXT index `idx_name_last_name`(`name`, `last_name`) using hash"
@@ -5440,16 +3960,16 @@
                 "text": "CREATE INDEX [idx_name_last_name] ON [users] ([name], [last_name]) where [email] is not null"
               }
             ],
-            "cockroachdb": [
-              {
-                "type": "sql",
-                "text": "create index \"idx_name_last_name\" on \"users\" using hash (\"name\", \"last_name\") where \"email\" is not null"
-              }
-            ],
             "oracledb": [
               {
                 "type": "sql",
                 "text": "create index \"idx_name_last_name\" on \"users\" (\"name\", \"last_name\")"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "create index \"idx_name_last_name\" on \"users\" using hash (\"name\", \"last_name\") where \"email\" is not null"
               }
             ],
             "redshift": []
@@ -5457,12 +3977,6 @@
         },
         "68": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "drop index `users_name_last_name_index`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -5475,19 +3989,7 @@
                 "text": "drop index \"users_name_last_name_index\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "drop index \"users_name_last_name_index\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` drop index `users_name_last_name_index`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` drop index `users_name_last_name_index`"
@@ -5516,44 +4018,14 @@
         },
         "69": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = OFF"
-              },
-              {
-                "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter684` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
-              },
-              {
-                "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter684\" SELECT * FROM \"users\";"
-              },
-              {
-                "type": "sql",
-                "text": "DROP TABLE \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter684\" RENAME TO \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_key_check"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = ON"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter298` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter416` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter298\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter416\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -5561,16 +4033,10 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter298\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter416\" RENAME TO \"users\""
               }
             ],
             "postgres": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" alter column \"email\" drop not null"
-              }
-            ],
-            "pgnative": [
               {
                 "type": "sql",
                 "text": "alter table \"users\" alter column \"email\" drop not null"
@@ -5580,34 +4046,12 @@
               {
                 "type": "sql",
                 "text": "SELECT 1"
-              },
-              {
-                "type": "sql",
-                "text": "select * from information_schema.columns where table_name = 'users' and table_schema = 'knex_test'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` modify  `email` varchar(255) null "
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "alter table `users` modify  `email` varchar(255) null "
               }
             ],
             "mssql": [
               {
                 "type": "sql",
                 "text": "SELECT 1"
-              },
-              {
-                "type": "sql",
-                "text": "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = 'users' and table_catalog = 'knex_test' and table_schema = 'dbo'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table [users] alter column  [email] nvarchar(255) null "
               }
             ],
             "oracledb": [
@@ -5632,44 +4076,14 @@
         },
         "70": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = OFF"
-              },
-              {
-                "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter118` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255) NOT NULL, `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
-              },
-              {
-                "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter118\" SELECT * FROM \"users\";"
-              },
-              {
-                "type": "sql",
-                "text": "DROP TABLE \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter118\" RENAME TO \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_key_check"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = ON"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter570` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255) NOT NULL, `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
+                "text": "CREATE TABLE `_knex_temp_alter032` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255) NOT NULL, `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter570\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter032\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -5677,16 +4091,10 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter570\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter032\" RENAME TO \"users\""
               }
             ],
             "postgres": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" alter column \"email\" set not null"
-              }
-            ],
-            "pgnative": [
               {
                 "type": "sql",
                 "text": "alter table \"users\" alter column \"email\" set not null"
@@ -5696,34 +4104,12 @@
               {
                 "type": "sql",
                 "text": "SELECT 1"
-              },
-              {
-                "type": "sql",
-                "text": "select * from information_schema.columns where table_name = 'users' and table_schema = 'knex_test'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` modify  `email` varchar(255) not null "
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "alter table `users` modify  `email` varchar(255) not null "
               }
             ],
             "mssql": [
               {
                 "type": "sql",
                 "text": "SELECT 1"
-              },
-              {
-                "type": "sql",
-                "text": "select [COLUMN_NAME], [COLUMN_DEFAULT], [DATA_TYPE], [CHARACTER_MAXIMUM_LENGTH], [IS_NULLABLE] from INFORMATION_SCHEMA.COLUMNS where table_name = 'users' and table_catalog = 'knex_test' and table_schema = 'dbo'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table [users] alter column  [email] nvarchar(255) not null "
               }
             ],
             "oracledb": [
@@ -5748,12 +4134,6 @@
         },
         "71": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `job` (`email` varchar(255), constraint `users_primary_key` as `constraintName`, `deferred` as `deferrable` primary key (`email`))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -5766,19 +4146,7 @@
                 "text": "create table \"job\" (\"email\" varchar(255), constraint \"users_primary_key\" primary key (\"email\") deferrable initially deferred)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"job\" (\"email\" varchar(255), constraint \"users_primary_key\" primary key (\"email\") deferrable initially deferred)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `job` (`email` varchar(255), constraint `users_primary_key` as `constraintName`, `deferred` as `deferrable` primary key (`email`))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `job` (`email` varchar(255), constraint `users_primary_key` as `constraintName`, `deferred` as `deferrable` primary key (`email`))"
@@ -5816,36 +4184,6 @@
         },
         "72": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create unique index `users_email_unique` on `users` (`email`)"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create unique index `job_composite_index` on `job` (`account_id`, `program_id`)"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create unique index `job_composite_index` on `job` (`account_id`, `program_id`)"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create unique index `job_composite_index` on `job` (`account_id`, `program_id`) where `account_id` is not null"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -5906,67 +4244,7 @@
                 "text": "create unique index \"job_composite_index\" on \"job\" (\"account_id\", \"program_id\") where \"account_id\" is not null"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add constraint \"users_email_unique\" unique (\"email\")"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"job\" add constraint \"job_composite_index\" unique (\"account_id\", \"program_id\") deferrable initially deferred"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"job\" add constraint \"job_composite_index\" unique (\"account_id\", \"program_id\")"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create unique index \"job_composite_index\" on \"job\" (\"account_id\", \"program_id\") where \"account_id\" is not null"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add unique `users_email_unique`(`email`)"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `job` add unique `job_composite_index`(`account_id`, `program_id`) using hash"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `job` add unique `job_composite_index`(`account_id`, `program_id`)"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `job` add unique `job_composite_index`(`account_id`, `program_id`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add unique `users_email_unique`(`email`)"
@@ -6120,40 +4398,6 @@
         },
         "73": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `user_id` integer"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = OFF"
-              },
-              {
-                "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter395` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
-              },
-              {
-                "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter395\" SELECT * FROM \"users\";"
-              },
-              {
-                "type": "sql",
-                "text": "DROP TABLE \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter395\" RENAME TO \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_key_check"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = ON"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -6161,11 +4405,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter730` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
+                "text": "CREATE TABLE `_knex_temp_alter784` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter730\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter784\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6173,7 +4417,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter730\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter784\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -6186,27 +4430,7 @@
                 "text": "alter table \"users\" add constraint \"users_user_id_foreign\" foreign key (\"user_id\") references \"Items\" (\"user_id_in_items\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"user_id\" integer"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add constraint \"users_user_id_foreign\" foreign key (\"user_id\") references \"Items\" (\"user_id_in_items\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `user_id` int unsigned"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add constraint `users_user_id_foreign` foreign key (`user_id`) references `Items` (`user_id_in_items`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add `user_id` int unsigned"
@@ -6260,44 +4484,14 @@
         },
         "74": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = OFF"
-              },
-              {
-                "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter945` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
-              },
-              {
-                "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter945\" SELECT * FROM \"users\";"
-              },
-              {
-                "type": "sql",
-                "text": "DROP TABLE \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter945\" RENAME TO \"users\""
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_key_check"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = ON"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter551` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
+                "text": "CREATE TABLE `_knex_temp_alter120` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer, FOREIGN KEY (`companyId`) REFERENCES `company` (`companyId`), FOREIGN KEY (`user_id`) REFERENCES `Items` (`user_id_in_items`))"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter551\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter120\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6305,7 +4499,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter551\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter120\" RENAME TO \"users\""
               }
             ],
             "postgres": [
@@ -6314,19 +4508,7 @@
                 "text": "alter table \"users\" add constraint \"users_user_id_foreign\" foreign key (\"user_id\") references \"Items\" (\"user_id_in_items\") deferrable initially deferred "
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add constraint \"users_user_id_foreign\" foreign key (\"user_id\") references \"Items\" (\"user_id_in_items\") deferrable initially deferred "
-              }
-            ],
             "mysql": [
-              {
-                "type": "error",
-                "text": "Error: mysql does not support deferrable"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "error",
                 "text": "Error: mysql does not support deferrable"
@@ -6360,12 +4542,6 @@
         },
         "75": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -6373,7 +4549,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx19;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -6381,7 +4557,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx19;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -6389,15 +4565,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx20;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter562` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
+                "text": "CREATE TABLE `_knex_temp_alter503` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter562\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter503\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6405,11 +4581,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter562\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter503\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx20;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -6418,19 +4594,7 @@
                 "text": "alter table \"users\" drop constraint \"users_companyid_foreign\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" drop constraint \"users_companyid_foreign\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` drop foreign key `users_companyid_foreign`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` drop foreign key `users_companyid_foreign`"
@@ -6464,12 +4628,52 @@
         },
         "76": {
           "dialects": {
-            "better-sqlite3": [
+            "sqlite3": [
               {
-                "type": "sql",
-                "text": "drop index `job_composite_index`"
+                "type": "error",
+                "text": "Error: .dropForeignIfExists is not supported for sqlite3"
               }
             ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" drop constraint if exists \"users_companyid_foreign\""
+              }
+            ],
+            "mysql": [
+              {
+                "type": "error",
+                "text": "Error: .dropForeignIfExists is not supported for mysql."
+              }
+            ],
+            "mssql": [
+              {
+                "type": "error",
+                "text": "Error: .dropForeignIfExists is not supported for mssql."
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "error",
+                "text": "Error: .dropForeignIfExists() is not supported by oracle"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" drop constraint if exists \"users_companyid_foreign\""
+              }
+            ],
+            "redshift": [
+              {
+                "type": "error",
+                "text": "Error: .dropForeignIfExists() is not supported by redshift"
+              }
+            ]
+          }
+        },
+        "77": {
+          "dialects": {
             "sqlite3": [
               {
                 "type": "sql",
@@ -6482,19 +4686,7 @@
                 "text": "alter table \"job\" drop constraint \"job_composite_index\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"job\" drop constraint \"job_composite_index\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `job` drop index `job_composite_index`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `job` drop index `job_composite_index`"
@@ -6515,7 +4707,7 @@
             "cockroachdb": [
               {
                 "type": "sql",
-                "text": "drop index \"job\"@\"job_composite_index\" cascade "
+                "text": "drop index \"job\"@\"job_composite_index\" cascade"
               }
             ],
             "redshift": [
@@ -6526,14 +4718,54 @@
             ]
           }
         },
-        "77": {
+        "78": {
           "dialects": {
-            "better-sqlite3": [
+            "sqlite3": [
               {
                 "type": "sql",
-                "text": "PRAGMA table_info(`users`)"
+                "text": "drop index if exists `job_composite_index`"
               }
             ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "alter table \"job\" drop constraint if exists \"job_composite_index\""
+              }
+            ],
+            "mysql": [
+              {
+                "type": "error",
+                "text": "Error: .dropUniqueIfExists is not supported for mysql."
+              }
+            ],
+            "mssql": [
+              {
+                "type": "sql",
+                "text": "DROP INDEX IF EXISTS [job_composite_index] ON [job]"
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "error",
+                "text": "Error: .dropUniqueIfExists() is not supported by oracle"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "drop index if exists \"job\"@\"job_composite_index\" cascade"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "error",
+                "text": "Error: .dropUniqueIfExists() is not supported by redshift"
+              }
+            ]
+          }
+        },
+        "79": {
+          "dialects": {
             "sqlite3": [
               {
                 "type": "sql",
@@ -6541,7 +4773,7 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx21;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
@@ -6549,7 +4781,7 @@
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx21;"
+                "text": "COMMIT;"
               },
               {
                 "type": "sql",
@@ -6557,15 +4789,15 @@
               },
               {
                 "type": "sql",
-                "text": "SAVEPOINT trx22;"
+                "text": "BEGIN;"
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter093` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
+                "text": "CREATE TABLE `_knex_temp_alter543` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `email` varchar(255), `age` integer, `companyId` integer, `user_id` integer)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter093\" SELECT * FROM \"users\";"
+                "text": "INSERT INTO \"_knex_temp_alter543\" SELECT * FROM \"users\";"
               },
               {
                 "type": "sql",
@@ -6573,11 +4805,11 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter093\" RENAME TO \"users\""
+                "text": "ALTER TABLE \"_knex_temp_alter543\" RENAME TO \"users\""
               },
               {
                 "type": "sql",
-                "text": "RELEASE SAVEPOINT trx22;"
+                "text": "COMMIT;"
               }
             ],
             "postgres": [
@@ -6586,19 +4818,7 @@
                 "text": "alter table \"users\" drop constraint \"users_pkey\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" drop constraint \"users_pkey\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` drop primary key"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` drop primary key"
@@ -6630,270 +4850,216 @@
             ]
           }
         },
-        "78": {
-          "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              }
-            ],
-            "sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              }
-            ],
-            "postgres": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
-            "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              }
-            ],
-            "mssql": [
-              {
-                "type": "sql",
-                "text": "ALTER TABLE [users] ADD [first_name] nvarchar(255), [last_name] nvarchar(255)"
-              }
-            ],
-            "oracledb": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add (\"first_name\" varchar2(255), \"last_name\" varchar2(255))"
-              }
-            ],
-            "cockroachdb": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
-            "redshift": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"last_name\" varchar(255)"
-              }
-            ]
-          }
-        },
-        "79": {
-          "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              }
-            ],
-            "sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              }
-            ],
-            "postgres": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
-            "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              }
-            ],
-            "mssql": [
-              {
-                "type": "sql",
-                "text": "ALTER TABLE [users] ADD [first_name] nvarchar(255), [last_name] nvarchar(255)"
-              }
-            ],
-            "oracledb": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add (\"first_name\" varchar2(255), \"last_name\" varchar2(255))"
-              }
-            ],
-            "cockroachdb": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
-            "redshift": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"last_name\" varchar(255)"
-              }
-            ]
-          }
-        },
         "80": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
-              }
-            ],
             "sqlite3": [
               {
-                "type": "sql",
-                "text": "alter table `users` add column `first_name` varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `last_name` varchar(255)"
+                "type": "error",
+                "text": "Error: .dropPrimaryIfExists is not supported for sqlite3"
               }
             ],
             "postgres": [
               {
                 "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
-              }
-            ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+                "text": "alter table \"users\" drop constraint if exists \"users_pkey\""
               }
             ],
             "mysql": [
               {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
+                "type": "error",
+                "text": "Error: .dropPrimaryIfExists is not supported for mysql."
               }
             ],
             "mssql": [
               {
-                "type": "sql",
-                "text": "ALTER TABLE [users] ADD [first_name] nvarchar(255), [last_name] nvarchar(255)"
+                "type": "error",
+                "text": "Error: .dropPrimaryIfExists is not supported for mssql."
               }
             ],
             "oracledb": [
               {
-                "type": "sql",
-                "text": "alter table \"users\" add (\"first_name\" varchar2(255), \"last_name\" varchar2(255))"
+                "type": "error",
+                "text": "Error: .dropPrimaryIfExists() is not supported by oracle"
               }
             ],
             "cockroachdb": [
               {
                 "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+                "text": "alter table \"users\" drop constraint if exists \"users_pkey\""
               }
             ],
             "redshift": [
               {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"first_name\" varchar(255)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"last_name\" varchar(255)"
+                "type": "error",
+                "text": "Error: .dropPrimaryIfExists() is not supported by redshift"
               }
             ]
           }
         },
         "81": {
           "dialects": {
-            "better-sqlite3": [
+            "sqlite3": [
               {
                 "type": "sql",
-                "text": "alter table `user` add column `id` integer not null primary key autoincrement"
+                "text": "alter table `users` add column `first_name` varchar(255)"
               },
               {
                 "type": "sql",
-                "text": "PRAGMA foreign_keys = OFF"
-              },
-              {
-                "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter666` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `username` varchar(35) NOT NULL, `age` integer)"
-              },
-              {
-                "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter666\" SELECT * FROM \"user\";"
-              },
-              {
-                "type": "sql",
-                "text": "DROP TABLE \"user\""
-              },
-              {
-                "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter666\" RENAME TO \"user\""
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_key_check"
-              },
-              {
-                "type": "sql",
-                "text": "PRAGMA foreign_keys = ON"
+                "text": "alter table `users` add column `last_name` varchar(255)"
               }
             ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "sql",
+                "text": "ALTER TABLE [users] ADD [first_name] nvarchar(255), [last_name] nvarchar(255)"
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add (\"first_name\" varchar2(255), \"last_name\" varchar2(255))"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255)"
+              },
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"last_name\" varchar(255)"
+              }
+            ]
+          }
+        },
+        "82": {
+          "dialects": {
+            "sqlite3": [
+              {
+                "type": "sql",
+                "text": "alter table `users` add column `first_name` varchar(255)"
+              },
+              {
+                "type": "sql",
+                "text": "alter table `users` add column `last_name` varchar(255)"
+              }
+            ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "sql",
+                "text": "ALTER TABLE [users] ADD [first_name] nvarchar(255), [last_name] nvarchar(255)"
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add (\"first_name\" varchar2(255), \"last_name\" varchar2(255))"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255)"
+              },
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"last_name\" varchar(255)"
+              }
+            ]
+          }
+        },
+        "83": {
+          "dialects": {
+            "sqlite3": [
+              {
+                "type": "sql",
+                "text": "alter table `users` add column `first_name` varchar(255)"
+              },
+              {
+                "type": "sql",
+                "text": "alter table `users` add column `last_name` varchar(255)"
+              }
+            ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "alter table `users` add `first_name` varchar(255), add `last_name` varchar(255)"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "sql",
+                "text": "ALTER TABLE [users] ADD [first_name] nvarchar(255), [last_name] nvarchar(255)"
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add (\"first_name\" varchar2(255), \"last_name\" varchar2(255))"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255), add column \"last_name\" varchar(255)"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"first_name\" varchar(255)"
+              },
+              {
+                "type": "sql",
+                "text": "alter table \"users\" add column \"last_name\" varchar(255)"
+              }
+            ]
+          }
+        },
+        "84": {
+          "dialects": {
             "sqlite3": [
               {
                 "type": "sql",
@@ -6901,11 +5067,11 @@
               },
               {
                 "type": "sql",
-                "text": "CREATE TABLE `_knex_temp_alter966` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `username` varchar(35) NOT NULL, `age` integer)"
+                "text": "CREATE TABLE `_knex_temp_alter921` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `username` varchar(35) NOT NULL, `age` integer)"
               },
               {
                 "type": "sql",
-                "text": "INSERT INTO \"_knex_temp_alter966\" SELECT * FROM \"user\";"
+                "text": "INSERT INTO \"_knex_temp_alter921\" SELECT * FROM \"user\";"
               },
               {
                 "type": "sql",
@@ -6913,7 +5079,7 @@
               },
               {
                 "type": "sql",
-                "text": "ALTER TABLE \"_knex_temp_alter966\" RENAME TO \"user\""
+                "text": "ALTER TABLE \"_knex_temp_alter921\" RENAME TO \"user\""
               }
             ],
             "postgres": [
@@ -6966,67 +5132,7 @@
                 "text": "alter table \"user\" alter column \"age\" drop not null"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"user\" add column \"id\" serial primary key"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"username\" drop default"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"username\" drop not null"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"username\" type varchar(35) using (\"username\"::varchar(35))"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"username\" set not null"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"age\" drop default"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"age\" drop not null"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"age\" type integer using (\"age\"::integer)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"age\" drop default"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"age\" type integer using (\"age\"::integer)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"age\" drop default"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"user\" alter column \"age\" drop not null"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `user` add `id` int unsigned not null auto_increment primary key"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `user` modify `username` varchar(35) not null, modify `age` int, modify `age` int, modify `age` int"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `user` add `id` int unsigned not null auto_increment primary key"
@@ -7190,18 +5296,8 @@
             ]
           }
         },
-        "82": {
+        "85": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `index_example` (`email` varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "create index `idx_email` on `index_example` (`email`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7222,27 +5318,7 @@
                 "text": "create index \"idx_email\" on \"index_example\" (\"email\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"index_example\" (\"email\" varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "create index \"idx_email\" on \"index_example\" (\"email\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `index_example` (`email` varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `index_example` add index `idx_email`(`email`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `index_example` (`email` varchar(255))"
@@ -7290,14 +5366,8 @@
             ]
           }
         },
-        "83": {
+        "86": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users_primary` (`user_id` integer, constraint `users_primary_key` as `constraintName`, `deferred` as `deferrable` primary key (`user_id`))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7310,19 +5380,7 @@
                 "text": "create table \"users_primary\" (\"user_id\" integer, constraint \"users_primary_key\" primary key (\"user_id\") deferrable initially deferred)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users_primary\" (\"user_id\" integer, constraint \"users_primary_key\" primary key (\"user_id\") deferrable initially deferred)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users_primary` (`user_id` int, constraint `users_primary_key` as `constraintName`, `deferred` as `deferrable` primary key (`user_id`))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users_primary` (`user_id` int, constraint `users_primary_key` as `constraintName`, `deferred` as `deferrable` primary key (`user_id`))"
@@ -7362,18 +5420,8 @@
             ]
           }
         },
-        "84": {
+        "87": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `user_id` integer"
-              },
-              {
-                "type": "sql",
-                "text": "create unique index `user_unique_id` on `users` (`user_id`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7394,27 +5442,7 @@
                 "text": "alter table \"users\" add constraint \"user_unique_id\" unique (\"user_id\") deferrable initially immediate"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"user_id\" integer"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add constraint \"user_unique_id\" unique (\"user_id\") deferrable initially immediate"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `user_id` int"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add unique `user_unique_id`(`user_id`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add `user_id` int"
@@ -7466,14 +5494,8 @@
             ]
           }
         },
-        "85": {
+        "88": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `references_example` (`company_id` integer, foreign key(`company_id`) references `company`(`companyId`))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7490,27 +5512,7 @@
                 "text": "alter table \"references_example\" add constraint \"references_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"references_example\" (\"company_id\" integer)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"references_example\" add constraint \"references_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `references_example` (`company_id` int)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `references_example` add constraint `references_example_company_id_foreign` foreign key (`company_id`) references `company` (`companyId`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `references_example` (`company_id` int)"
@@ -7558,14 +5560,8 @@
             ]
           }
         },
-        "86": {
+        "89": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `in_table_example` (`company_id` integer, foreign key(`company_id`) references `company`(`companyId`))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7582,27 +5578,7 @@
                 "text": "alter table \"in_table_example\" add constraint \"in_table_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"in_table_example\" (\"company_id\" integer)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"in_table_example\" add constraint \"in_table_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `in_table_example` (`company_id` int)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `in_table_example` add constraint `in_table_example_company_id_foreign` foreign key (`company_id`) references `company` (`companyId`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `in_table_example` (`company_id` int)"
@@ -7650,14 +5626,8 @@
             ]
           }
         },
-        "87": {
+        "90": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `on_delete_example` (`company_id` integer, foreign key(`company_id`) references `company`(`companyId`) on delete CASCADE)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7674,27 +5644,7 @@
                 "text": "alter table \"on_delete_example\" add constraint \"on_delete_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\") on delete CASCADE"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"on_delete_example\" (\"company_id\" integer)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"on_delete_example\" add constraint \"on_delete_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\") on delete CASCADE"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `on_delete_example` (`company_id` int)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `on_delete_example` add constraint `on_delete_example_company_id_foreign` foreign key (`company_id`) references `company` (`companyId`) on delete CASCADE"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `on_delete_example` (`company_id` int)"
@@ -7742,14 +5692,8 @@
             ]
           }
         },
-        "88": {
+        "91": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `on_update_example` (`company_id` integer, foreign key(`company_id`) references `company`(`companyId`) on update CASCADE)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7766,27 +5710,7 @@
                 "text": "alter table \"on_update_example\" add constraint \"on_update_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\") on update CASCADE"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"on_update_example\" (\"company_id\" integer)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"on_update_example\" add constraint \"on_update_example_company_id_foreign\" foreign key (\"company_id\") references \"company\" (\"companyId\") on update CASCADE"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `on_update_example` (`company_id` int)"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `on_update_example` add constraint `on_update_example_company_id_foreign` foreign key (`company_id`) references `company` (`companyId`) on update CASCADE"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `on_update_example` (`company_id` int)"
@@ -7834,14 +5758,8 @@
             ]
           }
         },
-        "89": {
+        "92": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` varchar(255) default 'value')"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7854,19 +5772,7 @@
                 "text": "create table \"users\" (\"column\" varchar(255) default 'value')"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"column\" varchar(255) default 'value')"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`column` varchar(255) default 'value')"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`column` varchar(255) default 'value')"
@@ -7898,14 +5804,8 @@
             ]
           }
         },
-        "90": {
+        "93": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `unsigned_example` (`age` integer)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7918,19 +5818,7 @@
                 "text": "create table \"unsigned_example\" (\"age\" integer)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"unsigned_example\" (\"age\" integer)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `unsigned_example` (`age` int unsigned)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `unsigned_example` (`age` int unsigned)"
@@ -7962,14 +5850,8 @@
             ]
           }
         },
-        "91": {
+        "94": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `not_nullable_example` (`email` varchar(255) not null)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -7982,19 +5864,7 @@
                 "text": "create table \"not_nullable_example\" (\"email\" varchar(255) not null)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"not_nullable_example\" (\"email\" varchar(255) not null)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `not_nullable_example` (`email` varchar(255) not null)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `not_nullable_example` (`email` varchar(255) not null)"
@@ -8026,14 +5896,8 @@
             ]
           }
         },
-        "92": {
+        "95": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `nullable_example` (`nickname` varchar(255) null)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8046,19 +5910,7 @@
                 "text": "create table \"nullable_example\" (\"nickname\" varchar(255) null)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"nullable_example\" (\"nickname\" varchar(255) null)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `nullable_example` (`nickname` varchar(255) null)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `nullable_example` (`nickname` varchar(255) null)"
@@ -8090,14 +5942,8 @@
             ]
           }
         },
-        "93": {
+        "96": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `nickname` varchar(255)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8110,19 +5956,7 @@
                 "text": "alter table \"users\" add column \"nickname\" varchar(255)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"nickname\" varchar(255)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `nickname` varchar(255) first"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add `nickname` varchar(255) first"
@@ -8154,14 +5988,8 @@
             ]
           }
         },
-        "94": {
+        "97": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add column `nickname` varchar(255)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8174,19 +6002,7 @@
                 "text": "alter table \"users\" add column \"nickname\" varchar(255)"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add column \"nickname\" varchar(255)"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `users` add `nickname` varchar(255) after `email`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `users` add `nickname` varchar(255) after `email`"
@@ -8218,18 +6034,8 @@
             ]
           }
         },
-        "95": {
+        "98": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `accounts` (`id` integer not null primary key autoincrement, `email` varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "create unique index `accounts_email_unique` on `accounts` (`email`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8254,31 +6060,7 @@
                 "text": "alter table \"accounts\" add constraint \"accounts_email_unique\" unique (\"email\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"accounts\" (\"id\" serial primary key, \"email\" varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "comment on column \"accounts\".\"email\" is 'This is the email field'"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"accounts\" add constraint \"accounts_email_unique\" unique (\"email\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `accounts` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) comment 'This is the email field')"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `accounts` add unique `accounts_email_unique`(`email`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `accounts` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) comment 'This is the email field')"
@@ -8350,18 +6132,8 @@
             ]
           }
         },
-        "96": {
+        "99": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`id` integer not null primary key autoincrement, `email` varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "create unique index `users_email_unique` on `users` (`email`)"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8382,27 +6154,7 @@
                 "text": "alter table \"users\" add constraint \"users_email_unique\" unique (\"email\")"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"users\" (\"id\" serial primary key, \"email\" varchar(255))"
-              },
-              {
-                "type": "sql",
-                "text": "alter table \"users\" add constraint \"users_email_unique\" unique (\"email\")"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) collate 'utf8_unicode_ci')"
-              },
-              {
-                "type": "sql",
-                "text": "alter table `users` add unique `users_email_unique`(`email`)"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) collate 'utf8_unicode_ci')"
@@ -8458,14 +6210,8 @@
             ]
           }
         },
-        "97": {
+        "100": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` (`first_name`, `last_name`) as select `first_name` from `users` where `age` > '18'"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8478,19 +6224,7 @@
                 "text": "create view \"users_view\" (\"first_name\", \"last_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" (\"first_name\", \"last_name\") as select \"first_name\" from \"users\" where \"age\" > '18'"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` (`first_name`, `last_name`) as select `first_name` from `users` where `age` > '18'"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create view `users_view` (`first_name`, `last_name`) as select `first_name` from `users` where `age` > '18'"
@@ -8522,14 +6256,8 @@
             ]
           }
         },
-        "98": {
+        "101": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users`"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8542,19 +6270,7 @@
                 "text": "create view \"users_view\" as select \"first_name\" from \"users\""
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\""
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users`"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create view `users_view` as select `first_name` from `users`"
@@ -8586,206 +6302,146 @@
             ]
           }
         },
-        "99": {
-          "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "postgres": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
-              }
-            ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
-              }
-            ],
-            "mysql": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users` with check option"
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users` with check option"
-              }
-            ],
-            "mssql": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "oracledb": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
-              }
-            ],
-            "cockroachdb": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
-              }
-            ],
-            "redshift": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
-              }
-            ]
-          }
-        },
-        "100": {
-          "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "postgres": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with local check option"
-              }
-            ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with local check option"
-              }
-            ],
-            "mysql": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users` with local check option"
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users` with local check option"
-              }
-            ],
-            "mssql": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "oracledb": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "cockroachdb": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with local check option"
-              }
-            ],
-            "redshift": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with local check option"
-              }
-            ]
-          }
-        },
-        "101": {
-          "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "sqlite3": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "postgres": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with cascaded check option"
-              }
-            ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with cascaded check option"
-              }
-            ],
-            "mysql": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users` with cascaded check option"
-              }
-            ],
-            "mysql2": [
-              {
-                "type": "sql",
-                "text": "create view `users_view` as select `first_name` from `users` with cascaded check option"
-              }
-            ],
-            "mssql": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "oracledb": [
-              {
-                "type": "error",
-                "text": "Error: check option definition is not supported by this dialect."
-              }
-            ],
-            "cockroachdb": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with cascaded check option"
-              }
-            ],
-            "redshift": [
-              {
-                "type": "sql",
-                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with cascaded check option"
-              }
-            ]
-          }
-        },
         "102": {
           "dialects": {
-            "better-sqlite3": [
+            "sqlite3": [
               {
-                "type": "sql",
-                "text": "create table `product` (`price_min` integer, `price` integer, check (`price` >= `price_min`))"
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
               }
             ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "create view `users_view` as select `first_name` from `users` with check option"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with check option"
+              }
+            ]
+          }
+        },
+        "103": {
+          "dialects": {
+            "sqlite3": [
+              {
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
+              }
+            ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with local check option"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "create view `users_view` as select `first_name` from `users` with local check option"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with local check option"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with local check option"
+              }
+            ]
+          }
+        },
+        "104": {
+          "dialects": {
+            "sqlite3": [
+              {
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
+              }
+            ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with cascaded check option"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "create view `users_view` as select `first_name` from `users` with cascaded check option"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "error",
+                "text": "Error: check option definition is not supported by this dialect."
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with cascaded check option"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "create view \"users_view\" as select \"first_name\" from \"users\" with cascaded check option"
+              }
+            ]
+          }
+        },
+        "105": {
+          "dialects": {
             "sqlite3": [
               {
                 "type": "sql",
@@ -8798,19 +6454,7 @@
                 "text": "create table \"product\" (\"price_min\" integer, \"price\" integer, check (\"price\" >= \"price_min\"))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"price_min\" integer, \"price\" integer, check (\"price\" >= \"price_min\"))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`price_min` int, `price` int, check (`price` >= `price_min`))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`price_min` int, `price` int, check (`price` >= `price_min`))"
@@ -8842,14 +6486,8 @@
             ]
           }
         },
-        "103": {
+        "106": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`price` integer check (`price` > 0))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8862,19 +6500,7 @@
                 "text": "create table \"product\" (\"price\" integer check (\"price\" > 0))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"price\" integer check (\"price\" > 0))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`price` int check (`price` > 0))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`price` int check (`price` > 0))"
@@ -8906,14 +6532,8 @@
             ]
           }
         },
-        "104": {
+        "107": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`price_decrease` integer check (`price_decrease` < 0))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8926,19 +6546,7 @@
                 "text": "create table \"product\" (\"price_decrease\" integer check (\"price_decrease\" < 0))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"price_decrease\" integer check (\"price_decrease\" < 0))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`price_decrease` int check (`price_decrease` < 0))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`price_decrease` int check (`price_decrease` < 0))"
@@ -8970,14 +6578,8 @@
             ]
           }
         },
-        "105": {
+        "108": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`type` varchar(255) check (`type` in ('table','chair','sofa')))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -8990,19 +6592,7 @@
                 "text": "create table \"product\" (\"type\" varchar(255) check (\"type\" in ('table','chair','sofa')))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"type\" varchar(255) check (\"type\" in ('table','chair','sofa')))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`type` varchar(255) check (`type` in ('table','chair','sofa')))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`type` varchar(255) check (`type` in ('table','chair','sofa')))"
@@ -9034,14 +6624,8 @@
             ]
           }
         },
-        "106": {
+        "109": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`type` varchar(255) check (`type` not in ('boot','shoe')))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -9054,19 +6638,7 @@
                 "text": "create table \"product\" (\"type\" varchar(255) check (\"type\" not in ('boot','shoe')))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"type\" varchar(255) check (\"type\" not in ('boot','shoe')))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`type` varchar(255) check (`type` not in ('boot','shoe')))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`type` varchar(255) check (`type` not in ('boot','shoe')))"
@@ -9098,22 +6670,8 @@
             ]
           }
         },
-        "107": {
+        "110": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`price` integer check (`price` between 0 and 100))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `product` (`price` integer check (`price` between 0 and 20 or `price` between 30 and 40))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -9142,35 +6700,7 @@
                 "text": "create table \"product\" (\"price\" integer check (\"price\" between 0 and 20 or \"price\" between 30 and 40))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"price\" integer check (\"price\" between 0 and 100))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"price\" integer check (\"price\" between 0 and 20 or \"price\" between 30 and 40))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`price` int check (`price` between 0 and 100))"
-              },
-              {
-                "type": "sql",
-                "text": "-- ----"
-              },
-              {
-                "type": "sql",
-                "text": "create table `product` (`price` int check (`price` between 0 and 20 or `price` between 30 and 40))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`price` int check (`price` between 0 and 100))"
@@ -9242,14 +6772,8 @@
             ]
           }
         },
-        "108": {
+        "111": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`phone` varchar(255) check (length(`phone`) = 8))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -9262,19 +6786,7 @@
                 "text": "create table \"product\" (\"phone\" varchar(255) check (length(\"phone\") = 8))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"phone\" varchar(255) check (length(\"phone\") = 8))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`phone` varchar(255) check (length(`phone`) = 8))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`phone` varchar(255) check (length(`phone`) = 8))"
@@ -9306,14 +6818,8 @@
             ]
           }
         },
-        "109": {
+        "112": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`phone` varchar(255) check (`phone` REGEXP '[0-9]{8}'), `phone` varchar(255) check (`phone` REGEXP '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -9326,19 +6832,7 @@
                 "text": "create table \"product\" (\"phone\" varchar(255) check (\"phone\" ~ '[0-9]{8}'), \"phone\" varchar(255) check (\"phone\" ~ '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "create table \"product\" (\"phone\" varchar(255) check (\"phone\" ~ '[0-9]{8}'), \"phone\" varchar(255) check (\"phone\" ~ '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "create table `product` (`phone` varchar(255) check (`phone` REGEXP '[0-9]{8}'), `phone` varchar(255) check (`phone` REGEXP '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "create table `product` (`phone` varchar(255) check (`phone` REGEXP '[0-9]{8}'), `phone` varchar(255) check (`phone` REGEXP '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
@@ -9370,14 +6864,8 @@
             ]
           }
         },
-        "110": {
+        "113": {
           "dialects": {
-            "better-sqlite3": [
-              {
-                "type": "sql",
-                "text": "alter table `product` drop constraint price_check, drop constraint price_proportion_check"
-              }
-            ],
             "sqlite3": [
               {
                 "type": "sql",
@@ -9390,19 +6878,7 @@
                 "text": "alter table \"product\" drop constraint price_check, drop constraint price_proportion_check"
               }
             ],
-            "pgnative": [
-              {
-                "type": "sql",
-                "text": "alter table \"product\" drop constraint price_check, drop constraint price_proportion_check"
-              }
-            ],
             "mysql": [
-              {
-                "type": "sql",
-                "text": "alter table `product` drop constraint price_check, drop constraint price_proportion_check"
-              }
-            ],
-            "mysql2": [
               {
                 "type": "sql",
                 "text": "alter table `product` drop constraint price_check, drop constraint price_proportion_check"
