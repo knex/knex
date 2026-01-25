@@ -109,7 +109,7 @@ jobs:
     name: Test user experience
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
     steps:
       - name: Checkout Repository
