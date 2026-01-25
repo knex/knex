@@ -4,6 +4,12 @@ on:
   release:
     types:
       - released
+  workflow_dispatch:
+    inputs:
+      deploy:
+        type: boolean
+        default: false
+        description: 'Deploy to gh-pages?'
 
 concurrency:
   group: ${{ github.workflow }}
@@ -17,25 +23,14 @@ jobs:
         working-directory: ./docs
 
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20.x
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
 
-      # cache node_modules
-      - name: Restore cached dependencies
-        uses: actions/cache@v3
-        id: npm-cache
-        with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-
-      # install dependencies if the cache did not hit
       - name: Install dependencies
-        if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Install released knex for docs build
@@ -48,7 +43,8 @@ jobs:
         run: npm run build
 
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+        if: github.event_name == 'release' || github.event.inputs.deploy == 'true'
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/.vitepress/dist
