@@ -15,6 +15,20 @@ Schema builder snippets are resolved ahead of time because some dialects need
 live schema introspection. Run the resolver manually when you change the schema
 builder docs:
 
+When updating DDL snippets, build the docs with the workspace Knex (current
+tree) and regenerate the resolved outputs:
+
+```bash
+cd docs
+npm install
+npm install --no-save ../
+# Use the direct script to avoid the pre-script that installs knex@latest.
+node scripts/resolve-schema-snippets-docker.mjs
+npm run build
+```
+
+Standard resolver entry point:
+
 ```bash
 # full pass (live databases for all supported dialects; Redshift compile-only)
 npm run resolve-schema-snippets
@@ -49,6 +63,7 @@ in-memory database in live mode.
 
 The resolver writes `docs/generated/schema-snippets.json`. Docs builds will
 warn and render "Snippet not available" if this file is missing or incomplete.
+Docs builds read this file, so refresh it whenever snippet code changes.
 The resolver uses a fixture schema defined in
 `docs/scripts/resolve-schema-snippets.mjs`, so point it at a disposable
 database.
@@ -74,6 +89,14 @@ SQL output are:
 
 #### Development:
 
+If your docs change should reflect the current workspace Knex, install it in
+`docs` before running the dev server or build:
+
+```bash
+cd docs
+npm install --no-save ../
+```
+
 ```bash
 npm run dev # or yarn dev
 ```
@@ -87,7 +110,7 @@ npm run dev # or yarn dev
 #### Production:
 
 ```bash
-yarn build # or npm run build
+npm run build # or yarn build
 ```
 
 #### License:
