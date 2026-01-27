@@ -818,6 +818,76 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adds unique constraint with nulls not distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').unique({
+          indexName: 'user_id_index',
+          nullsNotDistinct: true,
+          useConstraint: false,
+        });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'create unique index "user_id_index" on "person" ("user_id") nulls not distinct'
+    );
+  });
+
+  it('adds unique constraint with nulls distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').unique({
+          indexName: 'user_id_index',
+          nullsNotDistinct: false,
+          useConstraint: false,
+        });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'create unique index "user_id_index" on "person" ("user_id") nulls distinct'
+    );
+  });
+
+  it('supports nulls not distinct with a predicate', () => {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('person', function (table) {
+        table.integer('user_id').unique({
+          indexName: 'user_id_index',
+          nullsNotDistinct: true,
+          predicate: client.queryBuilder().whereRaw('"foo" = 1'),
+        });
+      })
+      .toSQL();
+    equal(2, tableSql.length);
+    expect(tableSql[1].sql).to.equal(
+      'create unique index "user_id_index" on "person" ("user_id") nulls not distinct where "foo" = 1'
+    );
+  });
+
+  it('rejects nullsNotDistinct when useConstraint is true', () => {
+    for (const nullsNotDistinct of [true, false]) {
+      for (const useConstraint of [true, undefined]) {
+        expect(() => {
+          client
+            .schemaBuilder()
+            .createTable('foo', (tbl) => {
+              tbl.integer('user_id').unique({
+                indexName: 'user_id_index',
+                nullsNotDistinct,
+                useConstraint,
+              });
+            })
+            .toSQL();
+        }).to.throw(/only valid for indexes/);
+      }
+    }
+  });
+
   it('adds primary constraint with deferrable initially immediate', function () {
     tableSql = client
       .schemaBuilder()
@@ -1154,6 +1224,40 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'create index "baz" on "users" ("foo", "bar") where "email" is not null'
+    );
+  });
+
+  it('adding unique index with nulls not distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique('foo', {
+          indexName: 'bar',
+          useConstraint: false,
+          nullsNotDistinct: true,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "bar" on "users" ("foo") nulls not distinct'
+    );
+  });
+
+  it('adding unique index with nulls distinct', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique('foo', {
+          indexName: 'bar',
+          useConstraint: false,
+          nullsNotDistinct: false,
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "bar" on "users" ("foo") nulls distinct'
     );
   });
 
