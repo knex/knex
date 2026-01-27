@@ -36,6 +36,7 @@ describe('Query Building Tests', function () {
   require('./unit/migrations/migrate/migrator-use-transaction');
   require('./unit/migrations/seed/seeder');
   // require('./unit/interface'); ToDo Uncomment after fixed
+  require('./unit/hooks');
   require('./unit/knex');
 });
 
