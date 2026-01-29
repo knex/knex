@@ -5,7 +5,7 @@ hero:
   name: Knex.js
   text: SQL query builder
   image:
-    src: /knex-logo.png
+    src: /knex-logo.svg
     alt: Logo knex
   actions:
     - theme: brand
