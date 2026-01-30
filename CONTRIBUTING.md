@@ -93,7 +93,7 @@ main();
 Usually issues without reproduction code available are just closed and if the same issue is reported multiple
 times maybe someone looks into it.
 
-One easy way to setup database for your reproduction is to use database from knex's docker-compose setup (npm run db:start) and by checking the connection settings from tests' `test/knexfile.js`.
+One easy way to setup database for your reproduction is to use database from knex's docker compose setup (npm run db:start) and by checking the connection settings from tests' `test/knexfile.js`.
 
 ## Integration Tests
 
@@ -174,8 +174,6 @@ psql -h localhost -U postgres -d knex_test
 Starting with release 2.0.0, Knex is support source additions in Typescript! This allows for better safety in the code added. However, pre-2.0.0 Knex was always written in pure Javascript and thus a "hybrid" approach is being used for 2.0.0 to allow for the new `.ts` files to exist along `.js` files that make up the majority of this repository.
 
 To develop in this repository use the `npm run build` and `npm run clean` commands to compile and delete the `.js` and related files from `.ts` files. If you wish to have the `tsc` compiled watch and recompile on changes then run `npm run build:ts -- --watch`. Note that for easy integration with Javascript the outputted files are done in a "side-by-side" manner meaning that `lib/foo/bar.ts` will result in `lib/foo/bar.js`. This is done automatically via the npm script command `"prepare"` whenever you run `npm install` and Git hook for `post-checkout` (added by Husky) which executes when you run commands like `git checkout` , thus making it easier to not have to worry about this if you're working in pure Javascript.
-
-The script file `./scripts/update_gitignore_for_tsc_output.js` file is called as part of the `npm run build` command which will update the `lib/.gitignore` file which is used to ensure generated `.js` and related files from `tsc` compilation are not checked into the git repo.
 
 ## Want to be Collaborator?
 
