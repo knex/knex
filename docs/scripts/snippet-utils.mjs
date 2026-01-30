@@ -1,5 +1,9 @@
 import * as ts from 'typescript';
 
+const TRANSACTING_RE = /\.transacting\s*\(/;
+const TRX_RE = /\btrx\b/;
+const TRX_DECL_RE = /\b(?:const|let|var)\s+trx\b/;
+
 function normalizeError(error) {
   if (error instanceof Error) {
     return error;
@@ -39,8 +43,21 @@ export function formatSqlError(error) {
   return message;
 }
 
+function shouldStubTrx(code) {
+  if (!TRANSACTING_RE.test(code) && !TRX_RE.test(code)) {
+    return false;
+  }
+
+  if (TRX_DECL_RE.test(code)) {
+    return false;
+  }
+
+  return true;
+}
+
 export function evaluateSnippet(code, lang, knex) {
   try {
+    const needsTrxStub = shouldStubTrx(code);
     const jsCode =
       lang === 'ts'
         ? ts.transpileModule(code, {
@@ -50,12 +67,15 @@ export function evaluateSnippet(code, lang, knex) {
             },
           }).outputText
         : code;
+    const trxPrelude = needsTrxStub
+      ? `const trx = { client: knex.client };
+      trx.client.transacting = true;`
+      : '';
     const fn = new Function(
       'knex',
       `"use strict";
       const captures = [];
-      const trx = { client: knex.client };
-      trx.client.transacting = true;
+      ${trxPrelude}
       const __capture = (fn) => {
         try {
           const value = fn();

@@ -1,0 +1,54 @@
+---
+name: Docs Build Check
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    name: Docs Build Check
+
+    defaults:
+      run:
+        working-directory: ./docs
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node 22.x
+        uses: actions/setup-node@v4
+        with:
+          always-auth: false
+          node-version: 22.x
+
+      - name: Install repo dependencies
+        run: npm install
+        working-directory: .
+
+      - name: Install docs dependencies
+        run: npm ci
+
+      - name: Install workspace Knex
+        run: npm install --no-save --no-package-lock ../
+
+      - name: Build docs
+        run: npm run build
+
+      - name: Fail on missing schema snippets
+        run: |
+          if rg -n "Snippet not available" .vitepress/dist; then
+            echo "Found 'Snippet not available' in built docs. Regenerate docs/generated/schema-snippets.json."
+            exit 1
+          fi
