@@ -10945,6 +10945,25 @@ describe('QueryBuilder', () => {
       }
     );
 
+    // Related with -> https://github.com/knex/knex/issues/6124
+    it('Should be treated as Literal Value(single quotation marked) in Postgres Database', () => {
+      const query = qb()
+        .delete()
+        .from({ p: 'wp_posts' })
+        .innerJoin('wp_postmeta', (join) => {
+          join.onVal('wp_postmeta.id', '123');
+        })
+        .toQuery();
+
+      expect(query).to.equal(
+        `delete from "wp_posts" as "p" using "wp_postmeta" where "wp_postmeta"."id" = '123'`
+      );
+
+      expect(query).to.not.equal(
+        `delete from "wp_posts" as "p" using "wp_postmeta" where "wp_postmeta"."id" = "123"`
+      );
+    });
+
     testsql(
       qb()
         .select({
