@@ -11930,4 +11930,143 @@ describe('QueryBuilder', () => {
       });
     });
   });
+
+  describe('Multi-table DELETE operations', () => {
+    it('should generate multi-table delete SQL for MySQL', () => {
+      testsql(
+        qb()
+          .from('users')
+          .join('posts', 'users.id', 'posts.user_id')
+          .where('users.email', 'test@example.com')
+          .del(['users', 'posts']),
+        {
+          mysql: {
+            sql: 'delete `users`, `posts` from `users` inner join `posts` on `users`.`id` = `posts`.`user_id` where `users`.`email` = ?',
+            bindings: ['test@example.com'],
+          },
+        },
+        { mysql: clients.mysql }
+      );
+    });
+
+    it('should generate multi-table delete SQL for MSSQL', () => {
+      testsql(
+        qb()
+          .from('users')
+          .join('posts', 'users.id', 'posts.user_id')
+          .where('users.email', 'test@example.com')
+          .del(['users', 'posts']),
+        {
+          mssql: {
+            sql: 'delete [users], [posts] from [users] inner join [posts] on [users].[id] = [posts].[user_id] where [users].[email] = ?;select @@rowcount',
+            bindings: ['test@example.com'],
+          },
+        },
+        { mssql: clients.mssql }
+      );
+    });
+
+    it('should generate multi-table delete SQL for PostgreSQL', () => {
+      testsql(
+        qb()
+          .from('users')
+          .join('posts', 'users.id', 'posts.user_id')
+          .where('users.email', 'test@example.com')
+          .del(['users', 'posts']),
+        {
+          pg: {
+            sql: 'delete from "users" using "posts" where "users"."id" = "posts"."user_id" and "users"."email" = ?',
+            bindings: ['test@example.com'],
+          },
+        },
+        { pg: clients.pg }
+      );
+    });
+
+    it('should throw error for multi-table delete on unsupported databases', () => {
+      expect(() => {
+        qb()
+          .from('users')
+          .join('posts', 'users.id', 'posts.user_id')
+          .where('users.email', 'test@example.com')
+          .del(['users', 'posts'])
+          .toSQL();
+      }).to.throw('Multi-table DELETE operations are not supported by sqlite3');
+    });
+
+    it('should maintain backward compatibility with single-table delete', () => {
+      testsql(
+        qb()
+          .from('users')
+          .where('id', 1)
+          .del(),
+        {
+          mysql: {
+            sql: 'delete from `users` where `id` = ?',
+            bindings: [1],
+          },
+          mssql: {
+            sql: 'delete from [users] where [id] = ?;select @@rowcount',
+            bindings: [1],
+          },
+          pg: {
+            sql: 'delete from "users" where "id" = ?',
+            bindings: [1],
+          },
+        }
+      );
+    });
+
+    it('should support single table in array format', () => {
+      testsql(
+        qb()
+          .from('users')
+          .join('posts', 'users.id', 'posts.user_id')
+          .where('users.email', 'test@example.com')
+          .del(['users']),
+        {
+          mysql: {
+            sql: 'delete `users` from `users` inner join `posts` on `users`.`id` = `posts`.`user_id` where `users`.`email` = ?',
+            bindings: ['test@example.com'],
+          },
+        },
+        { mysql: clients.mysql }
+      );
+    });
+
+    it('should validate empty table names', () => {
+      expect(() => {
+        qb()
+          .from('users')
+          .del([''])
+          .toSQL();
+      }).to.throw('Delete table names must be non-empty strings');
+    });
+
+    it('should validate non-string table names', () => {
+      expect(() => {
+        qb()
+          .from('users')
+          .del([123])
+          .toSQL();
+      }).to.throw('Delete table names must be non-empty strings');
+    });
+
+    it('should support PostgreSQL multi-table delete with RETURNING', () => {
+      testsql(
+        qb()
+          .from('users')
+          .join('posts', 'users.id', 'posts.user_id')
+          .where('users.email', 'test@example.com')
+          .del(['users', 'posts'], '*'),
+        {
+          pg: {
+            sql: 'delete from "users" using "posts" where "users"."id" = "posts"."user_id" and "users"."email" = ? returning *',
+            bindings: ['test@example.com'],
+          },
+        },
+        { pg: clients.pg }
+      );
+    });
+  });
 });
