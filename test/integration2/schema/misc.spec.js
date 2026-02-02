@@ -1,6 +1,11 @@
 'use strict';
 
-const { expect } = require('chai');
+/** @typedef {import('../../../types/index').Knex} Knex */
+/** @typedef {import('../../../types/index').Knex.CreateTableBuilder} CreateTableBuilder */
+
+const chai = require('chai');
+chai.use(require('chai-as-promised'));
+const { expect } = chai;
 
 const _ = require('lodash');
 const { isString, isObject } = require('../../../lib/util/is');
@@ -48,6 +53,7 @@ const postProcessResponse = (response) => {
 describe('Schema (misc)', () => {
   getAllDbs().forEach((db) => {
     describe(db, () => {
+      /** @type {Knex} */
       let knex;
 
       before(async () => {
@@ -1677,6 +1683,151 @@ describe('Schema (misc)', () => {
           knex.schema.table('test_table_one', (t) => {
             t.dropIndex('first_name');
           }));
+
+        describe('supports nulls [not] distinct - postgres', function () {
+          const tblname = 'nulls_distinct_table';
+
+          const cleanup = async () => {
+            try {
+              // cleanup any leftovers from previous tests
+              await knex.schema.dropTable(tblname);
+            } catch (e) {
+              // swallow error
+            }
+          };
+
+          beforeEach(async () => {
+            await cleanup();
+          });
+          afterEach(async () => {
+            await cleanup();
+          });
+
+          /** @param {() => Promise<void>} cb */
+          /** @param {(tb: CreateTableBuilder) => void} [builder] */
+          const withTable = async (cb, builder) => {
+            // verify create table
+            await cleanup();
+            await knex.schema.createTable(tblname, (tb) => {
+              tb.increments('id');
+              builder?.(tb);
+            });
+            await cb();
+
+            // verify alter table
+            await cleanup();
+            await knex.schema.createTable(tblname, (tb) => {
+              tb.increments('id');
+            });
+            await knex.schema.alterTable(tblname, (tb) => {
+              builder?.(tb);
+            });
+            await cb();
+          };
+
+          it('throws on unsupported dialects', async function () {
+            if (isPostgreSQL(knex)) {
+              return this.skip();
+            }
+
+            await expect(
+              knex.schema.createTable(tblname, (tb) => {
+                tb.increments('id');
+                tb.unique('id', {
+                  nullsNotDistinct: 'anything',
+                });
+              })
+            ).to.eventually.be.rejectedWith(
+              /cannot make unique with nullsNotDistinct/
+            );
+          });
+
+          it('allows creating indexes with NULLS NOT DISTINCT', async function () {
+            if (!isPostgreSQL(knex)) {
+              return this.skip();
+            }
+
+            await withTable(
+              async () => {
+                // duplicate "name" allowed - null is distinct from a value
+                await knex
+                  .insert([
+                    { name: 'foo', email: null },
+                    { name: 'foo', email: 'specified' },
+                    { name: 'bar', email: null },
+                  ])
+                  .into(tblname);
+
+                // insert disallowed - nulls are not treated as distinct values
+                await expect(
+                  knex
+                    .insert([
+                      { name: 'foo', email: null },
+                      { name: 'foo', email: null },
+                    ])
+                    .into(tblname)
+                ).to.eventually.be.rejectedWith(
+                  /duplicate key value.*nulls_not_distinct_idx/
+                );
+
+                const rows = await knex(tblname)
+                  .select('name')
+                  .orderBy('name', 'desc')
+                  .pluck('name');
+
+                expect(rows).to.deep.eq(['foo', 'foo', 'bar']);
+              },
+              async (tb) => {
+                tb.string('name').notNullable();
+                tb.string('email').nullable();
+                tb.unique(['name', 'email'], {
+                  indexName: 'nulls_not_distinct_idx',
+                  nullsNotDistinct: true,
+                  useConstraint: false,
+                });
+              }
+            );
+          });
+
+          it('allows creating indexes with NULLS DISTINCT', async function () {
+            if (!isPostgreSQL(knex)) {
+              return this.skip();
+            }
+
+            for (const nullsNotDistinct of [undefined, false]) {
+              await withTable(
+                async () => {
+                  await knex
+                    .insert([
+                      { name: 'foo', email: null },
+                      // insert allowed - nulls are treated as distinct from each other
+                      { name: 'foo', email: null },
+                      // duplicate "name" allowed - null is distinct from a value
+                      { name: 'foo', email: 'specified' },
+                      { name: 'bar', email: null },
+                    ])
+                    .into(tblname);
+
+                  const rows = await knex(tblname)
+                    .select('name')
+                    .orderBy('name', 'desc')
+                    .pluck('name');
+
+                  expect(rows).to.deep.eq(['foo', 'foo', 'foo', 'bar']);
+                },
+                async (tb) => {
+                  tb.string('name').notNullable();
+                  tb.string('email').nullable();
+                  tb.unique(['name', 'email'], {
+                    indexName: 'nulls_not_distinct_idx',
+                    nullsNotDistinct,
+                    useConstraint: false,
+                  });
+                }
+              );
+            }
+          });
+        });
 
         describe('supports partial indexes - postgres, sqlite, and mssql', function () {
           it('allows creating indexes with predicate', async function () {
