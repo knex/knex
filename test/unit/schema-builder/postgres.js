@@ -609,6 +609,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('drop primary if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropPrimaryIfExists();
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "users_pkey"'
+    );
+  });
+
+  it('drop primary if exists takes constraint name', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropPrimaryIfExists('testconstraintname');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "testconstraintname"'
+    );
+  });
+
   it('drop unique', function () {
     tableSql = client
       .schemaBuilder()
@@ -632,6 +658,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" drop constraint "foo"'
+    );
+  });
+
+  it('drop unique if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropUniqueIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "users_foo_unique"'
+    );
+  });
+
+  it('drop unique if exists, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropUniqueIfExists(null, 'foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "foo"'
     );
   });
 
@@ -692,6 +744,32 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" drop constraint "foo"'
+    );
+  });
+
+  it('drop foreign if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropForeignIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "users_foo_foreign"'
+    );
+  });
+
+  it('drop foreign if exists, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropForeignIfExists(null, 'foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'alter table "users" drop constraint if exists "foo"'
     );
   });
 

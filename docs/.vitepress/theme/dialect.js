@@ -2,8 +2,7 @@ import { watch, ref, nextTick, inject } from 'vue';
 
 export function createDialect(app) {
   const dialect = ref('mysql');
-
-  if (!import.meta.url) {
+  if (typeof window !== 'undefined') {
     watch(dialect, (value) => {
       localStorage.setItem('sql-dialect', value);
     });

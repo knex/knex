@@ -5,7 +5,7 @@ const test = require('tape');
 const fs = require('fs');
 
 test('it should parse the connection string', function (t) {
-  t.plan(1);
+  t.plan(2);
   const knexObj = knex({
     client: 'mysql',
     connection: 'mysql://user:password@localhost/dbname',
@@ -13,9 +13,10 @@ test('it should parse the connection string', function (t) {
   t.deepEqual(knexObj.client.config.connection, {
     database: 'dbname',
     host: 'localhost',
-    password: 'password',
+    // password: 'password', // non-enumerable
     user: 'user',
   });
+  t.equal(knexObj.client.config.connection.password, 'password');
   knexObj.destroy();
 });
 
@@ -37,7 +38,7 @@ test('it should allow to use proprietary dialect', function (t) {
     connection: {
       database: 'dbname',
       host: 'localhost',
-      password: 'password',
+      // password: 'password', // non-enumerable
       user: 'user',
     },
   });
@@ -60,7 +61,7 @@ test('it should use knex supported dialect', function (t) {
     connection: {
       database: 'dbname',
       host: 'localhost',
-      password: 'password',
+      // password: 'password', // non-enumerable
       user: 'user',
     },
   });

@@ -1,0 +1,143 @@
+name: publish
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+
+jobs:
+  # initial validation: determine whether to run the jobs at all, and
+  # define parameters
+  gate:
+    # do nothing unless the PR got merged. dependent jobs won't run
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    # no permissions necessary
+    permissions: {}
+
+    # determine the semver bump to perform later, according to the PR labels.
+    # empty output will prevent the build job (and its dependent jobs) from running
+    outputs:
+      bump: ${{ steps.version.outputs.bump }}
+    steps:
+      - name: Determine version bump
+        id: version
+        # only output known string literals; do not include user-supplied data.
+        # create this value in one place with clearly reviewable logic
+        run: |
+          if ${{ contains(github.event.pull_request.labels.*.name, 'major') }}; then
+            echo "bump=major" >> $GITHUB_OUTPUT
+          elif ${{ contains(github.event.pull_request.labels.*.name, 'minor') }}; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+          elif ${{ contains(github.event.pull_request.labels.*.name, 'patch') }}; then
+            echo "bump=patch" >> $GITHUB_OUTPUT
+          else
+            echo "bump="
+          fi
+
+  # non-privileged context: do the work of producing a build artifact, but make
+  # no direct commits or publishes
+  build:
+    runs-on: ubuntu-latest
+    needs: gate
+    # empty bump = do not publish, skip this job (and dependent jobs)
+    if: needs.gate.outputs.bump != ''
+
+    # untrusted context. no write permissions
+    permissions:
+      contents: read
+
+    # the NPM tarball is the only input into the privileged publish step.
+    # the contents will not be _executed_ in the CI runner, insulating us
+    # against infrastructure compromise, but if the build step includes a
+    # malicious dependency the published artifact will still be compromised.
+    # we may be able to add a scanning step between build and publish to help
+    # catch any such problem before pushing it out to users
+    outputs:
+      tarball: ${{ steps.build.outputs.tarball }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          package-manager-cache: false
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Build for release
+        id: build
+        run: ./scripts/build-for-release.sh "${{ needs.gate.outputs.bump }}"
+
+      # hand off built artifact to privileged publish job
+      - name: Upload artifact
+        # v6 fails with "crypto is not defined" -- node version problem?
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build.outputs.tarball }}
+          path: ${{ steps.build.outputs.tarball }}
+          if-no-files-found: error
+
+  # privileged context: push commits to repo, publish to npm
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+
+    # privileged context. Avoid executing code from dependencies and/or third-party actions
+    permissions:
+      contents: write # Allow job to commit to repository
+      id-token: write # Allow job to obtain OIDC tokens (publish to NPM)
+      attestations: write # Allow job to create artifact attestations
+      # act doesn't support this yet, for testing in act we'll need to temporarily disable it
+      artifact-metadata: write # Allow job to write artifact attestations
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Download artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ needs.build.outputs.tarball }}
+          path: .
+
+      # extract the contents of the artifact we will publish back into the
+      # git root so that we can commit back the version bump and formatted
+      # typescript output. assert that the only changes are to package.json
+      # and lib/** to limit the blast radius of any errors
+      - name: Extract artifact
+        run: |
+          tar zxf "${{ needs.build.outputs.tarball }}" --strip-components=1 -C .
+          if git diff --name-only HEAD -- ':(exclude)lib/**' ':(exclude)package.json'; then
+            echo "Tarball contained unexpected differences, aborting"
+            exit 1
+          fi
+
+      - name: Commit and push
+        run: |
+          git add .
+          git commit -m "chore: release v$(node -p "require('./package.json').version")"
+          git tag "v$(node -p "require('./package.json').version")"
+          echo :::: git push
+          echo :::: git push --tags
+
+      - uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: ${{ needs.build.outputs.tarball }}
+
+      - name: Publish to npm
+        run: |
+          echo :::: npm publish --provenance --access public

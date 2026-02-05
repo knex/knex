@@ -306,7 +306,35 @@ exports.down = function (knex) {
 exports.config = { transaction: false };
 ```
 
-The same config property can be used for enabling transaction per-migration in case the common configuration has `disableTransactions: true`.
+The same config property can be used for enabling transaction per-migration in case the common configuration has `disableTransactions: false`.
+
+#### Sqlite3-specific concerns
+
+Disabling / enabling foreign key checking [has no effect within a transaction](https://sqlite.org/pragma.html#pragma_foreign_keys) on sqlite3, so features such as `.dropColumn()` cannot be emulated correctly inside of a migration-level transaction (and [can even cause data loss](https://github.com/knex/knex/pull/6315)). Knex now throws an error in these cases.
+
+It is recommended to write migrations intended for sqlite using `transaction: false` in your migration file, and use explicit transactions where possible if you want them. You may supply `enforceForeignCheck: false` in the call to `knex.transaction()`, which will disable foreign key checking before creating the transaction. If foreign key checking was enabled before the transaction, `PRAGMA foreign_key_check` will be run before committing the transaction to ensure the data is sound:
+
+```js
+exports.up = function (knex) {
+  return knex.transaction(function (trx) {
+    return knex.schema.alterTable('users', function (table) {
+      table.string('website');
+    });
+  });
+};
+
+exports.down = function (knex) {
+  return knex.transaction(
+    function (trx) {
+      return knex.schema.alterTable('users', function (table) {
+        table.dropColumn('website');
+      });
+    },
+    { enforceForeignCheck: false }
+  );
+};
+exports.config = { transaction: false };
+```
 
 ### make
 
