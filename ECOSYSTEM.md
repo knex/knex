@@ -4,6 +4,7 @@ Plugins and tools maintained by the knex team are listed under [Core](#core) whi
 
 #### [Dialects](#dialects)
 
+- [`@photostructure/knex-sqlite`](https://github.com/photostructure/knex-sqlite) Dialect for [`@photostructure/sqlite`](https://github.com/photostructure/node-sqlite), a drop-in `node:sqlite` replacement with pre-built binaries.
 - [`knex-firebird-dialect`](https://github.com/Tomas2D/knex-firebird-dialect) Dialect for a Firebird database.
 
 #### [Core](#core)
