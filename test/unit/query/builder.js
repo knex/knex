@@ -6754,6 +6754,95 @@ describe('QueryBuilder', () => {
     }).to.throw('onConflict().merge().where() is not supported for mysql');
   });
 
+  it('#5257 - insert merge should not include pre-existing where clauses', () => {
+    // When a builder has WHERE clauses before .insert(), they should not
+    // leak into the onConflict().merge() upsert statement.
+    const builder = qb().from('option').where('key', 'test');
+    builder._method = 'select'; // simulate prior query building
+
+    testsql(
+      builder
+        .insert({ key: 'newkey', value: 'bar' })
+        .onConflict('key')
+        .merge(['value']),
+      {
+        pg: {
+          sql: 'insert into "option" ("key", "value") values (?, ?) on conflict ("key") do update set "value" = excluded."value"',
+          bindings: ['newkey', 'bar'],
+        },
+        sqlite3: {
+          sql: 'insert into `option` (`key`, `value`) values (?, ?) on conflict (`key`) do update set `value` = excluded.`value`',
+          bindings: ['newkey', 'bar'],
+        },
+      }
+    );
+  });
+
+  it('#5257 - insert merge with post-merge where still works', () => {
+    // WHERE clauses added AFTER .merge() should still work as
+    // conditional upsert clauses (PostgreSQL feature).
+    testsql(
+      qb()
+        .from('users')
+        .insert({ email: 'foo', name: 'taylor' })
+        .onConflict('email')
+        .merge()
+        .where('users.active', true),
+      {
+        pg: {
+          sql: 'insert into "users" ("email", "name") values (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "users"."active" = ?',
+          bindings: ['foo', 'taylor', true],
+        },
+        sqlite3: {
+          sql: 'insert into `users` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `users`.`active` = ?',
+          bindings: ['foo', 'taylor', true],
+        },
+      }
+    );
+  });
+
+  it('#5257 - insert merge with pre-existing where and post-merge where', () => {
+    // Only the post-merge WHERE should appear in the upsert.
+    const builder = qb().from('option').where('key', 'leaked');
+
+    testsql(
+      builder
+        .insert({ key: 'newkey', value: 'bar' })
+        .onConflict('key')
+        .merge(['value'])
+        .where('option.active', true),
+      {
+        pg: {
+          sql: 'insert into "option" ("key", "value") values (?, ?) on conflict ("key") do update set "value" = excluded."value" where "option"."active" = ?',
+          bindings: ['newkey', 'bar', true],
+        },
+        sqlite3: {
+          sql: 'insert into `option` (`key`, `value`) values (?, ?) on conflict (`key`) do update set `value` = excluded.`value` where `option`.`active` = ?',
+          bindings: ['newkey', 'bar', true],
+        },
+      }
+    );
+  });
+
+  it('#5257 - mysql merge should not throw for pre-existing where clauses', () => {
+    // Pre-existing WHERE clauses should be silently ignored on MySQL too,
+    // not cause the "not supported" error.
+    const builder = clients.mysql
+      .queryBuilder()
+      .from('option')
+      .where('key', 'test');
+
+    const sql = builder
+      .insert({ key: 'newkey', value: 'bar' })
+      .onConflict('key')
+      .merge(['value'])
+      .toString();
+
+    expect(sql).to.equal(
+      "insert into `option` (`key`, `value`) values ('newkey', 'bar') on duplicate key update `value` = values(`value`)"
+    );
+  });
+
   it('Calling decrement and then increment will overwrite the previous value', () => {
     testsql(
       qb()
