@@ -127,6 +127,33 @@ describe('Postgres Unit Tests', function () {
       });
   });
 
+  it('positionBindings handles even/odd backslashes before ? (#6363)', () => {
+    const knexInstance = knex({
+      client: 'pg',
+    });
+    const client = knexInstance.client;
+
+    // No backslash: real placeholder
+    expect(client.positionBindings('select ? as a, ? as b')).to.equal(
+      'select $1 as a, $2 as b'
+    );
+
+    // Single backslash (odd): escaped literal ?
+    expect(client.positionBindings('select \\? as a, ? as b')).to.equal(
+      'select ? as a, $1 as b'
+    );
+
+    // Double backslash (even): real placeholder
+    expect(client.positionBindings('select \\\\? as a, ? as b')).to.equal(
+      'select $1 as a, $2 as b'
+    );
+
+    // Triple backslash (odd): escaped literal ?
+    expect(client.positionBindings('select \\\\\\? as a, ? as b')).to.equal(
+      'select ? as a, $1 as b'
+    );
+  });
+
   it('Uses documented query config as param when providing bindings', () => {
     const knexInstance = knex({
       client: 'postgresql',

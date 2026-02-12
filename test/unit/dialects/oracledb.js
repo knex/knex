@@ -74,6 +74,36 @@ describe('OracleDB Unit Tests', () => {
     });
   });
 
+  describe('positionBindings', () => {
+    const client = new Oracle_Client({ client: 'oracledb', version: '18' });
+
+    it('should convert ? to numbered :N placeholders', () => {
+      expect(client.positionBindings('select ? as a, ? as b')).to.equal(
+        'select :1 as a, :2 as b'
+      );
+    });
+
+    it('should treat \\? as an escaped literal question mark', () => {
+      expect(client.positionBindings('select \\? as a, ? as b')).to.equal(
+        'select ? as a, :1 as b'
+      );
+    });
+
+    it('should treat \\\\? (even backslashes) as a real placeholder (#6363)', () => {
+      // \\\\? in JS string = \\? (2 backslashes + ?)
+      expect(client.positionBindings('select \\\\? as a, ? as b')).to.equal(
+        'select :1 as a, :2 as b'
+      );
+    });
+
+    it('should treat \\\\\\? (odd backslashes) as escaped (#6363)', () => {
+      // \\\\\\? in JS string = \\\? (3 backslashes + ?)
+      expect(client.positionBindings('select \\\\\\? as a, ? as b')).to.equal(
+        'select ? as a, :1 as b'
+      );
+    });
+  });
+
   describe('Name Generation', () => {
     it('should use a 128 character name limit for Oracle 12.2 and above', () => {
       const ora122NameHelper = new NameHelper('12.2');
