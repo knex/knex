@@ -2070,6 +2070,74 @@ describe('Schema (misc)', () => {
               expect(autoinc).to.equal(true);
             }
           });
+
+          it('#1888 - .renameColumn should preserve expression defaults and ON UPDATE clause', async function () {
+            if (!isMysql(knex)) {
+              return this.skip();
+            }
+
+            const tableName = 'rename_col_expr_default_test';
+            await knex.schema.dropTableIfExists(tableName);
+            await knex.schema.createTable(tableName, (tbl) => {
+              tbl.increments('id').primary();
+              tbl.timestamp('created_at').notNullable().defaultTo(knex.raw('CURRENT_TIMESTAMP'));
+              tbl
+                .timestamp('updated_at')
+                .notNullable()
+                .defaultTo(knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
+            });
+
+            try {
+              // Read the original column metadata before rename
+              const beforeRes = await knex.raw(
+                `show full fields from \`${tableName}\` where field in ('created_at', 'updated_at')`
+              );
+              const beforeCols = {};
+              for (const col of beforeRes[0]) {
+                beforeCols[col.Field] = col;
+              }
+
+              // Rename both columns
+              await knex.schema.table(tableName, (tbl) => {
+                tbl.renameColumn('created_at', 'created');
+                tbl.renameColumn('updated_at', 'updated');
+              });
+
+              // Read column metadata after rename
+              const afterRes = await knex.raw(
+                `show full fields from \`${tableName}\` where field in ('created', 'updated')`
+              );
+              const afterCols = {};
+              for (const col of afterRes[0]) {
+                afterCols[col.Field] = col;
+              }
+
+              // created_at -> created: should preserve CURRENT_TIMESTAMP default
+              expect(afterCols.created).to.exist;
+              expect(afterCols.created.Default).to.match(
+                /CURRENT_TIMESTAMP/i
+              );
+              expect(afterCols.created.Null).to.equal('NO');
+
+              // updated_at -> updated: should preserve both default and ON UPDATE
+              expect(afterCols.updated).to.exist;
+              expect(afterCols.updated.Default).to.match(
+                /CURRENT_TIMESTAMP/i
+              );
+              expect(afterCols.updated.Extra).to.match(
+                /on update CURRENT_TIMESTAMP/i
+              );
+
+              // Verify the table is still functional by inserting a row
+              await knex(tableName).insert({});
+              const rows = await knex(tableName).select();
+              expect(rows.length).to.equal(1);
+              expect(rows[0].created).to.be.an.instanceOf(Date);
+              expect(rows[0].updated).to.be.an.instanceOf(Date);
+            } finally {
+              await knex.schema.dropTableIfExists(tableName);
+            }
+          });
         });
       });
 
