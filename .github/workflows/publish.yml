@@ -131,8 +131,8 @@ jobs:
           git add .
           git commit -m "chore: release v$(node -p "require('./package.json').version")"
           git tag "v$(node -p "require('./package.json').version")"
-          echo :::: git push
-          echo :::: git push --tags
+          git push
+          git push --tags
 
       - uses: actions/attest-build-provenance@v3
         with:
