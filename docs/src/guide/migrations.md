@@ -56,7 +56,7 @@ $ knex migrate:make --stub
 ```
 
 - if a stub path is provided, it must be relative to the knexfile.\[js, ts, etc\] location
-- if a is used, the stub is selected by its file name. The CLI will look for this file in the config.migrations.directory folder. If the config.migrations.directory is not defined, this operation will fail
+- if a file name is used, the stub is selected by its file name. The CLI will look for this file in the config.migrations.directory folder. If the config.migrations.directory is not defined, this operation will fail
 
 Once you have finished writing the migrations, you can update the database matching your `NODE_ENV` by running:
 
