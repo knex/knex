@@ -2114,6 +2114,7 @@ declare namespace Knex {
     extends EventEmitter,
       ChainableInterface<ResolveResult<TResult>> {
     timeout(ms: number, options?: { cancel?: boolean }): Raw<TResult>;
+    abortOnSignal(signal: AbortSignal): Raw<TResult>;
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
     toSQL(): Sql;
     queryContext(context: any): Raw<TResult>;
@@ -2255,6 +2256,7 @@ declare namespace Knex {
       ms: number,
       options?: { cancel?: boolean }
     ): QueryBuilder<TRecord, TResult>;
+    abortOnSignal(signal: AbortSignal): QueryBuilder<TRecord, TResult>;
   }
 
   interface Sql {
