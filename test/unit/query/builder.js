@@ -10081,6 +10081,36 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('even backslashes before ? are treated as real placeholders (#6363)', () => {
+    // \\\\? in JS = \\? in the string (2 backslashes + ?).
+    // Two backslashes = even count, so ? is a real placeholder.
+    testquery(
+      qb()
+        .select('*')
+        .from('users')
+        .whereRaw('col = \\\\? and id = ?', ['val', 1]),
+      {
+        mysql:
+          "select * from `users` where col = 'val' and id = 1",
+        pg: 'select * from "users" where col = \'val\' and id = 1',
+      }
+    );
+  });
+
+  it('raw named bindings with escaped backslash before placeholder (#6363)', () => {
+    testquery(
+      qb()
+        .select('*')
+        .from('users')
+        .whereRaw('col = :val', { val: 'hello' }),
+      {
+        mysql:
+          "select * from `users` where col = 'hello'",
+        pg: 'select * from "users" where col = \'hello\'',
+      }
+    );
+  });
+
   it('operator transformation', () => {
     // part of common base code, no need to test on every dialect
     testsql(qb().select('*').from('users').where('id', '?', 1), {
