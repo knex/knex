@@ -622,6 +622,13 @@ declare namespace Knex {
     fullOuterJoin: Join<TRecord, TResult>;
     crossJoin: Join<TRecord, TResult>;
 
+    // Lateral Joins
+    joinLateral: Join<TRecord, TResult>;
+    innerJoinLateral: Join<TRecord, TResult>;
+    leftJoinLateral: Join<TRecord, TResult>;
+    leftOuterJoinLateral: Join<TRecord, TResult>;
+    crossJoinLateral: Join<TRecord, TResult>;
+
     // Json manipulation
     jsonExtract: JsonExtract<TRecord, TResult>;
     jsonSet: JsonSet<TRecord, TResult>;
