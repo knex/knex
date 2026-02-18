@@ -4585,6 +4585,144 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('joinLateral with callback', () => {
+    testsql(
+      qb()
+        .select('users.id', 'top_orders.total')
+        .from('users')
+        .joinLateral(
+          qb()
+            .select('total')
+            .from('orders')
+            .whereRaw('"orders"."user_id" = "users"."id"')
+            .orderBy('total', 'desc')
+            .limit(3)
+            .as('top_orders'),
+          function () {
+            this.on(raw('1 = 1'));
+          }
+        ),
+      {
+        pg: {
+          sql: 'select "users"."id", "top_orders"."total" from "users" inner join lateral (select "total" from "orders" where "orders"."user_id" = "users"."id" order by "total" desc limit ?) as "top_orders" on 1 = 1',
+          bindings: [3],
+        },
+        mssql: {
+          sql: 'select [users].[id], [top_orders].[total] from [users] cross apply (select top (?) [total] from [orders] where "orders"."user_id" = "users"."id" order by [total] desc) as [top_orders]',
+          bindings: [3],
+        },
+        mysql: {
+          sql: 'select `users`.`id`, `top_orders`.`total` from `users` inner join lateral (select `total` from `orders` where "orders"."user_id" = "users"."id" order by `total` desc limit ?) as `top_orders` on 1 = 1',
+          bindings: [3],
+        },
+      }
+    );
+  });
+
+  it('innerJoinLateral with callback', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .innerJoinLateral(
+          qb().select('id').from('orders').as('o'),
+          function () {
+            this.on(raw('1 = 1'));
+          }
+        ),
+      {
+        pg: {
+          sql: 'select * from "users" inner join lateral (select "id" from "orders") as "o" on 1 = 1',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] cross apply (select [id] from [orders]) as [o]',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('leftJoinLateral with callback', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .leftJoinLateral(
+          qb().select('id').from('orders').as('o'),
+          function () {
+            this.on(raw('1 = 1'));
+          }
+        ),
+      {
+        pg: {
+          sql: 'select * from "users" left join lateral (select "id" from "orders") as "o" on 1 = 1',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] outer apply (select [id] from [orders]) as [o]',
+          bindings: [],
+        },
+        mysql: {
+          sql: 'select * from `users` left join lateral (select `id` from `orders`) as `o` on 1 = 1',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('leftOuterJoinLateral with callback', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .leftOuterJoinLateral(
+          qb().select('id').from('orders').as('o'),
+          function () {
+            this.on(raw('1 = 1'));
+          }
+        ),
+      {
+        pg: {
+          sql: 'select * from "users" left outer join lateral (select "id" from "orders") as "o" on 1 = 1',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] outer apply (select [id] from [orders]) as [o]',
+          bindings: [],
+        },
+      }
+    );
+  });
+
+  it('crossJoinLateral with subquery', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .crossJoinLateral(
+          qb().select('id').from('orders').as('o'),
+          function () {
+            this.on(raw('1 = 1'));
+          }
+        ),
+      {
+        pg: {
+          sql: 'select * from "users" cross join lateral (select "id" from "orders") as "o" on 1 = 1',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] cross apply (select [id] from [orders]) as [o]',
+          bindings: [],
+        },
+        mysql: {
+          sql: 'select * from `users` cross join lateral (select `id` from `orders`) as `o` on 1 = 1',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('basic joins', () => {
     testsql(
       qb()
