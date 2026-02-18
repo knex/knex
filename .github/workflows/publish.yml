@@ -121,7 +121,7 @@ jobs:
       - name: Extract artifact
         run: |
           tar zxf "${{ needs.build.outputs.tarball }}" --strip-components=1 -C .
-          if git diff --name-only HEAD -- ':(exclude)lib/**' ':(exclude)package.json'; then
+          if git diff --name-only HEAD -- ':(exclude)lib/**' ':(exclude)package.json' | grep .; then
             echo "Tarball contained unexpected differences, aborting"
             exit 1
           fi
