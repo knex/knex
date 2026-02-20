@@ -132,7 +132,7 @@
     "cli-testlab": "^3.0.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.54.0",
-    "eslint-config-prettier": "^8.6.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-mocha-no-only": "^1.1.1",
     "eslint-plugin-n": "^17.23.1",
