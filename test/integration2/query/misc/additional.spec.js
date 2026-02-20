@@ -307,13 +307,30 @@ describe('Additional', function () {
           ]);
         });
 
-        it('should return the correct columns when multiple properties are given to returning', async function () {
+        it('should return the correct columns when multiple properties are given to returning on insert', async function () {
           if (!isPostgreSQL(knex) && !isMssql(knex) && !isSQLite(knex)) {
             return this.skip();
           }
 
           const res = await knex('accounts_foo')
             .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
+            .returning(['balance_foo', 'email_foo']);
+
+          expect(res).to.eql([{ balance_foo: 123, email_foo: 'foo@bar.com' }]);
+        });
+
+        it('should return the correct columns when multiple properties are given to returning on delete', async function () {
+          if (!isPostgreSQL(knex) && !isMssql(knex) && !isSQLite(knex)) {
+            return this.skip();
+          }
+
+          await knex('accounts_foo').truncate();
+          await knex('accounts_foo')
+            .insert({ balance_foo: 123, email_foo: 'foo@bar.com' })
+            .returning(['balance_foo', 'email_foo']);
+
+          const res = await knex('accounts_foo')
+            .delete({ balance_foo: 123, email_foo: 'foo@bar.com' })
             .returning(['balance_foo', 'email_foo']);
 
           expect(res).to.eql([{ balance_foo: 123, email_foo: 'foo@bar.com' }]);
