@@ -1,5 +1,6 @@
 'use strict';
 
+require('../../../util/chai-setup');
 const { expect } = require('chai');
 
 const assert = require('assert');
@@ -460,9 +461,25 @@ describe('Selects', function () {
         const stream = knex('accounts').stream();
         stream.on('data', function () {
           count++;
-          if (count === 6) done();
+        });
+        stream.on('error', done);
+        stream.on('end', function () {
+          expect(count).to.equal(8);
+          done();
         });
       });
+
+      if (db === 'oracledb') {
+        it('surfaces stream options errors to the user', async () => {
+          await expect(
+            new Promise((resolve, reject) => {
+              const stream = knex('accounts').stream('foo');
+              stream.on('error', reject);
+              stream.on('end', resolve);
+            })
+          ).to.eventually.be.rejectedWith(/NJS-005/);
+        });
+      }
 
       it('allows you to stream with mysql dialect options', async function () {
         if (!isMysql(knex)) {
