@@ -6150,6 +6150,98 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should include join when updating', () => {
+    testsql(
+      qb()
+        .update({ email: 'foo' })
+        .table('users')
+        .join('photos', 'photos.id', 'users.id')
+        .where({ 'users.active': true }),
+      {
+        mysql: {
+          sql: 'update `users` inner join `photos` on `photos`.`id` = `users`.`id` set `email` = ? where `users`.`active` = ?',
+          bindings: ['foo', true],
+        },
+        mssql: {
+          sql: 'update [users] set [email] = ? from [users] inner join [photos] on [photos].[id] = [users].[id] where [users].[active] = ?;select @@rowcount',
+          bindings: ['foo', true],
+        },
+        pg: {
+          sql: 'update "users" set "email" = ? from "photos" where "users"."active" = ? and "photos"."id" = "users"."id"',
+          bindings: ['foo', true],
+        },
+        'pg-redshift': {
+          sql: 'update "users" inner join "photos" on "photos"."id" = "users"."id" set "email" = ? where "users"."active" = ?',
+          bindings: ['foo', true],
+        },
+        sqlite3: {
+          sql: 'update `users` set `email` = ? from `photos` where `users`.`active` = ? and `photos`.`id` = `users`.`id`',
+          bindings: ['foo', true],
+        },
+      }
+    );
+  });
+
+  it('should include join without where clause when updating', () => {
+    testsql(
+      qb()
+        .update({ email: 'foo' })
+        .table('users')
+        .join('photos', 'photos.id', 'users.id'),
+      {
+        mysql: {
+          sql: 'update `users` inner join `photos` on `photos`.`id` = `users`.`id` set `email` = ?',
+          bindings: ['foo'],
+        },
+        mssql: {
+          sql: 'update [users] set [email] = ? from [users] inner join [photos] on [photos].[id] = [users].[id];select @@rowcount',
+          bindings: ['foo'],
+        },
+        pg: {
+          sql: 'update "users" set "email" = ? from "photos" where "photos"."id" = "users"."id"',
+          bindings: ['foo'],
+        },
+        'pg-redshift': {
+          sql: 'update "users" inner join "photos" on "photos"."id" = "users"."id" set "email" = ?',
+          bindings: ['foo'],
+        },
+        sqlite3: {
+          sql: 'update `users` set `email` = ? from `photos` where `photos`.`id` = `users`.`id`',
+          bindings: ['foo'],
+        },
+      }
+    );
+  });
+
+  it('should include multiple joins when updating', () => {
+    testsql(
+      qb()
+        .update({ email: 'foo' })
+        .table('users')
+        .join('photos', 'photos.user_id', 'users.id')
+        .join('docs', 'docs.user_id', 'users.id')
+        .where({ 'users.active': true }),
+      {
+        mysql: {
+          sql: 'update `users` inner join `photos` on `photos`.`user_id` = `users`.`id` inner join `docs` on `docs`.`user_id` = `users`.`id` set `email` = ? where `users`.`active` = ?',
+          bindings: ['foo', true],
+        },
+        mssql: {
+          sql: 'update [users] set [email] = ? from [users] inner join [photos] on [photos].[user_id] = [users].[id] inner join [docs] on [docs].[user_id] = [users].[id] where [users].[active] = ?;select @@rowcount',
+          bindings: ['foo', true],
+        },
+        pg: {
+          sql: 'update "users" set "email" = ? from "photos", "docs" where "users"."active" = ? and "photos"."user_id" = "users"."id" and "docs"."user_id" = "users"."id"',
+          bindings: ['foo', true],
+        },
+        sqlite3: {
+          sql: 'update `users` set `email` = ? from `photos`, `docs` where `users`.`active` = ? and `photos`.`user_id` = `users`.`id` and `docs`.`user_id` = `users`.`id`',
+          bindings: ['foo', true],
+        },
+      }
+    );
+  });
+
   it('should not update columns undefined values', () => {
     testsql(
       qb()
@@ -6322,11 +6414,11 @@ describe('QueryBuilder', () => {
           bindings: ['foo', 'bar', 1],
         },
         pg: {
-          sql: 'update "users" set "email" = ?, "name" = ? where "users"."id" = ?',
+          sql: 'update "users" set "email" = ?, "name" = ? from "orders" where "users"."id" = ? and "users"."id" = "orders"."user_id"',
           bindings: ['foo', 'bar', 1],
         },
         'pg-redshift': {
-          sql: 'update "users" set "email" = ?, "name" = ? where "users"."id" = ?',
+          sql: 'update "users" inner join "orders" on "users"."id" = "orders"."user_id" set "email" = ?, "name" = ? where "users"."id" = ?',
           bindings: ['foo', 'bar', 1],
         },
       }
@@ -7625,11 +7717,11 @@ describe('QueryBuilder', () => {
         bindings: ['Boonesville', 1, 5],
       },
       pg: {
-        sql: 'update "tblPerson" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
+        sql: 'update "tblPerson" set "tblPerson"."City" = ? from "tblPersonData" where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ? and "tblPersonData"."PersonId" = "tblPerson"."PersonId"',
         bindings: ['Boonesville', 1, 5],
       },
       'pg-redshift': {
-        sql: 'update "tblPerson" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
+        sql: 'update "tblPerson" inner join "tblPersonData" on "tblPersonData"."PersonId" = "tblPerson"."PersonId" set "tblPerson"."City" = ? where "tblPersonData"."DataId" = ? and "tblPerson"."PersonId" = ?',
         bindings: ['Boonesville', 1, 5],
       },
     });
