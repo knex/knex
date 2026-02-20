@@ -24,6 +24,21 @@ describe('migrate:latest', () => {
     fileHelper.cleanup();
   });
 
+  it('Rejects excess arguments', async () => {
+    await execCommand(
+      `node ${KNEX} migrate:latest --client=sqlite3 --connection=:memory: --migrations-directory=${rootDir}/migrations foo`,
+      {
+        expectedErrorMessage: 'Expected 0 arguments',
+      }
+    );
+    await execCommand(
+      `node ${KNEX} migrate:rollback --client=sqlite3 --connection=:memory: --migrations-directory=${rootDir}/migrations foo`,
+      {
+        expectedErrorMessage: 'Expected 0 arguments',
+      }
+    );
+  });
+
   it('Run migrations', async () => {
     fileHelper.createFile(
       'migrations/000_create_rule_table.js',
@@ -39,8 +54,7 @@ describe('migrate:latest', () => {
     expect(fileHelper.fileExists(dbPath)).to.equal(false);
     await execCommand(`node ${KNEX} migrate:latest \
                  --client=sqlite3 --connection=${dbPath} \
-                 --migrations-directory=${rootDir}/migrations \
-                 create_rule_table`);
+                 --migrations-directory=${rootDir}/migrations`);
     expect(fileHelper.fileExists(dbPath)).to.equal(true);
     const db = await new sqlite3.Database(dbPath);
 
@@ -91,8 +105,7 @@ module.exports = {
     await execCommand(`node ${KNEX} migrate:latest \
                  --knexpath=../knexfile.js \
                  --migrations-directory=${rootDir}/migrations/subdirectory/ \
-                 --migrations-table-name=migration_table \
-                 create_rule_table`);
+                 --migrations-table-name=migration_table`);
     expect(fileHelper.fileExists(dbPath)).to.equal(true);
 
     const db = await new sqlite3.Database(dbPath);
