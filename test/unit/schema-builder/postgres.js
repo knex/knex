@@ -2097,7 +2097,7 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
-  it('test column comment with pre-escaped quotes', function () {
+  it('test column comment with multiple quotes', function () {
     tableSql = client
       .schemaBuilder()
       .createTable('test', (t) => {
@@ -2109,7 +2109,7 @@ describe('PostgreSQL SchemaBuilder', function () {
 
     equal(tableSql.length, 2);
     expect(tableSql[1].sql).to.equal(
-      "comment on column \"test\".\"column1\" is 'The table''s first column and it''s escaped'"
+      "comment on column \"test\".\"column1\" is 'The table''''s first column and it''''s escaped'"
     );
   });
 

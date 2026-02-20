@@ -737,7 +737,7 @@ describe('Schema (misc)', () => {
           knex.schema
             .createTable('test_table_one', (table) => {
               if (isMysql(knex)) table.engine('InnoDB');
-              table.comment('A table comment.');
+              table.comment("A table comment with ''quotes.");
               table.bigIncrements('id');
               table.string('first_name').index();
               table.string('last_name');
@@ -754,7 +754,7 @@ describe('Schema (misc)', () => {
             })
             .testSql((tester) => {
               tester('mysql', [
-                "create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default '1', `balance` float(8, 2) default '0', `about` text comment 'A comment.', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = 'A table comment.'",
+                "create table `test_table_one` (`id` bigint unsigned not null auto_increment primary key, `first_name` varchar(255), `last_name` varchar(255), `email` varchar(255) null, `logins` int default '1', `balance` float(8, 2) default '0', `about` text comment 'A comment.', `created_at` datetime, `updated_at` datetime) default character set utf8 engine = InnoDB comment = 'A table comment with ''quotes.'",
                 'alter table `test_table_one` add index `test_table_one_first_name_index`(`first_name`)',
                 'alter table `test_table_one` add unique `test_table_one_email_unique`(`email`)',
                 'alter table `test_table_one` add index `test_table_one_logins_index`(`logins`)',
@@ -763,7 +763,7 @@ describe('Schema (misc)', () => {
                 ['pg', 'cockroachdb'],
                 [
                   'create table "test_table_one" ("id" bigserial primary key, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" text, "created_at" timestamptz, "updated_at" timestamptz)',
-                  'comment on table "test_table_one" is \'A table comment.\'',
+                  "comment on table \"test_table_one\" is 'A table comment with ''quotes.'",
                   'comment on column "test_table_one"."logins" is NULL',
                   'comment on column "test_table_one"."about" is \'A comment.\'',
                   'create index "test_table_one_first_name_index" on "test_table_one" ("first_name")',
@@ -773,7 +773,7 @@ describe('Schema (misc)', () => {
               );
               tester('pg-redshift', [
                 'create table "test_table_one" ("id" bigint identity(1,1) primary key not null, "first_name" varchar(255), "last_name" varchar(255), "email" varchar(255) null, "logins" integer default \'1\', "balance" real default \'0\', "about" varchar(max), "created_at" timestamptz, "updated_at" timestamptz)',
-                'comment on table "test_table_one" is \'A table comment.\'',
+                "comment on table \"test_table_one\" is 'A table comment with ''quotes.'",
                 'comment on column "test_table_one"."logins" is NULL',
                 'comment on column "test_table_one"."about" is \'A comment.\'',
                 'alter table "test_table_one" add constraint "test_table_one_email_unique" unique ("email")',
@@ -786,7 +786,7 @@ describe('Schema (misc)', () => {
               ]);
               tester('oracledb', [
                 `create table "test_table_one" ("id" number(20, 0) not null primary key, "first_name" varchar2(255), "last_name" varchar2(255), "email" varchar2(255) null, "logins" integer default '1', "balance" float default '0', "about" varchar2(4000), "created_at" timestamp with local time zone, "updated_at" timestamp with local time zone)`,
-                'comment on table "test_table_one" is \'A table comment.\'',
+                "comment on table \"test_table_one\" is 'A table comment with ''quotes.'",
                 `DECLARE PK_NAME VARCHAR(200); BEGIN  EXECUTE IMMEDIATE ('CREATE SEQUENCE "test_table_one_seq"');  SELECT cols.column_name INTO PK_NAME  FROM all_constraints cons, all_cons_columns cols  WHERE cons.constraint_type = 'P'  AND cons.constraint_name = cols.constraint_name  AND cons.owner = cols.owner  AND cols.table_name = 'test_table_one';  execute immediate ('create or replace trigger "test_table_one_autoinc_trg"  BEFORE INSERT on "test_table_one"  for each row  declare  checking number := 1;  begin    if (:new."' || PK_NAME || '" is null) then      while checking >= 1 loop        select "test_table_one_seq".nextval into :new."' || PK_NAME || '" from dual;        select count("' || PK_NAME || '") into checking from "test_table_one"        where "' || PK_NAME || '" = :new."' || PK_NAME || '";      end loop;    end if;  end;'); END;`,
                 'comment on column "test_table_one"."logins" is \'\'',
                 'comment on column "test_table_one"."about" is \'A comment.\'',
@@ -796,7 +796,7 @@ describe('Schema (misc)', () => {
               ]);
               tester('mssql', [
                 "CREATE TABLE [test_table_one] ([id] bigint identity(1,1) not null primary key, [first_name] nvarchar(255), [last_name] nvarchar(255), [email] nvarchar(255) null, [logins] int CONSTRAINT [test_table_one_logins_default] DEFAULT '1', [balance] float CONSTRAINT [test_table_one_balance_default] DEFAULT '0', [about] nvarchar(max), [created_at] datetime2, [updated_at] datetime2)",
-                "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_table_one', NULL, NULL))\n  EXEC sys.sp_updateextendedproperty N'MS_Description', N'A table comment.', N'Schema', N'dbo', N'Table', N'test_table_one'\nELSE\n  EXEC sys.sp_addextendedproperty N'MS_Description', N'A table comment.', N'Schema', N'dbo', N'Table', N'test_table_one'",
+                "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_table_one', NULL, NULL))\n  EXEC sys.sp_updateextendedproperty N'MS_Description', N'A table comment with ''''quotes.', N'Schema', N'dbo', N'Table', N'test_table_one'\nELSE\n  EXEC sys.sp_addextendedproperty N'MS_Description', N'A table comment with ''''quotes.', N'Schema', N'dbo', N'Table', N'test_table_one'",
                 "IF EXISTS(SELECT * FROM sys.fn_listextendedproperty(N'MS_Description', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'))\n  EXEC sys.sp_updateextendedproperty N'MS_Description', N'A comment.', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'\nELSE\n  EXEC sys.sp_addextendedproperty N'MS_Description', N'A comment.', N'Schema', N'dbo', N'Table', N'test_table_one', N'Column', N'about'",
                 'CREATE INDEX [test_table_one_first_name_index] ON [test_table_one] ([first_name])',
                 'CREATE UNIQUE INDEX [test_table_one_email_unique] ON [test_table_one] ([email]) WHERE [email] IS NOT NULL',
