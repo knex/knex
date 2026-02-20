@@ -1500,19 +1500,19 @@ describe('Selects', function () {
               );
               tester(
                 'pg',
-                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                'select jsonb_path_query_first("population" #- ?, ?) as "maxPop" from "cities"',
                 ['{minMax,min}', '$.minMax.max'],
                 [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
               );
               tester(
                 'pgnative',
-                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                'select jsonb_path_query_first("population" #- ?, ?) as "maxPop" from "cities"',
                 ['{minMax,min}', '$.minMax.max'],
                 [{ maxPop: 12000000 }, { maxPop: 1200000 }, { maxPop: 1450000 }]
               );
               tester(
                 'pg-redshift',
-                'select jsonb_path_query("population" #- ?, ?) as "maxPop" from "cities"',
+                'select jsonb_path_query_first("population" #- ?, ?) as "maxPop" from "cities"',
                 ['{minMax,min}', '$.minMax.max'],
                 [
                   { maxPop: '12000000' },
