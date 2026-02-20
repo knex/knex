@@ -85,7 +85,7 @@
     "rechoir": "^0.8.0",
     "resolve-from": "^5.0.0",
     "tarn": "^3.0.2",
-    "tildify": "2.0.0"
+    "tildify": "3.0.0"
   },
   "peerDependencies": {
     "pg-query-stream": "^4.2.4"
