@@ -522,6 +522,24 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal('rename table `users` to `foo`');
     });
 
+    it('test rename column with mysql >= 8', function () {
+      client.version = '8.0.13';
+
+      tableSql = tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.renameColumn('foo', 'bar');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` rename column `foo` to `bar`'
+      );
+
+      delete client.version;
+    });
+
     it('test adding primary key', function () {
       tableSql = client
         .schemaBuilder()

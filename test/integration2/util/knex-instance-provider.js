@@ -133,6 +133,7 @@ const testConfigs = {
 
   mysql2: {
     client: 'mysql2',
+    version: '8.0.13',
     connection: testConfig.mysql || {
       port: 23306,
       database: 'knex_test',
