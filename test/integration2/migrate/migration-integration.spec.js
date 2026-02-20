@@ -17,6 +17,7 @@ const _ = require('lodash');
 const testMemoryMigrations = require('./memory-migrations');
 const {
   isPostgreSQL,
+  isPgBased,
   isOracle,
   isMssql,
   isMysql,
@@ -484,6 +485,37 @@ describe('Migrations', function () {
               })
             );
           });
+
+          describe('with createSchema enabled', function () {
+            const schemaName = 'test_create_schema';
+
+            before(async () => {
+              if (isPgBased(knex) || isMssql(knex) || isOracle(knex)) {
+                await knex.schema.dropSchemaIfExists(schemaName, true);
+              }
+            });
+
+            after(async () => {
+              if (isPgBased(knex) || isMssql(knex) || isOracle(knex)) {
+                await knex.schema.dropSchemaIfExists(schemaName, true);
+              }
+            });
+
+            it('should create the schema', async function () {
+              if (!(isPgBased(knex) || isMssql(knex) || isOracle(knex))) {
+                this.skip();
+              } else {
+                await knex.migrate.latest({
+                  directory: ['test/integration2/migrate/test_create_schema'],
+                  schemaName,
+                  createSchema: true,
+                });
+
+                const exists = await knex.schema.withSchema(schemaName).hasTable('migration_test_1');
+                expect(exists).to.equal(true);
+              }
+            });
+          });
         });
 
         describe('knex.migrate.latest - multiple directories', () => {
@@ -762,6 +794,37 @@ describe('Migrations', function () {
                 .select('value')
                 .first();
               assertNumber(knex, value, 1); // updated by migration before error
+            });
+          });
+
+          describe('with createSchema enabled', function () {
+            const schemaName = 'test_create_schema';
+
+            before(async () => {
+              if (isPgBased(knex) || isMssql(knex) || isOracle(knex)) {
+                await knex.schema.dropSchemaIfExists(schemaName, true);
+              }
+            });
+
+            after(async () => {
+              if (isPgBased(knex) || isMssql(knex) || isOracle(knex)) {
+                await knex.schema.dropSchemaIfExists(schemaName, true);
+              }
+            });
+
+            it('should create the schema', async function () {
+              if (!(isPgBased(knex) || isMssql(knex) || isOracle(knex))) {
+                this.skip();
+              } else {
+                await knex.migrate.latest({
+                  directory: ['test/integration2/migrate/test_create_schema'],
+                  schemaName,
+                  createSchema: true,
+                });
+
+                const exists = await knex.schema.withSchema(schemaName).hasTable('migration_test_1');
+                expect(exists).to.equal(true);
+              }
             });
           });
         });

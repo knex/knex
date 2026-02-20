@@ -274,6 +274,7 @@ Each method takes an optional `config` object, which may specify the following p
 - `extension`: the file extension used for the generated migration files (default `js`)
 - `tableName`: the table name used for storing the migration state (default `knex_migrations`)
 - `schemaName`: the schema name used for storing the table with migration state (optional parameter, only works on DBs that support multiple schemas in a single DB, such as PostgreSQL)
+- `createSchema`: will create the schema specified in `schemaName` if it does not already exist
 - `disableTransactions`: don't run migrations inside transactions (default `false`)
 - `disableMigrationsListValidation`: do not validate that all the already executed migrations are still present in migration directories (default `false`)
 - `sortDirsSeparately`: if true and multiple directories are specified, all migrations from a single directory will be executed before executing migrations in the next folder (default `false`)
