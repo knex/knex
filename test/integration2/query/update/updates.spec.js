@@ -618,6 +618,36 @@ describe('Updates', function () {
           });
         await knex.schema.dropTable('testing');
       });
+
+      it('handle from bindings in the right order #6376', async () => {
+        if (!isPostgreSQL(knex)) {
+          return this.skip();
+        }
+
+        await knex('accounts')
+          .update({ last_name: knex.ref('values.last_name') })
+          .updateFrom(
+            knex.raw('(VALUES (?, ?), (?, ?)) as ?? (??, ??)', [
+              'test1@example.com',
+              'John',
+              'test2@example.com',
+              'Jane',
+              'values',
+              'email',
+              'last_name',
+            ])
+          )
+          .where(knex.raw('?', [1]), '=', 1)
+          .andWhere('accounts.email', knex.ref('values.email'))
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'update "accounts" set "last_name" = "values"."last_name" from (VALUES (?, ?), (?, ?)) as "values" ("email", "last_name") where ? = ? and "accounts"."email" = "values"."email"',
+              ['test1@example.com', 'John', 'test2@example.com', 'Jane', 1, 1],
+              2
+            );
+          });
+      });
     });
   });
 });
