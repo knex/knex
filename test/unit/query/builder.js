@@ -6150,6 +6150,22 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('update from raw', () => {
+    testsql(
+      qb()
+        .update({ email: ref('v.email'), name: ref('v.name') })
+        .table('users')
+        .updateFrom(raw('(values (?, ?)) as v(email, name)', ['foo', 'bar']))
+        .where('users.id', 1),
+      {
+        pg: {
+          sql: 'update "users" set "email" = "v"."email", "name" = "v"."name" from (values (?, ?)) as v(email, name) where "users"."id" = ?',
+          bindings: ['foo', 'bar', 1],
+        },
+      }
+    );
+  });
+
   it('should not update columns undefined values', () => {
     testsql(
       qb()
