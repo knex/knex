@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "3.1.0",
+  "version": "3.2.1",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex.js",
   "types": "types/index.d.ts",
@@ -14,7 +14,12 @@
         "types": "./types/index.d.ts",
         "default": "./knex.js"
       }
-    }
+    },
+    "./lib/*": "./lib/*",
+    "./knex": "./knex.js",
+    "./knex.js": "./knex.js",
+    "./knex.mjs": "./knex.mjs",
+    "./package.json": "./package.json"
   },
   "engines": {
     "node": ">=16"
@@ -87,6 +92,9 @@
     "tarn": "^3.0.2",
     "tildify": "2.0.0"
   },
+  "peerDependencies": {
+    "pg-query-stream": "^4.14.0"
+  },
   "peerDependenciesMeta": {
     "tedious": {
       "optional": true
@@ -101,6 +109,9 @@
       "optional": true
     },
     "pg-native": {
+      "optional": true
+    },
+    "pg-query-stream": {
       "optional": true
     },
     "sqlite3": {
@@ -119,6 +130,7 @@
     "@tsconfig/recommended": "^1.0.1",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^20.4.0",
+    "JSONStream": "^1.3.5",
     "better-sqlite3": "^10.1.0",
     "chai": "^4.3.6",
     "chai-as-promised": "^7.1.1",
@@ -135,7 +147,6 @@
     "faucet": "^0.0.4",
     "husky": "^8.0.1",
     "jake": "^10.8.5",
-    "JSONStream": "^1.3.5",
     "lint-staged": "^16.2.7",
     "mocha": "^10.0.0",
     "mock-fs": "^5.1.4",
@@ -143,10 +154,11 @@
     "mysql2": "^3.2.0",
     "nyc": "^15.1.0",
     "oracledb": "^6.1.0",
-    "pg": "^8.8.0",
-    "pg-query-stream": "^4.2.4",
+    "pg": "^8.20.0",
+    "pg-query-stream": "^4.14.0",
     "prettier": "2.8.7",
     "rimraf": "^5.0.5",
+    "semver": "^7.7.4",
     "sinon": "^15.0.1",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
