@@ -1,5 +1,15 @@
 # Master (Unreleased)
 
+# 3.2.1 - 22 March, 2026
+
+### Bug fixes
+
+- Fix subpath imports broken by exports field added in 3.2.0. Packages relying on deep imports (e.g. `knex/lib/dialects/sqlite3/index`) were blocked by the restrictive exports map
+
+### Docs
+
+- Add VitePress blog with archive and UTC post dates ([#6397](https://github.com/knex/knex/issues/6397))
+
 # 3.2.0 - 22 March, 2026
 
 ### New features
