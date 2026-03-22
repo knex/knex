@@ -9433,6 +9433,144 @@
               }
             ]
           }
+        },
+        "111": {
+          "dialects": {
+            "sqlite3": [
+              {
+                "type": "sql",
+                "text": "create table `product` (`phone` varchar(255) check (length(`phone`) = 8))"
+              }
+            ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar(255) check (length(\"phone\") = 8))"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "create table `product` (`phone` varchar(255) check (length(`phone`) = 8))"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "sql",
+                "text": "CREATE TABLE [product] ([phone] nvarchar(255) check (LEN([phone]) = 8))"
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar2(255) check (length(\"phone\") = 8))"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar(255) check (length(\"phone\") = 8))"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar(255) check (length(\"phone\") = 8))"
+              }
+            ]
+          }
+        },
+        "112": {
+          "dialects": {
+            "sqlite3": [
+              {
+                "type": "sql",
+                "text": "create table `product` (`phone` varchar(255) check (`phone` REGEXP '[0-9]{8}'), `phone` varchar(255) check (`phone` REGEXP '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
+              }
+            ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar(255) check (\"phone\" ~ '[0-9]{8}'), \"phone\" varchar(255) check (\"phone\" ~ '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "create table `product` (`phone` varchar(255) check (`phone` REGEXP '[0-9]{8}'), `phone` varchar(255) check (`phone` REGEXP '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "sql",
+                "text": "CREATE TABLE [product] ([phone] nvarchar(255) check ([phone] LIKE '%[0-9]{8}%'), [phone] nvarchar(255) check ([phone] LIKE '%[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]%'))"
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar2(255) check (REGEXP_LIKE(\"phone\",'[0-9]{8}')), \"phone\" varchar2(255) check (REGEXP_LIKE(\"phone\",'[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]')))"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar(255) check (\"phone\" ~ '[0-9]{8}'), \"phone\" varchar(255) check (\"phone\" ~ '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "create table \"product\" (\"phone\" varchar(255) check (\"phone\" ~ '[0-9]{8}'), \"phone\" varchar(255) check (\"phone\" ~ '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))"
+              }
+            ]
+          }
+        },
+        "113": {
+          "dialects": {
+            "sqlite3": [
+              {
+                "type": "sql",
+                "text": "alter table `product` drop constraint price_check, drop constraint price_proportion_check"
+              }
+            ],
+            "postgres": [
+              {
+                "type": "sql",
+                "text": "alter table \"product\" drop constraint price_check, drop constraint price_proportion_check"
+              }
+            ],
+            "mysql": [
+              {
+                "type": "sql",
+                "text": "alter table `product` drop constraint price_check, drop constraint price_proportion_check"
+              }
+            ],
+            "mssql": [
+              {
+                "type": "sql",
+                "text": "alter table [product] drop constraint price_check, drop constraint price_proportion_check"
+              }
+            ],
+            "oracledb": [
+              {
+                "type": "sql",
+                "text": "alter table \"product\" drop constraint price_check, drop constraint price_proportion_check"
+              }
+            ],
+            "cockroachdb": [
+              {
+                "type": "sql",
+                "text": "alter table \"product\" drop constraint price_check, drop constraint price_proportion_check"
+              }
+            ],
+            "redshift": [
+              {
+                "type": "sql",
+                "text": "alter table \"product\" drop constraint price_check, drop constraint price_proportion_check"
+              }
+            ]
+          }
         }
       }
     }
