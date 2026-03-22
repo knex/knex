@@ -1,5 +1,56 @@
 # Master (Unreleased)
 
+# 3.2.0 - 22 March, 2026
+
+### New features
+
+- Add migration lifecycle hooks ([#5541](https://github.com/knex/knex/issues/5541))
+- Add SIMILAR TO operator ([#5303](https://github.com/knex/knex/issues/5303))
+- Add dropUniqueIfExists ([#6069](https://github.com/knex/knex/issues/6069))
+- Add 'validate' pool option ([#5120](https://github.com/knex/knex/issues/5120))
+- PostgreSQL: default datetime/timestamp precision setting added ([#5311](https://github.com/knex/knex/issues/5311))
+- Better-SQLite3: Support defaultSafeIntegers option ([#6320](https://github.com/knex/knex/issues/6320))
+- Better-SQLite3: Improve safeIntegers support ([#6352](https://github.com/knex/knex/issues/6352))
+- SQLite: Refactor transactions to allow setting the foreign_keys pragma for a transaction ([#6315](https://github.com/knex/knex/issues/6315))
+
+### Bug fixes
+
+- Fix where in query with raw column ([#6323](https://github.com/knex/knex/issues/6323))
+- Fix migrate up with completed migration ([#6342](https://github.com/knex/knex/issues/6342))
+- Fix ESM export and typings ([#6227](https://github.com/knex/knex/issues/6227))
+- Fix migration CLI and cli tests ([#6264](https://github.com/knex/knex/issues/6264))
+- Fix recover from broken connection ([#5774](https://github.com/knex/knex/issues/5774))
+- Prevent unexpected combinations of statements and clauses groups from executing ([#6314](https://github.com/knex/knex/issues/6314))
+- Improve CLI error reporting in some edge cases ([#6265](https://github.com/knex/knex/issues/6265))
+- PostgreSQL: clearer error when pg-query-stream is missing ([#6362](https://github.com/knex/knex/issues/6362))
+- PostgreSQL: Fix streaming compatibility with pg-query-stream 4.14+ ([#6396](https://github.com/knex/knex/issues/6396))
+- MySQL: Fix the operator "<=>" is not permitted ([#6158](https://github.com/knex/knex/issues/6158))
+- MSSQL: Optimize stream.write ([#5693](https://github.com/knex/knex/issues/5693))
+- SQLite: Fix whereILike issue ([#5687](https://github.com/knex/knex/issues/5687))
+
+### Types
+
+- Fix usage of `object` type that is too broad ([#5373](https://github.com/knex/knex/issues/5373))
+- Fix pluck typing issue when CompositeTableType is used ([#4609](https://github.com/knex/knex/issues/4609))
+- Make types no longer allow knex to be called without tablename ([#6188](https://github.com/knex/knex/issues/6188))
+- Add missing type definition for orderBy with a raw column/expression ([#5803](https://github.com/knex/knex/issues/5803))
+- Add additional typing for column.index ([#5371](https://github.com/knex/knex/issues/5371))
+- Update typings for increment/decrement ([#5674](https://github.com/knex/knex/issues/5674))
+- Use syntax `import from` instead of `import = require()` ([#5258](https://github.com/knex/knex/issues/5258))
+- Import knex as type in TS seed template ([#6094](https://github.com/knex/knex/issues/6094))
+- Update index.d.ts ([#5767](https://github.com/knex/knex/issues/5767))
+- Add @types/minimatch v5 to fix TypeScript build ([#6240](https://github.com/knex/knex/issues/6240))
+
+### Tests
+
+- Additional tests for JSON (de)serialization ([#4451](https://github.com/knex/knex/issues/4451))
+- Run CI on Node 22 and remove dtslint ([#6165](https://github.com/knex/knex/issues/6165))
+
+### Chore
+
+- Update to non-screamy versions of dependencies that have npm audit failures ([#6324](https://github.com/knex/knex/issues/6324))
+- Upgrade pg to ^8.20.0, pg-query-stream to ^4.14.0 ([#6396](https://github.com/knex/knex/issues/6396))
+
 # 3.1.0 - 8 December, 2023
 
 ### Bug fixes
