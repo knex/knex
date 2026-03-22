@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const { isSQLite, isOracle, isCockroachDB } = require('../../util/db-helpers');
+const { isSQLite, isOracle } = require('../../util/db-helpers');
 const { isPostgreSQL } = require('../../util/db-helpers.js');
 
 module.exports = function (knex) {
