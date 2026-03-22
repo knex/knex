@@ -1249,6 +1249,8 @@ describe('Selects', function () {
             'oracledb',
             'cockroachdb',
             'better-sqlite3',
+            'pg',
+            'pgnative',
           ]);
 
           if (knex.client.driverName !== 'cockroachdb') {
@@ -1263,8 +1265,6 @@ describe('Selects', function () {
         } catch (err) {
           if (isMysql(knex)) {
             expect(err.errno).to.equal(1248);
-          } else if (isPostgreSQL(knex)) {
-            expect(err.message).to.contain('must have an alias');
           } else if (isMssql(knex)) {
             expect(err.message).to.contain(
               "Incorrect syntax near the keyword 'order'"
