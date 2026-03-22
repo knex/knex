@@ -1,6 +1,6 @@
 {
   "name": "knex",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex.js",
   "types": "types/index.d.ts",
@@ -88,7 +88,7 @@
     "tildify": "2.0.0"
   },
   "peerDependencies": {
-    "pg-query-stream": "^4.2.4"
+    "pg-query-stream": "^4.14.0"
   },
   "peerDependenciesMeta": {
     "tedious": {
@@ -149,8 +149,8 @@
     "mysql2": "^3.2.0",
     "nyc": "^15.1.0",
     "oracledb": "^6.1.0",
-    "pg": "^8.8.0",
-    "pg-query-stream": "^4.2.4",
+    "pg": "^8.20.0",
+    "pg-query-stream": "^4.14.0",
     "prettier": "2.8.7",
     "rimraf": "^5.0.5",
     "semver": "^7.7.4",
