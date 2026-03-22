@@ -1,5 +1,13 @@
 # Master (Unreleased)
 
+### Bug fixes
+
+- PostgreSQL: Fix streaming compatibility with pg-query-stream 4.14+ ([#6396](https://github.com/knex/knex/issues/6396))
+
+### Chore
+
+- Upgrade pg to ^8.20.0, pg-query-stream to ^4.14.0 ([#6396](https://github.com/knex/knex/issues/6396))
+
 # 3.2.0 - 22 March, 2026
 
 ### New features
