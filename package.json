@@ -88,7 +88,7 @@
     "tildify": "2.0.0"
   },
   "peerDependencies": {
-    "pg-query-stream": "^4.2.4"
+    "pg-query-stream": "^4.14.0"
   },
   "peerDependenciesMeta": {
     "tedious": {
@@ -149,8 +149,8 @@
     "mysql2": "^3.2.0",
     "nyc": "^15.1.0",
     "oracledb": "^6.1.0",
-    "pg": "^8.8.0",
-    "pg-query-stream": "^4.2.4",
+    "pg": "^8.20.0",
+    "pg-query-stream": "^4.14.0",
     "prettier": "2.8.7",
     "rimraf": "^5.0.5",
     "sinon": "^15.0.1",
