@@ -14,7 +14,12 @@
         "types": "./types/index.d.ts",
         "default": "./knex.js"
       }
-    }
+    },
+    "./lib/*": "./lib/*",
+    "./knex": "./knex.js",
+    "./knex.js": "./knex.js",
+    "./knex.mjs": "./knex.mjs",
+    "./package.json": "./package.json"
   },
   "engines": {
     "node": ">=16"
