@@ -107,7 +107,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test3@example.com' })
           .del();
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (isSQLite(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -171,7 +171,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test4@example.com' })
           .del('*');
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (isSQLite(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
