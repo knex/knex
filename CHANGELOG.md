@@ -1,13 +1,5 @@
 # Master (Unreleased)
 
-### Bug fixes
-
-- PostgreSQL: Fix streaming compatibility with pg-query-stream 4.14+ ([#6396](https://github.com/knex/knex/issues/6396))
-
-### Chore
-
-- Upgrade pg to ^8.20.0, pg-query-stream to ^4.14.0 ([#6396](https://github.com/knex/knex/issues/6396))
-
 # 3.2.0 - 22 March, 2026
 
 ### New features
@@ -31,6 +23,7 @@
 - Prevent unexpected combinations of statements and clauses groups from executing ([#6314](https://github.com/knex/knex/issues/6314))
 - Improve CLI error reporting in some edge cases ([#6265](https://github.com/knex/knex/issues/6265))
 - PostgreSQL: clearer error when pg-query-stream is missing ([#6362](https://github.com/knex/knex/issues/6362))
+- PostgreSQL: Fix streaming compatibility with pg-query-stream 4.14+ ([#6396](https://github.com/knex/knex/issues/6396))
 - MySQL: Fix the operator "<=>" is not permitted ([#6158](https://github.com/knex/knex/issues/6158))
 - MSSQL: Optimize stream.write ([#5693](https://github.com/knex/knex/issues/5693))
 - SQLite: Fix whereILike issue ([#5687](https://github.com/knex/knex/issues/5687))
@@ -56,6 +49,7 @@
 ### Chore
 
 - Update to non-screamy versions of dependencies that have npm audit failures ([#6324](https://github.com/knex/knex/issues/6324))
+- Upgrade pg to ^8.20.0, pg-query-stream to ^4.14.0 ([#6396](https://github.com/knex/knex/issues/6396))
 
 # 3.1.0 - 8 December, 2023
 
