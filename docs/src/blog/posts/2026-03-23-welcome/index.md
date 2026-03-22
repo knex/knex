@@ -14,7 +14,7 @@ After a period of lighter activity, knex is now is in a period of much more inte
 
 The most glaring advancement in the last few months has been the work on the issue backlog. Knex had 1,079 open issues, and many of them were duplicate or irrelevant.
 
-This required going through each one of the 1,079 open issues, working on categorization, deduplication, and adding an AI write‑up to provide a starting point for when we would come back to them. The write up was also helpful to see  if original posters were still interested in Knex. In some cases, it had been _years_ since submission or the last comment! It was a lot of tedious work. Each issue had to be faced individually, and we never knew what we would find: a simple bug, or something that required major architectural changes. It was disheartening at times, especially since each issue was only a tiny step towards the top of the mountain we had to climb.
+This required going through each one of the 1,079 open issues, working on categorization, deduplication, and adding an AI write‑up to provide a starting point for when we would come back to them. The write up was also helpful to see if original posters were still interested in Knex. In some cases, it had been _years_ since submission or the last comment! It was a lot of tedious work. Each issue had to be faced individually, and we never knew what we would find: a simple bug, or something that required major architectural changes. It was disheartening at times, especially since each issue was only a tiny step towards the top of the mountain we had to climb.
 
 ## Where we are now
 

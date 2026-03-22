@@ -37,13 +37,21 @@ const pages = computed(() => {
       <p>Page {{ safePage }} of {{ pageCount }}</p>
 
       <article v-for="post in pagePosts" :key="post.url">
-        <h2><a :href="post.url">{{ post.title }}</a></h2>
-        <p><em>{{ post.dateUtc }}</em></p>
+        <h2>
+          <a :href="post.url">{{ post.title }}</a>
+        </h2>
+        <p>
+          <em>{{ post.dateUtc }}</em>
+        </p>
         <p>{{ post.summary }}</p>
       </article>
 
       <nav v-if="pageCount > 1" aria-label="Blog pages">
-        <a v-for="pageNumber in pages" :key="pageNumber" :href="resolveBlogPageLink(pageNumber)">
+        <a
+          v-for="pageNumber in pages"
+          :key="pageNumber"
+          :href="resolveBlogPageLink(pageNumber)"
+        >
           <strong v-if="pageNumber === safePage">{{ pageNumber }}</strong>
           <span v-else>{{ pageNumber }}</span>
         </a>

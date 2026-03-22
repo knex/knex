@@ -15,13 +15,18 @@ function toText(value: unknown) {
 }
 
 function stripHtml(value: string) {
-  return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return value
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function resolveTimestamp(value: string, url: string) {
   const timestamp = Date.parse(value);
   if (!Number.isFinite(timestamp)) {
-    throw new Error(`Blog post "${url}" has invalid frontmatter date: "${value}"`);
+    throw new Error(
+      `Blog post "${url}" has invalid frontmatter date: "${value}"`
+    );
   }
   return timestamp;
 }
@@ -43,16 +48,23 @@ export default createContentLoader('blog/posts/**/index.md', {
       .map((item) => {
         const title = toText(item.frontmatter?.title);
         if (!title) {
-          throw new Error(`Blog post "${item.url}" is missing frontmatter title.`);
+          throw new Error(
+            `Blog post "${item.url}" is missing frontmatter title.`
+          );
         }
 
         const date = toText(item.frontmatter?.date);
         if (!date) {
-          throw new Error(`Blog post "${item.url}" is missing frontmatter date.`);
+          throw new Error(
+            `Blog post "${item.url}" is missing frontmatter date.`
+          );
         }
 
         const timestamp = resolveTimestamp(date, item.url);
-        const summary = toText(item.frontmatter?.summary) || stripHtml(item.excerpt || '') || 'Read the full post.';
+        const summary =
+          toText(item.frontmatter?.summary) ||
+          stripHtml(item.excerpt || '') ||
+          'Read the full post.';
 
         return {
           title,

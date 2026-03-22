@@ -39,13 +39,18 @@ function isDraftPost(filePath: string): boolean {
 }
 
 function countPublishedPosts() {
-  return listPostFiles(postsRootDir).filter((filePath) => !isDraftPost(filePath)).length;
+  return listPostFiles(postsRootDir).filter(
+    (filePath) => !isDraftPost(filePath)
+  ).length;
 }
 
 export default {
   paths() {
     const publishedPostCount = countPublishedPosts();
-    const totalPages = Math.max(1, Math.ceil(publishedPostCount / POSTS_PER_PAGE));
+    const totalPages = Math.max(
+      1,
+      Math.ceil(publishedPostCount / POSTS_PER_PAGE)
+    );
     const paths = [];
 
     for (let page = 2; page <= totalPages; page += 1) {

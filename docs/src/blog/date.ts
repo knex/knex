@@ -10,7 +10,10 @@ const UTC_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   timeZone: 'UTC',
 });
 
-function getPart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes) {
+function getPart(
+  parts: Intl.DateTimeFormatPart[],
+  type: Intl.DateTimeFormatPartTypes
+) {
   return parts.find((part) => part.type === type)?.value ?? '';
 }
 
@@ -21,10 +24,13 @@ function formatUtcDate(value: number | string | Date) {
   }
 
   const parts = UTC_DATE_FORMATTER.formatToParts(date);
-  return `${getPart(parts, 'weekday')} ${getPart(parts, 'month')} ${getPart(parts, 'day')} ${getPart(
+  return `${getPart(parts, 'weekday')} ${getPart(parts, 'month')} ${getPart(
     parts,
-    'year'
-  )} ${getPart(parts, 'hour')}:${getPart(parts, 'minute')}:${getPart(parts, 'second')} UTC`;
+    'day'
+  )} ${getPart(parts, 'year')} ${getPart(parts, 'hour')}:${getPart(
+    parts,
+    'minute'
+  )}:${getPart(parts, 'second')} UTC`;
 }
 
 export { formatUtcDate };
