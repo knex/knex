@@ -91,4 +91,58 @@ describe('package.json exports', () => {
       expect(fs.existsSync(fullPath)).to.be.true;
     });
   });
+
+  describe('exported files exist on disk and are included in package files', () => {
+    // Collect all concrete file paths from the exports map (including
+    // conditional "import"/"require"/"types" entries). Wildcard patterns
+    // like "./lib/*.js" are skipped because they are covered by glob
+    // entries in the files array.
+    function collectExportPaths(obj) {
+      const paths = [];
+      for (const value of Object.values(obj)) {
+        if (typeof value === 'string') {
+          if (!value.includes('*')) paths.push(value);
+        } else if (typeof value === 'object' && value !== null) {
+          paths.push(...collectExportPaths(value));
+        }
+      }
+      return paths;
+    }
+
+    const exportedFiles = collectExportPaths(pkg.exports);
+
+    // npm uses minimatch to evaluate the "files" array. For our purposes a
+    // simplified check is sufficient: a path is covered if some entry in
+    // "files" is an exact match or a glob prefix match.
+    function isCoveredByFiles(relPath) {
+      // relPath starts with "./" — strip the leading "./"
+      const stripped = relPath.replace(/^\.\//, '');
+      return pkg.files.some((pattern) => {
+        if (pattern.startsWith('!')) return false;
+        // exact match
+        if (pattern === stripped) return true;
+        // directory or glob prefix (e.g. "lib/" covers "lib/foo.js")
+        const prefix = pattern.replace(/\*.*$/, '');
+        if (prefix && stripped.startsWith(prefix)) return true;
+        return false;
+      });
+    }
+
+    exportedFiles.forEach((filePath) => {
+      const fullPath = path.join(ROOT, filePath);
+      const display = filePath.replace(/^\.\//, '');
+
+      it(`${display} exists on disk`, () => {
+        expect(fs.existsSync(fullPath), `${display} does not exist`).to.be
+          .true;
+      });
+
+      it(`${display} is included in package.json "files"`, () => {
+        expect(
+          isCoveredByFiles(filePath),
+          `${display} is not covered by the "files" array`
+        ).to.be.true;
+      });
+    });
+  });
 });
