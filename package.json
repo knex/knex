@@ -36,7 +36,7 @@
     "coveralls": "nyc report --reporter=lcov",
     "lint": "eslint --cache .",
     "lint:fix": "eslint --cache --fix .",
-    "lint:types": "tsd && tsc --noEmit -p test-tsd/esm/tsconfig.json",
+    "lint:types": "tsd && tstyche --target 5.8 test-tsd/esm/esm-types.tst.ts",
     "lint:everything": "npm run lint && npm run lint:types",
     "lint:fix:everything": "npm run lint:fix && npm run lint:types",
     "test:unit": "npm run test:unit-only && npm run test:cli",
@@ -170,6 +170,7 @@
     "toxiproxy-node-client": "^4.0.0",
     "ts-node": "^10.9.1",
     "tsd": "^0.28.1",
+    "tstyche": "^6.2.0",
     "typescript": "5.0.4"
   },
   "buildDependencies": [

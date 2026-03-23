@@ -5,6 +5,7 @@
     "target": "es2020",
     "strict": true,
     "esModuleInterop": true,
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   }
 }
