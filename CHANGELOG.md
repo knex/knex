@@ -1,5 +1,11 @@
 # Master (Unreleased)
 
+# 3.2.4 - 23 March, 2026
+
+### Bug fixes
+
+- Fix ESM type exports
+
 # 3.2.1 - 22 March, 2026
 
 ### Bug fixes

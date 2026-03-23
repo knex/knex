@@ -37,6 +37,27 @@ For knex-based Object Relational Mapper, see:
 
 To see the SQL that Knex will generate for a given query, you can use [Knex Query Lab](https://michaelavila.com/knex-querylab/)
 
+## Local Development Setup
+
+### Prerequisites
+
+- Node.js 16+
+- Python 3.x with `setuptools` installed (required for building native dependencies like `better-sqlite3`)
+
+  Python 3.12+ removed the built-in `distutils` module. If you encounter a `ModuleNotFoundError: No module named 'distutils'` error during `npm install`, install `setuptools` for the Python version used by node-gyp:
+
+  ```bash
+  pip install setuptools
+  ```
+
+- **Windows only:** [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with the "Desktop development with C++" workload
+
+### Install dependencies
+
+```bash
+npm install
+```
+
 ## Examples
 
 We have several examples [on the website](http://knexjs.org). Here is the first one to get you started:
