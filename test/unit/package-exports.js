@@ -133,8 +133,7 @@ describe('package.json exports', () => {
       const display = filePath.replace(/^\.\//, '');
 
       it(`${display} exists on disk`, () => {
-        expect(fs.existsSync(fullPath), `${display} does not exist`).to.be
-          .true;
+        expect(fs.existsSync(fullPath), `${display} does not exist`).to.be.true;
       });
 
       it(`${display} is included in package.json "files"`, () => {
