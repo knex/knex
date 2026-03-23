@@ -114,9 +114,13 @@ describe('package.json exports', () => {
     // npm uses minimatch to evaluate the "files" array. For our purposes a
     // simplified check is sufficient: a path is covered if some entry in
     // "files" is an exact match or a glob prefix match.
+    // npm always includes package.json regardless of the "files" array
+    const alwaysIncluded = ['package.json'];
+
     function isCoveredByFiles(relPath) {
       // relPath starts with "./" — strip the leading "./"
       const stripped = relPath.replace(/^\.\//, '');
+      if (alwaysIncluded.includes(stripped)) return true;
       return pkg.files.some((pattern) => {
         if (pattern.startsWith('!')) return false;
         // exact match
