@@ -15,6 +15,10 @@
         "default": "./knex.js"
       }
     },
+    "./bin/*.js": "./bin/*.js",
+    "./bin/*": "./bin/*",
+    "./types/*.d.ts": "./types/*.d.ts",
+    "./types/*": "./types/*.d.ts",
     "./lib/*.js": "./lib/*.js",
     "./lib/*": "./lib/*.js",
     "./knex": "./knex.js",
@@ -36,7 +40,7 @@
     "coveralls": "nyc report --reporter=lcov",
     "lint": "eslint --cache .",
     "lint:fix": "eslint --cache --fix .",
-    "lint:types": "tsd && tstyche --target 5.4 test-tstyche/esm-types.tst.ts",
+    "lint:types": "tsd && tstyche --target 5.4",
     "lint:everything": "npm run lint && npm run lint:types",
     "lint:fix:everything": "npm run lint:fix && npm run lint:types",
     "test:unit": "npm run test:unit-only && npm run test:cli",

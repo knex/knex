@@ -6,9 +6,6 @@
     "strict": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "skipLibCheck": true,
-    "paths": {
-      "knex": ["../types/index.d.mts"]
-    }
+    "skipLibCheck": true
   }
 }
