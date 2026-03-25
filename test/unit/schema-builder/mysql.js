@@ -1685,5 +1685,126 @@ module.exports = function (dialect) {
         );
       });
     });
+
+    describe('composite foreign key handling in renameColumn', function () {
+      let tableCompiler;
+
+      beforeEach(function () {
+        const TableBuilder = require('../../../lib/schema/tablebuilder');
+        const tableBuilder = new TableBuilder(
+          client,
+          'alter',
+          'page',
+          undefined,
+          function () {}
+        );
+        tableCompiler = client.tableCompiler(tableBuilder);
+      });
+
+      it('dropFKRefs should emit one DROP per unique constraint, not per row', function () {
+        const queries = [];
+        const mockRunner = {
+          query(q) {
+            queries.push(q.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          { CONSTRAINT_NAME: 'page_id_content_type_id_foreign', TABLE_NAME: 'page' },
+        ];
+
+        return tableCompiler.dropFKRefs(mockRunner, refs).then(() => {
+          expect(queries).to.have.length(1);
+          expect(queries[0]).to.equal(
+            'alter table `page` drop foreign key `page_id_content_type_id_foreign`'
+          );
+        });
+      });
+
+      it('createFKRefs should group composite FK columns into a single constraint', function () {
+        const queries = [];
+        const mockRunner = {
+          query(q) {
+            queries.push(q.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            CONSTRAINT_NAME: 'page_id_content_type_id_foreign',
+            TABLE_NAME: 'page',
+            COLUMN_NAME: 'id',
+            REFERENCED_TABLE_NAME: 'content',
+            REFERENCED_COLUMN_NAME: 'id',
+            UPDATE_RULE: 'CASCADE',
+            DELETE_RULE: 'CASCADE',
+          },
+          {
+            CONSTRAINT_NAME: 'page_id_content_type_id_foreign',
+            TABLE_NAME: 'page',
+            COLUMN_NAME: 'content_type_id',
+            REFERENCED_TABLE_NAME: 'content',
+            REFERENCED_COLUMN_NAME: 'content_type_id',
+            UPDATE_RULE: 'CASCADE',
+            DELETE_RULE: 'CASCADE',
+          },
+        ];
+
+        return tableCompiler.createFKRefs(mockRunner, refs).then(() => {
+          expect(queries).to.have.length(1);
+          expect(queries[0]).to.contain(
+            'foreign key (`id`, `content_type_id`)'
+          );
+          expect(queries[0]).to.contain(
+            'references `content` (`id`, `content_type_id`)'
+          );
+          expect(queries[0]).to.contain('ON UPDATE CASCADE');
+          expect(queries[0]).to.contain('ON DELETE CASCADE');
+        });
+      });
+
+      it('createFKRefs should handle multiple separate constraints', function () {
+        const queries = [];
+        const mockRunner = {
+          query(q) {
+            queries.push(q.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            CONSTRAINT_NAME: 'orders_user_id_foreign',
+            TABLE_NAME: 'orders',
+            COLUMN_NAME: 'user_id',
+            REFERENCED_TABLE_NAME: 'users',
+            REFERENCED_COLUMN_NAME: 'id',
+            UPDATE_RULE: 'NO ACTION',
+            DELETE_RULE: 'CASCADE',
+          },
+          {
+            CONSTRAINT_NAME: 'orders_product_id_foreign',
+            TABLE_NAME: 'orders',
+            COLUMN_NAME: 'product_id',
+            REFERENCED_TABLE_NAME: 'products',
+            REFERENCED_COLUMN_NAME: 'id',
+            UPDATE_RULE: 'CASCADE',
+            DELETE_RULE: 'RESTRICT',
+          },
+        ];
+
+        return tableCompiler.createFKRefs(mockRunner, refs).then(() => {
+          expect(queries).to.have.length(2);
+          expect(queries[0]).to.contain(
+            'foreign key (`user_id`) references `users` (`id`)'
+          );
+          expect(queries[1]).to.contain(
+            'foreign key (`product_id`) references `products` (`id`)'
+          );
+        });
+      });
+    });
   });
 };
