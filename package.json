@@ -259,7 +259,6 @@
     "!lib/**/*.d.ts",
     "!lib/**/*.js.map",
     "!lib/.gitignore",
-    "scripts/*",
     "types/index.d.ts",
     "types/index.d.mts",
     "types/result.d.ts",
