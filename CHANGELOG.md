@@ -4,19 +4,19 @@
 
 ### Bug fixes
 
-- Fix module exports (#6405)
+- Fix module exports [#6406](https://github.com/knex/knex/issues/6406)
 
 # 3.2.5 - 23 March, 2026
 
 ### Bug fixes
 
-- Fix ESM exports (#6405)
+- Fix ESM exports [#6405](https://github.com/knex/knex/issues/6405)
 
 # 3.2.4 - 23 March, 2026
 
 ### Bug fixes
 
-- Fix ESM type exports
+- Fix ESM type exports [#6404](https://github.com/knex/knex/issues/6404)
 
 # 3.2.1 - 22 March, 2026
 
