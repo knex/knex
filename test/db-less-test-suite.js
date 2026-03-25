@@ -68,4 +68,8 @@ if (config['better-sqlite3']) {
   require('./unit/dialects/better-sqlite3');
 }
 
+describe('Tracing Tests', function () {
+  require('./unit/tracing');
+});
+
 require('./cli-tests-suite');
