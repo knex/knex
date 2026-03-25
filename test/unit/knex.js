@@ -402,7 +402,9 @@ describe('knex', () => {
     });
 
     // expect to have logged a warning with a stack trace pointing to the origin of the error
-    await expect(knex.select(1)).to.eventually.be.rejectedWith(/oh noes/);
+    await expect(knex.select(1)).to.eventually.be.rejected.then((err) => {
+      expect(err.cause.stack).to.match(/oh noes/);
+    });
     expect(warnings[0]).to.match(/oh noes.*FailClient.acquire/s);
   });
 
