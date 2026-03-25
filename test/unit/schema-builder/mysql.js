@@ -1685,5 +1685,133 @@ module.exports = function (dialect) {
         );
       });
     });
+
+    describe('dropFKRefs and createFKRefs with lowercase column names (#6391)', function () {
+      // mysql2 may return INFORMATION_SCHEMA column names in lowercase,
+      // which caused table names and constraint names to be `undefined`.
+      const TableBuilder = require('../../../lib/schema/tablebuilder');
+      let tableCompiler;
+
+      beforeEach(function () {
+        const tableBuilder = new TableBuilder(
+          client,
+          'alter',
+          'test_table',
+          undefined,
+          function () {}
+        );
+        tableCompiler = client.tableCompiler(tableBuilder);
+      });
+
+      it('dropFKRefs handles lowercase ref keys from mysql2', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            table_name: 'my_table',
+            constraint_name: 'fk_my_constraint',
+          },
+        ];
+
+        await tableCompiler.dropFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `my_table` drop foreign key `fk_my_constraint`'
+        );
+      });
+
+      it('dropFKRefs still works with uppercase ref keys', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            TABLE_NAME: 'my_table',
+            CONSTRAINT_NAME: 'fk_my_constraint',
+          },
+        ];
+
+        await tableCompiler.dropFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `my_table` drop foreign key `fk_my_constraint`'
+        );
+      });
+
+      it('createFKRefs handles lowercase ref keys from mysql2', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            table_name: 'child_table',
+            constraint_name: 'fk_parent',
+            column_name: 'parent_id',
+            referenced_table_name: 'parent_table',
+            referenced_column_name: 'id',
+            update_rule: 'NO ACTION',
+            delete_rule: 'CASCADE',
+          },
+        ];
+
+        await tableCompiler.createFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `child_table` add constraint `fk_parent` ' +
+            'foreign key (`parent_id`) references `parent_table` (`id`) ' +
+            'ON UPDATE NO ACTION ON DELETE CASCADE'
+        );
+      });
+
+      it('createFKRefs still works with uppercase ref keys', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            TABLE_NAME: 'child_table',
+            CONSTRAINT_NAME: 'fk_parent',
+            COLUMN_NAME: 'parent_id',
+            REFERENCED_TABLE_NAME: 'parent_table',
+            REFERENCED_COLUMN_NAME: 'id',
+            UPDATE_RULE: 'NO ACTION',
+            DELETE_RULE: 'CASCADE',
+          },
+        ];
+
+        await tableCompiler.createFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `child_table` add constraint `fk_parent` ' +
+            'foreign key (`parent_id`) references `parent_table` (`id`) ' +
+            'ON UPDATE NO ACTION ON DELETE CASCADE'
+        );
+      });
+    });
   });
 };
