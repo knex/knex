@@ -2569,11 +2569,20 @@ declare namespace Knex {
       columnNames: string | readonly string[],
       foreignKeyName?: string
     ): TableBuilder;
+    dropForeignIfExists(
+      columnNames: string | readonly string[],
+      foreignKeyName?: string
+    ): TableBuilder;
     dropUnique(
       columnNames: readonly (string | Raw)[],
       indexName?: string
     ): TableBuilder;
+    dropUniqueIfExists(
+      columnNames: readonly (string | Raw)[],
+      indexName?: string
+    ): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
+    dropPrimaryIfExists(constraintName?: string): TableBuilder;
     dropIndex(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string
@@ -3115,6 +3124,7 @@ declare namespace Knex {
   interface PoolConfig {
     name?: string;
     afterCreate?: Function;
+    validate?: (connection: any) => boolean | Promise<boolean>;
     min?: number;
     max?: number;
     refreshIdle?: boolean;
@@ -3130,6 +3140,8 @@ declare namespace Knex {
     createTimeoutMillis?: number;
     destroyTimeoutMillis?: number;
     acquireTimeoutMillis?: number;
+    maxConnectionLifetimeMillis?: number;
+    maxConnectionLifetimeJitterMillis?: number;
   }
 
   type LogFn = (message: any) => void;

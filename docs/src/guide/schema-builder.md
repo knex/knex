@@ -1122,6 +1122,19 @@ knex.schema.table('users', function (table) {
 });
 ```
 
+### dropForeignIfExists
+
+**table.dropForeignIfExists(columns, [foreignKeyName])**
+
+Like dropForeign, but does not error if the constraint does not exist. Supported on PostgreSQL and other Postgres-based dialects that accept `DROP CONSTRAINT IF EXISTS` (including CockroachDB). For Redshift, MySQL, MSSQL, Oracle, and SQLite (including better-sqlite3) this method throws “not supported” because those engines do not provide an IF EXISTS form.
+
+```js
+// @sql
+knex.schema.table('users', function (table) {
+  table.dropForeignIfExists('companyId');
+});
+```
+
 ### dropUnique
 
 **table.dropUnique(columns, [indexName])**
@@ -1135,6 +1148,19 @@ knex.schema.table('job', function (table) {
 });
 ```
 
+### dropUniqueIfExists
+
+**table.dropUniqueIfExists(columns, [indexName])**
+
+Like dropUnique, but does not error if the constraint does not exist. Supported in PostgreSQL, CockroachDB, MariaDB, MSSQL, and SQLite/better-sqlite3. Not supported in MySQL, Oracle, or Redshift; calling it there throws a “not supported” error.
+
+```js
+// @sql
+knex.schema.table('job', function (table) {
+  table.dropUniqueIfExists(['account_id', 'program_id'], 'job_composite_index');
+});
+```
+
 ### dropPrimary [~SQ]
 
 **table.dropPrimary([constraintName])**
@@ -1145,6 +1171,19 @@ Drops the primary key constraint on a table. Defaults to tablename_pkey unless c
 // @sql
 knex.schema.table('users', function (table) {
   table.dropPrimary();
+});
+```
+
+### dropPrimaryIfExists
+
+**table.dropPrimaryIfExists([constraintName])**
+
+Like dropPrimary, but does not error if the constraint does not exist. Supported on PostgreSQL and other Postgres-based dialects that accept `DROP CONSTRAINT IF EXISTS` (including CockroachDB). Not supported in Redshift, MySQL, MSSQL, Oracle, or SQLite (including better-sqlite3); calling it there throws a “not supported” error.
+
+```js
+// @sql
+knex.schema.table('users', function (table) {
+  table.dropPrimaryIfExists();
 });
 ```
 
