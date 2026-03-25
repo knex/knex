@@ -55,6 +55,50 @@ describe('package.json exports', () => {
       });
   });
 
+  describe('bin subpath exports', () => {
+    it('resolves knex/bin/cli.js', () => {
+      const result = resolve(pkg, './bin/cli.js');
+      expect(result).to.be.an('array');
+      expect(result[0]).to.equal('./bin/cli.js');
+    });
+
+    it('resolves knex/bin/cli (extensionless)', () => {
+      const result = resolve(pkg, './bin/cli');
+      expect(result).to.be.an('array');
+    });
+
+    it('resolves knex/bin/utils/cli-config-utils.js', () => {
+      const result = resolve(pkg, './bin/utils/cli-config-utils.js');
+      expect(result).to.be.an('array');
+      expect(result[0]).to.equal('./bin/utils/cli-config-utils.js');
+    });
+
+    it('resolves knex/bin/utils/cli-config-utils (extensionless)', () => {
+      const result = resolve(pkg, './bin/utils/cli-config-utils');
+      expect(result).to.be.an('array');
+      expect(result[0]).to.equal('./bin/utils/cli-config-utils');
+    });
+  });
+
+  describe('type subpath exports', () => {
+    const typeFiles = ['types/result.d.ts', 'types/tables.d.ts'];
+
+    typeFiles.forEach((typeFile) => {
+      it(`resolves knex/${typeFile}`, () => {
+        const result = resolve(pkg, `./${typeFile}`);
+        expect(result).to.be.an('array');
+        expect(result[0]).to.equal(`./${typeFile}`);
+      });
+
+      const noExt = typeFile.replace(/\.d\.ts$/, '');
+      it(`resolves knex/${noExt} (extensionless)`, () => {
+        const result = resolve(pkg, `./${noExt}`);
+        expect(result).to.be.an('array');
+        expect(result[0]).to.equal(`./${typeFile}`);
+      });
+    });
+  });
+
   describe('main entry points', () => {
     it('resolves knex (main)', () => {
       const result = resolve(pkg, '.');
