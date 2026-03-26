@@ -154,7 +154,6 @@
     "mysql2": "^3.2.0",
     "oracledb": "^6.1.0",
     "pg": "^8.20.0",
-    "pg-native": "^3.7.0",
     "pg-query-stream": "^4.14.0",
     "prettier": "2.8.7",
     "resolve.exports": "^2.0.3",
