@@ -1,9 +1,15 @@
 'use strict';
 
-const { expect } = require('chai');
+const { getKnexForDb } = require('../../integration2/util/knex-instance-provider');
 const { isMssql } = require('../../util/db-helpers');
 
-module.exports = function (knex) {
+module.exports = function (db) {
+  let knex;
+  beforeAll(() => {
+    knex = getKnexForDb(db);
+  });
+  afterAll(() => knex.destroy());
+
   it('#test decimal mssql should allow large numbers', function () {
     // https://github.com/tediousjs/tedious/issues/1058
     if (!isMssql(knex)) {
@@ -28,7 +34,7 @@ module.exports = function (knex) {
         return knex(tableName).select('*');
       })
       .then(function (result) {
-        expect(result[0].largeDecimal).to.equal(testDecimal);
+        expect(result[0].largeDecimal).toBe(testDecimal);
       })
       .catch(function (err) {
         throw new Error('Test should not throw an error');
@@ -57,7 +63,7 @@ module.exports = function (knex) {
         return knex(tableName).select('*');
       })
       .then(function (result) {
-        expect(result[0].largeDecimal).to.equal(testDecimal);
+        expect(result[0].largeDecimal).toBe(testDecimal);
       })
       .catch(function (err) {
         throw new Error('Test should not throw an error');
@@ -87,7 +93,7 @@ module.exports = function (knex) {
         return knex(tableName).select('*');
       })
       .then(function (result) {
-        expect(result[0].largeDecimal).to.equal(testDecimal);
+        expect(result[0].largeDecimal).toBe(testDecimal);
       })
       .catch(function (err) {
         throw new Error('Test should not throw an error');

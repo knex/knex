@@ -15,9 +15,9 @@ module.exports = {
     'plugin:import/warnings',
     'prettier',
   ],
-  plugins: ['prettier', 'import', 'mocha-no-only', 'n'],
+  plugins: ['prettier', 'import', 'vitest', 'n'],
   rules: {
-    'mocha-no-only/mocha-no-only': ['error'],
+    'vitest/no-focused-tests': ['error'],
     'no-unused-vars': [ERR_IN_CI, { vars: 'all', args: 'none' }],
     'no-console': 'off',
     'no-empty': 'off',
@@ -33,7 +33,7 @@ module.exports = {
   },
   env: {
     node: true,
-    mocha: true,
     es6: true,
+    vitest: true,
   },
 };

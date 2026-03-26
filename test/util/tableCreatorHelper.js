@@ -131,6 +131,19 @@ async function dropTables(knex) {
   await knex.schema.dropTableIfExists('parent');
 }
 
+async function maybeDropTables(knex, fn) {
+  try {
+    await fn();
+  } catch (e) {
+    if (e.message.includes('already')) {
+      await dropTables(knex);
+      await fn();
+    } else {
+      throw e;
+    }
+  }
+}
+
 module.exports = {
   createAccounts,
   createCompositeKeyTable,
@@ -142,4 +155,5 @@ module.exports = {
   createCities,
   createCountry,
   dropTables,
+  maybeDropTables,
 };

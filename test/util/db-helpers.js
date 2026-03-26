@@ -1,16 +1,19 @@
 const { get } = require('lodash');
 const { DRIVER_NAMES: drivers } = require('../../lib/constants');
 
-function getDriverName(knex) {
-  return get(knex, 'client.driverName', '');
+function getDriverName(knexOrDbName) {
+  if (typeof knexOrDbName === 'string') {
+    return knexOrDbName;
+  }
+  return get(knexOrDbName, 'client.driverName', '');
 }
 
-function isPostgreSQL(knex) {
-  return isOneOfDbs(knex, [drivers.PostgreSQL, drivers.PgNative]);
+function isPostgreSQL(knexOrDbName) {
+  return isOneOfDbs(knexOrDbName, [drivers.PostgreSQL, drivers.PgNative]);
 }
 
-function isPgNative(knex) {
-  return getDriverName(knex) === drivers.PgNative;
+function isPgNative(knexOrDbName) {
+  return getDriverName(knexOrDbName) === drivers.PgNative;
 }
 
 function isPgBased(knex) {

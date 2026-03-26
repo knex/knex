@@ -1,9 +1,15 @@
 'use strict';
 
-const { expect } = require('chai');
+const { getKnexForDb } = require('../../integration2/util/knex-instance-provider');
 const { isMssql } = require('../../util/db-helpers');
 
-module.exports = function (knex) {
+module.exports = function (db) {
+  let knex;
+  beforeAll(() => {
+    knex = getKnexForDb(db);
+  });
+  afterAll(() => knex.destroy());
+
   const bigintTimestamp = 1464294366973;
   const negativeBigintTimestamp = -1464294366973;
   const unsafeBigint = 99071992547409900;
@@ -39,8 +45,8 @@ module.exports = function (knex) {
         // triggers request execution
       })
       .catch(function (err) {
-        expect(err).to.be.an.instanceof(Error);
-        expect(err.message).to.contain(
+        expect(err).toBeInstanceOf(Error);
+        expect(err.message).toContain(
           'Bigint must be safe integer or must be passed as string'
         );
       });
@@ -77,7 +83,7 @@ module.exports = function (knex) {
         return knex(tableName).where('expiry', bigintTimestamp).select('*');
       })
       .then(function (rows) {
-        rows.forEach((row) => expect(row.id).to.equal('positive'));
+        rows.forEach((row) => expect(row.id).toBe('positive'));
       })
       .then(function () {
         return knex(tableName)
@@ -85,16 +91,16 @@ module.exports = function (knex) {
           .select('*');
       })
       .then(function (rows) {
-        rows.forEach((row) => expect(row.id).to.equal('negative'));
+        rows.forEach((row) => expect(row.id).toBe('negative'));
       })
       .catch(function (err) {
-        expect(err).to.be.undefined;
+        expect(err).toBeUndefined();
       });
   });
 
   it('#1781 - decimal value must not be converted to integer', function () {
     if (!isMssql(knex)) {
-      return this.skip();
+      return;
     }
 
     const tableName = 'decimal_test';
@@ -116,7 +122,7 @@ module.exports = function (knex) {
         return knex(tableName).first('value');
       })
       .then(function (response) {
-        expect(response.value).to.be.eql(value);
+        expect(response.value).toEqual(value);
       });
   });
 };

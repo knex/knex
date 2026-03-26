@@ -1,6 +1,4 @@
-const { expect } = require('chai');
 
-const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const MySQL2_Client = require('../../../lib/dialects/mysql2');
 const knex = require('../../../knex');
@@ -18,7 +16,6 @@ module.exports = function (dialect) {
     }
 
     let tableSql;
-    const equal = require('assert').equal;
 
     it('basic create table with column collate', function () {
       tableSql = client
@@ -29,8 +26,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255) collate 'utf8_unicode_ci')"
       );
     });
@@ -40,8 +37,8 @@ module.exports = function (dialect) {
         .schemaBuilder()
         .createTableLike('users_like', 'users')
         .toSQL();
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'create table `users_like` like `users`'
       );
     });
@@ -54,11 +51,11 @@ module.exports = function (dialect) {
           table.integer('numeric_col');
         })
         .toSQL();
-      expect(tableSql.length).to.equal(2);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(2);
+      expect(tableSql[0].sql).toBe(
         'create table `users_like` like `users`'
       );
-      expect(tableSql[1].sql).to.equal(
+      expect(tableSql[1].sql).toBe(
         'alter table `users_like` add `add_col` text, add `numeric_col` int'
       );
     });
@@ -73,8 +70,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null)'
       );
     });
@@ -89,11 +86,11 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(2, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(2);
+      expect(tableSql[0].sql).toBe(
         'create table `users` (`userId` int unsigned not null, `name` varchar(255), primary key (`userId`, `name`))'
       );
-      expect(tableSql[1].sql).to.equal(
+      expect(tableSql[1].sql).toBe(
         'alter table `users` modify column `userId` int unsigned not null auto_increment'
       );
     });
@@ -106,8 +103,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'create table `users` (`id` varchar(24), primary key (`id`))'
       );
     });
@@ -120,11 +117,11 @@ module.exports = function (dialect) {
         table.collate('utf8_unicode_ci');
       });
 
-      equal(1, tableSql.toSQL().length);
-      expect(tableSql.toSQL()[0].sql).to.equal(
+      expect(tableSql.toSQL().length).toBe(1);
+      expect(tableSql.toSQL()[0].sql).toBe(
         'create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255)) default character set utf8 collate utf8_unicode_ci'
       );
-      expect(tableSql.toQuery()).to.equal(
+      expect(tableSql.toQuery()).toBe(
         'create table `users` (`id` int unsigned not null auto_increment primary key, `email` varchar(255)) default character set utf8 collate utf8_unicode_ci'
       );
     });
@@ -138,8 +135,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `id` int unsigned not null auto_increment primary key, add `email` varchar(255)'
       );
     });
@@ -147,7 +144,7 @@ module.exports = function (dialect) {
     describe('views', function () {
       let knexMysql;
 
-      before(function () {
+      beforeAll(function () {
         knexMysql = knex({
           client: 'mysql2',
           connection: {},
@@ -162,8 +159,8 @@ module.exports = function (dialect) {
             view.as(knexMysql('users').select('name').where('age', '>', '18'));
           })
           .toSQL();
-        equal(1, viewSql.length);
-        expect(viewSql[0].sql).to.equal(
+        expect(viewSql.length).toBe(1);
+        expect(viewSql[0].sql).toBe(
           "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
         );
       });
@@ -175,8 +172,8 @@ module.exports = function (dialect) {
             view.as(knexMysql('users').select('name').where('age', '>', '18'));
           })
           .toSQL();
-        equal(1, viewSql.length);
-        expect(viewSql[0].sql).to.equal(
+        expect(viewSql.length).toBe(1);
+        expect(viewSql[0].sql).toBe(
           "create view `adults` as select `name` from `users` where `age` > '18'"
         );
       });
@@ -189,8 +186,8 @@ module.exports = function (dialect) {
             view.as(knexMysql('users').select('name').where('age', '>', '18'));
           })
           .toSQL();
-        expect(viewSql.length).to.equal(1);
-        expect(viewSql[0].sql).to.equal(
+        expect(viewSql.length).toBe(1);
+        expect(viewSql[0].sql).toBe(
           "create or replace view `adults` (`name`) as select `name` from `users` where `age` > '18'"
         );
       });
@@ -202,8 +199,8 @@ module.exports = function (dialect) {
             view.as(knexMysql('users').select('name').where('age', '>', '18'));
           })
           .toSQL();
-        expect(viewSql.length).to.equal(1);
-        expect(viewSql[0].sql).to.equal(
+        expect(viewSql.length).toBe(1);
+        expect(viewSql[0].sql).toBe(
           "create or replace view `adults` as select `name` from `users` where `age` > '18'"
         );
       });
@@ -217,8 +214,8 @@ module.exports = function (dialect) {
             view.localCheckOption();
           })
           .toSQL();
-        equal(1, viewSqlLocalCheck.length);
-        expect(viewSqlLocalCheck[0].sql).to.equal(
+        expect(viewSqlLocalCheck.length).toBe(1);
+        expect(viewSqlLocalCheck[0].sql).toBe(
           "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with local check option"
         );
 
@@ -230,16 +227,16 @@ module.exports = function (dialect) {
             view.cascadedCheckOption();
           })
           .toSQL();
-        equal(1, viewSqlCascadedCheck.length);
-        expect(viewSqlCascadedCheck[0].sql).to.equal(
+        expect(viewSqlCascadedCheck.length).toBe(1);
+        expect(viewSqlCascadedCheck[0].sql).toBe(
           "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with cascaded check option"
         );
       });
 
       it('drop view', function () {
         tableSql = client.schemaBuilder().dropView('users').toSQL();
-        equal(1, tableSql.length);
-        expect(tableSql[0].sql).to.equal('drop view `users`');
+        expect(tableSql.length).toBe(1);
+        expect(tableSql[0].sql).toBe('drop view `users`');
       });
 
       it('drop view with schema', function () {
@@ -248,8 +245,8 @@ module.exports = function (dialect) {
           .withSchema('myschema')
           .dropView('users')
           .toSQL();
-        equal(1, tableSql.length);
-        expect(tableSql[0].sql).to.equal('drop view `myschema`.`users`');
+        expect(tableSql.length).toBe(1);
+        expect(tableSql[0].sql).toBe('drop view `myschema`.`users`');
       });
 
       it('rename and change default of column of view', function () {
@@ -260,7 +257,7 @@ module.exports = function (dialect) {
               view.column('oldName').rename('newName').defaultTo('10');
             })
             .toSQL();
-        }).to.throw('rename column of views is not supported by this dialect.');
+        }).toThrow('rename column of views is not supported by this dialect.');
       });
 
       it('rename view', function () {
@@ -268,8 +265,8 @@ module.exports = function (dialect) {
           .schemaBuilder()
           .renameView('old_view', 'new_view')
           .toSQL();
-        equal(1, tableSql.length);
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql.length).toBe(1);
+        expect(tableSql[0].sql).toBe(
           'rename table `old_view` to `new_view`'
         );
       });
@@ -285,7 +282,7 @@ module.exports = function (dialect) {
               );
             })
             .toSQL();
-        }).to.throw('materialized views are not supported by this dialect.');
+        }).toThrow('materialized views are not supported by this dialect.');
       });
 
       it('refresh view', function () {
@@ -294,7 +291,7 @@ module.exports = function (dialect) {
             .schemaBuilder()
             .refreshMaterializedView('view_to_refresh')
             .toSQL();
-        }).to.throw('materialized views are not supported by this dialect.');
+        }).toThrow('materialized views are not supported by this dialect.');
       });
     });
 
@@ -305,7 +302,7 @@ module.exports = function (dialect) {
           t.json('preferences');
         })
         .toSQL();
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql[0].sql).toBe(
         'alter table `user` add `preferences` json'
       );
     });
@@ -317,7 +314,7 @@ module.exports = function (dialect) {
           t.jsonb('preferences');
         })
         .toSQL();
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql[0].sql).toBe(
         'alter table `user` add `preferences` json'
       );
     });
@@ -325,15 +322,15 @@ module.exports = function (dialect) {
     it('test drop table', function () {
       tableSql = client.schemaBuilder().dropTable('users').toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('drop table `users`');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('drop table `users`');
     });
 
     it('test drop table if exists', function () {
       tableSql = client.schemaBuilder().dropTableIfExists('users').toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('drop table if exists `users`');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('drop table if exists `users`');
     });
 
     it('test drop column', function () {
@@ -344,8 +341,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` drop `foo`');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` drop `foo`');
     });
 
     it('drops multiple columns with an array', function () {
@@ -356,8 +353,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop `foo`, drop `bar`'
       );
     });
@@ -370,8 +367,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop `foo`, drop `bar`'
       );
     });
@@ -384,8 +381,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` drop primary key');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` drop primary key');
     });
 
     it('test drop primary if exists', function () {
@@ -396,7 +393,7 @@ module.exports = function (dialect) {
             this.dropPrimaryIfExists();
           })
           .toSQL();
-      }).to.throw(/not supported/);
+      }).toThrow(/not supported/);
     });
 
     it('test drop unique', function () {
@@ -407,8 +404,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop index `users_foo_unique`'
       );
     });
@@ -421,8 +418,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` drop index `foo`');
     });
 
     it('test drop unique if exists', function () {
@@ -433,7 +430,7 @@ module.exports = function (dialect) {
             this.dropUniqueIfExists('foo');
           })
           .toSQL();
-      }).to.throw(/not supported/);
+      }).toThrow(/not supported/);
     });
 
     it('test drop index', function () {
@@ -444,8 +441,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop index `users_foo_index`'
       );
     });
@@ -458,8 +455,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` drop index `foo`');
     });
 
     it('test drop foreign', function () {
@@ -470,8 +467,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop foreign key `users_foo_foreign`'
       );
     });
@@ -484,8 +481,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop foreign key `foo`'
       );
     });
@@ -498,7 +495,7 @@ module.exports = function (dialect) {
             this.dropForeignIfExists('foo');
           })
           .toSQL();
-      }).to.throw(/not supported/);
+      }).toThrow(/not supported/);
     });
 
     it('test drop timestamps', function () {
@@ -509,8 +506,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop `created_at`, drop `updated_at`'
       );
     });
@@ -518,8 +515,8 @@ module.exports = function (dialect) {
     it('test rename table', function () {
       tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('rename table `users` to `foo`');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('rename table `users` to `foo`');
     });
 
     it('test adding primary key', function () {
@@ -530,8 +527,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add primary key `bar`(`foo`)'
       );
     });
@@ -544,8 +541,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add unique `bar`(`foo`)'
       );
     });
@@ -561,8 +558,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add unique `bar`(`foo`) using HASH'
       );
     });
@@ -575,8 +572,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add index `baz`(`foo`, `bar`)'
       );
     });
@@ -589,8 +586,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      expect(tableSql.length).to.equal(1);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add FULLTEXT index `baz`(`foo`, `bar`)'
       );
     });
@@ -606,8 +603,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      expect(tableSql.length).to.equal(1);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add UNIQUE index `baz`(`foo`, `bar`) using BTREE'
       );
     });
@@ -620,8 +617,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add constraint `users_foo_id_foreign` foreign key (`foo_id`) references `orders` (`id`)'
       );
 
@@ -632,9 +629,9 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(2, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo_id` int');
-      expect(tableSql[1].sql).to.equal(
+      expect(tableSql.length).toBe(2);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo_id` int');
+      expect(tableSql[1].sql).toBe(
         'alter table `users` add constraint `users_foo_id_foreign` foreign key (`foo_id`) references `orders` (`id`)'
       );
     });
@@ -647,8 +644,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add constraint `fk_foo` foreign key (`foo_id`) references `orders` (`id`)'
       );
 
@@ -662,9 +659,9 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(2, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo_id` int');
-      expect(tableSql[1].sql).to.equal(
+      expect(tableSql.length).toBe(2);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo_id` int');
+      expect(tableSql[1].sql).toBe(
         'alter table `users` add constraint `fk_foo` foreign key (`foo_id`) references `orders` (`id`)'
       );
     });
@@ -682,7 +679,7 @@ module.exports = function (dialect) {
           })
           .toSQL();
       };
-      expect(addDeferredConstraint).to.throw(
+      expect(addDeferredConstraint).toThrow(
         'mysql does not support deferrable'
       );
     });
@@ -704,11 +701,11 @@ module.exports = function (dialect) {
             .onUpdate('cascade');
         })
         .toSQL();
-      equal(3, tableSql.length);
-      expect(tableSql[1].sql).to.equal(
+      expect(tableSql.length).toBe(3);
+      expect(tableSql[1].sql).toBe(
         'alter table `person` add constraint `person_user_id_foreign` foreign key (`user_id`) references `users` (`id`) on delete SET NULL'
       );
-      expect(tableSql[2].sql).to.equal(
+      expect(tableSql[2].sql).toBe(
         'alter table `person` add constraint `person_account_id_foreign` foreign key (`account_id`) references `accounts` (`id`) on update cascade'
       );
     });
@@ -721,8 +718,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `id` int unsigned not null auto_increment primary key'
       );
     });
@@ -735,8 +732,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `id` bigint unsigned not null auto_increment primary key'
       );
     });
@@ -750,8 +747,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `id` bigint unsigned not null'
       );
     });
@@ -766,11 +763,11 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(2, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(2);
+      expect(tableSql[0].sql).toBe(
         'create table `users` (`userId` bigint unsigned not null, `name` varchar(255), primary key (`userId`, `name`))'
       );
-      expect(tableSql[1].sql).to.equal(
+      expect(tableSql[1].sql).toBe(
         'alter table `users` modify column `userId` bigint unsigned not null auto_increment'
       );
     });
@@ -783,8 +780,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `name` varchar(255) after `foo`'
       );
     });
@@ -797,8 +794,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "alter table `users` add `name` varchar(255) comment 'bar' after `foo`"
       );
     });
@@ -811,8 +808,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `first_name` varchar(255) first'
       );
     });
@@ -825,8 +822,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "alter table `users` add `first_name` varchar(255) comment 'bar' first"
       );
     });
@@ -839,8 +836,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` varchar(255)'
       );
     });
@@ -853,8 +850,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` varchar(100)'
       );
     });
@@ -866,8 +863,8 @@ module.exports = function (dialect) {
           this.string('foo', 100).notNull().defaultTo('bar');
         })
         .toSQL();
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "alter table `users` add `foo` varchar(100) not null default 'bar'"
       );
     });
@@ -882,8 +879,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` varchar(100) null default CURRENT TIMESTAMP'
       );
     });
@@ -896,8 +893,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` text');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` text');
     });
 
     it('test adding big integer', function () {
@@ -908,8 +905,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` bigint');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` bigint');
     });
 
     it('test adding integer', function () {
@@ -920,8 +917,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` int');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` int');
     });
 
     it('test adding medium integer', function () {
@@ -932,8 +929,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` mediumint'
       );
     });
@@ -946,8 +943,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` smallint'
       );
     });
@@ -960,8 +957,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` tinyint');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` tinyint');
     });
 
     it('test adding float', function () {
@@ -972,8 +969,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` float(5, 2)'
       );
     });
@@ -986,8 +983,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` double');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` double');
     });
 
     it('test adding double specifying precision', function () {
@@ -998,8 +995,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` double(15, 8)'
       );
     });
@@ -1012,8 +1009,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` decimal(5, 2)'
       );
     });
@@ -1026,7 +1023,7 @@ module.exports = function (dialect) {
             this.decimal('foo', null);
           })
           .toSQL();
-      }).to.throw(
+      }).toThrow(
         'Specifying no precision on decimal columns is not supported'
       );
     });
@@ -1039,8 +1036,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` boolean');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` boolean');
     });
 
     it('test adding enum', function () {
@@ -1051,8 +1048,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "alter table `users` add `foo` enum('bar', 'baz')"
       );
     });
@@ -1065,8 +1062,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` date');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` date');
     });
 
     it('test adding date time', () => {
@@ -1077,8 +1074,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` datetime'
       );
     });
@@ -1091,8 +1088,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` datetime(3)'
       );
     });
@@ -1105,8 +1102,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` time');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` time');
     });
 
     it('test adding time with options object', () => {
@@ -1117,8 +1114,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` time(3)');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` time(3)');
     });
 
     it('test adding time stamp', () => {
@@ -1129,8 +1126,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` timestamp'
       );
     });
@@ -1143,8 +1140,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` timestamp(3)'
       );
     });
@@ -1157,8 +1154,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `created_at` datetime, add `updated_at` datetime'
       );
     });
@@ -1170,8 +1167,8 @@ module.exports = function (dialect) {
           this.timestamp('foo', 6);
         })
         .toSQL();
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` timestamp(6)'
       );
     });
@@ -1183,8 +1180,8 @@ module.exports = function (dialect) {
           this.datetime('foo', 6);
         })
         .toSQL();
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` datetime(6)'
       );
     });
@@ -1197,8 +1194,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal('alter table `users` add `foo` blob');
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe('alter table `users` add `foo` blob');
     });
 
     it('test adding decimal', function () {
@@ -1209,8 +1206,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` decimal(2, 6)'
       );
     });
@@ -1223,8 +1220,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      expect(tableSql.length).to.equal(1);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` char(36)'
       );
     });
@@ -1237,8 +1234,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      expect(tableSql.length).to.equal(1);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `foo` binary(16)'
       );
     });
@@ -1251,8 +1248,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "alter table `users` comment = 'Custom comment'"
       );
     });
@@ -1265,8 +1262,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal("alter table `users` comment = ''");
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe("alter table `users` comment = ''");
     });
 
     it('test column comment with quotes', function () {
@@ -1279,8 +1276,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "create table `test` (`column1` text comment 'The table\\'s first column and it\\'s escaped')"
       );
     });
@@ -1295,8 +1292,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         "create table `test` (`column1` text comment 'The table\\'s first column and it\\'s escaped')"
       );
     });
@@ -1309,7 +1306,7 @@ module.exports = function (dialect) {
             t.comment();
           })
           .toSQL();
-      }).to.throw(TypeError);
+      }).toThrow(TypeError);
     });
 
     it('set comment to null', function () {
@@ -1320,7 +1317,7 @@ module.exports = function (dialect) {
             t.comment(null);
           })
           .toSQL();
-      }).to.throw(TypeError);
+      }).toThrow(TypeError);
     });
 
     it('set comment to old comment limit (size 60+) #4863', function () {
@@ -1338,7 +1335,7 @@ module.exports = function (dialect) {
           );
         })
         .toSQL();
-      expect(warnMessages.length).to.equal(0);
+      expect(warnMessages.length).toBe(0);
     });
 
     it('set comment to current comment limit (size 1024+) #4863', function () {
@@ -1354,7 +1351,7 @@ module.exports = function (dialect) {
           t.comment('big comment'.repeat(100));
         })
         .toSQL();
-      expect(warnMessages[0]).to.equal(
+      expect(warnMessages[0]).toBe(
         'The max length for a table comment is 1024 characters'
       );
     });
@@ -1368,11 +1365,11 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(2, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(2);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add `bar` varchar(255)'
       );
-      expect(tableSql[1].sql).to.equal(
+      expect(tableSql[1].sql).toBe(
         'alter table `users` modify `foo` varchar(255)'
       );
     });
@@ -1385,8 +1382,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)'
       );
     });
@@ -1399,8 +1396,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `composite_key_test` drop index `composite_key_test_column_a_column_b_unique`'
       );
     });
@@ -1414,8 +1411,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `composite_key_test` drop index if exists `composite_key_test_column_a_column_b_unique`'
       );
     });
@@ -1429,8 +1426,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'alter table `users` drop index if exists `users_email_unique`'
       );
     });
@@ -1443,8 +1440,8 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql.length).toBe(1);
+      expect(tableSql[0].sql).toBe(
         'create table `default_raw_test` (`created_at` timestamp default CURRENT_TIMESTAMP)'
       );
     });
@@ -1457,7 +1454,7 @@ module.exports = function (dialect) {
           t.engine('myISAM');
         })
         .toSQL();
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql[0].sql).toBe(
         'create table `users` (`username` varchar(255)) engine = myISAM'
       );
     });
@@ -1469,7 +1466,7 @@ module.exports = function (dialect) {
           t.primary(['test1', 'test2'], 'testconstraintname');
         })
         .toSQL();
-      expect(tableSql[0].sql).to.equal(
+      expect(tableSql[0].sql).toBe(
         'alter table `users` add primary key `testconstraintname`(`test1`, `test2`)'
       );
     });
@@ -1478,8 +1475,8 @@ module.exports = function (dialect) {
       let spy;
       let originalWrapIdentifier;
 
-      before(function () {
-        spy = sinon.spy();
+      beforeAll(function () {
+        spy = vi.fn();
         originalWrapIdentifier = client.config.wrapIdentifier;
         client.config.wrapIdentifier = function (value, wrap, queryContext) {
           spy(value, queryContext);
@@ -1488,10 +1485,10 @@ module.exports = function (dialect) {
       });
 
       beforeEach(function () {
-        spy.resetHistory();
+        spy.mockClear();
       });
 
-      after(function () {
+      afterAll(function () {
         client.config.wrapIdentifier = originalWrapIdentifier;
       });
 
@@ -1505,10 +1502,10 @@ module.exports = function (dialect) {
           })
           .toSQL();
 
-        expect(spy.callCount).to.equal(3);
-        expect(spy.firstCall.args).to.deep.equal(['id', 'schema context']);
-        expect(spy.secondCall.args).to.deep.equal(['email', 'schema context']);
-        expect(spy.thirdCall.args).to.deep.equal(['users', 'schema context']);
+        expect(spy.mock.calls.length).toBe(3);
+        expect(spy.mock.calls[0]).toEqual(['id', 'schema context']);
+        expect(spy.mock.calls[1]).toEqual(['email', 'schema context']);
+        expect(spy.mock.calls[2]).toEqual(['users', 'schema context']);
       });
 
       it('TableCompiler passes queryContext to wrapIdentifier', function () {
@@ -1520,10 +1517,10 @@ module.exports = function (dialect) {
           })
           .toSQL();
 
-        expect(spy.callCount).to.equal(3);
-        expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
-        expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
-        expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
+        expect(spy.mock.calls.length).toBe(3);
+        expect(spy.mock.calls[0]).toEqual(['id', 'id context']);
+        expect(spy.mock.calls[1]).toEqual(['email', 'email context']);
+        expect(spy.mock.calls[2]).toEqual(['users', undefined]);
       });
 
       it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
@@ -1537,10 +1534,10 @@ module.exports = function (dialect) {
           })
           .toSQL();
 
-        expect(spy.callCount).to.equal(3);
-        expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
-        expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
-        expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+        expect(spy.mock.calls.length).toBe(3);
+        expect(spy.mock.calls[0]).toEqual(['id', 'table context']);
+        expect(spy.mock.calls[1]).toEqual(['email', 'table context']);
+        expect(spy.mock.calls[2]).toEqual(['users', 'table context']);
       });
 
       it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
@@ -1554,10 +1551,10 @@ module.exports = function (dialect) {
           })
           .toSQL();
 
-        expect(spy.callCount).to.equal(3);
-        expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
-        expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
-        expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+        expect(spy.mock.calls.length).toBe(3);
+        expect(spy.mock.calls[0]).toEqual(['id', 'id context']);
+        expect(spy.mock.calls[1]).toEqual(['email', 'email context']);
+        expect(spy.mock.calls[2]).toEqual(['users', 'table context']);
       });
     });
 
@@ -1569,7 +1566,7 @@ module.exports = function (dialect) {
             t.integer('price').checkPositive();
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           'alter table `user` add `price` int check (`price` > 0)'
         );
       });
@@ -1581,7 +1578,7 @@ module.exports = function (dialect) {
             t.integer('price').checkNegative();
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           'alter table `user` add `price` int check (`price` < 0)'
         );
       });
@@ -1593,7 +1590,7 @@ module.exports = function (dialect) {
             t.string('animal').checkIn(['cat', 'dog']);
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           "alter table `user` add `animal` varchar(255) check (`animal` in ('cat','dog'))"
         );
       });
@@ -1605,7 +1602,7 @@ module.exports = function (dialect) {
             t.string('animal').checkNotIn(['cat', 'dog']);
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           "alter table `user` add `animal` varchar(255) check (`animal` not in ('cat','dog'))"
         );
       });
@@ -1617,7 +1614,7 @@ module.exports = function (dialect) {
             t.integer('price').checkBetween([10, 15]);
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           'alter table `user` add `price` int check (`price` between 10 and 15)'
         );
       });
@@ -1632,7 +1629,7 @@ module.exports = function (dialect) {
             ]);
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           'alter table `user` add `price` int check (`price` between 10 and 15 or `price` between 20 and 25)'
         );
       });
@@ -1644,7 +1641,7 @@ module.exports = function (dialect) {
             t.integer('price').checkBetween(['banana', 'orange']);
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           "alter table `user` add `price` int check (`price` between 'banana' and 'orange')"
         );
       });
@@ -1656,7 +1653,7 @@ module.exports = function (dialect) {
             t.varchar('phone').checkLength('=', 8);
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           'alter table `user` add `phone` varchar(255) check (length(`phone`) = 8)'
         );
       });
@@ -1668,7 +1665,7 @@ module.exports = function (dialect) {
             t.varchar('phone').checkRegex('[0-9]{8}');
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           "alter table `user` add `phone` varchar(255) check (`phone` REGEXP '[0-9]{8}')"
         );
       });
@@ -1680,7 +1677,7 @@ module.exports = function (dialect) {
             t.dropChecks(['check_constraint1', 'check_constraint2']);
           })
           .toSQL();
-        expect(tableSql[0].sql).to.equal(
+        expect(tableSql[0].sql).toBe(
           'alter table `user` drop constraint check_constraint1, drop constraint check_constraint2'
         );
       });
@@ -1721,8 +1718,8 @@ module.exports = function (dialect) {
 
         await tableCompiler.dropFKRefs(mockRunner, refs);
 
-        expect(queries).to.have.length(1);
-        expect(queries[0]).to.equal(
+        expect(queries).toHaveLength(1);
+        expect(queries[0]).toBe(
           'alter table `my_table` drop foreign key `fk_my_constraint`'
         );
       });
@@ -1745,8 +1742,8 @@ module.exports = function (dialect) {
 
         await tableCompiler.dropFKRefs(mockRunner, refs);
 
-        expect(queries).to.have.length(1);
-        expect(queries[0]).to.equal(
+        expect(queries).toHaveLength(1);
+        expect(queries[0]).toBe(
           'alter table `my_table` drop foreign key `fk_my_constraint`'
         );
       });
@@ -1774,8 +1771,8 @@ module.exports = function (dialect) {
 
         await tableCompiler.createFKRefs(mockRunner, refs);
 
-        expect(queries).to.have.length(1);
-        expect(queries[0]).to.equal(
+        expect(queries).toHaveLength(1);
+        expect(queries[0]).toBe(
           'alter table `child_table` add constraint `fk_parent` ' +
             'foreign key (`parent_id`) references `parent_table` (`id`) ' +
             'ON UPDATE NO ACTION ON DELETE CASCADE'
@@ -1805,8 +1802,8 @@ module.exports = function (dialect) {
 
         await tableCompiler.createFKRefs(mockRunner, refs);
 
-        expect(queries).to.have.length(1);
-        expect(queries[0]).to.equal(
+        expect(queries).toHaveLength(1);
+        expect(queries[0]).toBe(
           'alter table `child_table` add constraint `fk_parent` ' +
             'foreign key (`parent_id`) references `parent_table` (`id`) ' +
             'ON UPDATE NO ACTION ON DELETE CASCADE'

@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["vitest/globals"],
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "#test/*": ["./*"]
+    }
+  },
+  "include": ["../lib/**/*.js", "./**/*.js"],
+  "exclude": []
+}

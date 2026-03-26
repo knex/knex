@@ -39,8 +39,14 @@ jobs:
 
       - run: npm run build
 
-      - name: Run Tests
+      - name: Run Unit Tests
         run: npm run test:unit
+        env:
+          CI: true
+          KNEX_TEST_TIMEOUT: 60000
+
+      - name: Run CLI Tests
+        run: npm run test:cli
         env:
           CI: true
           KNEX_TEST_TIMEOUT: 60000

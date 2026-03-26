@@ -1,7 +1,9 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const { FileTestHelper } = require('cli-testlab');
+const del = require('del');
 const { expect } = require('chai');
 
 function migrationStubOptionSetup(fileHelper) {
@@ -84,7 +86,48 @@ function createTable(db, ddl) {
   );
 }
 
+/**
+ * Removes leftover knexfile.js/knexfile.ts from cwd and generated
+ * migration/seed files that may leak between test files when running
+ * in vitest's singleFork mode.
+ */
+function cleanupLeftoverFiles() {
+  const cwd = process.cwd();
+  // Remove leftover knexfile.js/knexfile.ts from cwd
+  ['knexfile.js', 'knexfile.ts'].forEach((f) => {
+    const p = path.join(cwd, f);
+    if (fs.existsSync(p)) {
+      fs.unlinkSync(p);
+    }
+  });
+  // Remove any generated migration files (timestamped) from knexfile_migrations
+  del.sync('test/jake-util/knexfile_migrations/[0-9]*_*');
+  // Remove any generated seed files from knexfile_seeds (not seed2.stub or other fixtures)
+  del.sync('test/jake-util/knexfile_seeds/somename.*');
+  // Remove the default migrations directory that may be created in cwd
+  const migrationsDir = path.join(cwd, 'migrations');
+  if (fs.existsSync(migrationsDir)) {
+    del.sync(path.join(migrationsDir, '**'));
+    try {
+      fs.rmdirSync(migrationsDir);
+    } catch (e) {
+      // ignore
+    }
+  }
+  // Remove the default seeds directory that may be created in cwd
+  const seedsDir = path.join(cwd, 'seeds');
+  if (fs.existsSync(seedsDir)) {
+    del.sync(path.join(seedsDir, '**'));
+    try {
+      fs.rmdirSync(seedsDir);
+    } catch (e) {
+      // ignore
+    }
+  }
+}
+
 module.exports = {
+  cleanupLeftoverFiles,
   expectContentMatchesStub,
   getRootDir,
   migrationStubOptionSetup,

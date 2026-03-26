@@ -45,7 +45,7 @@ jobs:
       - run: npm run build
 
       - name: Run Tests
-        run: npm run test:coverage  || true
+        run: npm run test:coverage || true
         env:
           CI: true
           DB: 'postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb'
@@ -53,9 +53,6 @@ jobs:
 
       - name: Stop Databases
         run: npm run db:stop
-
-      - name: Generate LCOV
-        run: npm run coveralls
 
       - name: Update Coveralls
         uses: coverallsapp/github-action@v2
