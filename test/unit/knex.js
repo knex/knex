@@ -819,4 +819,36 @@ describe('knex', () => {
       }
     });
   });
+
+  describe('config mutation (#5629)', () => {
+    it('should not mutate the config object passed to knex', () => {
+      const config = {
+        client: 'sqlite3',
+        connection: {
+          filename: ':memory:',
+          password: 'secret',
+        },
+        useNullAsDefault: true,
+      };
+
+      const originalPassword = config.connection.password;
+      const descriptor = Object.getOwnPropertyDescriptor(
+        config.connection,
+        'password'
+      );
+      expect(descriptor.enumerable).to.equal(true);
+
+      const knex = Knex(config);
+
+      // The original config must not be modified
+      expect(config.connection.password).to.equal(originalPassword);
+      const descriptorAfter = Object.getOwnPropertyDescriptor(
+        config.connection,
+        'password'
+      );
+      expect(descriptorAfter.enumerable).to.equal(true);
+
+      knex.destroy();
+    });
+  });
 });
