@@ -114,6 +114,25 @@ describe('connectionPool config option', () => {
       }).to.throw(/does not support native driver pools/);
     });
 
+    it('warns and returns when initializeExternalPool is called twice', () => {
+      const tarnPool = new Pool({
+        create: () => Promise.resolve({}),
+        destroy: () => Promise.resolve(),
+        min: 0,
+        max: 1,
+      });
+
+      const client = new TestClient();
+      const warnSpy = sinon.spy(client.logger, 'warn');
+      client.initializeExternalPool(tarnPool);
+      client.initializeExternalPool(tarnPool); // second call
+
+      expect(warnSpy.calledOnce).to.be.true;
+      expect(warnSpy.calledWith('The pool has already been initialized')).to.be
+        .true;
+      tarnPool.destroy();
+    });
+
     it('uses tarn pool directly when connectionPool is tarn-compatible', () => {
       const tarnPool = new Pool({
         create: () => Promise.resolve({}),
@@ -222,6 +241,26 @@ describe('connectionPool config option', () => {
       expect(adapter.release(conn)).to.be.true;
       expect(conn.release.calledWith(true)).to.be.true;
     });
+
+    it('release returns false when connection has no release method', function () {
+      if (!PgClient) this.skip();
+
+      const client = Object.create(PgClient.prototype);
+      client.version = '14.0';
+      const adapter = client.wrapNativePool({});
+
+      expect(adapter.release({})).to.be.false;
+    });
+
+    it('destroy is a no-op that resolves', async function () {
+      if (!PgClient) this.skip();
+
+      const client = Object.create(PgClient.prototype);
+      client.version = '14.0';
+      const adapter = client.wrapNativePool({});
+
+      await adapter.destroy(); // should resolve without error
+    });
   });
 
   // ── MySQL adapter ─────────────────────────────────────────────────
@@ -278,6 +317,74 @@ describe('connectionPool config option', () => {
       expect(adapter.release(conn)).to.be.true;
       expect(conn.destroy.calledOnce).to.be.true;
       expect(conn.release.called).to.be.false;
+    });
+
+    it('release returns false when connection has no release method', function () {
+      if (!MySQLClient) this.skip();
+
+      const client = Object.create(MySQLClient.prototype);
+      const adapter = client.wrapNativePool({});
+
+      expect(adapter.release({})).to.be.false;
+    });
+
+    it('destroy is a no-op that resolves', async function () {
+      if (!MySQLClient) this.skip();
+
+      const client = Object.create(MySQLClient.prototype);
+      const adapter = client.wrapNativePool({});
+
+      await adapter.destroy(); // should resolve without error
+    });
+  });
+
+  describe('MySQL2 wrapNativePool', () => {
+    let MySQL2Client;
+
+    before(() => {
+      try {
+        MySQL2Client = require('../../../lib/dialects/mysql2/index');
+      } catch (_e) {
+        // mysql2 driver may not be installed in test env
+      }
+    });
+
+    it('uses the callback pool directly when no .pool property', async function () {
+      if (!MySQL2Client) this.skip();
+
+      const mockConnection = {};
+      const mockPool = {
+        getConnection: sinon.stub().callsFake((cb) => cb(null, mockConnection)),
+      };
+
+      const client = Object.create(MySQL2Client.prototype);
+      const adapter = client.wrapNativePool(mockPool);
+
+      const connection = await adapter.acquire().promise;
+
+      expect(mockPool.getConnection.calledOnce).to.be.true;
+      expect(connection.__knexUid).to.be.a('string');
+      expect(connection).to.equal(mockConnection);
+    });
+
+    it('unwraps mysql2/promise pool via .pool property', async function () {
+      if (!MySQL2Client) this.skip();
+
+      const mockConnection = {};
+      const callbackPool = {
+        getConnection: sinon.stub().callsFake((cb) => cb(null, mockConnection)),
+      };
+      // mysql2/promise pools expose the underlying callback pool as .pool
+      const promisePool = { pool: callbackPool };
+
+      const client = Object.create(MySQL2Client.prototype);
+      const adapter = client.wrapNativePool(promisePool);
+
+      const connection = await adapter.acquire().promise;
+
+      expect(callbackPool.getConnection.calledOnce).to.be.true;
+      expect(connection.__knexUid).to.be.a('string');
+      expect(connection).to.equal(mockConnection);
     });
   });
 });

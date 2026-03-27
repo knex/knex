@@ -13,6 +13,7 @@ describe('Util Tests', function () {
   require('./unit/util/format-sql-bindings');
   require('./unit/util/security');
   require('./unit/client/pool-config');
+  require('./unit/client/connection-pool');
 });
 
 describe('Package Exports Tests', function () {
