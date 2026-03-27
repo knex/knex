@@ -1,6 +1,6 @@
 yarn.lock
 !docs/package-lock.json
-package-lock.json
+test-tstyche/package-lock.json
 raw
 *.sw?
 .idea

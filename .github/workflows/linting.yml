@@ -35,7 +35,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Run npm install
-        run: npm install
+        run: npm ci
 
       - name: Run format:check
         run: npm run format:check
