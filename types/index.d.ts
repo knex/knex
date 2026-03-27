@@ -2754,6 +2754,13 @@ declare namespace Knex {
     jsonbSupport?: boolean;
     version?: string;
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
+    /**
+     * A native driver pool (e.g. pg.Pool, mysql.createPool()) to use instead of
+     * knex's built-in tarn.js pool. Mutually exclusive with `connection`.
+     * When provided, knex does not own the pool lifecycle — call pool.end()
+     * yourself when done.
+     */
+    connectionPool?: any;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
