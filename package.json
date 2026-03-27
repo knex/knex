@@ -37,7 +37,6 @@
     "format:check": "prettier --list-different .",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
-    "coveralls": "nyc report --reporter=lcov",
     "lint": "eslint --cache .",
     "lint:fix": "eslint --cache --fix .",
     "prelint:types": "cd test-tstyche && npm i",
