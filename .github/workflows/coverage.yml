@@ -36,6 +36,9 @@ jobs:
       - name: Start Databases
         run: npm run db:start:no-oracle
 
+      - name: Pin npm (avoid Arborist edgesOut crash)
+        run: npm i -g npm@10.5.2
+
       - name: Run npm install
         run: npm install
 
