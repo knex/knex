@@ -295,17 +295,17 @@ knex
 
 **.withRecursive(alias, [columns], callback|builder|raw)**
 
-Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE.
+Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE. When using `union`/`unionAll`, both terms must return the same columns and types; avoid `select('*')` in the recursive term if it introduces a join.
 
 ```js
 // @sql
 knex
   .withRecursive('ancestors', (qb) => {
-    qb.select('*')
+    qb.select('people.*')
       .from('people')
       .where('people.id', 1)
-      .union((qb) => {
-        qb.select('*')
+      .unionAll((qb) => {
+        qb.select('people.*')
           .from('people')
           .join('ancestors', 'ancestors.parentId', 'people.id');
       });

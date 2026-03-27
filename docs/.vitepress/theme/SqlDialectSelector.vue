@@ -15,6 +15,7 @@ const switchExamples = () => {
 
     document.querySelectorAll('.sql-output-group').forEach((group) => {
       let maxHeight = 0;
+      // Preserve layout height so switching dialects doesn't jump the page.
       group.querySelectorAll('.sql-output').forEach((el) => {
         const height = el.scrollHeight || 0;
         if (height > maxHeight) {
@@ -23,6 +24,14 @@ const switchExamples = () => {
       });
       group.style.minHeight = maxHeight ? `${maxHeight}px` : '';
     });
+
+    if (dialect.value === 'all') {
+      outputs.forEach((el) => {
+        el.style.display = 'block';
+      });
+      syncDialectErrors(null);
+      return;
+    }
 
     outputs.forEach((el) => {
       el.style.display = 'none';
@@ -44,14 +53,13 @@ onMounted(switchExamples);
 <template>
   <select v-model="dialect" class="sql-dropdown">
     <option value="mysql">MySQL / MariaDB</option>
-    <option value="mysql2">MySQL2</option>
     <option value="postgres">PostgreSQL</option>
-    <option value="pgnative">PG Native</option>
     <option value="cockroachdb">CockroachDB</option>
     <option value="redshift">Amazon Redshift</option>
     <option value="sqlite3">SQLite3</option>
     <option value="oracledb">OracleDB</option>
     <option value="mssql">MSSQL</option>
+    <option value="all">All dialects</option>
   </select>
 </template>
 

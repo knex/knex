@@ -4,10 +4,14 @@ export function syncDialectErrors(activeDialect) {
   }
 
   const dialect = String(activeDialect || '');
-  if (!dialect) {
+  if (!dialect || dialect === 'all') {
+    document.querySelectorAll('.dialect-error-badge').forEach((badge) => {
+      badge.remove();
+    });
     return;
   }
 
+  // Track headings with dialect-specific SQL errors to badge in the sidebar.
   const errorHeadings = new Set();
   document
     .querySelectorAll(`.sql-output[data-dialect="${dialect}"]`)

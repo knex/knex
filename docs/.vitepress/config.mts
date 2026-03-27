@@ -3,14 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import KnexDialectsPlugins from './knexDialects';
+import { renderBadges } from './badges';
+import { slugify } from './slugify';
 
 const HEADING_RE = /^(#{2,3})\s+(.+)$/;
-const FENCE_RE = /^(```|~~~)/;
-const BADGE_RE = /\s*\[((?:-[A-Z]{2}\s*)+)\]\s*$/;
-const rControl = /[\u0000-\u001f]/g;
-const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'“”‘’<>,.?/]+/g;
-const rCombining = /[\u0300-\u036f]/g;
-const DIALECT_CODES = ['PG', 'MY', 'SQ', 'MS', 'OR', 'CR', 'RS'];
+const FENCE_RE = /^```/;
+const BADGE_RE = /\s*\[((?:[~-][A-Z]{2}\s*)+)\]\s*$/;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const srcDir = path.resolve(__dirname, '..', 'src');
@@ -21,9 +19,48 @@ export default defineConfig({
   base: '/',
   srcDir: 'src',
   lastUpdated: true,
-  head: [['link', { rel: 'icon', type: 'image/png', href: '/knex-logo.png' }]],
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    [
+      'link',
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/favicon-16x16.png',
+      },
+    ],
+    [
+      'link',
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/favicon-32x32.png',
+      },
+    ],
+    [
+      'link',
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '96x96',
+        href: '/favicon-96x96.png',
+      },
+    ],
+    ['link', { rel: 'shortcut icon', href: '/favicon.ico' }],
+    [
+      'link',
+      {
+        rel: 'apple-touch-icon',
+        sizes: '180x180',
+        href: '/apple-touch-icon.png',
+      },
+    ],
+    ['link', { rel: 'manifest', href: '/site.webmanifest' }],
+  ],
   themeConfig: {
-    logo: '/knex-logo.png',
+    logo: '/knex-logo.svg',
     socialLinks: [{ icon: 'github', link: 'https://github.com/knex/knex' }],
     editLink: {
       pattern: 'https://github.com/knex/knex/edit/master/docs/src/:path',
@@ -34,6 +71,7 @@ export default defineConfig({
     },
     nav: [
       { text: 'Guide', link: '/guide/', activeMatch: '^/guide/' },
+      { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
       {
         text: 'F.A.Q.',
         link: '/faq/',
@@ -149,11 +187,7 @@ function extractHeaders(filePath: string, pageLink: string) {
     }
     const badgeMatch = text.match(BADGE_RE);
     if (badgeMatch) {
-      badges = badgeMatch[1]
-        .trim()
-        .split(/\s+/)
-        .map((entry) => entry.replace(/^-/, ''))
-        .filter(Boolean);
+      badges = badgeMatch[1].trim().split(/\s+/).filter(Boolean);
       text = text.replace(BADGE_RE, '').trim();
     }
     text = text.replace(/\s+#+\s*$/, '').trim();
@@ -203,18 +237,6 @@ function extractHeaders(filePath: string, pageLink: string) {
   return items;
 }
 
-function slugify(text: string) {
-  return text
-    .normalize('NFKD')
-    .replace(rCombining, '')
-    .replace(rControl, '')
-    .replace(rSpecial, '-')
-    .replace(/-{2,}/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/^(\d)/, '_$1')
-    .toLowerCase();
-}
-
 function uniqueSlug(base: string, counts: Map<string, number>) {
   const current = counts.get(base);
   if (current == null) {
@@ -225,60 +247,4 @@ function uniqueSlug(base: string, counts: Map<string, number>) {
   const next = current + 1;
   counts.set(base, next);
   return `${base}-${next}`;
-}
-
-function renderBadges(codes: string[]) {
-  const onlyBadge = renderOnlyBadge(codes);
-  if (onlyBadge) {
-    return onlyBadge;
-  }
-
-  const badges = codes
-    .map(
-      (code) =>
-        `<span class="dialect-badge" title="Not supported by ${dialectLabel(
-          code
-        )}">${code}</span>`
-    )
-    .join('');
-  return `<span class="dialect-badges">${badges}</span>`;
-}
-
-function renderOnlyBadge(codes: string[]): string | null {
-  const supported = DIALECT_CODES.filter((code) => !codes.includes(code));
-  if (supported.length === 1) {
-    const onlyCode = supported[0];
-    return `<span class="dialect-badges"><span class="dialect-badge dialect-badge-only" title="Only supported by ${dialectLabel(
-      onlyCode
-    )}">${onlyCode} only</span></span>`;
-  }
-  if (supported.length === 2) {
-    const [first, second] = supported;
-    return `<span class="dialect-badges"><span class="dialect-badge dialect-badge-only" title="Only supported by ${dialectLabel(
-      first
-    )}, ${dialectLabel(second)}">${first}+${second} only</span></span>`;
-  }
-
-  return null;
-}
-
-function dialectLabel(code: string) {
-  switch (code) {
-    case 'PG':
-      return 'PostgreSQL';
-    case 'MY':
-      return 'MySQL';
-    case 'SQ':
-      return 'SQLite';
-    case 'MS':
-      return 'MSSQL';
-    case 'OR':
-      return 'Oracle';
-    case 'CR':
-      return 'CockroachDB';
-    case 'RS':
-      return 'Redshift';
-    default:
-      return code;
-  }
 }
