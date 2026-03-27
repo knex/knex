@@ -55,7 +55,7 @@ jobs:
         run: npm run db:stop
 
       - name: Generate LCOV
-        run: npm nyc report --reporter=lcov
+        run: npx nyc report --reporter=lcov
 
       - name: Update Coveralls
         uses: coverallsapp/github-action@v2
