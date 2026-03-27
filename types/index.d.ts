@@ -9,6 +9,7 @@
 import type { EventEmitter } from 'events';
 import type { Duplex, PassThrough, Stream } from 'stream';
 import type { Pool } from 'tarn';
+import type { PoolOptions } from 'tarn/dist/Pool';
 import type { ConnectionOptions } from 'tls';
 
 import type { Registry } from './result';
@@ -481,6 +482,10 @@ declare namespace knex {
   }
 
   export class KnexTimeoutError extends Error {}
+
+  export class KnexPool<T = any> extends Pool<T> {
+    constructor(config: PoolOptions<T>);
+  }
 
   export const Client: typeof Knex.Client;
 }
@@ -2755,12 +2760,13 @@ declare namespace Knex {
     version?: string;
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     /**
-     * A native driver pool (e.g. pg.Pool, mysql.createPool()) to use instead of
-     * knex's built-in tarn.js pool. Mutually exclusive with `connection`.
-     * When provided, knex does not own the pool lifecycle — call pool.end()
-     * yourself when done.
+     * An external pool to use instead of knex creating its own.
+     * Accepts a KnexPool, tarn Pool, or a native driver pool (pg.Pool,
+     * mysql.createPool(), oracledb.createPool()).
+     * Mutually exclusive with `connection` — knex does not own the pool
+     * lifecycle; call pool.end() / pool.close() yourself when done.
      */
-    connectionPool?: any;
+    connectionPool?: ConnectionPool;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
@@ -3128,6 +3134,46 @@ declare namespace Knex {
     expirationChecker?(): boolean;
   }
 
+  // Pool-like interfaces matching the shapes of native driver pools.
+  // These allow `connectionPool` to accept pools from pg, mysql/mysql2,
+  // oracledb, or any tarn-compatible pool without importing driver types.
+
+  /** Matches the pg.Pool interface */
+  interface PgPoolLike {
+    connect(): Promise<any>;
+    end(): Promise<void>;
+    totalCount: number;
+    idleCount: number;
+    waitingCount: number;
+  }
+
+  /** Matches the mysql / mysql2 pool interface */
+  interface MySQLPoolLike {
+    getConnection(cb: (err: Error | null, connection: any) => void): void;
+    end(cb?: (err?: Error) => void): void;
+  }
+
+  /** Matches the oracledb pool interface */
+  interface OraclePoolLike {
+    getConnection(): Promise<any>;
+    close(drainTime?: number): Promise<void>;
+  }
+
+  /** Any tarn-compatible pool (including KnexPool) */
+  interface TarnPoolLike {
+    acquire(): { promise: Promise<any> };
+    release(resource: any): boolean;
+    destroy(): Promise<void>;
+  }
+
+  /** Types accepted by the `connectionPool` config option */
+  type ConnectionPool =
+    | Pool<any>
+    | TarnPoolLike
+    | PgPoolLike
+    | MySQLPoolLike
+    | OraclePoolLike;
+
   interface PoolConfig {
     name?: string;
     afterCreate?: Function;
@@ -3314,7 +3360,8 @@ declare namespace Knex {
     };
     getPoolSettings(poolConfig: any): any;
     initializePool(config?: {}): void;
-    pool: Pool<any> | undefined;
+    initializeExternalPool(externalPool: ConnectionPool): void;
+    pool: Pool<any> | TarnPoolLike | undefined;
     acquireConnection(): any;
     releaseConnection(connection: any): any;
     destroy(callback: any): any;

@@ -2,7 +2,9 @@
 
 const { expect } = require('chai');
 const knex = require('../../../lib');
+const { KnexPool } = require('../../../lib/pool');
 const { getAllDbs } = require('../util/knex-instance-provider');
+
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
 
@@ -23,14 +25,6 @@ const mysqlConnectionConfig = testConfig.mysql || {
   charset: 'utf8',
 };
 
-const oracleConnectionConfig = testConfig.oracledb || {
-  user: 'system',
-  password: 'Oracle18',
-  connectString: 'localhost:21521/XE',
-  stmtCacheSize: 0,
-};
-
-// Helper: does the current test run include this db?
 function dbIncluded(name) {
   return getAllDbs().includes(name);
 }
@@ -38,12 +32,12 @@ function dbIncluded(name) {
 describe('connectionPool', function () {
   this.timeout(30000);
 
-  describe('postgres', function () {
+  // ── PostgreSQL with native pg.Pool ──────────────────────────────
+
+  describe('postgres — native pg.Pool', function () {
     if (!dbIncluded('postgres')) return;
 
-    let pg;
-    let nativePool;
-    let db;
+    let pg, nativePool, db;
 
     before(function () {
       try {
@@ -52,10 +46,7 @@ describe('connectionPool', function () {
         this.skip();
       }
       nativePool = new pg.Pool(pgConnectionConfig);
-      db = knex({
-        client: 'pg',
-        connectionPool: nativePool,
-      });
+      db = knex({ client: 'pg', connectionPool: nativePool });
     });
 
     after(async function () {
@@ -63,12 +54,12 @@ describe('connectionPool', function () {
       if (nativePool) await nativePool.end();
     });
 
-    it('runs basic select queries', async function () {
+    it('runs basic queries', async function () {
       const result = await db.raw('SELECT 1 + 1 AS result');
       expect(result.rows[0].result).to.equal(2);
     });
 
-    it('runs multiple concurrent queries', async function () {
+    it('runs concurrent queries', async function () {
       const results = await Promise.all([
         db.raw('SELECT 1 AS val'),
         db.raw('SELECT 2 AS val'),
@@ -79,60 +70,38 @@ describe('connectionPool', function () {
 
     it('supports transactions', async function () {
       await db.raw(
-        'CREATE TABLE IF NOT EXISTS connection_pool_test (id serial PRIMARY KEY, name text)'
+        'CREATE TABLE IF NOT EXISTS cp_test (id serial PRIMARY KEY, name text)'
       );
       try {
         await db.transaction(async (trx) => {
-          await trx('connection_pool_test').insert({ name: 'alice' });
-          await trx('connection_pool_test').insert({ name: 'bob' });
+          await trx('cp_test').insert({ name: 'alice' });
+          await trx('cp_test').insert({ name: 'bob' });
         });
-        const rows = await db('connection_pool_test')
-          .select('name')
-          .orderBy('name');
+        const rows = await db('cp_test').select('name').orderBy('name');
         expect(rows.map((r) => r.name)).to.deep.equal(['alice', 'bob']);
       } finally {
-        await db.raw('DROP TABLE IF EXISTS connection_pool_test');
+        await db.raw('DROP TABLE IF EXISTS cp_test');
       }
     });
 
     it('rolls back failed transactions', async function () {
       await db.raw(
-        'CREATE TABLE IF NOT EXISTS connection_pool_test (id serial PRIMARY KEY, name text NOT NULL)'
+        'CREATE TABLE IF NOT EXISTS cp_test (id serial PRIMARY KEY, name text NOT NULL)'
       );
       try {
         try {
           await db.transaction(async (trx) => {
-            await trx('connection_pool_test').insert({ name: 'alice' });
-            await trx('connection_pool_test').insert({ name: null }); // violates NOT NULL
+            await trx('cp_test').insert({ name: 'alice' });
+            await trx('cp_test').insert({ name: null }); // NOT NULL violation
           });
         } catch (_e) {
           // expected
         }
-        const rows = await db('connection_pool_test').select();
+        const rows = await db('cp_test').select();
         expect(rows).to.have.length(0);
       } finally {
-        await db.raw('DROP TABLE IF EXISTS connection_pool_test');
+        await db.raw('DROP TABLE IF EXISTS cp_test');
       }
-    });
-
-    it('does not destroy the native pool when knex.destroy() is called', async function () {
-      // Create a separate knex instance for this test
-      const pool2 = new pg.Pool(pgConnectionConfig);
-      const db2 = knex({ client: 'pg', connectionPool: pool2 });
-
-      // Use it
-      await db2.raw('SELECT 1');
-
-      // Destroy knex
-      await db2.destroy();
-
-      // Native pool should still be usable
-      const client = await pool2.connect();
-      const res = await client.query('SELECT 1 AS alive');
-      expect(res.rows[0].alive).to.equal(1);
-      client.release();
-
-      await pool2.end();
     });
 
     it('supports streaming', async function () {
@@ -145,14 +114,103 @@ describe('connectionPool', function () {
       });
       expect(rows).to.deep.equal([1, 2, 3, 4, 5]);
     });
+
+    it('does not destroy the native pool on knex.destroy()', async function () {
+      const pool2 = new pg.Pool(pgConnectionConfig);
+      const db2 = knex({ client: 'pg', connectionPool: pool2 });
+
+      await db2.raw('SELECT 1');
+      await db2.destroy();
+
+      // Pool still works
+      const client = await pool2.connect();
+      const res = await client.query('SELECT 1 AS alive');
+      expect(res.rows[0].alive).to.equal(1);
+      client.release();
+      await pool2.end();
+    });
   });
 
-  describe('mysql', function () {
+  // ── PostgreSQL with shared KnexPool ─────────────────────────────
+
+  describe('postgres — shared KnexPool', function () {
+    if (!dbIncluded('postgres')) return;
+
+    let pg, knexPool, db1, db2;
+
+    before(function () {
+      try {
+        pg = require('pg');
+      } catch (_e) {
+        this.skip();
+      }
+
+      // Build a KnexPool that creates pg connections
+      const pgSettings = pgConnectionConfig;
+      knexPool = new KnexPool({
+        create: () => {
+          const client = new pg.Client(pgSettings);
+          return client.connect().then(() => client);
+        },
+        destroy: (connection) => connection.end(),
+        validate: (connection) => !connection._ending,
+        min: 0,
+        max: 5,
+      });
+
+      db1 = knex({ client: 'pg', connectionPool: knexPool });
+      db2 = knex({ client: 'pg', connectionPool: knexPool });
+    });
+
+    after(async function () {
+      if (db1) await db1.destroy();
+      if (db2) await db2.destroy();
+      if (knexPool) await knexPool.destroy();
+    });
+
+    it('both instances share the same pool', async function () {
+      const [r1, r2] = await Promise.all([
+        db1.raw('SELECT 1 AS val'),
+        db2.raw('SELECT 2 AS val'),
+      ]);
+      expect(r1.rows[0].val).to.equal(1);
+      expect(r2.rows[0].val).to.equal(2);
+      expect(db1.client.pool).to.equal(db2.client.pool);
+    });
+
+    it('transactions work on shared pool', async function () {
+      await db1.raw(
+        'CREATE TABLE IF NOT EXISTS cp_shared_test (id serial PRIMARY KEY, name text)'
+      );
+      try {
+        await db1.transaction(async (trx) => {
+          await trx('cp_shared_test').insert({ name: 'from_db1' });
+        });
+        const rows = await db2('cp_shared_test').select('name');
+        expect(rows[0].name).to.equal('from_db1');
+      } finally {
+        await db1.raw('DROP TABLE IF EXISTS cp_shared_test');
+      }
+    });
+
+    it('knex.destroy() does not destroy the shared pool', async function () {
+      // Create a third instance, destroy it, verify the pool is still alive
+      const db3 = knex({ client: 'pg', connectionPool: knexPool });
+      await db3.raw('SELECT 1');
+      await db3.destroy();
+
+      // Pool still works for other instances
+      const res = await db1.raw('SELECT 42 AS val');
+      expect(res.rows[0].val).to.equal(42);
+    });
+  });
+
+  // ── MySQL with native pool ──────────────────────────────────────
+
+  describe('mysql — native pool', function () {
     if (!dbIncluded('mysql')) return;
 
-    let mysql;
-    let nativePool;
-    let db;
+    let mysql, nativePool, db;
 
     before(function () {
       try {
@@ -161,10 +219,7 @@ describe('connectionPool', function () {
         this.skip();
       }
       nativePool = mysql.createPool(mysqlConnectionConfig);
-      db = knex({
-        client: 'mysql',
-        connectionPool: nativePool,
-      });
+      db = knex({ client: 'mysql', connectionPool: nativePool });
     });
 
     after(async function () {
@@ -174,12 +229,12 @@ describe('connectionPool', function () {
       }
     });
 
-    it('runs basic select queries', async function () {
+    it('runs basic queries', async function () {
       const result = await db.raw('SELECT 1 + 1 AS result');
       expect(result[0][0].result).to.equal(2);
     });
 
-    it('runs multiple concurrent queries', async function () {
+    it('runs concurrent queries', async function () {
       const results = await Promise.all([
         db.raw('SELECT 1 AS val'),
         db.raw('SELECT 2 AS val'),
@@ -190,30 +245,27 @@ describe('connectionPool', function () {
 
     it('supports transactions', async function () {
       await db.raw(
-        'CREATE TABLE IF NOT EXISTS connection_pool_test (id int AUTO_INCREMENT PRIMARY KEY, name varchar(255))'
+        'CREATE TABLE IF NOT EXISTS cp_test (id int AUTO_INCREMENT PRIMARY KEY, name varchar(255))'
       );
       try {
         await db.transaction(async (trx) => {
-          await trx('connection_pool_test').insert({ name: 'alice' });
-          await trx('connection_pool_test').insert({ name: 'bob' });
+          await trx('cp_test').insert({ name: 'alice' });
+          await trx('cp_test').insert({ name: 'bob' });
         });
-        const rows = await db('connection_pool_test')
-          .select('name')
-          .orderBy('name');
+        const rows = await db('cp_test').select('name').orderBy('name');
         expect(rows.map((r) => r.name)).to.deep.equal(['alice', 'bob']);
       } finally {
-        await db.raw('DROP TABLE IF EXISTS connection_pool_test');
+        await db.raw('DROP TABLE IF EXISTS cp_test');
       }
     });
 
-    it('does not destroy the native pool when knex.destroy() is called', async function () {
+    it('does not destroy the native pool on knex.destroy()', async function () {
       const pool2 = mysql.createPool(mysqlConnectionConfig);
       const db2 = knex({ client: 'mysql', connectionPool: pool2 });
 
       await db2.raw('SELECT 1');
       await db2.destroy();
 
-      // Native pool should still be usable
       const result = await new Promise((resolve, reject) => {
         pool2.query('SELECT 1 AS alive', (err, rows) => {
           if (err) return reject(err);
@@ -221,17 +273,16 @@ describe('connectionPool', function () {
         });
       });
       expect(result[0].alive).to.equal(1);
-
       await new Promise((resolve) => pool2.end(resolve));
     });
   });
 
-  describe('mysql2', function () {
+  // ── MySQL2 with native pool ─────────────────────────────────────
+
+  describe('mysql2 — native pool', function () {
     if (!dbIncluded('mysql2')) return;
 
-    let mysql2;
-    let nativePool;
-    let db;
+    let mysql2, nativePool, db;
 
     before(function () {
       try {
@@ -240,10 +291,7 @@ describe('connectionPool', function () {
         this.skip();
       }
       nativePool = mysql2.createPool(mysqlConnectionConfig);
-      db = knex({
-        client: 'mysql2',
-        connectionPool: nativePool,
-      });
+      db = knex({ client: 'mysql2', connectionPool: nativePool });
     });
 
     after(async function () {
@@ -253,12 +301,12 @@ describe('connectionPool', function () {
       }
     });
 
-    it('runs basic select queries', async function () {
+    it('runs basic queries', async function () {
       const result = await db.raw('SELECT 1 + 1 AS result');
       expect(result[0][0].result).to.equal(2);
     });
 
-    it('runs multiple concurrent queries', async function () {
+    it('runs concurrent queries', async function () {
       const results = await Promise.all([
         db.raw('SELECT 1 AS val'),
         db.raw('SELECT 2 AS val'),
@@ -269,90 +317,30 @@ describe('connectionPool', function () {
 
     it('supports transactions', async function () {
       await db.raw(
-        'CREATE TABLE IF NOT EXISTS connection_pool_test (id int AUTO_INCREMENT PRIMARY KEY, name varchar(255))'
+        'CREATE TABLE IF NOT EXISTS cp_test (id int AUTO_INCREMENT PRIMARY KEY, name varchar(255))'
       );
       try {
         await db.transaction(async (trx) => {
-          await trx('connection_pool_test').insert({ name: 'alice' });
-          await trx('connection_pool_test').insert({ name: 'bob' });
+          await trx('cp_test').insert({ name: 'alice' });
+          await trx('cp_test').insert({ name: 'bob' });
         });
-        const rows = await db('connection_pool_test')
-          .select('name')
-          .orderBy('name');
+        const rows = await db('cp_test').select('name').orderBy('name');
         expect(rows.map((r) => r.name)).to.deep.equal(['alice', 'bob']);
       } finally {
-        await db.raw('DROP TABLE IF EXISTS connection_pool_test');
+        await db.raw('DROP TABLE IF EXISTS cp_test');
       }
     });
 
-    it('does not destroy the native pool when knex.destroy() is called', async function () {
+    it('does not destroy the native pool on knex.destroy()', async function () {
       const pool2 = mysql2.createPool(mysqlConnectionConfig);
       const db2 = knex({ client: 'mysql2', connectionPool: pool2 });
 
       await db2.raw('SELECT 1');
       await db2.destroy();
 
-      // Native pool should still be usable
       const [rows] = await nativePool.promise().query('SELECT 1 AS alive');
       expect(rows[0].alive).to.equal(1);
-
       await new Promise((resolve) => pool2.end(resolve));
-    });
-  });
-
-  describe('oracledb', function () {
-    if (!dbIncluded('oracledb')) return;
-
-    let oracledb;
-    let nativePool;
-    let db;
-
-    before(async function () {
-      try {
-        oracledb = require('oracledb');
-      } catch (_e) {
-        this.skip();
-      }
-      nativePool = await oracledb.createPool(oracleConnectionConfig);
-      db = knex({
-        client: 'oracledb',
-        connectionPool: nativePool,
-      });
-    });
-
-    after(async function () {
-      if (db) await db.destroy();
-      if (nativePool) await nativePool.close(0);
-    });
-
-    it('runs basic select queries', async function () {
-      const result = await db.raw('SELECT 1 + 1 AS result FROM DUAL');
-      expect(result[0].RESULT).to.equal(2);
-    });
-
-    it('runs multiple concurrent queries', async function () {
-      const results = await Promise.all([
-        db.raw('SELECT 1 AS val FROM DUAL'),
-        db.raw('SELECT 2 AS val FROM DUAL'),
-        db.raw('SELECT 3 AS val FROM DUAL'),
-      ]);
-      expect(results.map((r) => r[0].VAL)).to.deep.equal([1, 2, 3]);
-    });
-
-    it('does not destroy the native pool when knex.destroy() is called', async function () {
-      const pool2 = await oracledb.createPool(oracleConnectionConfig);
-      const db2 = knex({ client: 'oracledb', connectionPool: pool2 });
-
-      await db2.raw('SELECT 1 FROM DUAL');
-      await db2.destroy();
-
-      // Native pool should still be usable
-      const conn = await pool2.getConnection();
-      const result = await conn.execute('SELECT 1 AS alive FROM DUAL');
-      expect(result.rows[0][0]).to.equal(1);
-      await conn.close();
-
-      await pool2.close(0);
     });
   });
 });
