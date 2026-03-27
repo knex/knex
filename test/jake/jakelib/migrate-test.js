@@ -26,7 +26,7 @@ function test(description, func) {
   const tempFolder = fs.mkdtempSync(tmpDirPath);
   fs.mkdirSync(tempFolder + '/migrations');
   desc(description);
-  const taskName = description.replace(/[^a-z0-9]/g, '');
+  const taskName = description.replace(/[^a-z0-9]+/gi, '_').toLowerCase();
   taskList.push(taskName);
   task(taskName, { async: true }, () =>
     func(tempFolder)
@@ -270,6 +270,7 @@ test('migrate:rollback --all rolls back all completed migrations', (temp) => {
         `node ${KNEX} migrate:rollback --all \
       --client=sqlite3 \
       --connection=${temp}/db \
+      --disable-transactions \
       --migrations-directory=${temp}/migrations`
       ).then(({ stdout }) => {
         assert.include(stdout, 'Batch 3 rolled back: 3 migrations');
@@ -442,6 +443,34 @@ test('migrate:up <name> throw an error', async (temp) => {
   assert.include(stderr, `Migration "${migrationFile1}" not found.`);
 });
 
+test('migrate:up <name> handles already completed migration gracefully', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+  const migrationData = `
+      exports.up = () => Promise.resolve();
+      exports.down = () => Promise.resolve();
+    `;
+
+  fs.writeFileSync(`${migrationsPath}/${migrationFile1}`, migrationData);
+
+  return assertExec(
+    `node ${KNEX} migrate:latest \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${temp}/migrations`,
+    'run_all_migrations'
+  ).then(async () => {
+    const { stdout } = await assertExec(
+      `node ${KNEX} migrate:up ${migrationFile1} \
+        --client=sqlite3 \
+        --connection=${temp}/db \
+        --migrations-directory=${migrationsPath}`,
+      'run_migration_001'
+    );
+    assert.include(stdout, 'Already up to date');
+  });
+});
+
 test('migrate:down undos only the last run migration', (temp) => {
   const migrationFile1 = '001_create_address_table.js';
   const migrationFile2 = '002_add_zip_to_address_table.js';
@@ -485,6 +514,7 @@ test('migrate:down undos only the last run migration', (temp) => {
         `node ${KNEX} migrate:down \
       --client=sqlite3 \
       --connection=${temp}/db \
+      --disable-transactions \
       --migrations-directory=${temp}/migrations`,
         'undo_migration_002'
       ).then(({ stdout }) => {

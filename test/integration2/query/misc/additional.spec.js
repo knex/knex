@@ -782,10 +782,10 @@ describe('Additional', function () {
               return knex.raw('SELECT SLEEP(1)');
             },
             [drivers.MySQL]: function () {
-              return knex.raw('SELECT SLEEP(1)');
+              return knex.raw(`SELECT SLEEP(1) -- zero ${driverName}`);
             },
             [drivers.MySQL2]: function () {
-              return knex.raw('SELECT SLEEP(1)');
+              return knex.raw(`SELECT SLEEP(1) -- zero ${driverName}`);
             },
             [drivers.MsSQL]: function () {
               return knex.raw("WAITFOR DELAY '00:00:01'");
@@ -842,10 +842,10 @@ describe('Additional', function () {
               return knex.raw('SELECT SLEEP(10)');
             },
             [drivers.MySQL]: function () {
-              return knex.raw('SELECT SLEEP(10)');
+              return knex.raw(`SELECT SLEEP(10) -- one ${driverName}`);
             },
             [drivers.MySQL2]: function () {
-              return knex.raw('SELECT SLEEP(10)');
+              return knex.raw(`SELECT SLEEP(10) -- one ${driverName}`);
             },
             [drivers.MsSQL]: function () {
               return knex.raw("WAITFOR DELAY '00:00:10'");
@@ -904,7 +904,7 @@ describe('Additional', function () {
             throw new Error('Missing test query for driverName: ' + driverName);
           }
 
-          const getProcessesQuery = getProcessesQueries[driverName]();
+          const getProcessesQuery = getProcessesQueries[driverName];
 
           try {
             await addTimeout();
@@ -922,7 +922,7 @@ describe('Additional', function () {
             // too early.
             // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
             await delay(50);
-            const results = await getProcessesQuery;
+            const results = await getProcessesQuery();
 
             let processes;
             let sleepProcess;
@@ -967,10 +967,10 @@ describe('Additional', function () {
               return 'SELECT SLEEP(10)';
             },
             [drivers.MySQL]: function () {
-              return 'SELECT SLEEP(10)';
+              return `SELECT SLEEP(10) -- two ${driverName}`;
             },
             [drivers.MySQL2]: function () {
-              return 'SELECT SLEEP(10)';
+              return `SELECT SLEEP(10) -- two ${driverName}`;
             },
             [drivers.MsSQL]: function () {
               return "WAITFOR DELAY '00:00:10'";
@@ -1029,7 +1029,7 @@ describe('Additional', function () {
             throw new Error('Missing test query for driverName: ' + driverName);
           }
 
-          const getProcessesQuery = getProcessesQueries[driverName]();
+          const getProcessesQuery = getProcessesQueries[driverName];
 
           try {
             await knex.transaction((trx) => addTimeout().transacting(trx));
@@ -1047,7 +1047,7 @@ describe('Additional', function () {
             // too early.
             // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
             await delay(50);
-            const results = await getProcessesQuery;
+            const results = await getProcessesQuery();
             let processes;
             let sleepProcess;
 
@@ -1103,10 +1103,10 @@ describe('Additional', function () {
               return knexDb.raw('SELECT SLEEP(10)');
             },
             [drivers.MySQL]: function () {
-              return knexDb.raw('SELECT SLEEP(10)');
+              return knexDb.raw(`SELECT SLEEP(10) -- three ${driverName}`);
             },
             [drivers.MySQL2]: function () {
-              return knexDb.raw('SELECT SLEEP(10)');
+              return knexDb.raw(`SELECT SLEEP(10) -- three ${driverName}`);
             },
             [drivers.MsSQL]: function () {
               return knexDb.raw("WAITFOR DELAY '00:00:10'");
@@ -1228,9 +1228,12 @@ describe('Additional', function () {
               `SELECT pg_sleep(${sleepSeconds})`,
             [drivers.PgNative]: (sleepSeconds) =>
               `SELECT pg_sleep(${sleepSeconds})`,
-            [drivers.MariaDB]: (sleepSeconds) => `SELECT SLEEP(${sleepSeconds})`,
-            [drivers.MySQL]: (sleepSeconds) => `SELECT SLEEP(${sleepSeconds})`,
-            [drivers.MySQL2]: (sleepSeconds) => `SELECT SLEEP(${sleepSeconds})`,
+            [drivers.MySQL]: (sleepSeconds) =>
+              `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
+            [drivers.MySQL2]: (sleepSeconds) =>
+              `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
+            [drivers.MariaDB]: (sleepSeconds) =>
+              `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
           };
 
           const driverName = knex.client.driverName;

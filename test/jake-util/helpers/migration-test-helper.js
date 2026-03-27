@@ -8,28 +8,20 @@ const rimrafSync = require('rimraf').sync;
 function assertExec(cmd, desc) {
   desc = desc || 'Run ' + cmd;
   return new Promise((resolve, reject) => {
-    let stderr = '';
-    let stdout = '';
-    const bin = child_process.exec(cmd);
-    bin.on('error', (msg, code) => reject(Error(desc + ' FAIL. ' + stderr)));
-    bin.on('cmdEnd', (cmd) => resolve({ cmd, stdout, stderr }));
-    bin.on('stdout', (data) => (stdout += data.toString()));
-    bin.on('stderr', (data) => (stderr += data.toString()));
+    child_process.exec(cmd, (error, stdout, stderr) => {
+      if (error) reject(Error(desc + ' FAIL. ' + stderr));
+      else resolve({ cmd, stdout, stderr });
+    });
   });
 }
 
 function assertExecError(cmd, desc) {
   desc = desc || 'Run ' + cmd;
   return new Promise((resolve, reject) => {
-    let stderr = '';
-    const bin = child_process.exec(cmd);
-    bin.on('error', (msg, code) => {
-      resolve(stderr);
+    child_process.exec(cmd, (error, stdout, stderr) => {
+      if (error) resolve(stderr);
+      else reject(new Error('Error was expected, but none thrown'));
     });
-    bin.on('cmdEnd', () => {
-      throw new Error('Error was expected, but none thrown');
-    });
-    bin.on('stderr', (data) => (stderr += data.toString()));
   });
 }
 
