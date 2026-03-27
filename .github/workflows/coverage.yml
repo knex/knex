@@ -44,7 +44,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3' && secrets.DOCKERHUB_USERNAME != ''
 
       - name: Start Databases
         run: npm run db:start:no-oracle
