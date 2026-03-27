@@ -3,15 +3,6 @@
 const { expect } = require('chai');
 const knex = require('../../../lib');
 const { getAllDbs } = require('../util/knex-instance-provider');
-const {
-  isPostgreSQL,
-  isMysql,
-  isPgNative,
-  isOracle,
-  isCockroachDB,
-} = require('../../util/db-helpers');
-
-// Connection configs matching the test infrastructure (knex-instance-provider.js)
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
 
