@@ -132,6 +132,9 @@ a.header-anchor {
 .VPHero {
   padding-bottom: 0;
 }
+.VPContent.is-home .VPHome .vp-doc.container {
+  padding-top: 8px;
+}
 .VPSidebar a.link.sidebar-active-heading .text {
   color: var(--vp-c-brand-1);
 }
@@ -149,6 +152,9 @@ a.header-anchor {
   background: var(--vp-c-brand-1);
 }
 @media (min-width: 960px) {
+  .VPHomeHero {
+    max-width: 64rem;
+  }
   .VPHomeHero .container {
     align-items: flex-start;
   }
@@ -166,6 +172,10 @@ a.header-anchor {
   body .VPHomeHero .container .image-src {
     max-width: 320px;
     max-height: 320px;
+  }
+  .VPContent.is-home .VPHome .vp-doc.container {
+    padding-top: 0;
+    margin-top: -56px;
   }
 }
 
@@ -199,9 +209,16 @@ a.header-anchor {
   }
   body .home-hero .action {
     margin-top: 1.25rem;
+    white-space: nowrap;
+  }
+  body .home-hero .actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.75rem;
+    align-items: center;
   }
   body .home-hero .action.alt {
-    margin-left: 1rem;
+    margin-left: 0;
   }
 }
 .container-home {
@@ -210,6 +227,60 @@ a.header-anchor {
   background: var(--c-white-dark);
   padding: 0.5rem 2rem;
   border-radius: 6px;
+}
+.home-blog-highlight {
+  margin: 1.5rem 0 0.5rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgb(210 106 56 / 28%);
+  border-radius: 8px;
+  background: rgb(210 106 56 / 7%);
+}
+.home-blog-highlight p {
+  margin: 0.4rem 0;
+}
+.home-blog-kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-brand);
+}
+.home-blog-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+.home-blog-title span {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+.dark .home-blog-highlight {
+  border-color: rgb(223 164 134 / 30%);
+  background: rgb(210 106 56 / 12%);
+}
+.blog-post-nav {
+  display: block;
+}
+.blog-post-nav-top {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+.blog-post-nav-bottom {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--vp-c-divider);
+}
+.blog-post-nav a {
+  font-weight: 600;
+}
+.blog-post-date {
+  margin: 0.55rem 0 0;
+  color: var(--vp-c-text-2);
 }
 @keyframes spin {
   from {

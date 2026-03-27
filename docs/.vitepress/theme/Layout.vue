@@ -1,11 +1,32 @@
 <script setup>
 import DefaultTheme from 'vitepress/theme';
-import { getScrollOffset, useRoute } from 'vitepress';
-import { onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { getScrollOffset, useData, useRoute } from 'vitepress';
+import { computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { formatUtcDate } from '../../src/blog/date';
 import SqlDialectSelector from './SqlDialectSelector.vue';
 
 const { Layout } = DefaultTheme;
 const route = useRoute();
+const { frontmatter } = useData();
+const isBlogPostPage = computed(() => route.path.startsWith('/blog/posts/'));
+
+const blogPostDateUtc = computed(() => {
+  if (!isBlogPostPage.value) {
+    return '';
+  }
+
+  const rawDate = frontmatter.value?.date;
+  if (!rawDate) {
+    return '';
+  }
+
+  const timestamp = Date.parse(String(rawDate));
+  if (!Number.isFinite(timestamp)) {
+    return '';
+  }
+
+  return formatUtcDate(timestamp);
+});
 
 let activeSidebarLink = null;
 let lastActiveHeading = null;
@@ -128,6 +149,27 @@ watch(
   <Layout>
     <template #nav-bar-content-before>
       <SqlDialectSelector />
+    </template>
+    <template #doc-before>
+      <nav
+        v-if="isBlogPostPage"
+        class="blog-post-nav blog-post-nav-top"
+        aria-label="Blog post navigation"
+      >
+        <a href="/blog/">← Back to all blog posts</a>
+        <p v-if="blogPostDateUtc" class="blog-post-date">
+          <em>{{ blogPostDateUtc }}</em>
+        </p>
+      </nav>
+    </template>
+    <template #doc-after>
+      <nav
+        v-if="isBlogPostPage"
+        class="blog-post-nav blog-post-nav-bottom"
+        aria-label="Blog post navigation"
+      >
+        <a href="/blog/">← Back to all blog posts</a>
+      </nav>
     </template>
   </Layout>
 </template>
