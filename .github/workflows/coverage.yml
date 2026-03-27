@@ -14,6 +14,8 @@ permissions:
 
 jobs:
   build:
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     permissions:
       checks: write # for coverallsapp/github-action to create new checks
       contents: read # for actions/checkout to fetch code
@@ -44,7 +46,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3' && secrets.DOCKERHUB_USERNAME != ''
+        if: env.DOCKERHUB_USERNAME != ''
 
       - name: Start Databases
         run: npm run db:start:no-oracle
