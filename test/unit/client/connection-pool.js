@@ -32,9 +32,7 @@ describe('connectionPool config option', () => {
           connection: { host: 'localhost' },
           connectionPool: { connect: () => {} },
         });
-      }).to.throw(
-        /connectionPool.*connection.*mutually exclusive/i
-      );
+      }).to.throw(/connectionPool.*connection.*mutually exclusive/i);
     });
 
     it('accepts connectionPool without connection', () => {
@@ -213,9 +211,9 @@ describe('connectionPool config option', () => {
       if (!MySQLClient) this.skip();
 
       const mockPool = {
-        getConnection: sinon.stub().callsFake((cb) =>
-          cb(new Error('pool exhausted'))
-        ),
+        getConnection: sinon
+          .stub()
+          .callsFake((cb) => cb(new Error('pool exhausted'))),
       };
 
       const client = Object.create(MySQLClient.prototype);

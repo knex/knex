@@ -2,9 +2,7 @@
 
 const { expect } = require('chai');
 const knex = require('../../../lib');
-const {
-  getAllDbs,
-} = require('../util/knex-instance-provider');
+const { getAllDbs } = require('../util/knex-instance-provider');
 const {
   isPostgreSQL,
   isMysql,
@@ -97,7 +95,9 @@ describe('connectionPool', function () {
           await trx('connection_pool_test').insert({ name: 'alice' });
           await trx('connection_pool_test').insert({ name: 'bob' });
         });
-        const rows = await db('connection_pool_test').select('name').orderBy('name');
+        const rows = await db('connection_pool_test')
+          .select('name')
+          .orderBy('name');
         expect(rows.map((r) => r.name)).to.deep.equal(['alice', 'bob']);
       } finally {
         await db.raw('DROP TABLE IF EXISTS connection_pool_test');
@@ -206,7 +206,9 @@ describe('connectionPool', function () {
           await trx('connection_pool_test').insert({ name: 'alice' });
           await trx('connection_pool_test').insert({ name: 'bob' });
         });
-        const rows = await db('connection_pool_test').select('name').orderBy('name');
+        const rows = await db('connection_pool_test')
+          .select('name')
+          .orderBy('name');
         expect(rows.map((r) => r.name)).to.deep.equal(['alice', 'bob']);
       } finally {
         await db.raw('DROP TABLE IF EXISTS connection_pool_test');
@@ -283,7 +285,9 @@ describe('connectionPool', function () {
           await trx('connection_pool_test').insert({ name: 'alice' });
           await trx('connection_pool_test').insert({ name: 'bob' });
         });
-        const rows = await db('connection_pool_test').select('name').orderBy('name');
+        const rows = await db('connection_pool_test')
+          .select('name')
+          .orderBy('name');
         expect(rows.map((r) => r.name)).to.deep.equal(['alice', 'bob']);
       } finally {
         await db.raw('DROP TABLE IF EXISTS connection_pool_test');
