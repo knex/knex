@@ -3,27 +3,10 @@
 const { expect } = require('chai');
 const knex = require('../../../lib');
 const { KnexPool } = require('../../../lib/pool');
-const { getAllDbs } = require('../util/knex-instance-provider');
+const { getAllDbs, testConfigs } = require('../util/knex-instance-provider');
 
-const testConfig =
-  (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
-
-const pgConnectionConfig = testConfig.postgres || {
-  port: 25432,
-  host: 'localhost',
-  database: 'knex_test',
-  user: 'testuser',
-  password: 'knextest',
-};
-
-const mysqlConnectionConfig = testConfig.mysql || {
-  port: 23306,
-  database: 'knex_test',
-  host: 'localhost',
-  user: 'testuser',
-  password: 'testpassword',
-  charset: 'utf8',
-};
+const pgConnectionConfig = testConfigs.postgres.connection;
+const mysqlConnectionConfig = testConfigs.mysql.connection;
 
 function dbIncluded(name) {
   return getAllDbs().includes(name);
