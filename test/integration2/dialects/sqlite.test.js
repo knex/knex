@@ -158,6 +158,49 @@ for (const { driver, factory } of configs) {
         );
       });
 
+      it('should allow DDL operations inside a transaction (issue #6402)', async () => {
+        const knex = factory(true);
+        try {
+          await knex.schema.createTable('issue_6402_users', (t) => {
+            t.increments('id');
+          });
+          await knex.schema.createTable('issue_6402_accounts', (t) => {
+            t.increments('id');
+            t.integer('user_id').unsigned().references('issue_6402_users.id');
+          });
+          const colsBefore = await knex.raw(
+            "PRAGMA table_info('issue_6402_accounts')"
+          );
+          const colNamesBefore = colsBefore.map((c) => c.name);
+          expect(colNamesBefore).to.deep.equal(['id', 'user_id']);
+
+          const trx = await knex.transaction();
+          try {
+            await trx.schema.table('issue_6402_accounts', (t) => {
+              t.dropForeign(['user_id']);
+            });
+            await trx.schema.table('issue_6402_accounts', (t) => {
+              t.dropColumn('user_id');
+            });
+            await trx.commit();
+          } catch (e) {
+            await trx.rollback();
+            throw e;
+          }
+
+          // verify the column was actually dropped
+          const cols = await knex.raw(
+            "PRAGMA table_info('issue_6402_accounts')"
+          );
+          const colNamesAfter = cols.map((c) => c.name);
+          expect(colNamesAfter).to.deep.equal(['id']);
+        } finally {
+          await knex.schema.dropTableIfExists('issue_6402_accounts');
+          await knex.schema.dropTableIfExists('issue_6402_users');
+          await knex.destroy();
+        }
+      });
+
       it('should fail a DDL transaction that leaves foreign key violations', async () => {
         const id = 39579; // arbitrarily chosen to be unique to this file
         const parent = `test_parent_${id}`;

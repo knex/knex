@@ -11209,6 +11209,27 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('should produce correct binding order when deleting with a subquery join (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mysql: {
+          sql: 'delete tableB from tableB inner join (select * from `tableA` where `fieldA` = ?) as `subQuery` on `subQuery`.`id` = `tableB`.`relatedId` where `tableA`.`fieldB` = ?',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
   describe('json functions', () => {
     describe('json manipulation', () => {
       it('should extract json value', () => {
