@@ -7,10 +7,11 @@
     "dev": "vitepress dev .",
     "build": "vitepress build .",
     "serve": "vitepress serve .",
+    "preresolve-schema-snippets": "npm install knex@latest",
     "resolve-schema-snippets": "node scripts/resolve-schema-snippets-docker.mjs"
   },
   "devDependencies": {
-    "knex": "latest",
+    "knex": "^3.1.0",
     "sqlite3": "5.0.11",
     "typescript": "^5.9.3",
     "vitepress": "^1.6.4"

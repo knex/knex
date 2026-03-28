@@ -25,6 +25,14 @@ const switchExamples = () => {
       group.style.minHeight = maxHeight ? `${maxHeight}px` : '';
     });
 
+    if (dialect.value === 'all') {
+      outputs.forEach((el) => {
+        el.style.display = 'block';
+      });
+      syncDialectErrors(null);
+      return;
+    }
+
     outputs.forEach((el) => {
       el.style.display = 'none';
     });
@@ -51,6 +59,7 @@ onMounted(switchExamples);
     <option value="sqlite3">SQLite3</option>
     <option value="oracledb">OracleDB</option>
     <option value="mssql">MSSQL</option>
+    <option value="all">All dialects</option>
   </select>
 </template>
 
