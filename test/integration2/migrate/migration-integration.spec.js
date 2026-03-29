@@ -884,14 +884,10 @@ describe('Migrations', function () {
         });
 
         describe('knex.migrate.to', () => {
-          const toBeforeDir =
-            'test/integration2/migrate/test_to_before';
+          const toBeforeDir = 'test/integration2/migrate/test_to_before';
 
           afterEach(async () => {
-            await knex.migrate.rollback(
-              { directory: toBeforeDir },
-              true
-            );
+            await knex.migrate.rollback({ directory: toBeforeDir }, true);
             await knex.schema.dropTableIfExists('migrate_to_test_1');
             await knex.schema.dropTableIfExists('migrate_to_test_2');
             await knex.schema.dropTableIfExists('migrate_to_test_3');
@@ -979,14 +975,10 @@ describe('Migrations', function () {
         });
 
         describe('knex.migrate.before', () => {
-          const toBeforeDir =
-            'test/integration2/migrate/test_to_before';
+          const toBeforeDir = 'test/integration2/migrate/test_to_before';
 
           afterEach(async () => {
-            await knex.migrate.rollback(
-              { directory: toBeforeDir },
-              true
-            );
+            await knex.migrate.rollback({ directory: toBeforeDir }, true);
             await knex.schema.dropTableIfExists('migrate_to_test_1');
             await knex.schema.dropTableIfExists('migrate_to_test_2');
             await knex.schema.dropTableIfExists('migrate_to_test_3');
