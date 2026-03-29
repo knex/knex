@@ -372,6 +372,66 @@ function invoke() {
     });
 
   commander
+    .command('migrate:to <name>')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run all migrations up to and including the specified migration.'
+    )
+    .action((name, cmd) => {
+      const disableTransactions = !!cmd.disableTransactions;
+      initKnex(env, commander.opts())
+        .then((instance) => instance.migrate.to({ name, disableTransactions }))
+        .then(([batchNo, log]) => {
+          if (log.length === 0) {
+            success(color.cyan('Already up to date'));
+          }
+
+          success(
+            color.green(
+              `Batch ${batchNo} ran the following migrations:\n${log.join(
+                '\n'
+              )}`
+            )
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
+    .command('migrate:before <name>')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run all migrations before the specified migration (exclusive).'
+    )
+    .action((name, cmd) => {
+      const disableTransactions = !!cmd.disableTransactions;
+      initKnex(env, commander.opts())
+        .then((instance) =>
+          instance.migrate.before({ name, disableTransactions })
+        )
+        .then(([batchNo, log]) => {
+          if (log.length === 0) {
+            success(color.cyan('Already up to date'));
+          }
+
+          success(
+            color.green(
+              `Batch ${batchNo} ran the following migrations:\n${log.join(
+                '\n'
+              )}`
+            )
+          );
+        })
+        .catch(exit);
+    });
+
+  commander
     .command('migrate:currentVersion')
     .description('        View the current version for the migration.')
     .action(() => {
