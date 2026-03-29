@@ -945,7 +945,7 @@ describe('Migrations', function () {
             await knex.migrate.latest({
               directory: toBeforeDir,
             });
-            const [batchNo, log] = await knex.migrate.to({
+            const [, log] = await knex.migrate.to({
               directory: toBeforeDir,
               name: '20131019235306_migration_2.js',
             });
@@ -1000,7 +1000,7 @@ describe('Migrations', function () {
           });
 
           it('should run nothing when targeting the first migration', async () => {
-            const [batchNo, log] = await knex.migrate.before({
+            const [, log] = await knex.migrate.before({
               directory: toBeforeDir,
               name: '20131019235242_migration_1.js',
             });
