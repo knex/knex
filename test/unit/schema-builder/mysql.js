@@ -1257,6 +1257,20 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test set table comment with quotes', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (t) {
+          t.comment("it's a comment");
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        "alter table `users` comment = 'it\\'s a comment'"
+      );
+    });
+
     it('test set empty comment', function () {
       tableSql = client
         .schemaBuilder()
@@ -1285,7 +1299,7 @@ module.exports = function (dialect) {
       );
     });
 
-    it('test column comment with pre-escaped quotes', function () {
+    it('test column comment with multiple quotes', function () {
       tableSql = client
         .schemaBuilder()
         .createTable('test', (t) => {
@@ -1297,7 +1311,7 @@ module.exports = function (dialect) {
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        "create table `test` (`column1` text comment 'The table\\'s first column and it\\'s escaped')"
+        "create table `test` (`column1` text comment 'The table\\\\'s first column and it\\\\'s escaped')"
       );
     });
 
