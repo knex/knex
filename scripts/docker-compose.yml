@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2019-latest
@@ -64,7 +62,7 @@ services:
       - 'until /usr/bin/mysql -hmysql -utestuser -ptestpassword -e "SELECT 1"; do sleep 5; done'
 
   postgres:
-    image: postgres:13-alpine
+    image: postgres:17-alpine
     # see https://www.postgresql.org/docs/current/non-durability.html
     command: '-c full_page_writes=off -c fsync=off -c synchronous_commit=off'
     ports:
@@ -74,7 +72,7 @@ services:
       - POSTGRES_PASSWORD=knextest
       - POSTGRES_DB=knex_test
   waitpostgres:
-    image: postgres:13-alpine
+    image: postgres:17-alpine
     links:
       - postgres
     depends_on:
@@ -85,7 +83,7 @@ services:
       - 'until /usr/local/bin/psql postgres://testuser:knextest@postgres/knex_test -c "SELECT 1"; do sleep 5; done'
 
   cockroachdb:
-    image: cockroachdb/cockroach:latest-v21.2
+    image: cockroachdb/cockroach:latest-v23.2
     container_name: crdb
     hostname: crdb
     command: start-single-node --cluster-name=example-single-node --insecure --store=type=mem,size=0.25
@@ -105,7 +103,7 @@ services:
       - cockroachdb
 
   pgnative:
-    image: postgres:13-alpine
+    image: postgres:17-alpine
     # see https://www.postgresql.org/docs/current/non-durability.html
     command: '-c full_page_writes=off -c fsync=off -c synchronous_commit=off'
     ports:
@@ -115,7 +113,7 @@ services:
       - POSTGRES_PASSWORD=knextest
       - POSTGRES_DB=knex_test
   waitpgnative:
-    image: postgres:13-alpine
+    image: postgres:17-alpine
     links:
       - pgnative
     depends_on:

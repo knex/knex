@@ -14,6 +14,8 @@ permissions:
 
 jobs:
   build:
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     runs-on: ubuntu-latest
     name: CI
 
@@ -35,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -44,6 +46,13 @@ jobs:
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3' && env.DOCKERHUB_USERNAME != ''
 
       - name: Start Database(s)
         run: |
@@ -113,13 +122,14 @@ jobs:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with: { fetch-depth: 1 }
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           always-auth: false
+          package-manager-cache: false
           node-version: ${{ matrix.node-version }}
 
       - name: Test npm git dependency

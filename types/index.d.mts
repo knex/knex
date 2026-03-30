@@ -2,10 +2,13 @@
 // This file provides ESM type definitions that wrap the CJS types from index.d.ts
 // to match the exports defined in knex.mjs
 
-import type knexCjs from './index.d.ts';
+import type { Knex } from './index.d.ts';
 
-// Re-export the named export as defined in knex.mjs, without circular self-reference
-export const knex: Omit<typeof knexCjs, 'default' | 'knex'>;
+// Re-declare the knex factory function for ESM consumers.
+// This matches the call signature from the CJS types.
+declare function knex<TRecord extends {} = any, TResult = unknown[]>(
+  config: Knex.Config | string
+): Knex<TRecord, TResult>;
 
-// Re-export the default export as defined in knex.mjs: export default knex
+export { knex, Knex };
 export default knex;

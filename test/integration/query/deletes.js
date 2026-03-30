@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const { isSQLite, isOracle, isCockroachDB } = require('../../util/db-helpers');
+const { isSQLite, isOracle } = require('../../util/db-helpers');
 const { isPostgreSQL } = require('../../util/db-helpers.js');
 
 module.exports = function (knex) {
@@ -107,7 +107,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test3@example.com' })
           .del();
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (isSQLite(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -171,7 +171,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test4@example.com' })
           .del('*');
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (isSQLite(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
