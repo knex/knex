@@ -4,28 +4,6 @@
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex.js",
   "types": "types/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./types/index.d.mts",
-        "default": "./knex.mjs"
-      },
-      "require": {
-        "types": "./types/index.d.ts",
-        "default": "./knex.js"
-      }
-    },
-    "./bin/*.js": "./bin/*.js",
-    "./bin/*": "./bin/*",
-    "./types/*.d.ts": "./types/*.d.ts",
-    "./types/*": "./types/*.d.ts",
-    "./lib/*.js": "./lib/*.js",
-    "./lib/*": "./lib/*.js",
-    "./knex": "./knex.js",
-    "./knex.js": "./knex.js",
-    "./knex.mjs": "./knex.mjs",
-    "./package.json": "./package.json"
-  },
   "engines": {
     "node": ">=16"
   },
