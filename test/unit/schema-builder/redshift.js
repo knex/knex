@@ -1192,7 +1192,7 @@ describe('Redshift SchemaBuilder', function () {
 
     equal(tableSql.length, 2);
     expect(tableSql[1].sql).to.equal(
-      "comment on column \"test\".\"column1\" is 'The table''s first column'"
+      'comment on column "test"."column1" is \'The table\'\'s first column\''
     );
   });
 
