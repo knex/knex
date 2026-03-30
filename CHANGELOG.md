@@ -1,5 +1,10 @@
 # Master (Unreleased)
 
+### Bug fixes
+
+- Reverts the breaking changes added in [#6227](https://github.com/knex/knex/issues/6227). This means that the ESM import of Knex is reverted to `import { knex } from 'knex/knex.mjs` [#6422](https://github.com/knex/knex/issues/6422)
+- fix(types): allow a `QueryBuilder` type as a value in an `update` [#6419](https://github.com/knex/knex/issues/6419)
+
 # 3.2.7 - 27 March, 2026
 
 ### Bug fixes
