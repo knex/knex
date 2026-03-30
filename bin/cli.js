@@ -280,19 +280,13 @@ function invoke() {
       }
     });
 
-  commander
-    .command('migrate:up [<name>]')
-    .option(
-      '--disable-transactions',
-      'run migrations without an implicit transaction'
-    )
-    .description(
-      '        Run the next or the specified migration that has not yet been run.'
-    )
-    .action((name, cmd) => {
+  function migrateUpAction(method) {
+    return (name, cmd) => {
       const disableTransactions = !!cmd.disableTransactions;
       initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.up({ name, disableTransactions }))
+        .then((instance) =>
+          instance.migrate[method]({ name, disableTransactions })
+        )
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -307,7 +301,19 @@ function invoke() {
           );
         })
         .catch(exit);
-    });
+    };
+  }
+
+  commander
+    .command('migrate:up [<name>]')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run the next or the specified migration that has not yet been run.'
+    )
+    .action(migrateUpAction('up'));
 
   commander
     .command('migrate:rollback')
@@ -380,25 +386,7 @@ function invoke() {
     .description(
       '        Run all migrations up to and including the specified migration.'
     )
-    .action((name, cmd) => {
-      const disableTransactions = !!cmd.disableTransactions;
-      initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.to({ name, disableTransactions }))
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already up to date'));
-          }
-
-          success(
-            color.green(
-              `Batch ${batchNo} ran the following migrations:\n${log.join(
-                '\n'
-              )}`
-            )
-          );
-        })
-        .catch(exit);
-    });
+    .action(migrateUpAction('to'));
 
   commander
     .command('migrate:before <name>')
@@ -409,27 +397,7 @@ function invoke() {
     .description(
       '        Run all migrations before the specified migration (exclusive).'
     )
-    .action((name, cmd) => {
-      const disableTransactions = !!cmd.disableTransactions;
-      initKnex(env, commander.opts())
-        .then((instance) =>
-          instance.migrate.before({ name, disableTransactions })
-        )
-        .then(([batchNo, log]) => {
-          if (log.length === 0) {
-            success(color.cyan('Already up to date'));
-          }
-
-          success(
-            color.green(
-              `Batch ${batchNo} ran the following migrations:\n${log.join(
-                '\n'
-              )}`
-            )
-          );
-        })
-        .catch(exit);
-    });
+    .action(migrateUpAction('before'));
 
   commander
     .command('migrate:currentVersion')
