@@ -243,7 +243,7 @@ module.exports = function (knex) {
             'mssql',
             'delete [test_table_two] output deleted.* from [test_table_two] inner join [accounts] on [accounts].[id] = [test_table_two].[account_id] where [accounts].[email] = ?',
             ['test4@example.com'],
-            [{ id: 9, account_id: 4, details: '', status: 1 }]
+            [{ id: 4, account_id: 4, details: '', status: 1 }]
           );
         });
       });
