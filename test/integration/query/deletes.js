@@ -48,7 +48,7 @@ module.exports = function (knex) {
         });
     });
 
-    it.only('should allow returning for deletes in postgresql, mssql, and sqlite', function () {
+    it('should allow returning for deletes in postgresql, mssql, and sqlite', function () {
       return knex('accounts')
         .where('id', 2)
         .del('*')
