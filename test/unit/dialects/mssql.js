@@ -59,4 +59,15 @@ describe('MSSQL unit tests', () => {
       "select * from [projects] where notes = 'Testing question marks@p0@p1'"
     );
   });
+
+  it('should treat \\\\? (even backslashes) as a real placeholder (#6363)', async () => {
+    const sql = knexInstance('projects')
+      .whereRaw(`notes = \\\\? and id = ?`, ['hello', 1])
+      .toSQL()
+      .toNative();
+    // \\? in the string is two backslashes + ?, the ? is a real placeholder
+    expect(sql.sql).to.equal(
+      'select * from [projects] where notes = @p0 and id = @p1'
+    );
+  });
 });

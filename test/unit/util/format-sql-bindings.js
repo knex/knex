@@ -30,10 +30,7 @@ describe('formatSqlWithBindings', function () {
     expect(result).to.equal(`RAW:${sql}`);
   });
 
-  /* istanbul ignore next */
-  it.skip('formats bindings with a real knex instance (knex#6363)', function () {
-    // This will work when the escaping bug is fixed:
-    // https://github.com/knex/knex/issues/6363
+  it('formats bindings with a real knex instance (knex#6363)', function () {
     const knex = require('../../../knex');
     const knexInstance = knex({
       client: 'sqlite3',
@@ -43,10 +40,13 @@ describe('formatSqlWithBindings', function () {
       },
     });
 
+    // \\\\? in JS = \\? in the string (escaped backslash + placeholder).
+    // The even backslash count means ? is a real placeholder.
+    // Escape backslashes are consumed (same convention as PG positionBindings).
     const sql = 'select \\\\? as q, ? as v';
     const result = formatSqlWithBindings(sql, [1, 2], 'sqlite3', knexInstance);
 
-    expect(result).to.equal('select \\\\1 as q, 2 as v');
+    expect(result).to.equal('select 1 as q, 2 as v');
     return knexInstance.destroy();
   });
 
