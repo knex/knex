@@ -2926,6 +2926,7 @@ declare namespace Knex {
     port?: number;
     domain?: string;
     database: string;
+    schema?: string;
     connectionTimeout?: number;
     requestTimeout?: number;
     stream?: boolean;
@@ -3073,6 +3074,7 @@ declare namespace Knex {
     port?: number;
     host?: string;
     connectionString?: string;
+    schema?: string;
     keepAlive?: boolean;
     stream?: () => Duplex | undefined;
     statement_timeout?: false | number;
