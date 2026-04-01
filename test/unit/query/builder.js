@@ -7070,6 +7070,27 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('delete method with returning', () => {
+    testsql(qb().from('users').where('email', '=', 'foo').del('*'), {
+      mysql: {
+        sql: 'delete from `users` where `email` = ?',
+        bindings: ['foo'],
+      },
+      sqlite3: {
+        sql: 'delete from `users` where `email` = ? returning *',
+        bindings: ['foo'],
+      },
+      pg: {
+        sql: 'delete from "users" where "email" = ? returning *',
+        bindings: ['foo'],
+      },
+      mssql: {
+        sql: 'delete from [users] output deleted.* where [email] = ?',
+        bindings: ['foo'],
+      },
+    });
+  });
+
   it('delete only method', () => {
     testsql(
       qb().from('users', { only: true }).where('email', '=', 'foo').delete(),

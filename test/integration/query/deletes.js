@@ -4,9 +4,26 @@ const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 const { isSQLite, isOracle } = require('../../util/db-helpers');
 const { isPostgreSQL } = require('../../util/db-helpers.js');
+const {
+  dropTables,
+  createAccounts,
+  createTestTableTwo,
+} = require('../../util/tableCreatorHelper');
+const {
+  insertAccounts,
+  insertTestTableTwoData,
+} = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Deletes', function () {
+    before(async () => {
+      await dropTables(knex);
+      await createAccounts(knex);
+      await insertAccounts(knex);
+      await createTestTableTwo(knex);
+      await insertTestTableTwoData(knex);
+    });
+
     it('should handle deletes', function () {
       return knex('accounts')
         .where('id', 1)
@@ -31,7 +48,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('should allow returning for deletes in postgresql and mssql', function () {
+    it('should allow returning for deletes in postgresql, mssql, and sqlite', function () {
       return knex('accounts')
         .where('id', 2)
         .del('*')
@@ -62,7 +79,25 @@ module.exports = function (knex) {
             [2],
             1
           );
-          tester('sqlite3', 'delete from `accounts` where `id` = ?', [2], 1);
+          tester(
+            'sqlite3',
+            'delete from `accounts` where `id` = ? returning *',
+            [2],
+            [
+              {
+                id: 2,
+                first_name: 'Test',
+                last_name: 'User',
+                email: 'test2@example.com',
+                logins: 1,
+                balance: 0,
+                about: 'Lorem ipsum Dolore labore incididunt enim.',
+                created_at: TEST_TIMESTAMP,
+                updated_at: TEST_TIMESTAMP,
+                phone: null,
+              },
+            ]
+          );
           tester('oracledb', 'delete from "accounts" where "id" = ?', [2], 1);
           tester(
             'mssql',
@@ -208,7 +243,7 @@ module.exports = function (knex) {
             'mssql',
             'delete [test_table_two] output deleted.* from [test_table_two] inner join [accounts] on [accounts].[id] = [test_table_two].[account_id] where [accounts].[email] = ?',
             ['test4@example.com'],
-            [{ id: 9, account_id: 4, details: '', status: 1 }]
+            [{ id: 4, account_id: 4, details: '', status: 1 }]
           );
         });
       });
