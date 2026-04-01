@@ -4,9 +4,26 @@ const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
 const { isSQLite, isOracle } = require('../../util/db-helpers');
 const { isPostgreSQL } = require('../../util/db-helpers.js');
+const {
+  dropTables,
+  createAccounts,
+  createTestTableTwo,
+} = require('../../util/tableCreatorHelper');
+const {
+  insertAccounts,
+  insertTestTableTwoData,
+} = require('../../util/dataInsertHelper');
 
 module.exports = function (knex) {
   describe('Deletes', function () {
+    before(async () => {
+      await dropTables(knex);
+      await createAccounts(knex);
+      await insertAccounts(knex);
+      await createTestTableTwo(knex);
+      await insertTestTableTwoData(knex);
+    });
+
     it('should handle deletes', function () {
       return knex('accounts')
         .where('id', 1)
@@ -31,7 +48,7 @@ module.exports = function (knex) {
         });
     });
 
-    it('should allow returning for deletes in postgresql and mssql', function () {
+    it.only('should allow returning for deletes in postgresql, mssql, and sqlite', function () {
       return knex('accounts')
         .where('id', 2)
         .del('*')
