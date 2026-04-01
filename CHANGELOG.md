@@ -1,5 +1,21 @@
 # Master (Unreleased)
 
+### Bug fixes
+
+- Reverts the breaking changes added in [#6227](https://github.com/knex/knex/issues/6227). This means that the ESM import of Knex is reverted to `import { knex } from 'knex/knex.mjs` [#6422](https://github.com/knex/knex/issues/6422)
+- fix(types): allow a `QueryBuilder` type as a value in an `update` [#6419](https://github.com/knex/knex/issues/6419)
+
+# 3.2.7 - 27 March, 2026
+
+### Bug fixes
+
+- fix sqlite DDL operations failing inside transactions [#6408](https://github.com/knex/knex/issues/6408)
+- fix: handle lowercase INFORMATION_SCHEMA keys in MySQL renameColumn [#6407](https://github.com/knex/knex/issues/6407)
+- fix: clone config in client constructor [#5633](https://github.com/knex/knex/issues/5633)
+- fix: remove \_\_knexTxId from transaction connection on release [#5288](https://github.com/knex/knex/issues/5288)
+- fix: correct binding order in delete with subquery join [#6412](https://github.com/knex/knex/issues/6412)
+- chore: omit ./scripts from published package [#6356](https://github.com/knex/knex/issues/6356)
+
 # 3.2.6 - 24 March, 2026
 
 ### Bug fixes

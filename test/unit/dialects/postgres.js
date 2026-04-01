@@ -127,6 +127,43 @@ describe('Postgres Unit Tests', function () {
       });
   });
 
+  it('escapes double quotes in searchPath to prevent SQL injection (#6383)', function () {
+    const knexInstance = knex({
+      client: 'pg',
+    });
+
+    const fakeQueryFn = function (expectedSearchPath) {
+      return {
+        query: function (sql, callback) {
+          try {
+            expect(sql).to.equal('set search_path to ' + expectedSearchPath);
+            callback(null);
+          } catch (error) {
+            callback(error);
+          }
+        },
+      };
+    };
+
+    return knexInstance.client
+      .setSchemaSearchPath(
+        fakeQueryFn('"public""; DROP TABLE users; --"'),
+        'public"; DROP TABLE users; --'
+      )
+      .then(function () {
+        return knexInstance.client.setSchemaSearchPath(
+          fakeQueryFn('"schema""name"'),
+          'schema"name'
+        );
+      })
+      .then(function () {
+        return knexInstance.client.setSchemaSearchPath(
+          fakeQueryFn('"clean","has""quote"'),
+          ['clean', 'has"quote']
+        );
+      });
+  });
+
   it('Uses documented query config as param when providing bindings', () => {
     const knexInstance = knex({
       client: 'postgresql',

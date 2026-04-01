@@ -6065,7 +6065,41 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       sqlite3: {
-        sql: 'insert into `users` default values',
+        sql: 'insert into `users` default values returning `id`',
+        bindings: [],
+      },
+      pg: {
+        sql: 'insert into "users" default values returning "id"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'insert into "users" default values',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'insert into [users] output inserted.[id] default values',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'insert into "users" ("id") values (default) returning "id" into ?',
+        bindings: (bindings) => {
+          expect(bindings.length).to.equal(1);
+          expect(bindings[0].toString()).to.equal(
+            '[object ReturningHelper:id]'
+          );
+        },
+      },
+    });
+  });
+
+  it('insert with empty object and returning', () => {
+    testsql(qb().into('users').insert({}, 'id'), {
+      mysql: {
+        sql: 'insert into `users` () values ()',
+        bindings: [],
+      },
+      sqlite3: {
+        sql: 'insert into `users` default values returning `id`',
         bindings: [],
       },
       pg: {
@@ -11244,6 +11278,27 @@ describe('QueryBuilder', () => {
         }
       );
     });
+  });
+
+  it('should produce correct binding order when deleting with a subquery join (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mysql: {
+          sql: 'delete tableB from tableB inner join (select * from `tableA` where `fieldA` = ?) as `subQuery` on `subQuery`.`id` = `tableB`.`relatedId` where `tableA`.`fieldB` = ?',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
   });
 
   describe('json functions', () => {

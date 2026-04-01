@@ -1,31 +1,9 @@
 {
   "name": "knex",
-  "version": "3.2.6",
+  "version": "3.2.8",
   "description": "A batteries-included SQL query & schema builder for PostgresSQL, MySQL, CockroachDB, MSSQL and SQLite3",
   "main": "knex.js",
   "types": "types/index.d.ts",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./types/index.d.mts",
-        "default": "./knex.mjs"
-      },
-      "require": {
-        "types": "./types/index.d.ts",
-        "default": "./knex.js"
-      }
-    },
-    "./bin/*.js": "./bin/*.js",
-    "./bin/*": "./bin/*",
-    "./types/*.d.ts": "./types/*.d.ts",
-    "./types/*": "./types/*.d.ts",
-    "./lib/*.js": "./lib/*.js",
-    "./lib/*": "./lib/*.js",
-    "./knex": "./knex.js",
-    "./knex.js": "./knex.js",
-    "./knex.mjs": "./knex.mjs",
-    "./package.json": "./package.json"
-  },
   "engines": {
     "node": ">=16"
   },
@@ -37,7 +15,6 @@
     "format:check": "prettier --list-different .",
     "debug:test": "mocha --inspect-brk --exit -t 0 test/all-tests-suite.js",
     "debug:tape": "node --inspect-brk test/tape/index.js",
-    "coveralls": "nyc report --reporter=lcov",
     "lint": "eslint --cache .",
     "lint:fix": "eslint --cache --fix .",
     "prelint:types": "cd test-tstyche && npm i",
@@ -163,7 +140,6 @@
     "pg": "^8.20.0",
     "pg-query-stream": "^4.14.0",
     "prettier": "2.8.7",
-    "resolve.exports": "^2.0.3",
     "rimraf": "^5.0.5",
     "semver": "^7.7.4",
     "sinon": "^15.0.1",
@@ -259,7 +235,6 @@
     "!lib/**/*.d.ts",
     "!lib/**/*.js.map",
     "!lib/.gitignore",
-    "scripts/*",
     "types/index.d.ts",
     "types/index.d.mts",
     "types/result.d.ts",
