@@ -2245,6 +2245,9 @@ declare namespace Knex {
     skipLocked(): QueryBuilder<TRecord, TResult>;
     noWait(): QueryBuilder<TRecord, TResult>;
 
+    transformRaw(
+      transformer: (input: Sql) => Sql | undefined
+    ): QueryBuilder<TRecord, TResult>;
     toSQL(): Sql;
 
     on(event: string, callback: Function): QueryBuilder<TRecord, TResult>;
