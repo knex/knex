@@ -7027,8 +7027,10 @@ describe('QueryBuilder', () => {
       // for users / doesn't prevent data loss
     ];
 
+    const nonMysqlClients = Object.keys(clients).filter((c) => c !== 'mysql');
+
     const statements = [
-      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having, _limit] },
+      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having] },
       {
         name: 'truncate',
         fn: (qb) => qb.truncate(),
@@ -7046,6 +7048,19 @@ describe('QueryBuilder', () => {
           );
         });
       }
+    }
+
+    // MySQL supports LIMIT on single-table DELETE, so limit+delete should
+    // only throw for non-MySQL dialects.
+    for (const clause of _limit) {
+      it(`${clause.name} method with delete throws for non-MySQL dialects`, async () => {
+        const query = clause.fn(qb().from('users')).del();
+        testFailure(
+          query,
+          new RegExp(`Aborted.*${clause.msg}.*delete`),
+          nonMysqlClients
+        );
+      });
     }
   });
 
@@ -7068,6 +7083,18 @@ describe('QueryBuilder', () => {
         bindings: ['foo'],
       },
     });
+  });
+
+  it('delete with limit in MySQL', () => {
+    testsql(
+      qb().from('users').where('email', '=', 'foo').del().limit(1),
+      {
+        mysql: {
+          sql: 'delete from `users` where `email` = ? limit ?',
+          bindings: ['foo', 1],
+        },
+      }
+    );
   });
 
   it('delete only method', () => {
