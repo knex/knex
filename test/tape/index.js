@@ -4,6 +4,7 @@ require('../util/chai-setup');
 const tape = require('tape');
 const makeKnex = require('../../knex');
 const knexfile = require('../knexfile');
+const { prepDB } = require('../prep-db');
 
 require('./parse-connection');
 require('./raw');
@@ -14,18 +15,22 @@ require('./pool');
 require('./knex');
 require('./invalid-db-setup')(knexfile);
 
-Object.keys(knexfile).forEach(function (key) {
-  const knex = makeKnex(knexfile[key]);
+(async () => {
+  for (const key of Object.keys(knexfile)) {
+    const knex = makeKnex(knexfile[key]);
 
-  require('./transactions')(knex);
-  require('./stream')(knex);
-  require('./crossdb-compatibility')(knex);
+    await prepDB(knex);
 
-  // Tear down the knex connection
-  tape(knex.client.driverName + ' - transactions: after', function (t) {
-    knex.destroy(function () {
-      t.pass('Knex client destroyed');
-      t.end();
+    require('./transactions')(knex);
+    require('./stream')(knex);
+    require('./crossdb-compatibility')(knex);
+
+    // Tear down the knex connection
+    tape(knex.client.driverName + ' - transactions: after', function (t) {
+      knex.destroy(function () {
+        t.pass('Knex client destroyed');
+        t.end();
+      });
     });
-  });
-});
+  }
+})();

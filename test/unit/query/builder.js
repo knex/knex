@@ -138,6 +138,19 @@ function testquery(chain, valuesToCheck, selectedClients) {
   });
 }
 
+function testFailure(chain, error, selectedClients) {
+  // array of strings - keys to "clients"
+  selectedClients = selectedClients || Object.keys(clients);
+
+  selectedClients.forEach((key) => {
+    const newChain = chain.clone();
+    newChain.client = clients[key];
+    expect(function newChain_toSQL() {
+      newChain.toSQL();
+    }).to.throw(error);
+  });
+}
+
 describe('Custom identifier wrapping', () => {
   const customWrapperConfig = {
     wrapIdentifier: (value, clientImpl, context) => {
@@ -1576,6 +1589,35 @@ describe('QueryBuilder', () => {
         sqlite3: {
           sql: 'select * from `users` where (`a`, `b`) in ( values (?, ?), (?, ?), (?, ?))',
           bindings: [1, 2, 3, 4, 5, 6],
+        },
+      }
+    );
+  });
+
+  it('correctly orders value placeholders for .whereIn(knex.raw())', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        // COALESCE() is used here simply to generate a valid left-hand-side
+        // to the expression lhs IN rhs that can take a value parameter
+        .whereIn(raw('COALESCE(??, ?)', ['id', 9]), [1, 2, 3]),
+      {
+        mysql: {
+          sql: 'select * from `users` where COALESCE(`id`, ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        mssql: {
+          sql: 'select * from [users] where COALESCE([id], ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        pg: {
+          sql: 'select * from "users" where COALESCE("id", ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" where COALESCE("id", ?) in (?, ?, ?)',
+          bindings: [9, 1, 2, 3],
         },
       }
     );
@@ -6051,7 +6093,41 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       sqlite3: {
-        sql: 'insert into `users` default values',
+        sql: 'insert into `users` default values returning `id`',
+        bindings: [],
+      },
+      pg: {
+        sql: 'insert into "users" default values returning "id"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'insert into "users" default values',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'insert into [users] output inserted.[id] default values',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'insert into "users" ("id") values (default) returning "id" into ?',
+        bindings: (bindings) => {
+          expect(bindings.length).to.equal(1);
+          expect(bindings[0].toString()).to.equal(
+            '[object ReturningHelper:id]'
+          );
+        },
+      },
+    });
+  });
+
+  it('insert with empty object and returning', () => {
+    testsql(qb().into('users').insert({}, 'id'), {
+      mysql: {
+        sql: 'insert into `users` () values ()',
+        bindings: [],
+      },
+      sqlite3: {
+        sql: 'insert into `users` default values returning `id`',
         bindings: [],
       },
       pg: {
@@ -6959,6 +7035,46 @@ describe('QueryBuilder', () => {
         bindings: [1.23, 1],
       },
     });
+  });
+
+  describe('invalid statement / clause combinations throw', () => {
+    const _where = [
+      { name: 'where', msg: 'where', fn: (qb) => qb.where('id', '>', 0) },
+      // ensure the same behavior for where variants
+      { name: 'whereIn', msg: 'where', fn: (qb) => qb.whereIn('id', [0]) },
+    ];
+    const _having = [
+      { name: 'having', msg: 'having', fn: (qb) => qb.having('id', '>', 0) },
+      // ensure the same behavior for having variants
+      { name: 'havingIn', msg: 'having', fn: (qb) => qb.havingIn('id', [0]) },
+    ];
+    const _limit = [
+      { name: 'limit', msg: 'limit', fn: (qb) => qb.limit(1) },
+      // FUTURE: plausibly we should also throw on limit without offset, but that
+      // doesn't directly address any open issues and may be a surprising breakage
+      // for users / doesn't prevent data loss
+    ];
+
+    const statements = [
+      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having, _limit] },
+      {
+        name: 'truncate',
+        fn: (qb) => qb.truncate(),
+        invalid: [_where, _having, _limit],
+      },
+    ];
+
+    for (const stmt of statements) {
+      for (const clause of stmt.invalid.flat()) {
+        it(`${clause.name} method with ${stmt.name} throws`, async () => {
+          const query = stmt.fn(clause.fn(qb().from('users')));
+          testFailure(
+            query,
+            new RegExp(`Aborted.*${clause.msg}.*${stmt.name}`)
+          );
+        });
+      }
+    }
   });
 
   it('delete method', () => {
@@ -11154,6 +11270,27 @@ describe('QueryBuilder', () => {
         }
       );
     });
+  });
+
+  it('should produce correct binding order when deleting with a subquery join (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mysql: {
+          sql: 'delete tableB from tableB inner join (select * from `tableA` where `fieldA` = ?) as `subQuery` on `subQuery`.`id` = `tableB`.`relatedId` where `tableA`.`fieldB` = ?',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
   });
 
   describe('json functions', () => {
