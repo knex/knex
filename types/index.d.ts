@@ -503,6 +503,7 @@ declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
+    | Array<Buffer>
     | object
     | Knex.Raw;
 
