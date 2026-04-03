@@ -483,6 +483,33 @@ describe('Schema (misc)', () => {
           });
         });
 
+        describe('comment escaping', () => {
+          it('should properly escape single quotes in table comments', async function () {
+            if (isSQLite(knex)) {
+              return this.skip();
+            }
+            await knex.schema.dropTableIfExists('comment_escape_test');
+            await knex.schema.createTable('comment_escape_test', (table) => {
+              table.increments('id');
+              table.comment("it's a test table");
+            });
+            await knex.schema.dropTable('comment_escape_test');
+          });
+
+          it('should properly escape single quotes in column comments', async function () {
+            if (isSQLite(knex)) {
+              return this.skip();
+            }
+            await knex.schema.dropTableIfExists('comment_escape_test');
+            await knex.schema.createTable('comment_escape_test', (table) => {
+              table
+                .string('name')
+                .comment("the user's name with ''multiple'' quotes");
+            });
+            await knex.schema.dropTable('comment_escape_test');
+          });
+        });
+
         describe('uuid types - postgres', () => {
           after(async () => {
             if (isPgBased(knex)) {
