@@ -7086,15 +7086,12 @@ describe('QueryBuilder', () => {
   });
 
   it('delete with limit in MySQL', () => {
-    testsql(
-      qb().from('users').where('email', '=', 'foo').del().limit(1),
-      {
-        mysql: {
-          sql: 'delete from `users` where `email` = ? limit ?',
-          bindings: ['foo', 1],
-        },
-      }
-    );
+    testsql(qb().from('users').where('email', '=', 'foo').del().limit(1), {
+      mysql: {
+        sql: 'delete from `users` where `email` = ? limit ?',
+        bindings: ['foo', 1],
+      },
+    });
   });
 
   it('delete only method', () => {
