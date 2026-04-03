@@ -1529,27 +1529,24 @@ describe('QueryBuilder', () => {
     const buf2 = Buffer.from('e5f6a7b8', 'hex');
     const buf3 = Buffer.from('c9d0e1f2', 'hex');
 
-    testsql(
-      qb().select('*').from('users').whereIn('id', [buf1, buf2, buf3]),
-      {
-        mysql: {
-          sql: 'select * from `users` where `id` in (?, ?, ?)',
-          bindings: [buf1, buf2, buf3],
-        },
-        mssql: {
-          sql: 'select * from [users] where [id] in (?, ?, ?)',
-          bindings: [buf1, buf2, buf3],
-        },
-        pg: {
-          sql: 'select * from "users" where "id" in (?, ?, ?)',
-          bindings: [buf1, buf2, buf3],
-        },
-        'pg-redshift': {
-          sql: 'select * from "users" where "id" in (?, ?, ?)',
-          bindings: [buf1, buf2, buf3],
-        },
-      }
-    );
+    testsql(qb().select('*').from('users').whereIn('id', [buf1, buf2, buf3]), {
+      mysql: {
+        sql: 'select * from `users` where `id` in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+    });
   });
 
   it('multi column where ins', () => {
