@@ -44,7 +44,7 @@ function isOracle(knex) {
 }
 
 function isMysql(knex) {
-  return isOneOfDbs(knex, [drivers.MySQL, drivers.MySQL2]);
+  return isOneOfDbs(knex, [drivers.MySQL, drivers.MySQL2, drivers.MariaDB]);
 }
 
 function isRedshift(knex) {
