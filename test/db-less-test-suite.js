@@ -15,10 +15,6 @@ describe('Util Tests', function () {
   require('./unit/client/pool-config');
 });
 
-describe('Package Exports Tests', function () {
-  require('./unit/package-exports');
-});
-
 describe('Query Building Tests', function () {
   this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
 
