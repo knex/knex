@@ -619,7 +619,7 @@ describe('Updates', function () {
         await knex.schema.dropTable('testing');
       });
 
-      it('handle from bindings in the right order #6376', async () => {
+      it('handle from bindings in the right order #6376', async function() {
         if (!isPostgreSQL(knex)) {
           return this.skip();
         }
