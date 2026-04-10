@@ -12034,4 +12034,132 @@ describe('QueryBuilder', () => {
       });
     });
   });
+
+  describe('Cast functions', () => {
+    function testCastSql(castFn, expected) {
+      Object.keys(expected).forEach((key) => {
+        const client = clients[key];
+        const cast = castFn(client);
+        const builder = client.queryBuilder();
+        builder.select(cast).from('t');
+        const sql = builder.toSQL().sql;
+        expect(sql).to.equal(expected[key]);
+      });
+    }
+
+    it('castDouble', () => {
+      testCastSql((c) => c.castDouble('3.14', 'val'), {
+        pg: 'select cast(? as double precision) as "val" from "t"',
+        mysql: 'select cast(? as double) as `val` from `t`',
+        mssql: 'select cast(? as float) as [val] from [t]',
+        oracledb: 'select cast(? as number(8, 2)) as "val" from "t"',
+        sqlite3: 'select cast(? as float) as `val` from `t`',
+      });
+    });
+
+    it('castChar', () => {
+      testCastSql((c) => c.castChar('hello', 5, 'val'), {
+        pg: 'select cast(? as char(5)) as "val" from "t"',
+        mysql: 'select cast(? as char(5)) as `val` from `t`',
+        mssql: 'select cast(? as char(5)) as [val] from [t]',
+        oracledb: 'select cast(? as char(5)) as "val" from "t"',
+        sqlite3: 'select cast(? as char(5)) as `val` from `t`',
+      });
+    });
+
+    it('castInt', () => {
+      testCastSql((c) => c.castInt('42', 'val'), {
+        pg: 'select cast(? as integer) as "val" from "t"',
+        mysql: 'select cast(? as unsigned) as `val` from `t`',
+        mssql: 'select cast(? as int) as [val] from [t]',
+        oracledb: 'select cast(? as integer) as "val" from "t"',
+        sqlite3: 'select cast(? as integer) as `val` from `t`',
+      });
+    });
+
+    it('castBigint', () => {
+      testCastSql((c) => c.castBigint('42', 'val'), {
+        pg: 'select cast(? as bigint) as "val" from "t"',
+        mysql: 'select cast(? as unsigned) as `val` from `t`',
+        mssql: 'select cast(? as bigint) as [val] from [t]',
+        oracledb: 'select cast(? as number(20, 0)) as "val" from "t"',
+        sqlite3: 'select cast(? as bigint) as `val` from `t`',
+      });
+    });
+
+    it('castText', () => {
+      testCastSql((c) => c.castText('hello', 'val'), {
+        pg: 'select cast(? as text) as "val" from "t"',
+        mssql: 'select cast(? as nvarchar(max)) as [val] from [t]',
+        oracledb: 'select cast(? as clob) as "val" from "t"',
+        sqlite3: 'select cast(? as text) as `val` from `t`',
+      });
+    });
+
+    it('castJson', () => {
+      testCastSql((c) => c.castJson('{"a":1}', 'val'), {
+        pg: 'select cast(? as json) as "val" from "t"',
+        mssql: 'select cast(? as nvarchar(max)) as [val] from [t]',
+        oracledb: 'select cast(? as clob) as "val" from "t"',
+        sqlite3: 'select cast(? as text) as `val` from `t`',
+      });
+    });
+
+    it('castJsonb', () => {
+      testCastSql((c) => c.castJsonb('{"a":1}', 'val'), {
+        pg: 'select cast(? as jsonb) as "val" from "t"',
+        mysql: 'select cast(? as json) as `val` from `t`',
+        mssql: 'select cast(? as nvarchar(max)) as [val] from [t]',
+        oracledb: 'select cast(? as clob) as "val" from "t"',
+        sqlite3: 'select cast(? as text) as `val` from `t`',
+      });
+    });
+
+    it('castBinary', () => {
+      testCastSql((c) => c.castBinary('data', 'val'), {
+        pg: 'select cast(? as bytea) as "val" from "t"',
+        mysql: 'select cast(? as binary) as `val` from `t`',
+        mssql:
+          'select cast(cast(? as varchar(max)) as varbinary(max)) as [val] from [t]',
+        oracledb: 'select cast(? as blob) as "val" from "t"',
+        sqlite3: 'select cast(? as blob) as `val` from `t`',
+      });
+    });
+
+    it('castReal', () => {
+      testCastSql((c) => c.castReal('1.5', 'val'), {
+        pg: 'select cast(? as real) as "val" from "t"',
+        mysql: 'select cast(? as real) as `val` from `t`',
+        mssql: 'select cast(? as float) as [val] from [t]',
+        oracledb: 'select cast(? as float) as "val" from "t"',
+        sqlite3: 'select cast(? as float) as `val` from `t`',
+      });
+    });
+
+    it('cast with ref', () => {
+      testCastSql((c) => c.castInt(c.ref('age'), 'val'), {
+        pg: 'select cast("age" as integer) as "val" from "t"',
+        mysql: 'select cast(`age` as unsigned) as `val` from `t`',
+        mssql: 'select cast([age] as int) as [val] from [t]',
+        oracledb: 'select cast("age" as integer) as "val" from "t"',
+        sqlite3: 'select cast(`age` as integer) as `val` from `t`',
+      });
+    });
+
+    it('cast without alias', () => {
+      testCastSql((c) => c.castInt('42'), {
+        pg: 'select cast(? as integer) from "t"',
+        mysql: 'select cast(? as unsigned) from `t`',
+        mssql: 'select cast(? as int) from [t]',
+      });
+    });
+
+    it('mysql castText should throw', () => {
+      expect(() => {
+        clients.mysql.castText('hello', 'val');
+      }).to.throw(
+        'Cast to Test is not possible in MySQL, use castChar function instead.'
+      );
+    });
+  });
 });
