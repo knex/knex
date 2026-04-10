@@ -31,5 +31,5 @@ update_version 'package.json' $next_version
 git commit -am "release $next_version"
 git tag $next_version
 
-npm publish && git push --tags || git reset --hard HEAD~1 && git tag -d $next_version
+npm publish && git push --tags || git reset --soft HEAD~1 && git tag -d $next_version
 
