@@ -1524,6 +1524,31 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('where ins with Buffer values', () => {
+    const buf1 = Buffer.from('a1b2c3d4', 'hex');
+    const buf2 = Buffer.from('e5f6a7b8', 'hex');
+    const buf3 = Buffer.from('c9d0e1f2', 'hex');
+
+    testsql(qb().select('*').from('users').whereIn('id', [buf1, buf2, buf3]), {
+      mysql: {
+        sql: 'select * from `users` where `id` in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+    });
+  });
+
   it('multi column where ins', () => {
     testsql(
       qb()
@@ -6065,7 +6090,41 @@ describe('QueryBuilder', () => {
         bindings: [],
       },
       sqlite3: {
-        sql: 'insert into `users` default values',
+        sql: 'insert into `users` default values returning `id`',
+        bindings: [],
+      },
+      pg: {
+        sql: 'insert into "users" default values returning "id"',
+        bindings: [],
+      },
+      'pg-redshift': {
+        sql: 'insert into "users" default values',
+        bindings: [],
+      },
+      mssql: {
+        sql: 'insert into [users] output inserted.[id] default values',
+        bindings: [],
+      },
+      oracledb: {
+        sql: 'insert into "users" ("id") values (default) returning "id" into ?',
+        bindings: (bindings) => {
+          expect(bindings.length).to.equal(1);
+          expect(bindings[0].toString()).to.equal(
+            '[object ReturningHelper:id]'
+          );
+        },
+      },
+    });
+  });
+
+  it('insert with empty object and returning', () => {
+    testsql(qb().into('users').insert({}, 'id'), {
+      mysql: {
+        sql: 'insert into `users` () values ()',
+        bindings: [],
+      },
+      sqlite3: {
+        sql: 'insert into `users` default values returning `id`',
         bindings: [],
       },
       pg: {
@@ -6993,8 +7052,10 @@ describe('QueryBuilder', () => {
       // for users / doesn't prevent data loss
     ];
 
+    const nonMysqlClients = Object.keys(clients).filter((c) => c !== 'mysql');
+
     const statements = [
-      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having, _limit] },
+      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having] },
       {
         name: 'truncate',
         fn: (qb) => qb.truncate(),
@@ -7012,6 +7073,19 @@ describe('QueryBuilder', () => {
           );
         });
       }
+    }
+
+    // MySQL supports LIMIT on single-table DELETE, so limit+delete should
+    // only throw for non-MySQL dialects.
+    for (const clause of _limit) {
+      it(`${clause.name} method with delete throws for non-MySQL dialects`, async () => {
+        const query = clause.fn(qb().from('users')).del();
+        testFailure(
+          query,
+          new RegExp(`Aborted.*${clause.msg}.*delete`),
+          nonMysqlClients
+        );
+      });
     }
   });
 
@@ -7032,6 +7106,15 @@ describe('QueryBuilder', () => {
       'pg-redshift': {
         sql: 'delete from "users" where "email" = ?',
         bindings: ['foo'],
+      },
+    });
+  });
+
+  it('delete with limit in MySQL', () => {
+    testsql(qb().from('users').where('email', '=', 'foo').del().limit(1), {
+      mysql: {
+        sql: 'delete from `users` where `email` = ? limit ?',
+        bindings: ['foo', 1],
       },
     });
   });
@@ -11208,6 +11291,27 @@ describe('QueryBuilder', () => {
         }
       );
     });
+  });
+
+  it('should produce correct binding order when deleting with a subquery join (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mysql: {
+          sql: 'delete tableB from tableB inner join (select * from `tableA` where `fieldA` = ?) as `subQuery` on `subQuery`.`id` = `tableB`.`relatedId` where `tableA`.`fieldB` = ?',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
   });
 
   describe('json functions', () => {
