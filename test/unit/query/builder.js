@@ -1524,6 +1524,31 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('where ins with Buffer values', () => {
+    const buf1 = Buffer.from('a1b2c3d4', 'hex');
+    const buf2 = Buffer.from('e5f6a7b8', 'hex');
+    const buf3 = Buffer.from('c9d0e1f2', 'hex');
+
+    testsql(qb().select('*').from('users').whereIn('id', [buf1, buf2, buf3]), {
+      mysql: {
+        sql: 'select * from `users` where `id` in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      mssql: {
+        sql: 'select * from [users] where [id] in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      pg: {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+      'pg-redshift': {
+        sql: 'select * from "users" where "id" in (?, ?, ?)',
+        bindings: [buf1, buf2, buf3],
+      },
+    });
+  });
+
   it('multi column where ins', () => {
     testsql(
       qb()
@@ -7027,8 +7052,10 @@ describe('QueryBuilder', () => {
       // for users / doesn't prevent data loss
     ];
 
+    const nonMysqlClients = Object.keys(clients).filter((c) => c !== 'mysql');
+
     const statements = [
-      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having, _limit] },
+      { name: 'delete', fn: (qb) => qb.del(), invalid: [_having] },
       {
         name: 'truncate',
         fn: (qb) => qb.truncate(),
@@ -7046,6 +7073,19 @@ describe('QueryBuilder', () => {
           );
         });
       }
+    }
+
+    // MySQL supports LIMIT on single-table DELETE, so limit+delete should
+    // only throw for non-MySQL dialects.
+    for (const clause of _limit) {
+      it(`${clause.name} method with delete throws for non-MySQL dialects`, async () => {
+        const query = clause.fn(qb().from('users')).del();
+        testFailure(
+          query,
+          new RegExp(`Aborted.*${clause.msg}.*delete`),
+          nonMysqlClients
+        );
+      });
     }
   });
 
@@ -7066,6 +7106,15 @@ describe('QueryBuilder', () => {
       'pg-redshift': {
         sql: 'delete from "users" where "email" = ?',
         bindings: ['foo'],
+      },
+    });
+  });
+
+  it('delete with limit in MySQL', () => {
+    testsql(qb().from('users').where('email', '=', 'foo').del().limit(1), {
+      mysql: {
+        sql: 'delete from `users` where `email` = ? limit ?',
+        bindings: ['foo', 1],
       },
     });
   });
