@@ -2974,3 +2974,51 @@ knex('users')
   .orderBy('name', 'desc')
   .havingRaw('count > ?', [100]);
 ```
+
+## Transform Raw
+
+### transformRaw
+
+**.transformRaw(transformer)**
+
+Registers a transformer function that will be called on the compiled query object just before it is returned by `toSQL()` or executed. The transformer receives the query object (with `sql`, `bindings`, `method`, etc.) and can either mutate it in place or return a new query object.
+
+This is useful as an escape hatch for injecting dialect-specific SQL fragments that knex does not support natively, without having to rewrite the entire query as `knex.raw()`.
+
+```js
+// Mutating the query in place
+knex('users')
+  .select('*')
+  .transformRaw((query) => {
+    query.sql += ' OPTION (HASH JOIN)';
+  });
+// → select * from "users" OPTION (HASH JOIN)
+```
+
+```js
+// Returning a new query object
+knex('users')
+  .select('*')
+  .transformRaw((query) => {
+    return { ...query, sql: query.sql.replace('*', 'id, name') };
+  });
+// → select id, name from "users"
+```
+
+Multiple transformers can be chained and will be applied sequentially:
+
+```js
+knex('users')
+  .select('*')
+  .transformRaw((query) => {
+    query.sql = query.sql.replace('*', 'id, name');
+  })
+  .transformRaw((query) => {
+    query.sql += ' FOR UPDATE';
+  });
+// → select id, name from "users" FOR UPDATE
+```
+
+::: warning
+`transformRaw` operates on the final SQL string. It is inherently unsafe — you are responsible for ensuring the resulting SQL is valid. Use it only when you know what you are doing.
+:::
