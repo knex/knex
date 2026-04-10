@@ -501,6 +501,7 @@ declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
+    | Array<Buffer>
     | Record<string, unknown>
     | Knex.Raw;
 
