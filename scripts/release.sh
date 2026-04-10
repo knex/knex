@@ -21,16 +21,15 @@ next_ref="v$next_version"
 
 git add -u
 
+node ./scripts/format-changelog.js
 npm run build
 npm run format:check
 npm run lint:everything
-npm test
 
 update_version 'package.json' $next_version
 
 git commit -am "release $next_version"
 git tag $next_version
 
-git push --tags
+npm publish && git push --tags || git reset --soft HEAD~1 && git tag -d $next_version
 
-npm publish
