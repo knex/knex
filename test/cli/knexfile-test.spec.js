@@ -159,20 +159,40 @@ module.exports = {
               }
             );
           });
+
+          it("does not change the process's cwd", function () {
+            return execCommand(
+              `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile --knexfile=subdir/knexfile.js`,
+              {
+                notExpectedOutput: 'Working directory changed to',
+              }
+            );
+          });
         });
 
         context('and --knexfile is an absolute path', function () {
+          // Notice: the Knexfile is using Typescript.  This means that Knex
+          // is pre-loading the appropriate Typescript modules before loading
+          // the Knexfile.
+          const knexfile = path.resolve(
+            'test/jake-util/knexfile-ts/custom-config.ts'
+          );
+          const command = `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile --knexfile=${knexfile}`;
+
           it('uses the indicated knexfile', function () {
-            // Notice: the Knexfile is using Typescript.  This means that Knex
-            // is pre-loading the appropriate Typescript modules before loading
-            // the Knexfile.
-            const knexfile = path.resolve(
-              'test/jake-util/knexfile-ts/custom-config.ts'
-            );
             return execCommand(
-              `node ${KNEX} migrate:latest --cwd=test/jake-util/knexfile --knexfile=${knexfile}`,
+              command,
               {
                 expectedOutput: 'Batch 1 run: 4 migrations',
+              }
+            );
+          });
+
+          it("does not change the process's cwd", function () {
+            return execCommand(
+              command,
+              {
+                notExpectedOutput: 'Working directory changed to',
               }
             );
           });
