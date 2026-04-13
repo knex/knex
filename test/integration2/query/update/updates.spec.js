@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../../util/constants');
-const { isPostgreSQL } = require('../../../util/db-helpers');
+const { isPostgreSQL, isMysql, isOracle } = require('../../../util/db-helpers');
 const {
   getAllDbs,
   getKnexForDb,
@@ -15,6 +15,8 @@ const {
 } = require('../../../util/tableCreatorHelper');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const { assertNumber } = require('../../../util/assertHelper');
+
+let TEST_USER_ROW;
 
 describe('Updates', function () {
   getAllDbs().forEach((db) => {
@@ -39,7 +41,12 @@ describe('Updates', function () {
         const accounts = await knex('accounts').select().where({
           email: 'test1@example.com',
         });
-        accountId1 = accounts[0].id;
+        TEST_USER_ROW = {
+          ...accounts[0],
+          created_at: TEST_TIMESTAMP,
+          updated_at: TEST_TIMESTAMP,
+        };
+        accountId1 = TEST_USER_ROW.id;
       });
 
       it('should handle updates', async function () {
@@ -266,6 +273,109 @@ describe('Updates', function () {
         );
       });
 
+      it('should allow query builder as update value', async function () {
+        // mysql does not support this subquery syntax
+        if (isMysql(knex) || isOracle(knex)) {
+          return this.skip();
+        }
+        await knex('accounts')
+          .where('id', accountId1)
+          .update(
+            'balance',
+            knex('accounts').select('balance').where('id', accountId1)
+          )
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'update `accounts` set `balance` = (select `balance` from `accounts` where `id` = ?) where `id` = ?',
+              [accountId1, accountId1],
+              1
+            );
+            tester(
+              'pg',
+              'update "accounts" set "balance" = (select "balance" from "accounts" where "id" = ?) where "id" = ?',
+              [accountId1, accountId1],
+              1
+            );
+            tester(
+              'cockroachdb',
+              'update "accounts" set "balance" = (select "balance" from "accounts" where "id" = ?) where "id" = ?',
+              [accountId1, accountId1],
+              1
+            );
+            tester(
+              'pg-redshift',
+              'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ?',
+              [accountId1, accountId1],
+              1
+            );
+            tester(
+              'sqlite3',
+              'update `accounts` set `balance` = (select `balance` from `accounts` where `id` = ?) where `id` = ?',
+              [accountId1, accountId1],
+              1
+            );
+            tester(
+              'mssql',
+              'update [accounts] set [balance] = (select [balance] from [accounts] where [id] = ?) where [id] = ?;select @@rowcount',
+              [accountId1, accountId1],
+              1
+            );
+          });
+      });
+
+      it('should allow query builder with returning as update value', async function () {
+        // mysql / cockroach do not not support this subquery syntax
+        if (isMysql(knex) || isOracle(knex)) {
+          return this.skip();
+        }
+        await knex('accounts')
+          .where('id', accountId1)
+          .update(
+            'balance',
+            knex('accounts').select('balance').where('id', accountId1),
+            '*'
+          )
+          .testSql(function (tester) {
+            tester(
+              'mysql',
+              'update `accounts` set `balance` = (select `balance` from `accounts` where `id` = ?) where `id` = ? returning *',
+              [accountId1, accountId1],
+              1
+            );
+            tester(
+              'pg',
+              'update "accounts" set "balance" = (select "balance" from "accounts" where "id" = ?) where "id" = ? returning *',
+              [accountId1, accountId1],
+              [TEST_USER_ROW]
+            );
+            tester(
+              'cockroachdb',
+              'update "accounts" set "balance" = (select "balance" from "accounts" where "id" = ?) where "id" = ? returning *',
+              [accountId1, accountId1],
+              [TEST_USER_ROW]
+            );
+            tester(
+              'pg-redshift',
+              'update "accounts" set "email" = ?, "first_name" = ?, "last_name" = ? where "id" = ? returning *',
+              [accountId1, accountId1],
+              [TEST_USER_ROW]
+            );
+            tester(
+              'sqlite3',
+              'update `accounts` set `balance` = (select `balance` from `accounts` where `id` = ?) where `id` = ? returning *',
+              [accountId1, accountId1],
+              [TEST_USER_ROW]
+            );
+            tester(
+              'mssql',
+              'update [accounts] set [balance] = (select [balance] from [accounts] where [id] = ?) output inserted.* where [id] = ?',
+              [accountId1, accountId1],
+              [TEST_USER_ROW]
+            );
+          });
+      });
+
       it('should allow returning for updates', async function () {
         await knex('accounts').where('id', accountId1).update({
           balance: 12.240000000000002,
@@ -294,16 +404,11 @@ describe('Updates', function () {
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', '1'],
               [
                 {
-                  id: '1',
+                  ...TEST_USER_ROW,
+                  balance: 12.24,
                   first_name: 'UpdatedUser',
                   last_name: 'UpdatedTest',
                   email: 'test100@example.com',
-                  logins: 1,
-                  balance: 12.24,
-                  about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: TEST_TIMESTAMP,
-                  updated_at: TEST_TIMESTAMP,
-                  phone: null,
                 },
               ]
             );
@@ -313,16 +418,11 @@ describe('Updates', function () {
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', accountId1],
               [
                 {
-                  id: accountId1,
+                  ...TEST_USER_ROW,
                   first_name: 'UpdatedUser',
                   last_name: 'UpdatedTest',
                   email: 'test100@example.com',
-                  logins: '1',
                   balance: 12.24,
-                  about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: TEST_TIMESTAMP,
-                  updated_at: TEST_TIMESTAMP,
-                  phone: null,
                 },
               ]
             );
@@ -338,16 +438,11 @@ describe('Updates', function () {
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', 1],
               [
                 {
-                  id: 1,
+                  ...TEST_USER_ROW,
                   first_name: 'UpdatedUser',
                   last_name: 'UpdatedTest',
                   email: 'test100@example.com',
-                  logins: 1,
                   balance: 12.240000000000002,
-                  about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: TEST_TIMESTAMP,
-                  updated_at: TEST_TIMESTAMP,
-                  phone: null,
                 },
               ]
             );
@@ -363,16 +458,11 @@ describe('Updates', function () {
               ],
               [
                 {
-                  id: accountId1,
+                  ...TEST_USER_ROW,
                   first_name: 'UpdatedUser',
                   last_name: 'UpdatedTest',
                   email: 'test100@example.com',
-                  logins: 1,
                   balance: 12.24,
-                  about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: TEST_TIMESTAMP,
-                  updated_at: TEST_TIMESTAMP,
-                  phone: null,
                 },
               ]
             );
@@ -382,16 +472,11 @@ describe('Updates', function () {
               ['test100@example.com', 'UpdatedUser', 'UpdatedTest', '1'],
               [
                 {
-                  id: '1',
+                  ...TEST_USER_ROW,
                   first_name: 'UpdatedUser',
                   last_name: 'UpdatedTest',
                   email: 'test100@example.com',
-                  logins: 1,
                   balance: 12.240000000000002,
-                  about: 'Lorem ipsum Dolore labore incididunt enim.',
-                  created_at: TEST_TIMESTAMP,
-                  updated_at: TEST_TIMESTAMP,
-                  phone: null,
                 },
               ]
             );

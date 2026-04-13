@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const { isSQLite, isOracle } = require('../../util/db-helpers');
+const { isSQLite, isOracle, isMysql } = require('../../util/db-helpers');
 const { isPostgreSQL } = require('../../util/db-helpers.js');
 
 module.exports = function (knex) {
@@ -211,6 +211,71 @@ module.exports = function (knex) {
             [{ id: 9, account_id: 4, details: '', status: 1 }]
           );
         });
+      });
+    });
+
+    describe('Delete with limit', function () {
+      it('should support delete with limit in MySQL', async function () {
+        if (!isMysql(knex)) {
+          return this.skip();
+        }
+
+        await knex('accounts').insert([
+          {
+            first_name: 'LimitDel',
+            last_name: 'One',
+            email: 'limitdel1@example.com',
+            logins: 1,
+            balance: 0,
+            about: '',
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          {
+            first_name: 'LimitDel',
+            last_name: 'Two',
+            email: 'limitdel2@example.com',
+            logins: 1,
+            balance: 0,
+            about: '',
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          {
+            first_name: 'LimitDel',
+            last_name: 'Three',
+            email: 'limitdel3@example.com',
+            logins: 1,
+            balance: 0,
+            about: '',
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+        ]);
+
+        const deleted = await knex('accounts')
+          .where('first_name', 'LimitDel')
+          .del()
+          .limit(2);
+
+        expect(deleted).to.equal(2);
+
+        const remaining = await knex('accounts')
+          .where('first_name', 'LimitDel')
+          .select();
+        expect(remaining).to.have.length(1);
+
+        await knex('accounts').where('first_name', 'LimitDel').del();
+      });
+
+      it('should reject delete with limit for non-MySQL dialects', async function () {
+        if (isMysql(knex)) {
+          return this.skip();
+        }
+
+        expect(() => {
+          knex('accounts').where('id', 1).del().limit(1).toSQL();
+        }).to.throw(/limit.*has no effect.*delete/);
       });
     });
   });
