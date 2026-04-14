@@ -1118,4 +1118,52 @@ describe('Oracle SchemaBuilder', function () {
       'begin execute immediate \'drop table "book"\'; exception when others then if sqlcode != -942 then raise; end if; end;\nbegin execute immediate \'drop sequence "book_seq"\'; exception when others then if sqlcode != -2289 then raise; end if; end;'
     );
   });
+
+  describe('SQL injection prevention in DDL operations', function () {
+    it('should escape single quotes in table names for renameColumn trigger', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table("users'; EXECUTE IMMEDIATE 'DROP TABLE x", function () {
+          this.renameColumn('foo', 'bar');
+        })
+        .toSQL();
+
+      // The EXECUTE IMMEDIATE string should have escaped single quotes
+      expect(tableSql[0].sql).to.include(
+        "EXECUTE IMMEDIATE ('ALTER TABLE \"users''; EXECUTE IMMEDIATE ''DROP TABLE x\" RENAME COLUMN \"foo\" TO \"bar\"')"
+      );
+      // The PL/SQL string literal for trigger_name should have escaped single quotes
+      expect(tableSql[0].sql).to.include(
+        "trigger_name = 'users''; execute immediate ''drop table x_autoinc_trg'"
+      );
+    });
+
+    it('should escape double quotes in table names for renameColumn trigger', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users" OR 1=1--', function () {
+          this.renameColumn('foo', 'bar');
+        })
+        .toSQL();
+
+      // Inside EXECUTE IMMEDIATE ('...'), double quotes in identifiers are doubled
+      // for identifier escaping, then each of those is doubled again for the
+      // single-quoted string context, resulting in 4 double-quote chars.
+      expect(tableSql[0].sql).to.include(
+        'ALTER TABLE "users"""" OR 1=1--" RENAME COLUMN "foo" TO "bar"'
+      );
+    });
+
+    it('should escape single quotes in table names for renameTable trigger', function () {
+      tableSql = client
+        .schemaBuilder()
+        .renameTable("users'; DROP TABLE x--", 'foo')
+        .toSQL();
+
+      // The EXECUTE IMMEDIATE string should have escaped single quotes
+      expect(tableSql[0].sql).to.include(
+        "EXECUTE IMMEDIATE ('RENAME \"users''; DROP TABLE x--\" TO \"foo\"')"
+      );
+    });
+  });
 });
