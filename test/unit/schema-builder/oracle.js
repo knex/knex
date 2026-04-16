@@ -1130,7 +1130,7 @@ describe('Oracle SchemaBuilder', function () {
 
       // The EXECUTE IMMEDIATE string should have escaped single quotes
       expect(tableSql[0].sql).to.include(
-        "EXECUTE IMMEDIATE ('ALTER TABLE \"users''; EXECUTE IMMEDIATE ''DROP TABLE x\" RENAME COLUMN \"foo\" TO \"bar\"')"
+        'EXECUTE IMMEDIATE (\'ALTER TABLE "users\'\'; EXECUTE IMMEDIATE \'\'DROP TABLE x" RENAME COLUMN "foo" TO "bar"\')'
       );
       // The PL/SQL string literal for trigger_name should have escaped single quotes
       expect(tableSql[0].sql).to.include(
@@ -1162,7 +1162,7 @@ describe('Oracle SchemaBuilder', function () {
 
       // The EXECUTE IMMEDIATE string should have escaped single quotes
       expect(tableSql[0].sql).to.include(
-        "EXECUTE IMMEDIATE ('RENAME \"users''; DROP TABLE x--\" TO \"foo\"')"
+        'EXECUTE IMMEDIATE (\'RENAME "users\'\'; DROP TABLE x--" TO "foo"\')'
       );
     });
   });
