@@ -58,12 +58,9 @@ const pg = require('knex')({
 });
 ```
 
-:::
+Another usage pattern for instantiating the Knex configuration object could be to use a `connection: {}` object details to specify various flags such as enabling SSL, a connection string, and individual connection configuration fields all in the same object.
 
-When using the PostgreSQL driver, another usage pattern for instantiating the Knex configuration object could be to use a `connection: {}` object details to specify various flags such as enabling SSL, a connection string, and individual connection configuration fields all in the same object. Consider the following example:
-
-::: info PostgreSQL
-If `connectionString` is highest priority to use. If left unspecified then connection details will be determined using the individual connection fields (`host`, `port`, etc), and finally an SSL configuration will be enabled based on a truthy value of `config["DB_SSL"]` which will also accept self-signed certificates.
+The `connectionString` takes priority over other connections fields if set. If left unspecified then connection details will be determined using the individual connection fields (`host`, `port`, etc), and finally an SSL configuration will be enabled based on a truthy value of `config["DB_SSL"]` which will also accept self-signed certificates.
 
 ```js
 const pg = require('knex')({
@@ -81,8 +78,6 @@ const pg = require('knex')({
 ```
 
 :::
-
-The following are SQLite usage patterns for instantiating the Knex configuration object:
 
 ::: info SQLite3 or Better-SQLite3
 When you use the SQLite3 or Better-SQLite3 adapter, there is a filename required, not a network connection. For example:
@@ -207,6 +202,28 @@ const knex = require('knex')({
   },
 });
 ```
+
+:::
+
+::: info OracleDB
+When using the node-oracledb driver, row fetching can be tuned by providing a value for `fetchArraySize`:
+
+```js
+const knex = require('knex')({
+  client: 'oracledb',
+  connection: {
+    host: '127.0.0.1',
+    port: 1521,
+    user: 'your_database_user',
+    password: 'your_database_password',
+    database: 'myapp_test',
+    fetchArraySize: 10000,
+  },
+```
+
+If not provided, `fetchArraySize` falls back to the driver default of 100.
+
+See [Tune Fetch Performance](https://node-oracledb.readthedocs.io/en/latest/user_guide/tuning.html#rowfetching) for more details.
 
 :::
 
