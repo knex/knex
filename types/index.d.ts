@@ -2750,6 +2750,13 @@ declare namespace Knex {
     nullable: boolean;
   }
 
+  type PreExecHookPromiseResponse = {
+    continue: boolean;
+    data: [];
+  };
+
+  type PreExecHook = Promise<PreExecHookPromiseResponse>;
+
   interface Config<SV extends {} = any> {
     debug?: boolean;
     client?: string | typeof Client;
@@ -2759,6 +2766,7 @@ declare namespace Knex {
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
+    preExecHook?: () => PreExecHook;
     postProcessResponse?: (result: any, queryContext: any) => any;
     wrapIdentifier?: (
       value: string,
