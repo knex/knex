@@ -152,6 +152,7 @@ module.exports = function (knex) {
       });
 
       expect(transactionResult).to.equal(true);
+      expect(typeof transactionResult).to.equal('boolean');
     });
 
     it('should be able to rollback transactions', function () {
