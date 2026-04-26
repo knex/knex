@@ -145,6 +145,15 @@ module.exports = function (knex) {
         });
     });
 
+    it('should resolve transaction with manually committed value in async callback', async function () {
+      const transactionResult = await knex.transaction(async function (trx) {
+        await trx.commit(true);
+        return 'ignored';
+      });
+
+      expect(transactionResult).to.equal(true);
+    });
+
     it('should be able to rollback transactions', function () {
       let id = null;
       const err = new Error('error message');

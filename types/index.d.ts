@@ -2341,8 +2341,8 @@ declare namespace Knex {
       value: any
     ): QueryBuilder<TRecord, TResult>;
     savepoint<T = any>(transactionScope: (trx: Transaction) => any): Promise<T>;
-    commit(value?: any): QueryBuilder<TRecord, TResult>;
-    rollback(error?: any): QueryBuilder<TRecord, TResult>;
+    commit<T = void>(value?: T): Promise<T>;
+    rollback(error?: any): Promise<never>;
   }
 
   type TransactionProvider = () => Promise<Transaction>;
