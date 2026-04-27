@@ -11314,6 +11314,105 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should produce correct binding order when deleting with a subquery join in mssql (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mssql: {
+          sql: 'delete tableB from tableB inner join (select * from [tableA] where [fieldA] = ?) as [subQuery] on [subQuery].[id] = [tableB].[relatedId] where [tableA].[fieldB] = ?;select @@rowcount',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when deleting with a subquery join in mssql triggers (#6277)', () => {
+    const triggerOptions = { includeTriggerModifications: true };
+    testsql(
+      qb()
+        .del('*', triggerOptions)
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mssql: {
+          sql: 'select top(0) [t].* into #out from tableB as t left join tableB on 0=1;delete tableB output deleted.* into #out from tableB inner join (select * from [tableA] where [fieldA] = ?) as [subQuery] on [subQuery].[id] = [tableB].[relatedId] where [tableA].[fieldB] = ?; select * from #out; drop table #out;',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when deleting with a subquery join in pg (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        pg: {
+          sql: 'delete from tableB using (select * from "tableA" where "fieldA" = ?) as "subQuery" where "tableA"."fieldB" = ? and "subQuery"."id" = "tableB"."relatedId"',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when updating with a CTE and a limit in mssql (#6277)', () => {
+    testsql(
+      qb()
+        .with('cte', qb().from('source').where('flag', 'cte_value'))
+        .from('target')
+        .where('target.status', 'where_value')
+        .update({ name: 'set_value' })
+        .limit(5),
+      {
+        mssql: {
+          sql: 'with [cte] as (select * from [source] where [flag] = ?) update top (?) [target] set [name] = ? where [target].[status] = ?;select @@rowcount',
+          bindings: ['cte_value', 5, 'set_value', 'where_value'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when updating with a CTE and a limit in mssql triggers (#6277)', () => {
+    const triggerOptions = { includeTriggerModifications: true };
+    testsql(
+      qb()
+        .with('cte', qb().from('source').where('flag', 'cte_value'))
+        .from('target')
+        .where('target.status', 'where_value')
+        .update({ name: 'set_value' }, '*', triggerOptions)
+        .limit(5),
+      {
+        mssql: {
+          sql: 'with [cte] as (select * from [source] where [flag] = ?) select top(0) [t].* into #out from [target] as t left join [target] on 0=1;update top (?) [target] set [name] = ? output inserted.* into #out where [target].[status] = ?; select * from #out; drop table #out;',
+          bindings: ['cte_value', 5, 'set_value', 'where_value'],
+        },
+      }
+    );
+  });
+
   describe('json functions', () => {
     describe('json manipulation', () => {
       it('should extract json value', () => {
