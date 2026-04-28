@@ -11378,6 +11378,30 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should produce correct binding order when deleting with a raw join condition in pg (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb()
+            .from('tableA')
+            .where('fieldA', 'using_source_value')
+            .as('subQuery'),
+          raw('coalesce(subQuery.id, ?)', ['join_clause_value']),
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableB.status', 'where_value'),
+      {
+        pg: {
+          sql: 'delete from tableB using (select * from "tableA" where "fieldA" = ?) as "subQuery" where "tableB"."status" = ? and coalesce(subQuery.id, ?) = "tableB"."relatedId"',
+          bindings: ['using_source_value', 'where_value', 'join_clause_value'],
+        },
+      }
+    );
+  });
+
   it('should produce correct binding order when updating with a CTE and a limit in mssql (#6277)', () => {
     testsql(
       qb()
