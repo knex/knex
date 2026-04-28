@@ -11402,6 +11402,39 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should produce correct binding order when deleting with a CTE and raw join condition in pg (#6277)', () => {
+    testsql(
+      qb()
+        .with(
+          'source_cte',
+          qb().from('source').where('source.flag', 'cte_value')
+        )
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb()
+            .from('source_cte')
+            .where('fieldA', 'using_source_value')
+            .as('subQuery'),
+          raw('coalesce(subQuery.id, ?)', ['join_clause_value']),
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableB.status', 'where_value'),
+      {
+        pg: {
+          sql: 'with "source_cte" as (select * from "source" where "source"."flag" = ?) delete from tableB using (select * from "source_cte" where "fieldA" = ?) as "subQuery" where "tableB"."status" = ? and coalesce(subQuery.id, ?) = "tableB"."relatedId"',
+          bindings: [
+            'cte_value',
+            'using_source_value',
+            'where_value',
+            'join_clause_value',
+          ],
+        },
+      }
+    );
+  });
+
   it('should produce correct binding order when updating with a CTE and a limit in mssql (#6277)', () => {
     testsql(
       qb()
