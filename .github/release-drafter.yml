@@ -1,0 +1,47 @@
+# existing knex tags are bare semver (e.g. "3.2.9", not "v3.2.9"), so
+# match that here.
+name-template: '$RESOLVED_VERSION'
+tag-template: '$RESOLVED_VERSION'
+
+# bump major/minor/patch by PR label, default to patch
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bug'
+      - 'chore'
+      - 'docs'
+      - 'dependencies'
+  default: patch
+
+# match the existing knex release format: a single "What's Changed"
+# section with conventional-commit-style entries
+categories:
+  - title: "What's Changed"
+    labels:
+      - '*'
+
+change-template: '* $TITLE by @$AUTHOR in #$NUMBER'
+change-title-escapes: '\<*_&'
+
+# do not include PRs explicitly excluded from release notes.
+# `skip-release` matches the existing label enforced by ensure-labels.yml.
+exclude-labels:
+  - 'skip-release'
+
+# the "## New Contributors" section and the "**Full Changelog**" link are
+# spliced in by the workflow's post-processing step (which calls GitHub's
+# generate-notes API), so they're not part of this template.
+template: |
+  ## What's Changed
+
+  $CHANGES

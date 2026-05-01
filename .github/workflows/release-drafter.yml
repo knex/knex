@@ -1,0 +1,83 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - master
+  # also run when PRs are opened/edited so labels (which determine the
+  # version bump) and titles (which appear in the changelog) stay in sync
+  # with the draft release notes
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: read
+
+jobs:
+  update_release_draft:
+    permissions:
+      # write permission required to create a draft release
+      contents: write
+      # write permission required to autolabel PRs
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - id: drafter
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # release-drafter doesn't produce a "## New Contributors" section.
+      # GitHub's generate-notes API does, so call it for the same range
+      # and splice the New Contributors block + Full Changelog link into
+      # the draft body.
+      - name: Splice in New Contributors and Full Changelog
+        if: steps.drafter.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.drafter.outputs.id }}
+          TAG: ${{ steps.drafter.outputs.tag_name }}
+          DRAFTER_BODY: ${{ steps.drafter.outputs.body }}
+        run: |
+          set -euo pipefail
+
+          # generate-notes works against the proposed tag even though it
+          # doesn't exist yet, as long as we point it at master.
+          generated=$(gh api -X POST "/repos/$REPO/releases/generate-notes" \
+            -f tag_name="$TAG" \
+            -f target_commitish="master" \
+            --jq '.body')
+
+          # extract "## New Contributors" through (but not including) the
+          # Full Changelog line, if present.
+          # generate-notes typically leaves one blank line between the
+          # New Contributors section and the Full Changelog line; strip a
+          # trailing blank from the captured block.
+          new_contribs=$(awk '
+            /^## New Contributors/ { capture=1 }
+            capture && /^\*\*Full Changelog\*\*/ { exit }
+            capture { print }
+          ' <<<"$generated" | sed -e '${/^$/d;}')
+
+          # extract the Full Changelog line.
+          full_changelog=$(grep -E '^\*\*Full Changelog\*\*' <<<"$generated" | head -1 || true)
+
+          body="$DRAFTER_BODY"
+          if [[ -n "$new_contribs" ]]; then
+            body+=$'\n\n'"$new_contribs"
+          fi
+          if [[ -n "$full_changelog" ]]; then
+            body+=$'\n\n'"$full_changelog"
+          fi
+
+          jq -nc --arg body "$body" '{body: $body}' \
+            | gh api -X PATCH "/repos/$REPO/releases/$RELEASE_ID" --input -
