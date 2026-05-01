@@ -10,16 +10,94 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # validate the release body structure BEFORE doing anything destructive.
+  # if the structure is wrong (unknown category, malformed bullets, empty
+  # body), revert the release to draft and delete the freshly created tag
+  # so the maintainer can edit + re-publish without manual cleanup.
+  # privileged for the API revert; runs no third-party code (no checkout,
+  # no npm install).
+  validate:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # PATCH release → draft, DELETE tag on failure
+
+    steps:
+      - name: Validate release; revert to draft on failure
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ github.event.release.id }}
+          TAG: ${{ github.event.release.tag_name }}
+          BODY: ${{ github.event.release.body }}
+        run: |
+          set -eo pipefail
+
+          # on any validation failure, revert to draft and delete the tag
+          # so re-publishing produces a fresh release.published event and
+          # the maintainer's edits are preserved in the draft body.
+          fail() {
+            echo "::error::$1"
+            echo "::error::Reverting release to draft and deleting tag."
+            gh api -X PATCH "/repos/$REPO/releases/$RELEASE_ID" -F draft=true >/dev/null || true
+            gh api -X DELETE "/repos/$REPO/git/refs/tags/$TAG" >/dev/null || true
+            exit 1
+          }
+
+          # 1. tag must be bare semver
+          [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] \
+            || fail "Tag '$TAG' is not a valid X.Y.Z[-prerelease]"
+
+          # 2. body must be non-empty
+          [[ -n "$BODY" ]] || fail "Release body is empty"
+
+          # 3. every "**X**" header line (lines that are ONLY bold-wrapped
+          # text, not inline-bold like "**Full Changelog**: ...") must be
+          # one of the recognised category names.
+          headers=$(printf '%s\n' "$BODY" | awk '/^\*\*[^*]+\*\*$/{print}' | sed 's/^\*\*//; s/\*\*$//')
+          [[ -n "$headers" ]] || fail "Release body has no category sections (e.g. **Bug fixes**)"
+
+          allowed='^(Breaking changes|New features|Bug fixes|Types|Misc)$'
+          while IFS= read -r h; do
+            [[ "$h" =~ $allowed ]] \
+              || fail "Unknown category header: '$h'. Allowed: Breaking changes, New features, Bug fixes, Types, Misc"
+          done <<< "$headers"
+
+          # 4. every non-blank line under a category section (before
+          # "## New Contributors" / "**Full Changelog**" / EOF) must look
+          # like a release-drafter bullet: "* TITLE by @USER in #N".
+          bad=$(printf '%s\n' "$BODY" | awk '
+            /^\*\*[^*]+\*\*$/ { in_cat=1; next }
+            /^## / { in_cat=0 }
+            /^\*\*Full Changelog\*\*/ { in_cat=0 }
+            in_cat && NF && $0 !~ /^[*-] .* by @[^ ]+ in #[0-9]+ *$/ { print }
+          ')
+          if [[ -n "$bad" ]]; then
+            fail $'Release body contains malformed bullets:\n'"$bad"
+          fi
+
+          # 5. at least one bullet under a known category
+          n=$(printf '%s\n' "$BODY" | awk '
+            /^\*\*[^*]+\*\*$/ { in_cat=1; next }
+            /^## / { in_cat=0 }
+            /^\*\*Full Changelog\*\*/ { in_cat=0 }
+            in_cat && /^[*-] / { count++ }
+            END { print count+0 }
+          ')
+          [[ "$n" -ge 1 ]] || fail "Release body has no entries under any category"
+
+          echo "Release validation passed (${n} entr$([[ $n == 1 ]] && echo y || echo ies))."
+
   # non-privileged context: do the work of producing a build artifact, but
   # make no direct commits or publishes. checkout the exact release tag so
   # the build matches the commit the maintainer released, even if master
   # has advanced since.
   build:
     runs-on: ubuntu-latest
+    needs: validate
 
     permissions:
       contents: read
-      pull-requests: read # changelog generator reads PR titles + labels
 
     # the NPM tarball is the only input into the privileged publish step.
     # the contents will not be _executed_ in the CI runner, insulating us
@@ -32,13 +110,11 @@ jobs:
       version: ${{ steps.version.outputs.version }}
 
     steps:
-      # full history + tags needed so the changelog generator can
-      # identify the previous release tag.
       - name: Checkout release tag
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.release.tag_name }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -64,14 +140,19 @@ jobs:
         id: build
         run: ./scripts/build-for-release.sh "${{ steps.version.outputs.version }}"
 
-      # generate the docs/src/changelog.md entry. produced here (in the
-      # non-privileged context) and shipped as a separate artifact so the
-      # privileged publish job runs no third-party network code.
+      # generate the docs/src/changelog.md entry by fetching the validated
+      # release body and transforming it into the docs format. produced
+      # here (in the non-privileged context) and shipped as a separate
+      # artifact so the privileged publish job runs no third-party
+      # network code.
       - name: Update changelog
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: node ./scripts/update-changelog.mjs "${{ steps.version.outputs.version }}"
+        run: |
+          node ./scripts/update-changelog.mjs \
+            "${{ steps.version.outputs.version }}" \
+            "${{ github.event.release.id }}"
 
       # hand off built artifact to privileged publish job
       - name: Upload tarball artifact
