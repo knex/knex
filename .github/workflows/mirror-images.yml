@@ -79,9 +79,19 @@ jobs:
           echo "$pairs"
           echo
 
+          failed=()
           while IFS=$'\t' read -r src dest; do
             [ -z "$src" ] && continue
             echo "::group::$src -> $dest"
-            docker buildx imagetools create --tag "$dest" "$src"
+            if ! docker buildx imagetools create --tag "$dest" "$src"; then
+              failed+=("$src -> $dest")
+              echo "::error::failed to mirror $src -> $dest"
+            fi
             echo "::endgroup::"
           done <<< "$pairs"
+
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "Failed mirrors:"
+            printf '  %s\n' "${failed[@]}"
+            exit 1
+          fi
