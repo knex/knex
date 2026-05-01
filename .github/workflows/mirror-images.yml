@@ -1,0 +1,83 @@
+name: Mirror images to GHCR
+
+# Mirrors the third-party Docker images used by integration tests into the
+# knex GHCR namespace, so CI never has to pull from Docker Hub at test time.
+#
+# Source-of-truth is scripts/docker-compose.yml: each mirrored service has a
+# `# mirror-from: <upstream>` comment directly above its `image:` line. This
+# workflow extracts those pairs and copies the upstream manifest into the
+# matching ghcr.io/knex/* tag using `docker buildx imagetools create`, which
+# transfers manifests between registries without pulling layers locally.
+
+on:
+  schedule:
+    # 1st of each month at 06:00 UTC — picks up upstream drift on floating
+    # tags like `:latest` and `:latest-v23.2`.
+    - cron: '0 6 1 * *'
+  push:
+    branches: [master]
+    paths:
+      - 'scripts/docker-compose.yml'
+      - '.github/workflows/mirror-images.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Authenticated Docker Hub pulls have a much higher rate limit than
+      # anonymous; helps when the monthly job runs alongside other traffic
+      # from the GitHub Actions IP pool.
+      # (commenting out for now since we're already rate-limited)
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      #   if: env.DOCKERHUB_USERNAME != ''
+
+      - name: Mirror images
+        run: |
+          set -euo pipefail
+
+          pairs=$(awk '
+            /^[[:space:]]*#[[:space:]]*mirror-from:/ { src=$3; next }
+            /^[[:space:]]*image:[[:space:]]+/ && src { print src "\t" $2; src="" }
+          ' scripts/docker-compose.yml | sort -u)
+
+          if [ -z "$pairs" ]; then
+            echo "No mirror-from pairs found in scripts/docker-compose.yml"
+            exit 1
+          fi
+
+          echo "Mirroring:"
+          echo "$pairs"
+          echo
+
+          while IFS=$'\t' read -r src dest; do
+            [ -z "$src" ] && continue
+            echo "::group::$src -> $dest"
+            docker buildx imagetools create --tag "$dest" "$src"
+            echo "::endgroup::"
+          done <<< "$pairs"
