@@ -136,15 +136,11 @@ jobs:
           fi
           echo "version=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Build for release
-        id: build
-        run: ./scripts/build-for-release.sh "${{ steps.version.outputs.version }}"
-
-      # generate the docs/src/changelog.md entry by fetching the validated
-      # release body and transforming it into the docs format. produced
-      # here (in the non-privileged context) and shipped as a separate
-      # artifact so the privileged publish job runs no third-party
-      # network code.
+      # generate changelog entries by fetching the validated release body
+      # and transforming it into the changelog formats. runs BEFORE the
+      # build so prettier (inside `npm run format`) can format the
+      # inserted content, and so the npm tarball includes the updated
+      # CHANGELOG.md.
       - name: Update changelog
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -153,6 +149,10 @@ jobs:
           node ./scripts/update-changelog.mjs \
             "${{ steps.version.outputs.version }}" \
             "${{ github.event.release.id }}"
+
+      - name: Build for release
+        id: build
+        run: ./scripts/build-for-release.sh "${{ steps.version.outputs.version }}"
 
       # hand off built artifact to privileged publish job
       - name: Upload tarball artifact
@@ -228,13 +228,18 @@ jobs:
           path: .
 
       # extract the contents of the artifact we will publish back into the
-      # git root so that we can commit back the version bump and formatted
-      # typescript output. assert that the only changes are to package.json
-      # and lib/** to limit the blast radius of any errors.
+      # git root so that we can commit back the version bump, formatted
+      # typescript output, and root changelog. assert that the only
+      # changes are to those expected paths to limit the blast radius of
+      # any errors.
       - name: Extract artifact
         run: |
           tar zxf "${{ needs.build.outputs.tarball }}" --strip-components=1 -C .
-          if git diff --name-only HEAD -- ':(exclude)lib/**' ':(exclude)package.json' | grep .; then
+          if git diff --name-only HEAD \
+              -- ':(exclude)lib/**' \
+                 ':(exclude)package.json' \
+                 ':(exclude)CHANGELOG.md' \
+              | grep .; then
             echo "Tarball contained unexpected differences, aborting"
             exit 1
           fi
