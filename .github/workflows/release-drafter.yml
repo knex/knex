@@ -16,6 +16,9 @@ jobs:
       # write permission required to autolabel PRs
       pull-requests: write
     runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.drafter.outputs.id }}
+      version: ${{ steps.drafter.outputs.resolved_version }}
     steps:
       - id: drafter
         uses: release-drafter/release-drafter@v6
@@ -70,3 +73,55 @@ jobs:
 
           jq -nc --arg body "$body" '{body: $body}' \
             | gh api -X PATCH "/repos/$REPO/releases/$RELEASE_ID" --input -
+
+  # dry-run the release pipeline against the just-updated draft so we
+  # catch breakage that would only show up at release time. specifically:
+  # apply the projected changelog entry to the working tree, then run
+  # the docs build. if it fails, the draft is still saved (so a
+  # maintainer can see what's queued) but the workflow run is red on the
+  # master commit that introduced the problem.
+  verify_release_build:
+    needs: update_release_draft
+    if: needs.update_release_draft.outputs.release_id != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+          package-manager-cache: false
+
+      # apply the changelog generation that release.yml will run at
+      # publish time. modifies CHANGELOG.md and docs/src/changelog.md
+      # in-place; nothing is committed.
+      - name: Apply projected changelog entry
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node ./scripts/update-changelog.mjs \
+            "${{ needs.update_release_draft.outputs.version }}" \
+            "${{ needs.update_release_draft.outputs.release_id }}"
+
+      - name: Restore cached docs dependencies
+        uses: actions/cache@v3
+        id: docs-cache
+        with:
+          path: docs/node_modules
+          key: ${{ runner.os }}-docs-npm-${{ hashFiles('docs/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-docs-npm-
+
+      - name: Install docs dependencies
+        if: steps.docs-cache.outputs.cache-hit != 'true'
+        working-directory: ./docs
+        run: npm ci
+
+      - name: Build documentation (verification only, not deployed)
+        working-directory: ./docs
+        run: npm run build
