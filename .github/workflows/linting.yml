@@ -14,6 +14,17 @@ permissions:
 
 jobs:
   build:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect lint
+    #     output: external assets, etc.)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (lib/** is rebuilt + prettier-formatted by
+    #     the release flow itself; source files unchanged)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     runs-on: ubuntu-latest
     name: Linting and Types
 
