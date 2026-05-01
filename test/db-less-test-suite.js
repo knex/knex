@@ -13,6 +13,8 @@ describe('Util Tests', function () {
   require('./unit/util/format-sql-bindings');
   require('./unit/util/security');
   require('./unit/client/pool-config');
+  require('./unit/dialects/mysql/isExpressionDefault');
+  require('./unit/dialects/mysql/parseExtra');
 });
 
 describe('Query Building Tests', function () {
