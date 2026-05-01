@@ -7,7 +7,7 @@
 - fix: support DELETE... LIMIT in dialects that support it (mysql), but continue to disallow ones that don't [#6429](https://github.com/knex/knex/issues/6429)
 - fix(postgres): escape double quotes in searchPath to prevent SQL injection [#6411](https://github.com/knex/knex/issues/6411)
 - fix(sqlite): append RETURNING statement when insert empty row [#5471](https://github.com/knex/knex/issues/5471)
-- fix: add type support for Array<Buffer> [#6428](https://github.com/knex/knex/issues/6428)
+- fix: add type support for `Array<Buffer>` [#6428](https://github.com/knex/knex/issues/6428)
 
 # 3.2.8 - 30 March, 2026
 
