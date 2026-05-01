@@ -1,26 +1,27 @@
 #!/usr/bin/env node
 // Inserts a new release section into both CHANGELOG.md (root, shipped on
 // npm) and docs/src/changelog.md (rendered on knexjs.org), taking the
-// content from the published GitHub release body. The release body's
-// structure is enforced by the validate job in release.yml (categories
-// must be from a known set, bullets must match the change-template
-// format), so the transformations here are straightforward.
+// content from $RELEASE_BODY (the GitHub release body). The release
+// body's structure is enforced by the validate job in release.yml
+// (categories must be from a known set, bullets must match the
+// change-template format), so the transformations here are
+// straightforward.
 //
-// Usage:  node scripts/update-changelog.mjs <version> <release-id>
-// Requires: gh CLI authenticated (GH_TOKEN/GITHUB_TOKEN).
+// Usage:  RELEASE_BODY="..." node scripts/update-changelog.mjs <version>
+//
+// Body is passed via env (not stdin or argv) so the workflow can hand it
+// off without needing read access to draft releases via the GitHub API.
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 
 const VERSION = process.argv[2];
-const RELEASE_ID = process.argv[3];
 
 if (!/^\d+\.\d+\.\d+(-[\w.-]+)?$/.test(VERSION || '')) {
-  console.error('Usage: update-changelog.mjs <version> <release-id>');
+  console.error('Usage: RELEASE_BODY="..." update-changelog.mjs <version>');
   process.exit(1);
 }
-if (!/^\d+$/.test(RELEASE_ID || '')) {
-  console.error('Usage: update-changelog.mjs <version> <release-id>');
+if (process.env.RELEASE_BODY == null) {
+  console.error('RELEASE_BODY env var is required');
   process.exit(1);
 }
 
@@ -28,14 +29,7 @@ const REPO = process.env.GITHUB_REPOSITORY || 'knex/knex';
 const ROOT_PATH = 'CHANGELOG.md';
 const DOCS_PATH = 'docs/src/changelog.md';
 
-const release = JSON.parse(
-  execFileSync('gh', ['api', `/repos/${REPO}/releases/${RELEASE_ID}`], {
-    encoding: 'utf8',
-    maxBuffer: 16 * 1024 * 1024,
-  })
-);
-
-let body = release.body || '';
+let body = process.env.RELEASE_BODY;
 
 // strip the trailing "## New Contributors" section and the
 // "**Full Changelog**" line; neither changelog file carries these.

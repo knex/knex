@@ -136,19 +136,16 @@ jobs:
           fi
           echo "version=$TAG" >> "$GITHUB_OUTPUT"
 
-      # generate changelog entries by fetching the validated release body
-      # and transforming it into the changelog formats. runs BEFORE the
-      # build so prettier (inside `npm run format`) can format the
-      # inserted content, and so the npm tarball includes the updated
-      # CHANGELOG.md.
+      # generate changelog entries from the validated release body. runs
+      # BEFORE the build so prettier (inside `npm run format`) can format
+      # the inserted content, and so the npm tarball includes the
+      # updated CHANGELOG.md. body is passed via env so the script
+      # doesn't need to round-trip through the GitHub API.
       - name: Update changelog
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          node ./scripts/update-changelog.mjs \
-            "${{ steps.version.outputs.version }}" \
-            "${{ github.event.release.id }}"
+          RELEASE_BODY: ${{ github.event.release.body }}
+        run: node ./scripts/update-changelog.mjs "${{ steps.version.outputs.version }}"
 
       - name: Build for release
         id: build

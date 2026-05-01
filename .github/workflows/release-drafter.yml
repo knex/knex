@@ -19,6 +19,10 @@ jobs:
     outputs:
       release_id: ${{ steps.drafter.outputs.id }}
       version: ${{ steps.drafter.outputs.resolved_version }}
+      # final body after splicing in New Contributors + Full Changelog;
+      # consumed by verify_release_build so it doesn't need API access
+      # to the draft (drafts return 403 to contents:read tokens).
+      body: ${{ steps.splice.outputs.body }}
     steps:
       - id: drafter
         uses: release-drafter/release-drafter@v6
@@ -31,7 +35,8 @@ jobs:
       # GitHub's generate-notes API does, so call it for the same range
       # and splice the New Contributors block + Full Changelog link into
       # the draft body.
-      - name: Splice in New Contributors and Full Changelog
+      - id: splice
+        name: Splice in New Contributors and Full Changelog
         if: steps.drafter.outputs.id != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,6 +79,17 @@ jobs:
           jq -nc --arg body "$body" '{body: $body}' \
             | gh api -X PATCH "/repos/$REPO/releases/$RELEASE_ID" --input -
 
+          # also surface the final body as a step output so the next job
+          # can use it without needing draft-read permission. multi-line
+          # outputs use a heredoc with a random delimiter to avoid
+          # collisions with body content.
+          delim="EOF_$(uuidgen | tr -d -)"
+          {
+            printf 'body<<%s\n' "$delim"
+            printf '%s\n' "$body"
+            printf '%s\n' "$delim"
+          } >> "$GITHUB_OUTPUT"
+
   # dry-run the release pipeline against the just-updated draft so we
   # catch breakage that would only show up at release time. specifically:
   # apply the projected changelog entry to the working tree, then run
@@ -98,15 +114,14 @@ jobs:
 
       # apply the changelog generation that release.yml will run at
       # publish time. modifies CHANGELOG.md and docs/src/changelog.md
-      # in-place; nothing is committed.
+      # in-place; nothing is committed. body is passed via env (from the
+      # previous job's output) so we don't need read access to the
+      # draft release via the API.
       - name: Apply projected changelog entry
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          node ./scripts/update-changelog.mjs \
-            "${{ needs.update_release_draft.outputs.version }}" \
-            "${{ needs.update_release_draft.outputs.release_id }}"
+          RELEASE_BODY: ${{ needs.update_release_draft.outputs.body }}
+        run: node ./scripts/update-changelog.mjs "${{ needs.update_release_draft.outputs.version }}"
 
       - name: Restore cached docs dependencies
         uses: actions/cache@v3
