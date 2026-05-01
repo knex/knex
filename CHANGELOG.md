@@ -1,4 +1,4 @@
-# Master (Unreleased)
+# [Master (Unreleased)](https://github.com/knex/knex/compare/3.2.9...master)
 
 # 3.2.9 - 3 April, 2026
 

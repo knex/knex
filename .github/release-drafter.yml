@@ -1,0 +1,58 @@
+name-template: '$RESOLVED_VERSION'
+tag-template: '$RESOLVED_VERSION'
+
+# bump major/minor/patch by PR label, default to patch.
+# We can always adjust in the Release panel
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bug'
+      - 'chore'
+      - 'docs'
+  default: patch
+
+# categories match the section headings used historically in
+# docs/src/changelog.md so the release body can be copied (with minimal
+# transformation) into the docs Changelog. release-drafter matches each
+# PR against the FIRST category whose labels overlap, so order matters:
+# more specific labels (fix/feature) come before the generic bump labels.
+categories:
+  - title: '**Breaking changes**'
+    labels:
+      - 'major'
+      - 'breaking'
+  - title: '**New features**'
+    labels:
+      - 'feature'
+      - 'minor'
+  - title: '**Bug fixes**'
+    labels:
+      - 'fix'
+  - title: '**Types**'
+    labels:
+      - 'types'
+  - title: '**Misc**'
+    labels:
+      - 'docs'
+      - 'chore'
+      - 'tests'
+      - 'patch' # last-resort bucket for patch PRs without a category label
+
+change-template: '* $TITLE by @$AUTHOR in #$NUMBER'
+change-title-escapes: '\<*_&'
+
+# the "## New Contributors" section and the "**Full Changelog**" link are
+# spliced in by the workflow's post-processing step. categories render
+# with their own bold headers, so no outer wrapper is needed.
+template: |
+  $CHANGES
