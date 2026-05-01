@@ -249,11 +249,62 @@ jobs:
           name: release-changelog
           path: docs/src/
 
-      # commit the version bump, rebuilt lib/**, and changelog entry back
-      # to master, then force-update the release tag (created by
-      # release-drafter at the pre-bump commit) to point at the new
-      # commit. the GitHub release follows the tag, so its commit pointer
-      # updates automatically.
+      # tokenless publish via OIDC trusted publishing. requires the
+      # package to have this repo + workflow configured as a trusted
+      # publisher on npmjs.com. --provenance attaches a Sigstore
+      # attestation viewable on npmjs.com. publishing the tarball file
+      # directly (rather than re-packing the working tree) ensures the
+      # bytes attested are exactly the bytes uploaded. provenance binds
+      # to GITHUB_SHA from the workflow trigger (the pre-bump commit
+      # release-drafter tagged), independent of when in this job we
+      # publish — so we can safely publish before committing back.
+      #
+      # publish runs BEFORE the master commit + tag-update so that an
+      # npm-publish failure leaves master and the tag untouched (no
+      # orphaned "release X.Y.Z" commit pointing at nothing on npm).
+      # the trade-off: if publish succeeds but the subsequent push/tag
+      # update fails, npm has the version but master doesn't reflect
+      # it — recoverable by manually pushing the bump commit.
+      - name: Publish to npm
+        run: npm publish "${{ needs.build.outputs.tarball }}" --provenance --access public
+
+      # bump the knex devDependency pin in docs/ to the just-published
+      # version so the next docs schema-snippet resolve picks it up.
+      # must run AFTER `npm publish` because npm needs to see the new
+      # version in the registry to resolve it. --package-lock-only
+      # avoids a real install (no scripts, no node_modules) — only
+      # registry metadata is fetched.
+      - name: Bump docs knex version
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        working-directory: ./docs
+        run: npm install --package-lock-only --save-dev "knex@${VERSION}"
+
+      # re-verify master is still at the release commit before
+      # committing. the initial check at job start could be stale by
+      # now (npm publish + npm install --package-lock-only take a
+      # bit), and the concurrency group only blocks other release
+      # workflows, not regular merges to master.
+      - name: Re-verify master is at the release commit
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          git fetch --depth=1 origin master
+          tag_sha="$(git rev-parse "$TAG^{commit}")"
+          remote_head="$(git rev-parse FETCH_HEAD)"
+          if [[ "$tag_sha" != "$remote_head" ]]; then
+            echo "master ($remote_head) advanced past release tag $TAG ($tag_sha) during publish; aborting" >&2
+            exit 1
+          fi
+
+      # commit the version bump, rebuilt lib/**, root + docs changelog
+      # entry, and docs/ knex pin bump back to master, then force-update
+      # the release tag (created by release-drafter at the pre-bump
+      # commit) to point at the new commit. the GitHub release follows
+      # the tag, so its commit pointer updates automatically. commit
+      # message starts with "release " so the github-actions bot +
+      # message-prefix CI-skip guards in unit-tests/linting/etc. match
+      # and don't re-run on this commit.
       - name: Commit and update tag
         env:
           VERSION: ${{ needs.build.outputs.version }}
@@ -264,15 +315,6 @@ jobs:
           git push origin master
           git tag -f "$TAG"
           git push --force origin "refs/tags/$TAG"
-
-      # tokenless publish via OIDC trusted publishing. requires the
-      # package to have this repo + workflow configured as a trusted
-      # publisher on npmjs.com. --provenance attaches a Sigstore
-      # attestation viewable on npmjs.com. publishing the tarball file
-      # directly (rather than re-packing the working tree) ensures the
-      # bytes attested are exactly the bytes uploaded.
-      - name: Publish to npm
-        run: npm publish "${{ needs.build.outputs.tarball }}" --provenance --access public
 
   # build & publish documentation. runs after npm publish so that if the
   # publish fails, the docs site doesn't reference a version that wasn't
