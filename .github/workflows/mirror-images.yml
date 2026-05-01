@@ -19,10 +19,6 @@ on:
     paths:
       - 'scripts/docker-compose.yml'
       - '.github/workflows/mirror-images.yml'
-  # Remove before merging
-  pull_request:
-    paths:
-      - '.github/workflows/mirror-images.yml'
   workflow_dispatch:
 
 permissions:
