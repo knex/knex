@@ -55,7 +55,8 @@ body = body.replace(/^## What's Changed\s*\n+/m, '');
 // keeping by-author attribution on the GitHub release itself. only
 // horizontal whitespace at end-of-line — `\s*$` would greedily consume
 // blank lines between categories.
-const bullet = /^([*-])[ \t]+(.+?)[ \t]+by[ \t]+@\S+[ \t]+in[ \t]+#(\d+)[ \t]*$/gm;
+const bullet =
+  /^([*-])[ \t]+(.+?)[ \t]+by[ \t]+@\S+[ \t]+in[ \t]+#(\d+)[ \t]*$/gm;
 body = body.replace(
   bullet,
   (_m, _b, title, num) =>
@@ -96,7 +97,8 @@ const rootBlock = docsBlock
   .replace(/^### /m, '# ')
   .replace(/^\*\*([^*]+)\*\*$/gm, '### $1');
 
-const escVersion = VERSION.replace(/[.+]/g, '\\$&');
+// escape every regex metacharacter (the standard MDN pattern)
+const escVersion = VERSION.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 function update(path, header, replacement) {
   const existing = readFileSync(path, 'utf8');

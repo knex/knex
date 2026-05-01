@@ -4,17 +4,6 @@ on:
   push:
     branches:
       - master
-  # also run when PRs are opened/edited so labels (which determine the
-  # version bump) and titles (which appear in the changelog) stay in sync
-  # with the draft release notes
-  pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - edited
-      - labeled
-      - unlabeled
 
 permissions:
   contents: read
