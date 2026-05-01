@@ -117,6 +117,9 @@ jobs:
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
   user_experience:
+    # PRs labeled `skip-tests` skip this matrix. used for changes that
+    # can't affect runtime behaviour (docs, CI scripts, release tooling).
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip-tests') }}
     runs-on: ${{ matrix.os }}
     name: Test user experience
     strategy:
