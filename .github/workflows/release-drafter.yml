@@ -10,6 +10,13 @@ permissions:
 
 jobs:
   update_release_draft:
+    # skip the auto-generated "release X.Y.Z" commit pushed by the
+    # release workflow itself — that commit doesn't introduce new PRs to
+    # draft, and updating the draft against it would just re-render the
+    # already-published release notes. matched on actor + message so a
+    # human-authored commit that happens to start with "release " (e.g.
+    # "release unused connection") still triggers normally.
+    if: ${{ !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release ')) }}
     permissions:
       # write permission required to create a draft release
       contents: write
