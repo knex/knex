@@ -27,21 +27,21 @@ version-resolver:
 # PR against the FIRST category whose labels overlap, so order matters:
 # more specific labels (fix/feature) come before the generic bump labels.
 categories:
-  - title: '**Breaking changes**'
+  - title: 'Breaking changes'
     labels:
       - 'major'
       - 'breaking'
-  - title: '**New features**'
+  - title: 'New features'
     labels:
       - 'feature'
       - 'minor'
-  - title: '**Bug fixes**'
+  - title: 'Bug fixes'
     labels:
       - 'fix'
-  - title: '**Types**'
+  - title: 'Types'
     labels:
       - 'types'
-  - title: '**Misc**'
+  - title: 'Misc'
     labels:
       - 'docs'
       - 'chore'
@@ -50,6 +50,7 @@ categories:
 
 change-template: '* $TITLE by @$AUTHOR in #$NUMBER'
 change-title-escapes: '\<*_&'
+category-template: '**$TITLE**'
 
 # the "## New Contributors" section and the "**Full Changelog**" link are
 # spliced in by the workflow's post-processing step. categories render
