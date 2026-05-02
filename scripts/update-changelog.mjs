@@ -29,7 +29,9 @@ const REPO = process.env.GITHUB_REPOSITORY || 'knex/knex';
 const ROOT_PATH = 'CHANGELOG.md';
 const DOCS_PATH = 'docs/src/changelog.md';
 
-let body = process.env.RELEASE_BODY;
+// GitHub stores release bodies with CRLF line endings; normalise to LF
+// so the multiline regexes below anchor correctly on `$`.
+let body = process.env.RELEASE_BODY.replace(/\r\n?/g, '\n');
 
 // strip the trailing "## New Contributors" section and the
 // "**Full Changelog**" line; neither changelog file carries these.

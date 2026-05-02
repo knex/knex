@@ -48,6 +48,12 @@ jobs:
           [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] \
             || fail "Tag '$TAG' is not a valid X.Y.Z[-prerelease]"
 
+          # GitHub stores release bodies with CRLF line endings, which
+          # would defeat the `$` anchor in the awk patterns below
+          # (awk's `$` matches end-of-line BEFORE a trailing \r). strip
+          # CR up front so every check downstream sees plain LF.
+          BODY=$(printf '%s' "$BODY" | tr -d '\r')
+
           # 2. body must be non-empty
           [[ -n "$BODY" ]] || fail "Release body is empty"
 
