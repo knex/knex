@@ -1580,4 +1580,54 @@ describe('MSSQL SchemaBuilder', function () {
       });
     });
   });
+
+  describe('SQL injection prevention in DDL operations', function () {
+    it('should escape single quotes in table names for dropColumn', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table("users'; DROP TABLE users--", function () {
+          this.dropColumn('foo');
+        })
+        .toSQL();
+
+      // The constraint lookup query should have escaped single quotes
+      expect(tableSql[0].sql).to.include(
+        "tables.name = 'users''; DROP TABLE users--'"
+      );
+      // The EXEC dynamic SQL should also have escaped single quotes
+      expect(tableSql[0].sql).to.include(
+        "EXEC('ALTER TABLE users''; DROP TABLE users-- DROP CONSTRAINT ' + @constraint)"
+      );
+    });
+
+    it('should escape single quotes in column names for dropColumn', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropColumn("col'; DROP TABLE users--");
+        })
+        .toSQL();
+
+      expect(tableSql[0].sql).to.include(
+        "all_columns.name = 'col''; DROP TABLE users--'"
+      );
+    });
+
+    it('should escape single quotes in table names for alterColumns with defaultTo', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table("users'; DROP TABLE users--", function () {
+          this.string('foo').defaultTo('test').alter();
+        })
+        .toSQL();
+
+      // The constraint lookup query should have escaped single quotes
+      expect(tableSql[0].sql).to.include(
+        "tables.name = 'users''; DROP TABLE users--'"
+      );
+      expect(tableSql[0].sql).to.include(
+        "EXEC('ALTER TABLE users''; DROP TABLE users-- DROP CONSTRAINT ' + @constraint)"
+      );
+    });
+  });
 });
