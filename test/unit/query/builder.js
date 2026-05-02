@@ -12034,4 +12034,78 @@ describe('QueryBuilder', () => {
       });
     });
   });
+
+  describe('transformRaw', () => {
+    it('allows adhoc transformation of generated query through transformRaw', () => {
+      testsql(
+        qb()
+          .select('*')
+          .from('users')
+          .transformRaw((query) => {
+            query.sql = query.sql.replace(/\*/g, 'id');
+          }),
+        {
+          mysql: 'select id from `users`',
+          mssql: 'select id from [users]',
+          pg: 'select id from "users"',
+        }
+      );
+    });
+
+    it('supports returning a new query object from transformRaw', () => {
+      testsql(
+        qb()
+          .select('*')
+          .from('users')
+          .transformRaw((query) => {
+            return { ...query, sql: query.sql.replace(/\*/g, 'name') };
+          }),
+        {
+          mysql: 'select name from `users`',
+          mssql: 'select name from [users]',
+          pg: 'select name from "users"',
+        }
+      );
+    });
+
+    it('supports chaining multiple transformRaw calls', () => {
+      testsql(
+        qb()
+          .select('*')
+          .from('users')
+          .transformRaw((query) => {
+            query.sql = query.sql.replace(/\*/g, 'id, name');
+          })
+          .transformRaw((query) => {
+            query.sql += ' limit 10';
+          }),
+        {
+          mysql: 'select id, name from `users` limit 10',
+          mssql: 'select id, name from [users] limit 10',
+          pg: 'select id, name from "users" limit 10',
+        }
+      );
+    });
+
+    it('throws if transformer is not a function', () => {
+      expect(() => {
+        qb().select('*').from('users').transformRaw('not a function');
+      }).to.throw(TypeError);
+    });
+
+    it('preserves transformRaw through clone', () => {
+      const original = qb()
+        .select('*')
+        .from('users')
+        .transformRaw((query) => {
+          query.sql = query.sql.replace(/\*/g, 'id');
+        });
+      const cloned = original.clone();
+      testsql(cloned, {
+        mysql: 'select id from `users`',
+        mssql: 'select id from [users]',
+        pg: 'select id from "users"',
+      });
+    });
+  });
 });
