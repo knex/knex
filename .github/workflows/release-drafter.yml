@@ -83,7 +83,15 @@ jobs:
             body+=$'\n\n'"$full_changelog"
           fi
 
-          jq -nc --arg body "$body" '{body: $body}' \
+          # also PATCH tag_name: release-drafter sometimes leaves it as
+          # the GitHub-generated "untagged-<hash>" placeholder on the
+          # draft (the action's output carries the correct templated
+          # value, but the persisted release object does not — see
+          # release-drafter#204). setting it explicitly here keeps the
+          # draft publishable in one click and self-heals any draft
+          # already stuck on the placeholder.
+          jq -nc --arg body "$body" --arg tag "$TAG" \
+            '{body: $body, tag_name: $tag}' \
             | gh api -X PATCH "/repos/$REPO/releases/$RELEASE_ID" --input -
 
           # also surface the final body as a step output so the next job
