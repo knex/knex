@@ -5,6 +5,7 @@ const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
   cockroachdb: () => require('./cockroachdb'),
   mssql: () => require('./mssql'),
   mysql: () => require('./mysql'),
+  mariadb: () => require('./mariadb'),
   mysql2: () => require('./mysql2'),
   oracle: () => require('./oracle'),
   oracledb: () => require('./oracledb'),
