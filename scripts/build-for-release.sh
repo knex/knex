@@ -17,7 +17,7 @@
 
 # pinned versions of the dependencies required to perform a release build
 declare -A PINNED_VERSIONS=(
-  [typescript]="5.0.4"
+  [typescript]="5.4.5"
   [prettier]="2.8.7"
   [@types/node]="20.19.11"
   [@tsconfig/node12]="1.0.11"

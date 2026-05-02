@@ -12,35 +12,26 @@ concurrency:
 jobs:
   # validate the release body structure BEFORE doing anything destructive.
   # if the structure is wrong (unknown category, malformed bullets, empty
-  # body), revert the release to draft and delete the freshly created tag
-  # so the maintainer can edit + re-publish without manual cleanup.
-  # privileged for the API revert; runs no third-party code (no checkout,
-  # no npm install).
+  # body), exit non-zero — cleanup_on_failure picks up the revert (deletes
+  # the tag and reverts the release to draft) so the maintainer can edit
+  # + re-publish without manual cleanup. runs no third-party code (no
+  # checkout, no npm install) and needs only default permissions.
   validate:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write # PATCH release → draft, DELETE tag on failure
-
     steps:
-      - name: Validate release; revert to draft on failure
+      - name: Validate release body
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          RELEASE_ID: ${{ github.event.release.id }}
           TAG: ${{ github.event.release.tag_name }}
           BODY: ${{ github.event.release.body }}
         run: |
           set -eo pipefail
 
-          # on any validation failure, revert to draft and delete the tag
-          # so re-publishing produces a fresh release.published event and
+          # on any validation failure, exit non-zero. cleanup_on_failure
+          # then deletes the tag and reverts the release to draft, so
+          # re-publishing produces a fresh release.published event and
           # the maintainer's edits are preserved in the draft body.
           fail() {
             echo "::error::$1"
-            echo "::error::Reverting release to draft and deleting tag."
-            gh api -X PATCH "/repos/$REPO/releases/$RELEASE_ID" -F draft=true >/dev/null || true
-            gh api -X DELETE "/repos/$REPO/git/refs/tags/$TAG" >/dev/null || true
             exit 1
           }
 
@@ -186,6 +177,13 @@ jobs:
       contents: write # Allow job to commit to repository
       id-token: write # Allow job to obtain OIDC tokens (publish to NPM)
 
+    # exposed for cleanup_on_failure: once `npm publish` has succeeded
+    # we must NOT revert the GitHub release, even if a later step in
+    # this job fails — npm has the version, so the release should
+    # remain published to match.
+    outputs:
+      npm_published: ${{ steps.publish_to_npm.outcome == 'success' }}
+
     steps:
       - name: Checkout master
         uses: actions/checkout@v6
@@ -272,6 +270,7 @@ jobs:
       # update fails, npm has the version but master doesn't reflect
       # it — recoverable by manually pushing the bump commit.
       - name: Publish to npm
+        id: publish_to_npm
         run: npm publish "${{ needs.build.outputs.tarball }}" --provenance --access public
 
       # bump the knex devDependency pin in docs/ to the just-published
@@ -372,3 +371,41 @@ jobs:
           publish_dir: docs/.vitepress/dist
           cname: knexjs.org
           force_orphan: true
+
+  # if validate fails, OR build fails, OR publish fails before npm
+  # publish has completed, revert the release back to draft and delete
+  # the freshly created tag. the maintainer can then fix the underlying
+  # problem and re-publish without manual GitHub cleanup; re-publishing
+  # fires a fresh release.published event that restarts the workflow.
+  #
+  # NOT triggered when npm publish has succeeded: npm has the version,
+  # so the GitHub release must stay published to match — even if
+  # subsequent steps like the version-bump commit/tag-update or docs
+  # deploy fail.
+  cleanup_on_failure:
+    needs: [validate, build, publish]
+    if: |
+      always() && (
+        needs.validate.result == 'failure' ||
+        needs.build.result == 'failure' ||
+        (needs.publish.result == 'failure' && needs.publish.outputs.npm_published != 'true')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # PATCH release → draft, DELETE tag
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 1
+          sparse-checkout: scripts/revert-release-to-draft.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Revert release to draft and delete tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ github.event.release.id }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: ./scripts/revert-release-to-draft.sh
