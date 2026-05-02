@@ -9,8 +9,7 @@
     "rootDirs": ["lib"],
     "importHelpers": false,
     "sourceMap": true,
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0"
+    "baseUrl": "."
   },
   "include": ["lib/**/*.ts"],
   "exclude": ["node_modules"]
