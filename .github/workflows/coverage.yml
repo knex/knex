@@ -83,11 +83,6 @@ jobs:
       - name: Generate LCOV
         run: npx nyc report --reporter=lcov
 
-      - name: Update Coveralls
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
