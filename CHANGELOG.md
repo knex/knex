@@ -1,4 +1,21 @@
-# Master (Unreleased)
+# [Master (Unreleased)](https://github.com/knex/knex/compare/3.2.10...master)
+
+# 3.2.10 - 2 May, 2026
+
+### Bug fixes
+
+- fix: bump lodash to ^4.18.1, close #6433 [#6446](https://github.com/knex/knex/pull/6446)
+- Fix: Properly Escape Aliases in Analytic Functions [#6392](https://github.com/knex/knex/pull/6392)
+
+### Misc
+
+- chore: auto-update the docs' knex version on publish [#6447](https://github.com/knex/knex/pull/6447)
+- chore: skip re-running tests on automated release commit [#6443](https://github.com/knex/knex/pull/6443)
+- chore: sync docker images we use to ghcr [#6445](https://github.com/knex/knex/pull/6445)
+- chore: fixes for release-drafter workflow [#6442](https://github.com/knex/knex/pull/6442)
+- chore: new publish/release workflow [#6441](https://github.com/knex/knex/pull/6441)
+- docs: Update changelog for version 3.2.9 [#6440](https://github.com/knex/knex/pull/6440)
+- docs: sync website changelog from 3.0.0 to 3.2.8 [#6426](https://github.com/knex/knex/pull/6426)
 
 # 3.2.9 - 3 April, 2026
 
@@ -7,7 +24,7 @@
 - fix: support DELETE... LIMIT in dialects that support it (mysql), but continue to disallow ones that don't [#6429](https://github.com/knex/knex/issues/6429)
 - fix(postgres): escape double quotes in searchPath to prevent SQL injection [#6411](https://github.com/knex/knex/issues/6411)
 - fix(sqlite): append RETURNING statement when insert empty row [#5471](https://github.com/knex/knex/issues/5471)
-- fix: add type support for Array<Buffer> [#6428](https://github.com/knex/knex/issues/6428)
+- fix: add type support for `Array<Buffer>` [#6428](https://github.com/knex/knex/issues/6428)
 
 # 3.2.8 - 30 March, 2026
 

@@ -14,8 +14,17 @@ permissions:
 
 jobs:
   build:
-    env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     runs-on: ubuntu-latest
     name: CI
 
@@ -46,13 +55,6 @@ jobs:
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3' && env.DOCKERHUB_USERNAME != ''
 
       - name: Start Database(s)
         run: |
@@ -114,6 +116,17 @@ jobs:
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
   user_experience:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     runs-on: ${{ matrix.os }}
     name: Test user experience
     strategy:
