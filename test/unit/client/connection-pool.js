@@ -13,9 +13,7 @@ class TestClient extends Client {
 }
 TestClient.prototype.driverName = 'test';
 TestClient.prototype.dialect = 'test';
-TestClient.prototype._driver = function () {
-  return {};
-};
+TestClient.prototype._driver = sinon.spy();
 TestClient.prototype.initializeDriver = function () {
   this.driver = {};
 };
@@ -45,6 +43,21 @@ describe('connectionPool config option', () => {
         knex.destroy();
       }).not.to.throw();
     });
+
+    it('can re-initialize the pool', async () => {
+      const mockPool = { connect: () => Promise.resolve({}) };
+      await expect(
+        (async () => {
+          const knex = Knex({ client: 'pg', connectionPool: mockPool });
+          const cb = sinon.spy();
+          await knex.destroy(cb);
+          expect(cb).to.have.been.calledOnce;
+          await knex.initialize();
+          await knex.destroy(cb);
+          expect(cb).to.have.been.calledTwice;
+        })()
+      ).to.eventually.be.fulfilled;
+    });
   });
 
   // ── KnexPool class ────────────────────────────────────────────────
@@ -64,8 +77,8 @@ describe('connectionPool config option', () => {
   describe('isTarnPool', () => {
     it('returns true for a KnexPool instance', () => {
       const pool = new KnexPool({
-        create: () => Promise.resolve({}),
-        destroy: () => Promise.resolve(),
+        create: sinon.spy(),
+        destroy: sinon.spy(),
         min: 0,
         max: 1,
       });
@@ -75,8 +88,8 @@ describe('connectionPool config option', () => {
 
     it('returns true for a tarn Pool instance', () => {
       const pool = new Pool({
-        create: () => Promise.resolve({}),
-        destroy: () => Promise.resolve(),
+        create: sinon.spy(),
+        destroy: sinon.spy(),
         min: 0,
         max: 1,
       });
@@ -87,8 +100,8 @@ describe('connectionPool config option', () => {
     it('returns false for a pg-like native pool', () => {
       expect(
         isTarnPool({
-          connect: () => Promise.resolve({}),
-          end: () => Promise.resolve(),
+          connect: sinon.spy(),
+          end: sinon.spy(),
           totalCount: 0,
           idleCount: 0,
         })
@@ -98,8 +111,8 @@ describe('connectionPool config option', () => {
     it('returns false for a mysql-like native pool', () => {
       expect(
         isTarnPool({
-          getConnection: (cb) => cb(null, {}),
-          end: (cb) => cb(),
+          getConnection: sinon.spy(),
+          end: sinon.spy(),
         })
       ).to.be.false;
     });
@@ -116,33 +129,37 @@ describe('connectionPool config option', () => {
 
     it('warns and returns when initializeExternalPool is called twice', () => {
       const tarnPool = new Pool({
-        create: () => Promise.resolve({}),
-        destroy: () => Promise.resolve(),
+        create: sinon.spy(),
+        destroy: sinon.spy(),
         min: 0,
         max: 1,
       });
 
-      const client = new TestClient();
+      const client = new TestClient({ connectionPool: tarnPool });
       const warnSpy = sinon.spy(client.logger, 'warn');
       client.initializeExternalPool(tarnPool);
-      client.initializeExternalPool(tarnPool); // second call
 
       expect(warnSpy.calledOnce).to.be.true;
       expect(warnSpy.calledWith('The pool has already been initialized')).to.be
         .true;
+
+      warnSpy.resetHistory();
+      client.destroy();
+      client.initializeExternalPool(tarnPool);
+      expect(warnSpy.calledOnce).to.be.false;
+
       tarnPool.destroy();
     });
 
     it('uses tarn pool directly when connectionPool is tarn-compatible', () => {
       const tarnPool = new Pool({
-        create: () => Promise.resolve({}),
-        destroy: () => Promise.resolve(),
+        create: sinon.spy(),
+        destroy: sinon.spy(),
         min: 0,
         max: 1,
       });
 
-      const client = new TestClient();
-      client.initializeExternalPool(tarnPool);
+      const client = new TestClient({ connectionPool: tarnPool });
 
       expect(client.pool).to.equal(tarnPool);
       expect(client._ownsPool).to.be.false;
