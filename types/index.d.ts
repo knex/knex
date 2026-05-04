@@ -506,8 +506,11 @@ declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
+    | Array<Buffer>
     | Record<string, unknown>
     | Knex.Raw;
+
+  type ValueOrBuilder = Value | Knex.QueryBuilder;
 
   interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
   interface AliasDict extends Dict<string> {}
@@ -1023,7 +1026,7 @@ declare namespace Knex {
       >[]
     >(
       columnName: K1,
-      value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]>,
+      value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]> | QueryBuilder,
       returning: readonly K2[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -1033,7 +1036,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, number>;
     update<TResult2 = SafePartial<TRecord>[]>(
       columnName: string,
-      value: Value,
+      value: ValueOrBuilder,
       returning: string | readonly string[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -1106,7 +1109,7 @@ declare namespace Knex {
 
     update<TResult2 = number>(
       columnName: string,
-      value: Value
+      value: ValueOrBuilder
     ): QueryBuilder<TRecord, TResult2>;
 
     returning(
