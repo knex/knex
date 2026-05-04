@@ -1433,4 +1433,19 @@ describe('OracleDb SchemaBuilder', function () {
       );
     });
   });
+
+  describe('SQL injection prevention in DDL operations', function () {
+    it('should escape single quotes in table names for columnInfo', function () {
+      const compiledQuery = client
+        .queryBuilder()
+        .from("users'; DROP TABLE users--")
+        .columnInfo()
+        .toSQL();
+
+      // The table name in dbms_xmlgen.getXMLType should have escaped single quotes
+      expect(compiledQuery.sql).to.include(
+        "table_name = ''users''; DROP TABLE users--''"
+      );
+    });
+  });
 });
