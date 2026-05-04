@@ -30,6 +30,7 @@
     "test:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
     "test:everything": "npm run lint:everything && npm run test:coverage",
     "test:mssql": "cross-env DB=mssql npm run test:db",
+    "test:mariadb": "cross-env DB=mariadb npm run test:db",
     "test:mysql": "cross-env DB=mysql npm run test:db",
     "test:mysql2": "cross-env DB=mysql2 npm run test:db",
     "test:oracledb": "cross-env DB=oracledb npm run test:db",
@@ -82,6 +83,9 @@
     "tedious": {
       "optional": true
     },
+    "mariadb": {
+      "optional": true
+    },
     "mysql": {
       "optional": true
     },
@@ -130,6 +134,7 @@
     "husky": "^8.0.1",
     "jake": "^10.8.5",
     "JSONStream": "^1.3.5",
+    "mariadb": "^3.5.2",
     "lint-staged": "^16.2.7",
     "mocha": "^10.0.0",
     "mock-fs": "^5.1.4",
@@ -213,6 +218,7 @@
     "./lib/bin/cli.js": "./lib/util/noop.js",
     "./lib/migrations/seed/Seeder.js": "./lib/util/noop.js",
     "tedious": false,
+    "mariadb": false,
     "mysql": false,
     "mysql2": false,
     "pg": false,
