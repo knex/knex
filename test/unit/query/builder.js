@@ -11508,7 +11508,7 @@ describe('QueryBuilder', () => {
       it('should extract json value with alias', () => {
         testsql(qb().jsonExtract('json_col', '$.name', 'name').from('users'), {
           pg: {
-            sql: 'select jsonb_path_query("json_col", ?) as "name" from "users"',
+            sql: 'select jsonb_path_query_first("json_col", ?) as "name" from "users"',
             bindings: ['$.name'],
           },
           mysql: {
@@ -11551,8 +11551,8 @@ describe('QueryBuilder', () => {
           {
             pg: {
               sql:
-                'select jsonb_path_query("json_col", ?) as "name", jsonb_path_query("json_col", ?) as "last_name", ' +
-                'jsonb_path_query("json_col", ?) as "age", jsonb_path_query("json_col", ?) as "gender" from "users"',
+                'select jsonb_path_query_first("json_col", ?) as "name", jsonb_path_query_first("json_col", ?) as "last_name", ' +
+                'jsonb_path_query_first("json_col", ?) as "age", jsonb_path_query_first("json_col", ?) as "gender" from "users"',
               bindings: [
                 '$.name',
                 '$.last_name',
@@ -11690,7 +11690,7 @@ describe('QueryBuilder', () => {
             .from('users'),
           {
             pg: {
-              sql: 'select jsonb_set(jsonb_path_query("cities", ?), ?, ?) from "users"',
+              sql: 'select jsonb_set(jsonb_path_query_first("cities", ?), ?, ?) from "users"',
               bindings: ['$.mainStreet', '{street,numbers,1}', "{'test': 2}"],
             },
             mysql: {
@@ -11786,7 +11786,7 @@ describe('QueryBuilder', () => {
             .from('cities'),
           {
             pg: {
-              sql: 'select jsonb_path_query(jsonb_insert("population", ?, ?), ?) as "insertExtract" from "cities"',
+              sql: 'select jsonb_path_query_first(jsonb_insert("population", ?, ?), ?) as "insertExtract" from "cities"',
               bindings: ['{test}', '1234', '$.test'],
             },
             mysql: {
