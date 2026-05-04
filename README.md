@@ -3,7 +3,7 @@
 [![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
 [![npm downloads](https://img.shields.io/npm/dm/knex.svg)](https://npmjs.org/package/knex)
 ![](https://github.com/knex/knex/workflows/CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/knex/knex/badge.svg?branch=master)](https://coveralls.io/r/knex/knex?branch=master)
+[![codecov](https://codecov.io/gh/knex/knex/graph/badge.svg?token=bH39w8lIA9)](https://codecov.io/gh/knex/knex)
 [![Dependencies Status](https://img.shields.io/librariesio/github/knex/knex)](https://libraries.io/npm/knex)
 [![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex)
 
