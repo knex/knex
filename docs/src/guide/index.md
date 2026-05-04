@@ -30,6 +30,8 @@ Knex can be built using a JavaScript build tool such as [browserify](http://brow
 
 ## Configuration Options
 
+### connection
+
 The `knex` module is itself a function which takes a configuration object for Knex, accepting a few parameters. The `client` parameter is required and determines which client adapter will be used with the library.
 
 ```js
@@ -352,6 +354,114 @@ knex('table').insert({ a: 'b' }).returning('*').toString();
 pg('table').insert({ a: 'b' }).returning('*').toString();
 // "insert into "table" ("a") values ('b') returning *"
 ```
+
+### connectionPool
+
+::: info
+The `connectionPool` option is available since knex v3.3.
+:::
+
+Instead of providing a `connection` config and letting knex create its own pool, you can pass an existing pool instance via `connectionPool`. This is mutually exclusive with `connection` — you must use one or the other.
+
+The `connectionPool` option accepts:
+
+- A **native driver pool** — `pg.Pool`, `mysql.createPool()`, `mysql2.createPool()`, or `oracledb.createPool()`
+- A **`KnexPool`** or **tarn `Pool`** instance — useful for sharing a single pool across multiple knex instances
+
+When `connectionPool` is provided, knex does **not** own the pool lifecycle. Calling `knex.destroy()` releases the reference but does **not** close the pool — you are responsible for calling `pool.end()` (or `pool.close()` for oracledb) yourself.
+
+#### Option 1: Native Driver Pool
+
+```js
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  host: '127.0.0.1',
+  user: 'your_database_user',
+  password: 'your_database_password',
+  database: 'myapp_test',
+  max: 20,
+});
+
+const knex = require('knex')({
+  client: 'pg',
+  connectionPool: pool,
+});
+
+// Use knex normally
+const rows = await knex('users').select('*');
+
+// Destroy knex — does NOT close the pool
+await knex.destroy();
+
+// Pool is still usable
+const client = await pool.connect();
+// ...
+client.release();
+
+// Close the pool when you're done
+await pool.end();
+```
+
+MySQL and MySQL2 work the same way:
+
+```js
+const mysql = require('mysql2');
+
+const pool = mysql.createPool({
+  host: '127.0.0.1',
+  user: 'your_database_user',
+  password: 'your_database_password',
+  database: 'myapp_test',
+});
+
+const knex = require('knex')({
+  client: 'mysql2',
+  connectionPool: pool,
+});
+```
+
+#### Option 2: Shared KnexPool
+
+`KnexPool` extends tarn's `Pool` and is exported on the knex namespace. Use it to share a single pool across multiple knex instances — for example, a read replica and a primary that share the same connections:
+
+```js
+const knex = require('knex');
+const { Client } = require('pg');
+
+const sharedPool = new knex.KnexPool({
+  create: () => {
+    const client = new Client({ host: '127.0.0.1', database: 'myapp' });
+    return client.connect().then(() => client);
+  },
+  destroy: (connection) => connection.end(),
+  validate: (connection) => !connection._ending,
+  min: 0,
+  max: 10,
+});
+
+// Both instances share the same underlying pool
+const db1 = knex({ client: 'pg', connectionPool: sharedPool });
+const db2 = knex({ client: 'pg', connectionPool: sharedPool });
+
+// Destroying either knex instance doesn't affect the pool
+await db1.destroy();
+// db2 and sharedPool are still usable
+
+// Clean up when done
+await db2.destroy();
+await sharedPool.destroy();
+```
+
+You can also pass a plain tarn `Pool` instance directly — any object with the tarn pool interface (`acquire`, `release`, `destroy`, `numFree`, `numUsed`, `numPendingAcquires`) is accepted without wrapping.
+
+::: warning
+When using `connectionPool`, the `pool` config option (min, max, afterCreate, validate, etc.) is ignored since knex is not creating the pool. Configure these on the pool instance you provide instead.
+:::
+
+::: warning
+The `connectionPool` option is supported for **pg**, **mysql**, **mysql2**, and **oracledb** dialects when passing native driver pools. SQLite and MSSQL do not support native driver pools, but you can still pass a tarn `Pool` or `KnexPool` to any dialect.
+:::
 
 ### withUserParams
 
