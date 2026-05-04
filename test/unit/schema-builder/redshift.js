@@ -1181,4 +1181,31 @@ describe('Redshift SchemaBuilder', function () {
       );
     });
   });
+
+  it('test column comment with quotes', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('test', (t) => {
+        t.text('column1').comment("The table's first column");
+      })
+      .toSQL();
+
+    equal(tableSql.length, 2);
+    expect(tableSql[1].sql).to.equal(
+      'comment on column "test"."column1" is \'The table\'\'s first column\''
+    );
+  });
+
+  it('test table comment with quotes', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('user', function (t) {
+        t.comment("it's a comment");
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      "comment on table \"user\" is 'it''s a comment'"
+    );
+  });
 });
