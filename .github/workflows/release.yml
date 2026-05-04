@@ -269,9 +269,30 @@ jobs:
       # the trade-off: if publish succeeds but the subsequent push/tag
       # update fails, npm has the version but master doesn't reflect
       # it — recoverable by manually pushing the bump commit.
+      # idempotent on re-runs only: if this is a workflow re-run AND
+      # the version is already on the npm registry, skip the publish
+      # so a maintainer can re-run the job to recover from a failure
+      # in a later step (e.g. registry propagation delay on the docs
+      # bump below). on the FIRST attempt we always try to publish:
+      # if the version already exists out there, npm publish fails
+      # loudly with EPUBLISHCONFLICT — which is the right outcome,
+      # since it means someone published this version outside the
+      # workflow and we should not silently proceed.
+      #
+      # the npm_published job output uses this step's outcome, so a
+      # successful skip on a re-run still counts as "published" for
+      # the cleanup_on_failure gate.
       - name: Publish to npm
         id: publish_to_npm
-        run: npm publish "${{ needs.build.outputs.tarball }}" --provenance --access public
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          if [[ "$RUN_ATTEMPT" -gt 1 ]] && npm view "knex@${VERSION}" version >/dev/null 2>&1; then
+            echo "knex@${VERSION} already on npm (re-run attempt $RUN_ATTEMPT); skipping publish"
+            exit 0
+          fi
+          npm publish "${{ needs.build.outputs.tarball }}" --provenance --access public
 
       # bump the knex devDependency pin in docs/ to the just-published
       # version so the next docs schema-snippet resolve picks it up.
@@ -279,11 +300,29 @@ jobs:
       # version in the registry to resolve it. --package-lock-only
       # avoids a real install (no scripts, no node_modules) — only
       # registry metadata is fetched.
+      #
+      # registry propagation can lag behind a successful publish by up
+      # to a minute or so (we hit ETARGET on the very first release
+      # cut with the new workflow). poll `npm view` until the new
+      # version resolves before running `npm install`.
       - name: Bump docs knex version
         env:
           VERSION: ${{ needs.build.outputs.version }}
         working-directory: ./docs
-        run: npm install --package-lock-only --save-dev "knex@${VERSION}"
+        run: |
+          for i in $(seq 1 36); do
+            if npm view "knex@${VERSION}" version >/dev/null 2>&1; then
+              echo "knex@${VERSION} resolved on registry after $((($i - 1) * 5))s"
+              break
+            fi
+            if [ "$i" -eq 36 ]; then
+              echo "::error::knex@${VERSION} did not appear on npm registry after 180s"
+              exit 1
+            fi
+            echo "knex@${VERSION} not yet on registry (attempt $i/36); sleeping 5s"
+            sleep 5
+          done
+          npm install --package-lock-only --save-dev "knex@${VERSION}"
 
       # re-verify master is still at the release commit before
       # committing. the initial check at job start could be stale by
