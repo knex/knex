@@ -14,6 +14,17 @@ permissions:
 
 jobs:
   build:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     permissions:
@@ -71,11 +82,6 @@ jobs:
 
       - name: Generate LCOV
         run: npx nyc report --reporter=lcov
-
-      - name: Update Coveralls
-        uses: coverallsapp/github-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

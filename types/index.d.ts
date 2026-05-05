@@ -3209,6 +3209,8 @@ declare namespace Knex {
     list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     down(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    to(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    before(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 

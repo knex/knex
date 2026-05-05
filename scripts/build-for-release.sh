@@ -17,23 +17,20 @@
 
 # pinned versions of the dependencies required to perform a release build
 declare -A PINNED_VERSIONS=(
-  [typescript]="5.0.4"
+  [typescript]="5.4.5"
   [prettier]="2.8.7"
   [@types/node]="20.19.11"
   [@tsconfig/node12]="1.0.11"
 )
 
-# validate args
-BUMP_TYPE="$1"
-case "$BUMP_TYPE" in
-  major|minor|patch)
-    # valid
-  ;;
-  *)
-    >&2 echo "Invalid bump type. Use: $0 {major|minor|patch}"
-    exit 1
-  ;;
-esac
+# validate args: explicit version string, e.g. "3.2.10" or "3.2.10-beta.1".
+# the version is determined by release-drafter from PR labels and is fixed
+# at the moment the maintainer publishes the GitHub release.
+VERSION="$1"
+if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+  >&2 echo "Invalid version. Use: $0 <semver> (e.g. 3.2.10 or 3.2.10-beta.1)"
+  exit 1
+fi
 
 
 # npm 7 doesn't provide a way to install only a specific dependency, it's
@@ -109,8 +106,10 @@ echo "Running build steps"
 # prettier to format the TS output
 npm run build
 
-# bump the version in package.json
-npm version "$BUMP_TYPE" --no-git-tag-version
+# set the version in package.json. --allow-same-version lets the build
+# succeed when package.json is already at the released version (e.g. a
+# re-run, or a workflow that pre-bumped the version)
+npm version "$VERSION" --no-git-tag-version --allow-same-version
 
 # we don't commit here, but we do create the tarball that
 # will be published to npm. the dependent job takes the
