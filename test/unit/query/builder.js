@@ -11881,7 +11881,7 @@ describe('QueryBuilder', () => {
             .orWhereJsonPath('address', '$.street.number', '<', 8),
           {
             pg: {
-              sql: 'select * from "users" where jsonb_path_query_first("address", ?)::int > ? or jsonb_path_query_first("address", ?)::int < ?',
+              sql: 'select * from "users" where jsonb_path_query_first("address", ?)::bigint > ? or jsonb_path_query_first("address", ?)::bigint < ?',
               bindings: ['$.street.number', 5, '$.street.number', 8],
             },
             mysql: {
