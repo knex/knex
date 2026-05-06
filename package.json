@@ -164,7 +164,7 @@
     "type": "git",
     "url": "git://github.com/knex/knex.git"
   },
-  "homepage": "https://knex.github.io/documentation/",
+  "homepage": "https://knexjs.org/",
   "keywords": [
     "sql",
     "query",
