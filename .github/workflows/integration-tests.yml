@@ -14,13 +14,24 @@ permissions:
 
 jobs:
   build:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     runs-on: ubuntu-latest
     name: CI
 
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20.x, 18.x, 16.x]
+        node-version: [22.x, 20.x, 18.x, 16.x]
         database-type:
           [
             postgres,
@@ -35,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -47,7 +58,7 @@ jobs:
 
       - name: Start Database(s)
         run: |
-          docker-compose \
+          docker compose \
             --file "scripts/docker-compose.yml" \
             up \
               --detach \
@@ -60,7 +71,7 @@ jobs:
 
       - name: Initialize Database(s)
         run: |
-          docker-compose \
+          docker compose \
             --file "scripts/docker-compose.yml" \
             up \
               "wait${{ matrix.database-type }}"
@@ -99,12 +110,23 @@ jobs:
 
       - name: Stop Database(s)
         run: |
-          docker-compose \
+          docker compose \
             --file "scripts/docker-compose.yml" \
             down
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
   user_experience:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     runs-on: ${{ matrix.os }}
     name: Test user experience
     strategy:
@@ -113,13 +135,14 @@ jobs:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with: { fetch-depth: 1 }
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           always-auth: false
+          package-manager-cache: false
           node-version: ${{ matrix.node-version }}
 
       - name: Test npm git dependency

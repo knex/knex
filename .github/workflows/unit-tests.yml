@@ -14,31 +14,39 @@ permissions:
 
 jobs:
   build:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     runs-on: ubuntu-latest
     name: Unit Tests
 
     strategy:
       matrix:
-        node-version: [20.x, 18.x, 16.x]
+        node-version: [22.x, 20.x, 18.x, 16.x]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           always-auth: false
+          package-manager-cache: false
           node-version: ${{ matrix.node-version }}
 
       - name: Run npm install
         run: npm install
-
-      - name: Run npm install mysql2@3.2.0 if Node 12.x
-        run: npm install mysql2@3.2.0
-        if: matrix.node-version == '12.x'
 
       - run: npm run build
 

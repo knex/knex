@@ -31,3 +31,5 @@ exports.down = function (knex, promise) {
       });
     });
 };
+
+exports.config = { transaction: false };
