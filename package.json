@@ -76,7 +76,14 @@
     "tildify": "2.0.0"
   },
   "peerDependencies": {
-    "pg-query-stream": "^4.14.0"
+    "tedious": "*",
+    "mysql": "*",
+    "mysql2": "*",
+    "pg": "*",
+    "pg-native": "*",
+    "pg-query-stream": "^4.14.0",
+    "sqlite3": "*",
+    "better-sqlite3": "*"
   },
   "peerDependenciesMeta": {
     "tedious": {
