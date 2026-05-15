@@ -280,19 +280,13 @@ function invoke() {
       }
     });
 
-  commander
-    .command('migrate:up [<name>]')
-    .option(
-      '--disable-transactions',
-      'run migrations without an implicit transaction'
-    )
-    .description(
-      '        Run the next or the specified migration that has not yet been run.'
-    )
-    .action((name, cmd) => {
+  function migrateUpAction(method) {
+    return (name, cmd) => {
       const disableTransactions = !!cmd.disableTransactions;
       initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.up({ name, disableTransactions }))
+        .then((instance) =>
+          instance.migrate[method]({ name, disableTransactions })
+        )
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -307,7 +301,19 @@ function invoke() {
           );
         })
         .catch(exit);
-    });
+    };
+  }
+
+  commander
+    .command('migrate:up [<name>]')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run the next or the specified migration that has not yet been run.'
+    )
+    .action(migrateUpAction('up'));
 
   commander
     .command('migrate:rollback')
@@ -370,6 +376,28 @@ function invoke() {
         })
         .catch(exit);
     });
+
+  commander
+    .command('migrate:to <name>')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run all migrations up to and including the specified migration.'
+    )
+    .action(migrateUpAction('to'));
+
+  commander
+    .command('migrate:before <name>')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run all migrations before the specified migration (exclusive).'
+    )
+    .action(migrateUpAction('before'));
 
   commander
     .command('migrate:currentVersion')
