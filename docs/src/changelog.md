@@ -1,10 +1,172 @@
 ## Changelog
 
+### 3.2.10 - 2 May, 2026
+
+**Bug fixes**
+
+- fix: bump lodash to ^4.18.1, close #6433 [#6446](https://github.com/knex/knex/pull/6446)
+- Fix: Properly Escape Aliases in Analytic Functions [#6392](https://github.com/knex/knex/pull/6392)
+
+**Misc**
+
+- chore: auto-update the docs' knex version on publish [#6447](https://github.com/knex/knex/pull/6447)
+- chore: skip re-running tests on automated release commit [#6443](https://github.com/knex/knex/pull/6443)
+- chore: sync docker images we use to ghcr [#6445](https://github.com/knex/knex/pull/6445)
+- chore: fixes for release-drafter workflow [#6442](https://github.com/knex/knex/pull/6442)
+- chore: new publish/release workflow [#6441](https://github.com/knex/knex/pull/6441)
+- docs: Update changelog for version 3.2.9 [#6440](https://github.com/knex/knex/pull/6440)
+- docs: sync website changelog from 3.0.0 to 3.2.8 [#6426](https://github.com/knex/knex/pull/6426)
+
+### 3.2.9 - 3 April, 2026
+
+**Bug fixes**
+
+- fix: support DELETE... LIMIT in dialects that support it (mysql), but continue to disallow ones that don't [#6429](https://github.com/knex/knex/issues/6429)
+- fix(postgres): escape double quotes in searchPath to prevent SQL injection [#6411](https://github.com/knex/knex/issues/6411)
+- fix(sqlite): append RETURNING statement when insert empty row [#5471](https://github.com/knex/knex/issues/5471)
+- fix: add type support for `Array<Buffer>` [#6428](https://github.com/knex/knex/issues/6428)
+
+### 3.2.8 - 28 March, 2026
+
+**Bug fixes**
+
+- Reverts the breaking changes added in [#6227](https://github.com/knex/knex/issues/6227). This means that the ESM import of Knex is reverted to `import { knex } from 'knex/knex.mjs` [#6422](https://github.com/knex/knex/issues/6422)
+- fix(types): allow a `QueryBuilder` type as a value in an `update` [#6419](https://github.com/knex/knex/issues/6419)
+
+### 3.2.7 - 27 March, 2026
+
+**Bug fixes**
+
+- fix sqlite DDL operations failing inside transactions [#6408](https://github.com/knex/knex/issues/6408)
+- fix: handle lowercase INFORMATION_SCHEMA keys in MySQL renameColumn [#6407](https://github.com/knex/knex/issues/6407)
+- fix: clone config in client constructor [#5633](https://github.com/knex/knex/issues/5633)
+- fix: remove \_\_knexTxId from transaction connection on release [#5288](https://github.com/knex/knex/issues/5288)
+- fix: correct binding order in delete with subquery join [#6412](https://github.com/knex/knex/issues/6412)
+- chore: omit ./scripts from published package [#6356](https://github.com/knex/knex/issues/6356)
+
+### 3.2.6 - 24 March, 2026
+
+**Bug fixes**
+
+- Fix module exports [#6406](https://github.com/knex/knex/issues/6406)
+
+### 3.2.5 - 23 March, 2026
+
+**Bug fixes**
+
+- Fix ESM exports [#6405](https://github.com/knex/knex/issues/6405)
+
+### 3.2.4 - 23 March, 2026
+
+**Bug fixes**
+
+- Fix ESM type exports [#6404](https://github.com/knex/knex/issues/6404)
+
+### 3.2.1 - 22 March, 2026
+
+**Bug fixes**
+
+- Fix subpath imports broken by exports field added in 3.2.0. Packages relying on deep imports (e.g. `knex/lib/dialects/sqlite3/index`) were blocked by the restrictive exports map
+
+**Docs**
+
+- Add VitePress blog with archive and UTC post dates [#6397](https://github.com/knex/knex/issues/6397)
+
+### 3.2.0 - 22 March, 2026
+
+**New features**
+
+- Add migration lifecycle hooks [#5541](https://github.com/knex/knex/issues/5541)
+- Add SIMILAR TO operator [#5303](https://github.com/knex/knex/issues/5303)
+- Add dropUniqueIfExists [#6069](https://github.com/knex/knex/issues/6069)
+- Add 'validate' pool option [#5120](https://github.com/knex/knex/issues/5120)
+- PostgreSQL: default datetime/timestamp precision setting added [#5311](https://github.com/knex/knex/issues/5311)
+- Better-SQLite3: Support defaultSafeIntegers option [#6320](https://github.com/knex/knex/issues/6320)
+- Better-SQLite3: Improve safeIntegers support [#6352](https://github.com/knex/knex/issues/6352)
+- SQLite: Refactor transactions to allow setting the foreign_keys pragma for a transaction [#6315](https://github.com/knex/knex/issues/6315)
+
+**Bug fixes**
+
+- Fix where in query with raw column [#6323](https://github.com/knex/knex/issues/6323)
+- Fix migrate up with completed migration [#6342](https://github.com/knex/knex/issues/6342)
+- Fix ESM export and typings [#6227](https://github.com/knex/knex/issues/6227)
+- Fix migration CLI and cli tests [#6264](https://github.com/knex/knex/issues/6264)
+- Fix recover from broken connection [#5774](https://github.com/knex/knex/issues/5774)
+- Prevent unexpected combinations of statements and clauses groups from executing [#6314](https://github.com/knex/knex/issues/6314)
+- Improve CLI error reporting in some edge cases [#6265](https://github.com/knex/knex/issues/6265)
+- PostgreSQL: clearer error when pg-query-stream is missing [#6362](https://github.com/knex/knex/issues/6362)
+- PostgreSQL: Fix streaming compatibility with pg-query-stream 4.14+ [#6396](https://github.com/knex/knex/issues/6396)
+- MySQL: Fix the operator "<=>" is not permitted [#6158](https://github.com/knex/knex/issues/6158)
+- MSSQL: Optimize stream.write [#5693](https://github.com/knex/knex/issues/5693)
+- SQLite: Fix whereILike issue [#5687](https://github.com/knex/knex/issues/5687)
+
+**Types**
+
+- Fix usage of `object` type that is too broad [#5373](https://github.com/knex/knex/issues/5373)
+- Fix pluck typing issue when CompositeTableType is used [#4609](https://github.com/knex/knex/issues/4609)
+- Make types no longer allow knex to be called without tablename [#6188](https://github.com/knex/knex/issues/6188)
+- Add missing type definition for orderBy with a raw column/expression [#5803](https://github.com/knex/knex/issues/5803)
+- Add additional typing for column.index [#5371](https://github.com/knex/knex/issues/5371)
+- Update typings for increment/decrement [#5674](https://github.com/knex/knex/issues/5674)
+- Use syntax `import from` instead of `import = require()` [#5258](https://github.com/knex/knex/issues/5258)
+- Import knex as type in TS seed template [#6094](https://github.com/knex/knex/issues/6094)
+- Update index.d.ts [#5767](https://github.com/knex/knex/issues/5767)
+- Add @types/minimatch v5 to fix TypeScript build [#6240](https://github.com/knex/knex/issues/6240)
+
+**Tests**
+
+- Additional tests for JSON (de)serialization [#4451](https://github.com/knex/knex/issues/4451)
+- Run CI on Node 22 and remove dtslint [#6165](https://github.com/knex/knex/issues/6165)
+
+**Chore**
+
+- Update to non-screamy versions of dependencies that have npm audit failures [#6324](https://github.com/knex/knex/issues/6324)
+- Upgrade pg to ^8.20.0, pg-query-stream to ^4.14.0 [#6396](https://github.com/knex/knex/issues/6396)
+
+### 3.1.0 - 8 December, 2023
+
+**Bug fixes**
+
+- andWhereNotJsonObject calling wrong function [#5683](https://github.com/knex/knex/issues/5683)
+- PostgreSQL: fix error when setting query_timeout [#5673](https://github.com/knex/knex/issues/5673)
+- MySQL: Missing comments on delete, update and insert [#5738](https://github.com/knex/knex/issues/5738)
+- MySQL: Fixed issue with bigincrements not working with composite primary key - [#5341](https://github.com/knex/knex/issues/5341) [#5343](https://github.com/knex/knex/issues/5343)
+
+**Types**
+
+- Add type definitions for orHavingNull and orHavingNotNull [#5669](https://github.com/knex/knex/issues/5669)
+- Import knex as type in TS migration template [#5741](https://github.com/knex/knex/issues/5741)
+- Fix conditional constraint error [#5747](https://github.com/knex/knex/issues/5747)
+- PostgreSQL: Fix typing to reflect pg typing change [#5647](https://github.com/knex/knex/issues/5647)
+
+**New features**
+
+- Add transactor.parentTransaction [#5567](https://github.com/knex/knex/issues/5567)
+- MySQL: Added implementation for upsert [#5743](https://github.com/knex/knex/issues/5743)
+- Oracle: Support Object Names Greater than 30 Characters for Oracle DB Versions 12.2 and Greater [#5197](https://github.com/knex/knex/issues/5197)
+
+### 3.0.1 - 6 October, 2023
+
+- Build fix
+
+### 3.0.0 - 6 October, 2023
+
+- Fix raw bindings typing [#5401](https://github.com/knex/knex/issues/5401)
+- Fix migrate:unlock when used with custom identifier wrapping. [#5353](https://github.com/knex/knex/issues/5353)
+- Fix driver options specified with .options() method being ignored for oracledb dialect [#5123](https://github.com/knex/knex/issues/5123)
+- Drop compatibility for Node < 16
+- Fix knex d.ts to work with mixed modules [#5659](https://github.com/knex/knex/issues/5659)
+- Fix Lexical error from "Instaed" to "Instead" [#5655](https://github.com/knex/knex/issues/5655)
+
+**Bug fixes**
+
+- Fix Linting [#5455](https://github.com/knex/knex/issues/5455) - [#5460](https://github.com/knex/knex/issues/5460)
+
 ### 2.5.1 - 12 July, 2023
 
 **Bug fixes**
 
-- Fix Linting [#5455](https://github.com/knex/knex/issues/5460) - [#5460](https://github.com/knex/knex/issues/5460)
+- Fix Linting [#5455](https://github.com/knex/knex/issues/5455) - [#5460](https://github.com/knex/knex/issues/5460)
 
 ### 2.5.0 - 08 July, 2023
 

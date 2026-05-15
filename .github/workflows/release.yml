@@ -1,0 +1,450 @@
+name: release
+
+on:
+  release:
+    types:
+      - published
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  # validate the release body structure BEFORE doing anything destructive.
+  # if the structure is wrong (unknown category, malformed bullets, empty
+  # body), exit non-zero — cleanup_on_failure picks up the revert (deletes
+  # the tag and reverts the release to draft) so the maintainer can edit
+  # + re-publish without manual cleanup. runs no third-party code (no
+  # checkout, no npm install) and needs only default permissions.
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate release body
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          BODY: ${{ github.event.release.body }}
+        run: |
+          set -eo pipefail
+
+          # on any validation failure, exit non-zero. cleanup_on_failure
+          # then deletes the tag and reverts the release to draft, so
+          # re-publishing produces a fresh release.published event and
+          # the maintainer's edits are preserved in the draft body.
+          fail() {
+            echo "::error::$1"
+            exit 1
+          }
+
+          # 1. tag must be bare semver
+          [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] \
+            || fail "Tag '$TAG' is not a valid X.Y.Z[-prerelease]"
+
+          # GitHub stores release bodies with CRLF line endings, which
+          # would defeat the `$` anchor in the awk patterns below
+          # (awk's `$` matches end-of-line BEFORE a trailing \r). strip
+          # CR up front so every check downstream sees plain LF.
+          BODY=$(printf '%s' "$BODY" | tr -d '\r')
+
+          # 2. body must be non-empty
+          [[ -n "$BODY" ]] || fail "Release body is empty"
+
+          # 3. every "**X**" header line (lines that are ONLY bold-wrapped
+          # text, not inline-bold like "**Full Changelog**: ...") must be
+          # one of the recognised category names.
+          headers=$(printf '%s\n' "$BODY" | awk '/^\*\*[^*]+\*\*$/{print}' | sed 's/^\*\*//; s/\*\*$//')
+          [[ -n "$headers" ]] || fail "Release body has no category sections (e.g. **Bug fixes**)"
+
+          allowed='^(Breaking changes|New features|Bug fixes|Types|Misc)$'
+          while IFS= read -r h; do
+            [[ "$h" =~ $allowed ]] \
+              || fail "Unknown category header: '$h'. Allowed: Breaking changes, New features, Bug fixes, Types, Misc"
+          done <<< "$headers"
+
+          # 4. every non-blank line under a category section (before
+          # "## New Contributors" / "**Full Changelog**" / EOF) must look
+          # like a release-drafter bullet: "* TITLE by @USER in #N".
+          bad=$(printf '%s\n' "$BODY" | awk '
+            /^\*\*[^*]+\*\*$/ { in_cat=1; next }
+            /^## / { in_cat=0 }
+            /^\*\*Full Changelog\*\*/ { in_cat=0 }
+            in_cat && NF && $0 !~ /^[*-] .* by @[^ ]+ in #[0-9]+ *$/ { print }
+          ')
+          if [[ -n "$bad" ]]; then
+            fail $'Release body contains malformed bullets:\n'"$bad"
+          fi
+
+          # 5. at least one bullet under a known category
+          n=$(printf '%s\n' "$BODY" | awk '
+            /^\*\*[^*]+\*\*$/ { in_cat=1; next }
+            /^## / { in_cat=0 }
+            /^\*\*Full Changelog\*\*/ { in_cat=0 }
+            in_cat && /^[*-] / { count++ }
+            END { print count+0 }
+          ')
+          [[ "$n" -ge 1 ]] || fail "Release body has no entries under any category"
+
+          echo "Release validation passed (${n} entr$([[ $n == 1 ]] && echo y || echo ies))."
+
+  # non-privileged context: do the work of producing a build artifact, but
+  # make no direct commits or publishes. checkout the exact release tag so
+  # the build matches the commit the maintainer released, even if master
+  # has advanced since.
+  build:
+    runs-on: ubuntu-latest
+    needs: validate
+
+    permissions:
+      contents: read
+
+    # the NPM tarball is the only input into the privileged publish step.
+    # the contents will not be _executed_ in the CI runner, insulating us
+    # against infrastructure compromise, but if the build step includes a
+    # malicious dependency the published artifact will still be compromised.
+    # we may be able to add a scanning step between build and publish to help
+    # catch any such problem before pushing it out to users
+    outputs:
+      tarball: ${{ steps.build.outputs.tarball }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          package-manager-cache: false
+          registry-url: 'https://registry.npmjs.org'
+
+      # release-drafter tag format is bare semver (e.g. "3.2.10"). fail
+      # fast if the tag doesn't match.
+      - name: Resolve release version
+        id: version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tag '$TAG' is not a valid X.Y.Z[-prerelease] tag" >&2
+            exit 1
+          fi
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+
+      # generate changelog entries from the validated release body. runs
+      # BEFORE the build so prettier (inside `npm run format`) can format
+      # the inserted content, and so the npm tarball includes the
+      # updated CHANGELOG.md. body is passed via env so the script
+      # doesn't need to round-trip through the GitHub API.
+      - name: Update changelog
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+        run: node ./scripts/update-changelog.mjs "${{ steps.version.outputs.version }}"
+
+      - name: Build for release
+        id: build
+        run: ./scripts/build-for-release.sh "${{ steps.version.outputs.version }}"
+
+      # hand off built artifact to privileged publish job
+      - name: Upload tarball artifact
+        # v6 fails with "crypto is not defined" -- node version problem?
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build.outputs.tarball }}
+          path: ${{ steps.build.outputs.tarball }}
+          if-no-files-found: error
+
+      - name: Upload changelog artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-changelog
+          path: docs/src/changelog.md
+          if-no-files-found: error
+
+  # privileged context: push commits to repo, publish to npm
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+
+    # privileged context. avoid executing code from dependencies and/or
+    # third-party actions. this job runs no `npm install` and no
+    # third-party network code — only tar, git, and `npm publish` against
+    # an already-built tarball.
+    permissions:
+      contents: write # Allow job to commit to repository
+      id-token: write # Allow job to obtain OIDC tokens (publish to NPM)
+
+    # exposed for cleanup_on_failure: once `npm publish` has succeeded
+    # we must NOT revert the GitHub release, even if a later step in
+    # this job fails — npm has the version, so the release should
+    # remain published to match.
+    outputs:
+      npm_published: ${{ steps.publish_to_npm.outcome == 'success' }}
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # release-drafter creates the release tag at master HEAD when the
+      # maintainer publishes. master must still be at that commit — if it
+      # has advanced (a PR merged in the gap between publishing and this
+      # job starting) the commit-back below would create a divergent tag.
+      - name: Verify master is at the release commit
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          git fetch --depth=1 origin "refs/tags/$TAG:refs/tags/$TAG"
+          tag_sha="$(git rev-parse "$TAG^{commit}")"
+          head_sha="$(git rev-parse HEAD)"
+          if [[ "$tag_sha" != "$head_sha" ]]; then
+            echo "master ($head_sha) has advanced past release tag $TAG ($tag_sha); aborting" >&2
+            exit 1
+          fi
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # node 24 ships with npm 11.x, which supports trusted publishing
+      # (tokenless OIDC publish to npm).
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          package-manager-cache: false
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Download tarball artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ needs.build.outputs.tarball }}
+          path: .
+
+      # extract the contents of the artifact we will publish back into the
+      # git root so that we can commit back the version bump, formatted
+      # typescript output, and root changelog. assert that the only
+      # changes are to those expected paths to limit the blast radius of
+      # any errors.
+      - name: Extract artifact
+        run: |
+          tar zxf "${{ needs.build.outputs.tarball }}" --strip-components=1 -C .
+          if git diff --name-only HEAD \
+              -- ':(exclude)lib/**' \
+                 ':(exclude)package.json' \
+                 ':(exclude)CHANGELOG.md' \
+              | grep .; then
+            echo "Tarball contained unexpected differences, aborting"
+            exit 1
+          fi
+
+      # overlay the changelog artifact AFTER the tarball assertion so the
+      # tarball contract stays strict (only lib/** + package.json).
+      - name: Apply changelog
+        uses: actions/download-artifact@v5
+        with:
+          name: release-changelog
+          path: docs/src/
+
+      # tokenless publish via OIDC trusted publishing. requires the
+      # package to have this repo + workflow configured as a trusted
+      # publisher on npmjs.com. --provenance attaches a Sigstore
+      # attestation viewable on npmjs.com. publishing the tarball file
+      # directly (rather than re-packing the working tree) ensures the
+      # bytes attested are exactly the bytes uploaded. provenance binds
+      # to GITHUB_SHA from the workflow trigger (the pre-bump commit
+      # release-drafter tagged), independent of when in this job we
+      # publish — so we can safely publish before committing back.
+      #
+      # publish runs BEFORE the master commit + tag-update so that an
+      # npm-publish failure leaves master and the tag untouched (no
+      # orphaned "release X.Y.Z" commit pointing at nothing on npm).
+      # the trade-off: if publish succeeds but the subsequent push/tag
+      # update fails, npm has the version but master doesn't reflect
+      # it — recoverable by manually pushing the bump commit.
+      # idempotent on re-runs only: if this is a workflow re-run AND
+      # the version is already on the npm registry, skip the publish
+      # so a maintainer can re-run the job to recover from a failure
+      # in a later step (e.g. registry propagation delay on the docs
+      # bump below). on the FIRST attempt we always try to publish:
+      # if the version already exists out there, npm publish fails
+      # loudly with EPUBLISHCONFLICT — which is the right outcome,
+      # since it means someone published this version outside the
+      # workflow and we should not silently proceed.
+      #
+      # the npm_published job output uses this step's outcome, so a
+      # successful skip on a re-run still counts as "published" for
+      # the cleanup_on_failure gate.
+      - name: Publish to npm
+        id: publish_to_npm
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          if [[ "$RUN_ATTEMPT" -gt 1 ]] && npm view "knex@${VERSION}" version >/dev/null 2>&1; then
+            echo "knex@${VERSION} already on npm (re-run attempt $RUN_ATTEMPT); skipping publish"
+            exit 0
+          fi
+          npm publish "${{ needs.build.outputs.tarball }}" --provenance --access public
+
+      # bump the knex devDependency pin in docs/ to the just-published
+      # version so the next docs schema-snippet resolve picks it up.
+      # must run AFTER `npm publish` because npm needs to see the new
+      # version in the registry to resolve it. --package-lock-only
+      # avoids a real install (no scripts, no node_modules) — only
+      # registry metadata is fetched.
+      #
+      # registry propagation can lag behind a successful publish by up
+      # to a minute or so (we hit ETARGET on the very first release
+      # cut with the new workflow). poll `npm view` until the new
+      # version resolves before running `npm install`.
+      - name: Bump docs knex version
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+        working-directory: ./docs
+        run: |
+          for i in $(seq 1 36); do
+            if npm view "knex@${VERSION}" version >/dev/null 2>&1; then
+              echo "knex@${VERSION} resolved on registry after $((($i - 1) * 5))s"
+              break
+            fi
+            if [ "$i" -eq 36 ]; then
+              echo "::error::knex@${VERSION} did not appear on npm registry after 180s"
+              exit 1
+            fi
+            echo "knex@${VERSION} not yet on registry (attempt $i/36); sleeping 5s"
+            sleep 5
+          done
+          npm install --package-lock-only --save-dev "knex@${VERSION}"
+
+      # re-verify master is still at the release commit before
+      # committing. the initial check at job start could be stale by
+      # now (npm publish + npm install --package-lock-only take a
+      # bit), and the concurrency group only blocks other release
+      # workflows, not regular merges to master.
+      - name: Re-verify master is at the release commit
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          git fetch --depth=1 origin master
+          tag_sha="$(git rev-parse "$TAG^{commit}")"
+          remote_head="$(git rev-parse FETCH_HEAD)"
+          if [[ "$tag_sha" != "$remote_head" ]]; then
+            echo "master ($remote_head) advanced past release tag $TAG ($tag_sha) during publish; aborting" >&2
+            exit 1
+          fi
+
+      # commit the version bump, rebuilt lib/**, root + docs changelog
+      # entry, and docs/ knex pin bump back to master, then force-update
+      # the release tag (created by release-drafter at the pre-bump
+      # commit) to point at the new commit. the GitHub release follows
+      # the tag, so its commit pointer updates automatically. commit
+      # message starts with "release " so the github-actions bot +
+      # message-prefix CI-skip guards in unit-tests/linting/etc. match
+      # and don't re-run on this commit.
+      - name: Commit and update tag
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          git add .
+          git commit -m "release ${VERSION}"
+          git push origin master
+          git tag -f "$TAG"
+          git push --force origin "refs/tags/$TAG"
+
+  # build & publish documentation. runs after npm publish so that if the
+  # publish fails, the docs site doesn't reference a version that wasn't
+  # actually released. docs are built from the released commit.
+  deploy-docs:
+    runs-on: ubuntu-latest
+    needs: publish
+
+    permissions:
+      contents: write # push to gh-pages
+
+    defaults:
+      run:
+        working-directory: ./docs
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+          package-manager-cache: false
+
+      # cache node_modules
+      - name: Restore cached dependencies
+        uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      # install dependencies if the cache did not hit
+      - name: Install dependencies
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build documentation
+        run: npm run build
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/.vitepress/dist
+          cname: knexjs.org
+          force_orphan: true
+
+  # if validate fails, OR build fails, OR publish fails before npm
+  # publish has completed, revert the release back to draft and delete
+  # the freshly created tag. the maintainer can then fix the underlying
+  # problem and re-publish without manual GitHub cleanup; re-publishing
+  # fires a fresh release.published event that restarts the workflow.
+  #
+  # NOT triggered when npm publish has succeeded: npm has the version,
+  # so the GitHub release must stay published to match — even if
+  # subsequent steps like the version-bump commit/tag-update or docs
+  # deploy fail.
+  cleanup_on_failure:
+    needs: [validate, build, publish]
+    if: |
+      always() && (
+        needs.validate.result == 'failure' ||
+        needs.build.result == 'failure' ||
+        (needs.publish.result == 'failure' && needs.publish.outputs.npm_published != 'true')
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # PATCH release → draft, DELETE tag
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 1
+          sparse-checkout: scripts/revert-release-to-draft.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Revert release to draft and delete tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ github.event.release.id }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: ./scripts/revert-release-to-draft.sh
