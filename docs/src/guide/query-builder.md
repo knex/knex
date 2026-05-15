@@ -31,8 +31,10 @@ knex({ a: 'table', b: 'table' })
 
 ### knex
 
-**knex(tableName, options)**
-**knex.[methodName]**
+```js
+knex(tableName, options={only: boolean})  
+knex.[methodName]
+```
 
 The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream.
 
@@ -133,7 +135,9 @@ knex.select('*').from('users', { only: true });
 
 ### timeout [-SQ -MS -OR -CR -RS]
 
-**.timeout(ms, options={cancel: boolean})**
+```js
+.timeout(ms, options={cancel: boolean})
+```
 
 Sets a timeout for the query and will throw a TimeoutError if the timeout is exceeded. The error contains information about the query, bindings, and the timeout that was set. Useful for complex queries that you want to make sure are not taking too long to execute. Optional second argument for passing options:\* **cancel**: if `true`, cancel query if timeout is reached.
 
@@ -150,7 +154,9 @@ knex.select().from('books').timeout(1000, {
 
 ### select
 
-**.select([\*columns])**
+```js
+.select([\*columns])
+```
 
 Creates a select query, taking an optional array of columns for the query, eventually defaulting to \* if none are specified when the query is built. The response of a select call will resolve with an array of objects selected from the database.
 
@@ -188,8 +194,9 @@ knex.select(knex.ref('id').as('identifier')).from<User>('users'); // Resolves to
 ```
 
 ### as
-
-**.as(name)**
+```js
+.as(name)
+```
 
 Allows for aliasing a subquery, taking the string you wish to name the current query. If the query is not a sub-query, it will be ignored.
 
@@ -205,7 +212,9 @@ knex
 
 ### column
 
-**.column(columns)**
+```js
+.column(columns)
+```
 
 Specifically set the columns to be selected on a select query, taking an array, an object or a list of column names. Passing an object will automatically alias the columns with the given keys.
 
@@ -222,7 +231,9 @@ knex.column('title', { by: 'author' }, 'year').select().from('books');
 
 ### from
 
-**.from([tableName], options={only: boolean})**
+```js
+.from([tableName], options={only: boolean})
+```
 
 Specifies the table used in the current query, replacing the current table name if one has already been specified. This is typically used in the sub-queries performed in the advanced where or union methods. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data.
 
@@ -249,7 +260,9 @@ knex.select('id').from<User>('users'); // Results to Pick<User, "id">[]
 
 ### fromRaw
 
-**.fromRaw(sql, [bindings])**
+```js
+.fromRaw(sql, [bindings])
+```
 
 ```js
 // @sql
@@ -258,7 +271,9 @@ knex.select('*').fromRaw('(select * from "users" where "age" > ?)', '18');
 
 ### with [-MY -CR -RS]
 
-**.with(alias, [columns], callback|builder|raw)**
+```js
+.with(alias, [columns], callback|builder|raw)
+```
 
 Add a "with" clause to the query. "With" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
@@ -292,8 +307,9 @@ knex
 ```
 
 ### withRecursive [-MY -CR -RS]
-
-**.withRecursive(alias, [columns], callback|builder|raw)**
+```js
+.withRecursive(alias, [columns], callback|builder|raw)
+```
 
 Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE. When using `union`/`unionAll`, both terms must return the same columns and types; avoid `select('*')` in the recursive term if it introduces a join.
 
@@ -332,7 +348,9 @@ knex
 
 ### withMaterialized [-MY -MS -OR -CR -RS]
 
-**.withMaterialized(alias, [columns], callback|builder|raw)**
+```js
+.withMaterialized(alias, [columns], callback|builder|raw)
+```
 
 Add a "with" materialized clause to the query. "With" materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
@@ -367,7 +385,9 @@ knex
 
 ### withNotMaterialized [-MY -MS -OR -CR -RS]
 
-**.withNotMaterialized(alias, [columns], callback|builder|raw)**
+```js
+.withNotMaterialized(alias, [columns], callback|builder|raw)
+```
 
 Add a "with" not materialized clause to the query. "With" not materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
@@ -402,7 +422,9 @@ knex
 
 ### withSchema
 
-**.withSchema([schemaName])**
+```js
+.withSchema([schemaName])
+```
 
 Specifies the schema to be used as prefix of table name.
 
@@ -413,7 +435,9 @@ knex.withSchema('public').select('*').from('users');
 
 ### jsonExtract
 
-**.jsonExtract(column|builder|raw|array[], path, [alias], [singleValue])**
+```js
+.jsonExtract(column|builder|raw|array[], path, [alias], [singleValue])
+```
 
 Extract a value from a json column given a JsonPath. An alias can be specified. The singleValue boolean can be used to specify, with Oracle or MSSQL, if the value returned by the function is a single value or an array/object value. An array of arrays can be used to specify multiple extractions with one call to this function.
 

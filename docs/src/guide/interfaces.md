@@ -30,7 +30,9 @@ knex
 
 ### then
 
-**.then(onFulfilled, [onRejected])**
+```js
+.then(onFulfilled, [onRejected])
+```
 
 Coerces the current query builder chain into a promise state, accepting the resolve and reject handlers as specified by the Promises/A+ spec. As stated in the spec, more than one call to the then method for the current query chain will resolve with the same value, in the order they were called; the query will not be executed multiple times.
 
@@ -54,7 +56,9 @@ knex
 
 ### catch
 
-**.catch(onRejected)**
+```js
+.catch(onRejected)
+```
 
 Coerces the current query builder into a promise state, catching any error thrown by the query, the same as calling .then(null, onRejected).
 
@@ -80,7 +84,9 @@ return knex
 
 ### asCallback
 
-**.asCallback(callback)**
+```js
+.asCallback(callback)
+```
 
 If you'd prefer a callback interface over promises, the asCallback function accepts a standard node style callback for executing the query chain. Note that as with the then method, subsequent calls to the same query chain will return the same result.
 
@@ -111,7 +117,9 @@ Streams are a powerful way of piping data through as it comes in, rather than al
 
 ### stream
 
-**.stream([options], [callback])**
+```js
+.stream([options], [callback])
+```
 
 If called with a callback, the callback is passed the stream and a promise is returned. Otherwise, the readable stream is returned.  
 When the stream is consumed as an [iterator](https://nodejs.org/api/stream.html#readablesymbolasynciterator), if the loop terminates with a `break`, `return`, or a `throw`, the stream will be destroyed. In other terms, iterating over a stream will consume the stream fully.
@@ -156,7 +164,9 @@ const stream = knex
 
 ### pipe
 
-**.pipe(writableStream)**
+```js
+.pipe(writableStream)
+```
 
 Pipe a stream for the current query to a writableStream.
 
@@ -243,7 +253,9 @@ knex
 
 ### toString
 
-**.toString()**
+```js
+.toString()
+```
 
 Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging, but should not be used to create queries for running them against DB.
 
@@ -256,8 +268,11 @@ const toStringQuery = knex.select('*').from('users').where('id', 1).toString();
 
 ### toSQL
 
-**.toSQL()**  
-**.toSQL().toNative()**
+```js
+.toSQL()
+.toSQL().toNative()
+```
+
 
 Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging and building queries for running them manually with DB driver. `.toSQL().toNative()` outputs object with sql string and bindings in a dialects format in the same way that knex internally sends them to underlying DB driver.
 
