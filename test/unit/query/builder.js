@@ -6209,6 +6209,24 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should produce correct binding order when updating with a subquery updateFrom in pg (#6277)', () => {
+    testsql(
+      qb()
+        .update({ flagged: true })
+        .table('orders')
+        .updateFrom(
+          qb().from('accounts').where('tier', 'gold').as('gold_accounts')
+        )
+        .where('orders.status', 'unpaid'),
+      {
+        pg: {
+          sql: 'update "orders" set "flagged" = ? from (select * from "accounts" where "tier" = ?) as "gold_accounts" where "orders"."status" = ?',
+          bindings: [true, 'gold', 'unpaid'],
+        },
+      }
+    );
+  });
+
   it('should not update columns undefined values', () => {
     testsql(
       qb()
