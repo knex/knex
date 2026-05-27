@@ -28,4 +28,9 @@ describe('formatter', () => {
     const columns = formatter.columnize([]);
     expect(columns).to.equal('');
   });
+
+  it('correctly handles dotted identifiers with case-insensitive aliases', () => {
+    const wrapped = formatter.wrap('schema.table AS alias');
+    expect(wrapped).to.equal('"schema"."table" as "alias"');
+  });
 });
