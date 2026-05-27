@@ -161,6 +161,38 @@ module.exports = function (knex) {
         });
       });
 
+      it('should preserve binding order when deleting with a raw join condition in PostgreSQL', async function () {
+        if (!isPostgreSQL(knex)) {
+          this.skip();
+        }
+
+        await knex('test_table_two').insert({
+          account_id: 5,
+          details: '',
+          status: 1,
+        });
+
+        return knex('test_table_two')
+          .join(
+            knex('accounts')
+              .where('email', 'test5@example.com')
+              .as('matching_accounts'),
+            knex.raw('coalesce(matching_accounts.id, ?)', [-1]),
+            '=',
+            'test_table_two.account_id'
+          )
+          .where('test_table_two.status', 1)
+          .del()
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'delete from "test_table_two" using (select * from "accounts" where "email" = ?) as "matching_accounts" where "test_table_two"."status" = ? and coalesce(matching_accounts.id, ?) = "test_table_two"."account_id"',
+              ['test5@example.com', 1, -1],
+              1
+            );
+          });
+      });
+
       it('should handle returning', async function () {
         await knex('test_table_two').insert({
           account_id: 4,
