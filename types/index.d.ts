@@ -364,6 +364,8 @@ type SafePick<T, K extends keyof T> = T extends {} ? Pick<T, K> : any;
 
 type TableOptions = PgTableOptions;
 
+type IndexColumn = string | Raw | { column: string; operator?: string };
+
 interface PgTableOptions {
   only?: boolean;
 }
@@ -2528,12 +2530,12 @@ declare namespace Knex {
       constraintName?: string
     ): TableBuilder;
     index(
-      columnNames: string | readonly (string | Raw)[],
+      columnNames: string | readonly IndexColumn[],
       indexName?: string,
       indexType?: string
     ): TableBuilder;
     index(
-      columnNames: string | readonly (string | Raw)[],
+      columnNames: string | readonly IndexColumn[],
       indexName?: string,
       options?: Readonly<{
         indexType?: string;

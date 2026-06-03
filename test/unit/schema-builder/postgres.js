@@ -2524,4 +2524,37 @@ describe('PostgreSQL SchemaBuilder', function () {
       );
     });
   });
+
+  it('creates a gin index with operator class', function () {
+    const qb = knex.schema.table('users', function (t) {
+      t.index([{ column: 'bio', operator: 'gin_trgm_ops' }], 'idx_bio_trgm', {
+        storageEngineIndexType: 'gin',
+      });
+    });
+    expect(qb.toSQL()[0].sql).to.equal(
+      'create index "idx_bio_trgm" on "users" using gin ("bio" gin_trgm_ops)'
+    );
+  });
+
+  it('creates a gin index with mixed plain and operator-class columns', function () {
+    const qb = knex.schema.table('users', function (t) {
+      t.index(
+        ['title', { column: 'bio', operator: 'gin_trgm_ops' }],
+        'idx_multi_trgm',
+        { storageEngineIndexType: 'gin' }
+      );
+    });
+    expect(qb.toSQL()[0].sql).to.equal(
+      'create index "idx_multi_trgm" on "users" using gin ("title", "bio" gin_trgm_ops)'
+    );
+  });
+
+  it('plain string columns in index still work unchanged', function () {
+    const qb = knex.schema.table('users', function (t) {
+      t.index(['name', 'email'], 'idx_name_email');
+    });
+    expect(qb.toSQL()[0].sql).to.equal(
+      'create index "idx_name_email" on "users" ("name", "email")'
+    );
+  });
 });
