@@ -59,4 +59,27 @@ describe('MSSQL unit tests', () => {
       "select * from [projects] where notes = 'Testing question marks@p0@p1'"
     );
   });
+
+  it('passes a tedious TokenCredential through for token-credential auth', () => {
+    const credential = { getToken: () => Promise.resolve(null) };
+    const client = knex({
+      client: 'mssql',
+      connection: {
+        server: '127.0.0.1',
+        database: 'mydb',
+        type: 'token-credential',
+        credential,
+      },
+    }).client;
+
+    const cfg = client._generateConnection();
+    expect(cfg.authentication.type).to.equal('token-credential');
+    expect(cfg.authentication.options.credential)
+      .to.have.property('getToken')
+      .that.is.a('function');
+  });
+
+  it('instructs users to install tedious when the driver is missing', () => {
+    expect(knexInstance.client._packageName).to.equal('tedious');
+  });
 });

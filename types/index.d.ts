@@ -2817,7 +2817,8 @@ declare namespace Knex {
     | 'azure-active-directory-access-token'
     | 'azure-active-directory-msi-vm'
     | 'azure-active-directory-msi-app-service'
-    | 'azure-active-directory-service-principal-secret';
+    | 'azure-active-directory-service-principal-secret'
+    | 'token-credential';
 
   interface MsSqlDefaultAuthenticationConfig extends MsSqlConnectionConfigBase {
     type?: 'default' | never;
@@ -2895,6 +2896,19 @@ declare namespace Knex {
     tenantId: string;
   }
 
+  interface MsSqlTokenCredential {
+    getToken(
+      scopes: string | string[],
+      options?: unknown
+    ): Promise<{ token: string; expiresOnTimestamp: number } | null>;
+  }
+
+  interface MsSqlTokenCredentialAuthenticationConfig
+    extends MsSqlConnectionConfigBase {
+    type: 'token-credential';
+    credential: MsSqlTokenCredential;
+  }
+
   interface MsSqlNtlmAuthenticationConfig extends MsSqlConnectionConfigBase {
     type: 'ntlm';
     /**
@@ -2914,7 +2928,8 @@ declare namespace Knex {
     | MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
     | MsSqlAzureActiveDirectoryMsiVmAuthenticationConfig
     | MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
-    | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig;
+    | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig
+    | MsSqlTokenCredentialAuthenticationConfig;
 
   // Config object for tedious: see http://tediousjs.github.io/tedious/api-connection.html
   interface MsSqlConnectionConfigBase {
