@@ -288,5 +288,6 @@ module.exports = {
   getKnexForDb,
   getKnexForSqlite,
   getKnexForBetterSqlite,
+  testConfigs,
   withDbs,
 };
