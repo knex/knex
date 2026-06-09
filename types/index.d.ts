@@ -1704,7 +1704,10 @@ declare namespace Knex {
       TResult
     >;
 
-    (object: Readonly<Record<string, any>>): QueryBuilder<TRecord, TResult>;
+    // note: `Object` is intentional here: its mapped members preserve excess-property
+    // checking so `.where({ unknownColumn })` stays a compile error, while still
+    // accepting pre-typed dynamic objects, see #6452
+    (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof ResolveTableType<TRecord>>(
       columnName: T,
