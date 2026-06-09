@@ -37,6 +37,7 @@ jobs:
             postgres,
             pgnative,
             mysql,
+            mariadb,
             mssql,
             sqlite3,
             cockroachdb,
