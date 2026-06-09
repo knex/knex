@@ -60,7 +60,7 @@ describe('MSSQL unit tests', () => {
     );
   });
 
-  it('passes a tedious TokenCredential through for token-credential auth', () => {
+  it('passes a tedious TokenCredential through for token-credential auth', async () => {
     class FakeTokenCredential {
       getToken() {
         return Promise.resolve(null);
@@ -82,6 +82,9 @@ describe('MSSQL unit tests', () => {
     // The credential must be preserved by reference (not deep-cloned), so a
     // live self-refreshing credential keeps working.
     expect(cfg.authentication.options.credential).to.equal(credential);
+    expect(await cfg.authentication.options.credential.getToken()).to.equal(
+      null
+    );
   });
 
   it('instructs users to install tedious when the driver is missing', () => {
