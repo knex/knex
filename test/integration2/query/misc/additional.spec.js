@@ -140,6 +140,7 @@ describe('Additional', function () {
             const stream = limitedKnex.raw('SELECT 1').stream();
             let error;
             try {
+              // eslint-disable-next-line no-unused-vars
               for await (const _ of stream) {
                 //
               }
