@@ -61,7 +61,12 @@ describe('MSSQL unit tests', () => {
   });
 
   it('passes a tedious TokenCredential through for token-credential auth', () => {
-    const credential = { getToken: () => Promise.resolve(null) };
+    class FakeTokenCredential {
+      getToken() {
+        return Promise.resolve(null);
+      }
+    }
+    const credential = new FakeTokenCredential();
     const client = knex({
       client: 'mssql',
       connection: {
@@ -74,9 +79,9 @@ describe('MSSQL unit tests', () => {
 
     const cfg = client._generateConnection();
     expect(cfg.authentication.type).to.equal('token-credential');
-    expect(cfg.authentication.options.credential)
-      .to.have.property('getToken')
-      .that.is.a('function');
+    // The credential must be preserved by reference (not deep-cloned), so a
+    // live self-refreshing credential keeps working.
+    expect(cfg.authentication.options.credential).to.equal(credential);
   });
 
   it('instructs users to install tedious when the driver is missing', () => {
