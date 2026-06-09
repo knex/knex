@@ -8181,13 +8181,13 @@ describe('QueryBuilder', () => {
         .denseRank('test_alias', ['email', 'name']),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, dense_rank() over (order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8238,13 +8238,13 @@ describe('QueryBuilder', () => {
         .denseRank('test_alias', ['email'], ['address', 'phone']),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8258,13 +8258,13 @@ describe('QueryBuilder', () => {
         .denseRank('test_alias', 'email', 'address'),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, dense_rank() over (partition by [address] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8302,13 +8302,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, dense_rank() over (partition by [address] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8324,13 +8324,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8349,13 +8349,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, dense_rank() over (partition by [address], [phone] order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8370,13 +8370,13 @@ describe('QueryBuilder', () => {
         .denseRank('second_alias', 'address'),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (order by [email]) as first_alias, dense_rank() over (order by [address]) as second_alias from [accounts]',
+          sql: 'select *, dense_rank() over (order by [email]) as [first_alias], dense_rank() over (order by [address]) as [second_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (order by "email") as first_alias, dense_rank() over (order by "address") as second_alias from "accounts"',
+          sql: 'select *, dense_rank() over (order by "email") as "first_alias", dense_rank() over (order by "address") as "second_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (order by "email") as first_alias, dense_rank() over (order by "address") as second_alias from "accounts"',
+          sql: 'select *, dense_rank() over (order by "email") as "first_alias", dense_rank() over (order by "address") as "second_alias" from "accounts"',
         },
       }
     );
@@ -8410,13 +8410,13 @@ describe('QueryBuilder', () => {
         .denseRank('test_alias', raw('partition by address order by email')),
       {
         mssql: {
-          sql: 'select *, dense_rank() over (partition by address order by email) as test_alias from [accounts]',
+          sql: 'select *, dense_rank() over (partition by address order by email) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, dense_rank() over (partition by address order by email) as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by address order by email) as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, dense_rank() over (partition by address order by email) as test_alias from "accounts"',
+          sql: 'select *, dense_rank() over (partition by address order by email) as "test_alias" from "accounts"',
         },
       }
     );
@@ -8441,13 +8441,13 @@ describe('QueryBuilder', () => {
       qb().select('*').from('accounts').rank('test_alias', ['email', 'name']),
       {
         mssql: {
-          sql: 'select *, rank() over (order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, rank() over (order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, rank() over (order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, rank() over (order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8495,13 +8495,13 @@ describe('QueryBuilder', () => {
         .rank('test_alias', ['email'], ['address', 'phone']),
       {
         mssql: {
-          sql: 'select *, rank() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, rank() over (partition by [address], [phone] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address", "phone" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address", "phone" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8512,13 +8512,13 @@ describe('QueryBuilder', () => {
       qb().select('*').from('accounts').rank('test_alias', 'email', 'address'),
       {
         mssql: {
-          sql: 'select *, rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, rank() over (partition by [address] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8556,13 +8556,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, rank() over (partition by [address] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, rank() over (partition by [address] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8578,13 +8578,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, rank() over (partition by [address], [phone] order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8603,13 +8603,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, rank() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, rank() over (partition by [address], [phone] order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8624,13 +8624,13 @@ describe('QueryBuilder', () => {
         .rank('second_alias', 'address'),
       {
         mssql: {
-          sql: 'select *, rank() over (order by [email]) as first_alias, rank() over (order by [address]) as second_alias from [accounts]',
+          sql: 'select *, rank() over (order by [email]) as [first_alias], rank() over (order by [address]) as [second_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (order by "email") as first_alias, rank() over (order by "address") as second_alias from "accounts"',
+          sql: 'select *, rank() over (order by "email") as "first_alias", rank() over (order by "address") as "second_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (order by "email") as first_alias, rank() over (order by "address") as second_alias from "accounts"',
+          sql: 'select *, rank() over (order by "email") as "first_alias", rank() over (order by "address") as "second_alias" from "accounts"',
         },
       }
     );
@@ -8664,13 +8664,13 @@ describe('QueryBuilder', () => {
         .rank('test_alias', raw('partition by address order by email')),
       {
         mssql: {
-          sql: 'select *, rank() over (partition by address order by email) as test_alias from [accounts]',
+          sql: 'select *, rank() over (partition by address order by email) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, rank() over (partition by address order by email) as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by address order by email) as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, rank() over (partition by address order by email) as test_alias from "accounts"',
+          sql: 'select *, rank() over (partition by address order by email) as "test_alias" from "accounts"',
         },
       }
     );
@@ -8698,13 +8698,13 @@ describe('QueryBuilder', () => {
         .rowNumber('test_alias', ['email', 'name']),
       {
         mssql: {
-          sql: 'select *, row_number() over (order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, row_number() over (order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8778,13 +8778,13 @@ describe('QueryBuilder', () => {
         .rowNumber('test_alias', ['email'], ['address', 'phone']),
       {
         mssql: {
-          sql: 'select *, row_number() over (partition by [address], [phone] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, row_number() over (partition by [address], [phone] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address", "phone" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (partition by "address", "phone" order by "email") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address", "phone" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8798,13 +8798,13 @@ describe('QueryBuilder', () => {
         .rowNumber('test_alias', 'email', 'address'),
       {
         mssql: {
-          sql: 'select *, row_number() over (partition by [address] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, row_number() over (partition by [address] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8842,13 +8842,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, row_number() over (partition by [address] order by [email]) as test_alias from [accounts]',
+          sql: 'select *, row_number() over (partition by [address] order by [email]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (partition by "address" order by "email") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address" order by "email") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8864,13 +8864,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8889,13 +8889,13 @@ describe('QueryBuilder', () => {
         }),
       {
         mssql: {
-          sql: 'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as test_alias from [accounts]',
+          sql: 'select *, row_number() over (partition by [address], [phone] order by [email], [name]) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by "address", "phone" order by "email", "name") as "test_alias" from "accounts"',
         },
       }
     );
@@ -8910,13 +8910,13 @@ describe('QueryBuilder', () => {
         .rowNumber('second_alias', 'address'),
       {
         mssql: {
-          sql: 'select *, row_number() over (order by [email]) as first_alias, row_number() over (order by [address]) as second_alias from [accounts]',
+          sql: 'select *, row_number() over (order by [email]) as [first_alias], row_number() over (order by [address]) as [second_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (order by "email") as first_alias, row_number() over (order by "address") as second_alias from "accounts"',
+          sql: 'select *, row_number() over (order by "email") as "first_alias", row_number() over (order by "address") as "second_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (order by "email") as first_alias, row_number() over (order by "address") as second_alias from "accounts"',
+          sql: 'select *, row_number() over (order by "email") as "first_alias", row_number() over (order by "address") as "second_alias" from "accounts"',
         },
       }
     );
@@ -8950,13 +8950,13 @@ describe('QueryBuilder', () => {
         .rowNumber('test_alias', raw('partition by address order by email')),
       {
         mssql: {
-          sql: 'select *, row_number() over (partition by address order by email) as test_alias from [accounts]',
+          sql: 'select *, row_number() over (partition by address order by email) as [test_alias] from [accounts]',
         },
         pg: {
-          sql: 'select *, row_number() over (partition by address order by email) as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by address order by email) as "test_alias" from "accounts"',
         },
         oracledb: {
-          sql: 'select *, row_number() over (partition by address order by email) as test_alias from "accounts"',
+          sql: 'select *, row_number() over (partition by address order by email) as "test_alias" from "accounts"',
         },
       }
     );
@@ -11309,6 +11309,162 @@ describe('QueryBuilder', () => {
         mysql: {
           sql: 'delete tableB from tableB inner join (select * from `tableA` where `fieldA` = ?) as `subQuery` on `subQuery`.`id` = `tableB`.`relatedId` where `tableA`.`fieldB` = ?',
           bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when deleting with a subquery join in mssql (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mssql: {
+          sql: 'delete tableB from tableB inner join (select * from [tableA] where [fieldA] = ?) as [subQuery] on [subQuery].[id] = [tableB].[relatedId] where [tableA].[fieldB] = ?;select @@rowcount',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when deleting with a subquery join in mssql triggers (#6277)', () => {
+    const triggerOptions = { includeTriggerModifications: true };
+    testsql(
+      qb()
+        .del('*', triggerOptions)
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        mssql: {
+          sql: 'select top(0) [t].* into #out from tableB as t left join tableB on 0=1;delete tableB output deleted.* into #out from tableB inner join (select * from [tableA] where [fieldA] = ?) as [subQuery] on [subQuery].[id] = [tableB].[relatedId] where [tableA].[fieldB] = ?; select * from #out; drop table #out;',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when deleting with a subquery join in pg (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb().from('tableA').where('fieldA', 'valueForFieldA').as('subQuery'),
+          'subQuery.id',
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableA.fieldB', 'valueForFieldB'),
+      {
+        pg: {
+          sql: 'delete from tableB using (select * from "tableA" where "fieldA" = ?) as "subQuery" where "tableA"."fieldB" = ? and "subQuery"."id" = "tableB"."relatedId"',
+          bindings: ['valueForFieldA', 'valueForFieldB'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when deleting with a raw join condition in pg (#6277)', () => {
+    testsql(
+      qb()
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb()
+            .from('tableA')
+            .where('fieldA', 'using_source_value')
+            .as('subQuery'),
+          raw('coalesce(subQuery.id, ?)', ['join_clause_value']),
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableB.status', 'where_value'),
+      {
+        pg: {
+          sql: 'delete from tableB using (select * from "tableA" where "fieldA" = ?) as "subQuery" where "tableB"."status" = ? and coalesce(subQuery.id, ?) = "tableB"."relatedId"',
+          bindings: ['using_source_value', 'where_value', 'join_clause_value'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when deleting with a CTE and raw join condition in pg (#6277)', () => {
+    testsql(
+      qb()
+        .with(
+          'source_cte',
+          qb().from('source').where('source.flag', 'cte_value')
+        )
+        .del()
+        .from(raw('tableB'))
+        .innerJoin(
+          qb()
+            .from('source_cte')
+            .where('fieldA', 'using_source_value')
+            .as('subQuery'),
+          raw('coalesce(subQuery.id, ?)', ['join_clause_value']),
+          '=',
+          'tableB.relatedId'
+        )
+        .where('tableB.status', 'where_value'),
+      {
+        pg: {
+          sql: 'with "source_cte" as (select * from "source" where "source"."flag" = ?) delete from tableB using (select * from "source_cte" where "fieldA" = ?) as "subQuery" where "tableB"."status" = ? and coalesce(subQuery.id, ?) = "tableB"."relatedId"',
+          bindings: [
+            'cte_value',
+            'using_source_value',
+            'where_value',
+            'join_clause_value',
+          ],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when updating with a CTE and a limit in mssql (#6277)', () => {
+    testsql(
+      qb()
+        .with('cte', qb().from('source').where('flag', 'cte_value'))
+        .from('target')
+        .where('target.status', 'where_value')
+        .update({ name: 'set_value' })
+        .limit(5),
+      {
+        mssql: {
+          sql: 'with [cte] as (select * from [source] where [flag] = ?) update top (?) [target] set [name] = ? where [target].[status] = ?;select @@rowcount',
+          bindings: ['cte_value', 5, 'set_value', 'where_value'],
+        },
+      }
+    );
+  });
+
+  it('should produce correct binding order when updating with a CTE and a limit in mssql triggers (#6277)', () => {
+    const triggerOptions = { includeTriggerModifications: true };
+    testsql(
+      qb()
+        .with('cte', qb().from('source').where('flag', 'cte_value'))
+        .from('target')
+        .where('target.status', 'where_value')
+        .update({ name: 'set_value' }, '*', triggerOptions)
+        .limit(5),
+      {
+        mssql: {
+          sql: 'with [cte] as (select * from [source] where [flag] = ?) select top(0) [t].* into #out from [target] as t left join [target] on 0=1;update top (?) [target] set [name] = ? output inserted.* into #out where [target].[status] = ?; select * from #out; drop table #out;',
+          bindings: ['cte_value', 5, 'set_value', 'where_value'],
         },
       }
     );

@@ -734,6 +734,126 @@ test('migrate:list prints migrations both completed and pending', async (temp) =
   );
 });
 
+test('migrate:to runs all migrations up to and including the specified one', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+  const migrationFile2 = '002_two.js';
+  const migrationFile3 = '003_three.js';
+  const migrationData = `
+      exports.up = () => Promise.resolve();
+      exports.down = () => Promise.resolve();
+    `;
+
+  fs.writeFileSync(`${migrationsPath}/${migrationFile1}`, migrationData);
+  fs.writeFileSync(`${migrationsPath}/${migrationFile2}`, migrationData);
+  fs.writeFileSync(`${migrationsPath}/${migrationFile3}`, migrationData);
+
+  const { stdout } = await assertExec(
+    `node ${KNEX} migrate:to ${migrationFile2} \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+    'run_migrations_to_002'
+  );
+  assert.include(stdout, migrationFile1);
+  assert.include(stdout, migrationFile2);
+  assert.notInclude(stdout, migrationFile3);
+
+  const db = new sqlite3.Database(`${temp}/db`);
+  const rows = await new Promise((resolve, reject) => {
+    db.all('SELECT * FROM knex_migrations', (err, rows) => {
+      err ? reject(err) : resolve(rows);
+    });
+  });
+  assert.lengthOf(rows, 2);
+  assert.equal(rows[0].name, migrationFile1);
+  assert.equal(rows[1].name, migrationFile2);
+});
+
+test('migrate:to is a no-op if target migration is already completed', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+  const migrationData = `
+      exports.up = () => Promise.resolve();
+      exports.down = () => Promise.resolve();
+    `;
+
+  fs.writeFileSync(`${migrationsPath}/${migrationFile1}`, migrationData);
+
+  await assertExec(
+    `node ${KNEX} migrate:latest \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+    'run_all_migrations'
+  );
+
+  const { stdout } = await assertExec(
+    `node ${KNEX} migrate:to ${migrationFile1} \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+    'already_up_to_date'
+  );
+  assert.include(stdout, 'Already up to date');
+});
+
+test('migrate:before runs all migrations before the specified one', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+  const migrationFile2 = '002_two.js';
+  const migrationFile3 = '003_three.js';
+  const migrationData = `
+      exports.up = () => Promise.resolve();
+      exports.down = () => Promise.resolve();
+    `;
+
+  fs.writeFileSync(`${migrationsPath}/${migrationFile1}`, migrationData);
+  fs.writeFileSync(`${migrationsPath}/${migrationFile2}`, migrationData);
+  fs.writeFileSync(`${migrationsPath}/${migrationFile3}`, migrationData);
+
+  const { stdout } = await assertExec(
+    `node ${KNEX} migrate:before ${migrationFile3} \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+    'run_migrations_before_003'
+  );
+  assert.include(stdout, migrationFile1);
+  assert.include(stdout, migrationFile2);
+  assert.notInclude(stdout, migrationFile3);
+
+  const db = new sqlite3.Database(`${temp}/db`);
+  const rows = await new Promise((resolve, reject) => {
+    db.all('SELECT * FROM knex_migrations', (err, rows) => {
+      err ? reject(err) : resolve(rows);
+    });
+  });
+  assert.lengthOf(rows, 2);
+  assert.equal(rows[0].name, migrationFile1);
+  assert.equal(rows[1].name, migrationFile2);
+});
+
+test('migrate:before runs nothing when targeting the first migration', async (temp) => {
+  const migrationsPath = `${temp}/migrations`;
+  const migrationFile1 = '001_one.js';
+  const migrationData = `
+      exports.up = () => Promise.resolve();
+      exports.down = () => Promise.resolve();
+    `;
+
+  fs.writeFileSync(`${migrationsPath}/${migrationFile1}`, migrationData);
+
+  const { stdout } = await assertExec(
+    `node ${KNEX} migrate:before ${migrationFile1} \
+    --client=sqlite3 \
+    --connection=${temp}/db \
+    --migrations-directory=${migrationsPath}`,
+    'run_nothing_before_001'
+  );
+  assert.include(stdout, 'Already up to date');
+});
+
 module.exports = {
   taskList,
 };
