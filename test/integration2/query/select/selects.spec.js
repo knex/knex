@@ -7,6 +7,7 @@ const Runner = require('../../../../lib/execution/runner');
 
 const {
   isMysql,
+  isMariaDB,
   isPostgreSQL,
   isPgNative,
   isMssql,
@@ -1219,14 +1220,12 @@ describe('Selects', function () {
           // check if we got the correct error from each db
           if (isPostgreSQL(knex)) {
             expect(err.message).to.contain('could not obtain lock on row');
+          } else if (isMariaDB(knex)) {
+            expect(err.message).to.contain('Lock wait timeout exceeded');
           } else if (isMysql(knex)) {
-            // mysql
             expect(err.message).to.contain(
               'lock(s) could not be acquired immediately'
             );
-            // mariadb
-            // TODO: detect if test is being run on mysql or mariadb to check for the correct error message
-            // expect(err.message).to.contain('Lock wait timeout exceeded');
           } else {
             // unsupported database
             throw err;
@@ -1263,7 +1262,11 @@ describe('Selects', function () {
             expect(rows.length).to.equal(3);
           }
         } catch (err) {
-          if (isMysql(knex)) {
+          if (isMariaDB(knex)) {
+            // MariaDB reports a generic syntax error (1064) where MySQL
+            // raises 1248 "every derived table must have its own alias".
+            expect(err.errno).to.equal(1064);
+          } else if (isMysql(knex)) {
             expect(err.errno).to.equal(1248);
           } else if (isMssql(knex)) {
             expect(err.message).to.contain(

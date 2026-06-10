@@ -47,6 +47,10 @@ function isMysql(knex) {
   return isOneOfDbs(knex, [drivers.MySQL, drivers.MySQL2, drivers.MariaDB]);
 }
 
+function isMariaDB(knex) {
+  return getDriverName(knex) === drivers.MariaDB;
+}
+
 function isRedshift(knex) {
   return getDriverName(knex) === drivers.Redshift;
 }
@@ -77,6 +81,7 @@ module.exports = {
   isOneOfDbs,
   isCockroachDB,
   isMysql,
+  isMariaDB,
   isMssql,
   isOracle,
   isPostgreSQL,

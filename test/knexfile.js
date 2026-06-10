@@ -103,6 +103,7 @@ const testConfigs = {
       charset: 'utf8',
       insertIdAsNumber: true,
       bigIntAsNumber: true,
+      checkDuplicate: false,
     },
     pool: mysqlPool,
     migrations,
