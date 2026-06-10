@@ -873,10 +873,9 @@ describe('PostgreSQL SchemaBuilder', function () {
         table.string('name').primary();
       })
       .toSQL();
-    equal(2, tableSql.length);
-    expect(tableSql[0].sql).to.equal('create table "users" ("name" varchar)');
-    expect(tableSql[1].sql).to.equal(
-      'alter table "users" add constraint "users_pkey" primary key ("name")'
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create table "users" ("name" varchar, constraint "users_pkey" primary key ("name"))'
     );
   });
 
@@ -2240,7 +2239,7 @@ describe('PostgreSQL SchemaBuilder', function () {
       .toSQL();
 
     expect(tableSql[0].sql).to.equal(
-      'create table "users" ("test" varchar(255), constraint "testconstraintname" primary key ("test"))'
+      'create table "users" ("test" varchar, constraint "testconstraintname" primary key ("test"))'
     );
   });
 
