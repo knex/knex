@@ -4,8 +4,7 @@
 //     Knex may be freely distributed under the MIT license.
 //     For details and documentation:
 //     http://knexjs.org
-
 import knex from './lib/index.js';
 
-export { knex }
-export default knex
+export { knex };
+export default knex;

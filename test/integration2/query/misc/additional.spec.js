@@ -1,6 +1,7 @@
 /*eslint no-var:0, max-len:0 */
 'use strict';
 
+const util = require('util');
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 chai.use(require('sinon-chai'));
@@ -34,6 +35,7 @@ const {
 const logger = require('../../../integration/logger');
 const { insertAccounts } = require('../../../util/dataInsertHelper');
 const sinon = require('sinon');
+const { setHiddenProperty } = require('../../../../lib/util/security');
 
 describe('Additional', function () {
   getAllDbs().forEach((db) => {
@@ -128,7 +130,32 @@ describe('Additional', function () {
           });
         });
 
-        it('should close the connection when a stream query iteration errors', async function () {
+        it('should emit an error rather than crash when the stream cannot acquire a connection (#6460)', async function () {
+          const limitedKnex = getKnexForDb(db, {
+            acquireConnectionTimeout: 200,
+            pool: { min: 0, max: 1 },
+          });
+          const heldConnection = await limitedKnex.client.acquireConnection();
+          try {
+            const stream = limitedKnex.raw('SELECT 1').stream();
+            let error;
+            try {
+              // eslint-disable-next-line no-unused-vars
+              for await (const _ of stream) {
+                //
+              }
+            } catch (e) {
+              error = e;
+            }
+            expect(error).to.be.an('error');
+            await new Promise((res) => setTimeout(res, 50));
+          } finally {
+            await limitedKnex.client.releaseConnection(heldConnection);
+            await limitedKnex.destroy();
+          }
+        });
+
+        it('should release the connection when a stream query iteration errors', async function () {
           const spy = sinon.spy(knex.client, 'releaseConnection');
 
           const stream = knex.raw('VALUES (1), (2), (3)').stream();
@@ -144,6 +171,26 @@ describe('Additional', function () {
 
           expect(spy).to.have.been.called;
           spy.restore();
+        });
+
+        it('should close the db connection when prematurely closing a stream', async function () {
+          await knex('accounts').truncate();
+          await insertAccounts(knex, 'accounts');
+
+          // We limit to only one row at a time, to keep the cursor open
+          const stream = knex('accounts').stream({ highWaterMark: 1 });
+
+          // eslint-disable-next-line no-unused-vars
+          for await (const _ of stream) {
+            stream.destroy();
+            break;
+          }
+
+          await new Promise((res) => setTimeout(res, 50));
+
+          // Will timeout if the connection is in the pool, but not closed
+          this.timeout(1000);
+          await knex('accounts').limit(1);
         });
 
         it('should process response done through a stream', async () => {
@@ -368,6 +415,54 @@ describe('Additional', function () {
           expect(knex.fn.now().prototype === knex.raw().prototype);
           expect(knex.fn.now().toQuery()).to.equal('CURRENT_TIMESTAMP');
           expect(knex.fn.now(6).toQuery()).to.equal('CURRENT_TIMESTAMP(6)');
+        });
+
+        it('should allow using .fn.uuid to create raw statements', function () {
+          const expectedStatement = {
+            [drivers.MsSQL]: '(NEWID())',
+            [drivers.MySQL]: '(UUID())',
+            [drivers.MySQL2]: '(UUID())',
+            [drivers.Oracle]: '(random_uuid())',
+            oracle: '(random_uuid())',
+            [drivers.PostgreSQL]: '(gen_random_uuid())',
+            [drivers.PgNative]: '(gen_random_uuid())',
+            [drivers.SQLite]:
+              "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
+            [drivers.CockroachDB]: '(gen_random_uuid())',
+            [drivers.BetterSQLite3]:
+              "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-4' || substr(lower(hex(randomblob(2))),2) || '-' || substr('89ab',abs(random()) % 4 + 1, 1) || substr(lower(hex(randomblob(2))),2) || '-' || lower(hex(randomblob(6))))",
+          };
+
+          expect(knex.fn.uuid().prototype === knex.raw().prototype);
+
+          if (isRedshift()) {
+            expect(() => knex.fn.uuid().toQuery()).to.throw(
+              `${knex.client.driverName} does not have a uuid function`
+            );
+          } else {
+            expect(knex.fn.uuid().toQuery()).to.equal(
+              expectedStatement[knex.client.driverName]
+            );
+          }
+        });
+
+        it('should allow using .fn-methods to generate a uuid with select', async function () {
+          const uuid = await knex.select(knex.raw(knex.fn.uuid() + ' as uuid'));
+          expect(uuid[0].uuid).to.match(
+            /^[0-9A-F]{8}-[0-9A-F]{4}-[1-5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+          );
+        });
+
+        it('should allow using .fn-methods to be a default value', async function () {
+          await knex.schema.dropTableIfExists('default_uuid_table');
+          await knex.schema.createTable('default_uuid_table', (t) => {
+            t.uuid('uuid').defaultTo(knex.fn.uuid());
+          });
+          await knex('default_uuid_table').insert({});
+          const uuid = await knex('default_uuid_table').select('uuid');
+          expect(uuid[0].uuid).to.match(
+            /^[0-9A-F]{8}-[0-9A-F]{4}-[1-5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+          );
         });
 
         it('should allow using .fn-methods to convert uuid to binary', function () {
@@ -707,10 +802,10 @@ describe('Additional', function () {
               return knex.raw('SELECT pg_sleep(1)');
             },
             [drivers.MySQL]: function () {
-              return knex.raw('SELECT SLEEP(1)');
+              return knex.raw(`SELECT SLEEP(1) -- zero ${driverName}`);
             },
             [drivers.MySQL2]: function () {
-              return knex.raw('SELECT SLEEP(1)');
+              return knex.raw(`SELECT SLEEP(1) -- zero ${driverName}`);
             },
             [drivers.MsSQL]: function () {
               return knex.raw("WAITFOR DELAY '00:00:01'");
@@ -764,10 +859,10 @@ describe('Additional', function () {
               return knex.raw('SELECT pg_sleep(10)');
             },
             [drivers.MySQL]: function () {
-              return knex.raw('SELECT SLEEP(10)');
+              return knex.raw(`SELECT SLEEP(10) -- one ${driverName}`);
             },
             [drivers.MySQL2]: function () {
-              return knex.raw('SELECT SLEEP(10)');
+              return knex.raw(`SELECT SLEEP(10) -- one ${driverName}`);
             },
             [drivers.MsSQL]: function () {
               return knex.raw("WAITFOR DELAY '00:00:10'");
@@ -823,7 +918,7 @@ describe('Additional', function () {
             throw new Error('Missing test query for driverName: ' + driverName);
           }
 
-          const getProcessesQuery = getProcessesQueries[driverName]();
+          const getProcessesQuery = getProcessesQueries[driverName];
 
           try {
             await addTimeout();
@@ -841,7 +936,7 @@ describe('Additional', function () {
             // too early.
             // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
             await delay(50);
-            const results = await getProcessesQuery;
+            const results = await getProcessesQuery();
 
             let processes;
             let sleepProcess;
@@ -883,10 +978,10 @@ describe('Additional', function () {
               return 'SELECT pg_sleep(10)';
             },
             [drivers.MySQL]: function () {
-              return 'SELECT SLEEP(10)';
+              return `SELECT SLEEP(10) -- two ${driverName}`;
             },
             [drivers.MySQL2]: function () {
-              return 'SELECT SLEEP(10)';
+              return `SELECT SLEEP(10) -- two ${driverName}`;
             },
             [drivers.MsSQL]: function () {
               return "WAITFOR DELAY '00:00:10'";
@@ -942,7 +1037,7 @@ describe('Additional', function () {
             throw new Error('Missing test query for driverName: ' + driverName);
           }
 
-          const getProcessesQuery = getProcessesQueries[driverName]();
+          const getProcessesQuery = getProcessesQueries[driverName];
 
           try {
             await knex.transaction((trx) => addTimeout().transacting(trx));
@@ -960,7 +1055,7 @@ describe('Additional', function () {
             // too early.
             // 50ms delay since killing query doesn't seem to have immediate effect to the process listing
             await delay(50);
-            const results = await getProcessesQuery;
+            const results = await getProcessesQuery();
             let processes;
             let sleepProcess;
 
@@ -986,6 +1081,16 @@ describe('Additional', function () {
           // To make this test easier, I'm changing the pool settings to max 1.
           // Also setting acquireTimeoutMillis to lower as not to wait the default time
           const knexConfig = _.cloneDeep(knex.client.config);
+          if (
+            knex.client.config.connection &&
+            knex.client.config.connection.password
+          ) {
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
+          }
+
           knexConfig.pool.min = 0;
           knexConfig.pool.max = 1;
           knexConfig.pool.acquireTimeoutMillis = 100;
@@ -1003,10 +1108,10 @@ describe('Additional', function () {
               return knexDb.raw('SELECT pg_sleep(10)');
             },
             [drivers.MySQL]: function () {
-              return knexDb.raw('SELECT SLEEP(10)');
+              return knexDb.raw(`SELECT SLEEP(10) -- three ${driverName}`);
             },
             [drivers.MySQL2]: function () {
-              return knexDb.raw('SELECT SLEEP(10)');
+              return knexDb.raw(`SELECT SLEEP(10) -- three ${driverName}`);
             },
             [drivers.MsSQL]: function () {
               return knexDb.raw("WAITFOR DELAY '00:00:10'");
@@ -1103,6 +1208,16 @@ describe('Additional', function () {
           // To make this test easier, I'm changing the pool settings to max 1.
           // Also setting acquireTimeoutMillis to lower as not to wait the default time
           const knexConfig = _.cloneDeep(knex.client.config);
+          if (
+            knex.client.config.connection &&
+            knex.client.config.connection.password
+          ) {
+            setHiddenProperty(
+              knexConfig.connection,
+              knex.client.config.connection
+            );
+          }
+
           knexConfig.pool.min = 0;
           knexConfig.pool.max = 2;
           knexConfig.pool.acquireTimeoutMillis = 100;
@@ -1114,8 +1229,10 @@ describe('Additional', function () {
               `SELECT pg_sleep(${sleepSeconds})`,
             [drivers.PgNative]: (sleepSeconds) =>
               `SELECT pg_sleep(${sleepSeconds})`,
-            [drivers.MySQL]: (sleepSeconds) => `SELECT SLEEP(${sleepSeconds})`,
-            [drivers.MySQL2]: (sleepSeconds) => `SELECT SLEEP(${sleepSeconds})`,
+            [drivers.MySQL]: (sleepSeconds) =>
+              `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
+            [drivers.MySQL2]: (sleepSeconds) =>
+              `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
           };
 
           const driverName = knex.client.driverName;
@@ -1399,6 +1516,17 @@ describe('Additional', function () {
             knexDb.initialize();
             expect(knexDb.client.pool.destroyed).to.equal(false);
           });
+        });
+
+        it('should not leak passwords when logged', async function () {
+          const query = knex('test_table_two').select('*');
+          const fakeLog = util.inspect(query, { depth: null });
+
+          // These passwords come from `scripts/docker-compose.yml`
+          const passwordMatches = fakeLog.match(
+            /(knextest|testpassword|S0meVeryHardPassword|testrootpassword)/g
+          );
+          expect(passwordMatches).to.be.null;
         });
       });
     });

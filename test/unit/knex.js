@@ -364,6 +364,49 @@ describe('knex', () => {
     }).to.throw('Knex: run\n$ npm install foo-bar --save\nCannot require...');
   });
 
+  it('surfaces acquire connection errors to the user', async () => {
+    // create a fake client that will fail in exactly the situation we want, in order
+    // to produce the "propagated error message" behavior from tarn
+    class FailClient extends Knex.Client {
+      count = 0;
+      acquireRawConnection() {
+        return Promise.reject(new Error('oh noes'));
+      }
+      get driverName() {
+        return 'fail';
+      }
+      _driver() {
+        return {};
+      }
+    }
+
+    const warnings = [];
+
+    const knex = Knex({
+      client: FailClient,
+      connection: {},
+      pool: {
+        min: 0,
+        max: 2,
+        // createTimeoutMillis: 1000,
+        acquireTimeoutMillis: 1,
+        propagateCreateError: false,
+      },
+      log: {
+        warn: (msg) => {
+          warnings.push(msg);
+        },
+      },
+      useNullAsDefault: true,
+    });
+
+    // expect to have logged a warning with a stack trace pointing to the origin of the error
+    await expect(knex.select(1)).to.eventually.be.rejected.then((err) => {
+      expect(err.cause.stack).to.match(/oh noes/);
+    });
+    expect(warnings[0]).to.match(/oh noes.*FailClient.acquire/s);
+  });
+
   describe('transaction', () => {
     before(function skipSuiteIfSqliteConfigAbsent() {
       // This is the case when the |DB| environment parameter does not include |sqlite|.
@@ -753,6 +796,44 @@ describe('knex', () => {
       expect(errorArgs.queryContext).to.equal(context);
     });
 
+    it('should show compiled sql on error message when compileSqlOnError is true', async function () {
+      const spy = sinon.spy();
+      const knex = Knex({ ...sqliteConfig, compileSqlOnError: true })
+        .from('test')
+        .on('query-error', spy);
+
+      try {
+        await knex.insert({ foo: 'bar' });
+        // eslint-disable-next-line no-empty
+      } catch (_e) {}
+
+      expect(spy).to.be.calledOnce;
+      const [[error]] = spy.args;
+      expect(error).to.be.instanceOf(Error);
+      expect(error.message).to.equal(
+        "insert into `test` (`foo`) values ('bar') - SQLITE_ERROR: no such table: test"
+      );
+    });
+
+    it('should show parameterized sql on error message when compileSqlOnError is false', async function () {
+      const spy = sinon.spy();
+      const knex = Knex({ ...sqliteConfig, compileSqlOnError: false })
+        .from('test')
+        .on('query-error', spy);
+
+      try {
+        await knex.insert({ foo: 'bar' });
+        // eslint-disable-next-line no-empty
+      } catch (_e) {}
+
+      expect(spy).to.be.calledOnce;
+      const [[error]] = spy.args;
+      expect(error).to.be.instanceOf(Error);
+      expect(error.message).to.equal(
+        'insert into `test` (`foo`) values (?) - SQLITE_ERROR: no such table: test'
+      );
+    });
+
     // TODO: Consider moving these somewhere that tests the
     //       QueryBuilder interface more directly.
     context('qb = knex.select(1)', function () {
@@ -779,6 +860,38 @@ describe('knex', () => {
           return knex.destroy();
         });
       }
+    });
+  });
+
+  describe('config mutation (#5629)', () => {
+    it('should not mutate the config object passed to knex', () => {
+      const config = {
+        client: 'sqlite3',
+        connection: {
+          filename: ':memory:',
+          password: 'secret',
+        },
+        useNullAsDefault: true,
+      };
+
+      const originalPassword = config.connection.password;
+      const descriptor = Object.getOwnPropertyDescriptor(
+        config.connection,
+        'password'
+      );
+      expect(descriptor.enumerable).to.equal(true);
+
+      const knex = Knex(config);
+
+      // The original config must not be modified
+      expect(config.connection.password).to.equal(originalPassword);
+      const descriptorAfter = Object.getOwnPropertyDescriptor(
+        config.connection,
+        'password'
+      );
+      expect(descriptorAfter.enumerable).to.equal(true);
+
+      knex.destroy();
     });
   });
 });

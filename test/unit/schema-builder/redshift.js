@@ -7,6 +7,7 @@ let tableSql;
 
 const Redshift_Client = require('../../../lib/dialects/redshift');
 const knex = require('../../../knex');
+const FunctionHelper = require('../../../lib/knex-builder/FunctionHelper');
 const client = new Redshift_Client({ client: 'redshift' });
 
 const equal = require('assert').equal;
@@ -73,6 +74,39 @@ describe('Redshift SchemaBuilder', function () {
     expect(tableSql[1].sql).to.equal(
       'alter table "users" add column "email" varchar'
     );
+  });
+
+  it('drop primary if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropPrimaryIfExists();
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
+  it('drop foreign if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropForeignIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
+  it('drop unique if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropUniqueIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
   });
 
   describe('views', function () {
@@ -886,6 +920,14 @@ describe('Redshift SchemaBuilder', function () {
     expect(tableSql.length).to.equal(1);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "foo" binary(16)'
+    );
+  });
+
+  it('redshift doesnt have a uuid function', function () {
+    const helperFunctions = new FunctionHelper(client);
+
+    expect(() => helperFunctions.uuid()).to.throw(
+      `${client.driverName} does not have a uuid function`
     );
   });
 

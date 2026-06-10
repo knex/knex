@@ -73,12 +73,18 @@ const main = async () => {
         SELECT id 
         FROM departments
         WHERE departments.departmentName = ANY(?)
-      ) AS d ON d.id = users.id`, 
+      ) AS d ON d.id = users.id`,
       [['Name 1, Name 2']]
     )
   );
 
-  knex.transaction(async trx => {
+  expectType<Pick<User, 'name'>[]>(
+    await knex.select().from(function () {
+      return this.from<User>('users').select('name');
+    })
+  );
+
+  knex.transaction(async (trx) => {
     expectType<User[]>(await trx.select('*').from('users'));
   });
 };

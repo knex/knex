@@ -14,14 +14,14 @@
 //
 // Prior discussion: https://github.com/tgriesser/knex/issues/3247
 export interface Registry {
-    // We can't actually have default types here
-    // because typescript's augmentation will not permit
-    // overriding the type of a property already present.
-    //
-    // But the effective defaults are documented below:
-    //
-    // Count: number | string;
-    //
-    // Refer to Knex.Lookup type operator to see how the defaults
-    // are actually specified.
+  // We can't actually have default types here
+  // because typescript's augmentation will not permit
+  // overriding the type of a property already present.
+  //
+  // But the effective defaults are documented below:
+  //
+  // Count: number | string;
+  //
+  // Refer to Knex.Lookup type operator to see how the defaults
+  // are actually specified.
 }

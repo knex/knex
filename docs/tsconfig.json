@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": false,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", ".vitepress/**/*.ts"]
+}

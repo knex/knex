@@ -27,6 +27,7 @@ describe('MSSQL dialect', () => {
         let knex;
         before(async () => {
           knex = getKnexForDb(db);
+          await knex.schema.dropTableIfExists('test');
         });
 
         beforeEach(async () => {
