@@ -452,7 +452,7 @@ describe('SQLite SchemaBuilder', function () {
     equal(1, tableSql.length);
     equal(
       tableSql[0].sql,
-      'create table `users` (`foo` varchar, primary key (`foo`))'
+      'create table `users` (`foo` varchar(255), primary key (`foo`))'
     );
   });
 
