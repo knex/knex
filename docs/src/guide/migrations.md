@@ -308,6 +308,26 @@ exports.config = { transaction: false };
 
 The same config property can be used for enabling transaction per-migration in case the common configuration has `disableTransactions: false`.
 
+#### Running migrations within an external transaction
+
+The migration methods `latest`, `up`, `down` and `rollback` can be called on a transaction object. When invoked this way, they reuse the surrounding transaction instead of opening a new (nested) one, so the migrations become part of the outer transaction and are committed or rolled back together with it.
+
+This is especially useful for transaction-based testing: run your migrations, exercise your code, then roll back the transaction to leave the database untouched.
+
+```js
+await knex.transaction(async (trx) => {
+  // Migrations run inside `trx`, not in a new nested transaction
+  await trx.migrate.latest();
+
+  // ... run your tests against `trx` ...
+
+  // Rolling back the transaction undoes the migrations as well
+  await trx.rollback();
+});
+```
+
+Note that this is not supported on sqlite3, which does not allow schema changes inside a transaction that is later rolled back without side effects.
+
 #### Sqlite3-specific concerns
 
 Disabling / enabling foreign key checking [has no effect within a transaction](https://sqlite.org/pragma.html#pragma_foreign_keys) on sqlite3, so features such as `.dropColumn()` cannot be emulated correctly inside of a migration-level transaction (and [can even cause data loss](https://github.com/knex/knex/pull/6315)). Knex now throws an error in these cases.
