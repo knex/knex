@@ -364,6 +364,49 @@ describe('knex', () => {
     }).to.throw('Knex: run\n$ npm install foo-bar --save\nCannot require...');
   });
 
+  it('surfaces acquire connection errors to the user', async () => {
+    // create a fake client that will fail in exactly the situation we want, in order
+    // to produce the "propagated error message" behavior from tarn
+    class FailClient extends Knex.Client {
+      count = 0;
+      acquireRawConnection() {
+        return Promise.reject(new Error('oh noes'));
+      }
+      get driverName() {
+        return 'fail';
+      }
+      _driver() {
+        return {};
+      }
+    }
+
+    const warnings = [];
+
+    const knex = Knex({
+      client: FailClient,
+      connection: {},
+      pool: {
+        min: 0,
+        max: 2,
+        // createTimeoutMillis: 1000,
+        acquireTimeoutMillis: 1,
+        propagateCreateError: false,
+      },
+      log: {
+        warn: (msg) => {
+          warnings.push(msg);
+        },
+      },
+      useNullAsDefault: true,
+    });
+
+    // expect to have logged a warning with a stack trace pointing to the origin of the error
+    await expect(knex.select(1)).to.eventually.be.rejected.then((err) => {
+      expect(err.cause.stack).to.match(/oh noes/);
+    });
+    expect(warnings[0]).to.match(/oh noes.*FailClient.acquire/s);
+  });
+
   describe('transaction', () => {
     before(function skipSuiteIfSqliteConfigAbsent() {
       // This is the case when the |DB| environment parameter does not include |sqlite|.

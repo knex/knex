@@ -173,6 +173,7 @@ const testConfigs = {
     pool: poolSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false,
   },
 
   'better-sqlite3': {
@@ -183,6 +184,7 @@ const testConfigs = {
     pool: poolBetterSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false,
   },
 
   mssql: {
