@@ -1056,6 +1056,11 @@ describe('Migrations', function () {
         });
 
         describe('knex.migrate within external transaction', () => {
+          // Rolling DDL back needs transactional DDL. MySQL/MariaDB and
+          // Oracle implicitly commit on DDL; SQLite can't roll it back here.
+          const canRollbackDDL = (knex) =>
+            !isSQLite(knex) && !isMysql(knex) && !isOracle(knex);
+
           afterEach(async () => {
             await knex.migrate.rollback(
               { directory: 'test/integration2/migrate/test' },
@@ -1064,20 +1069,25 @@ describe('Migrations', function () {
           });
 
           it('should run latest() inside an external transaction and roll back cleanly', async function () {
-            if (isSQLite(knex)) {
+            if (!canRollbackDDL(knex)) {
               return this.skip();
             }
-            await knex.transaction(async (trx) => {
-              await trx.migrate.latest({
-                directory: 'test/integration2/migrate/test',
+            const rollback = new Error('rollback');
+            await knex
+              .transaction(async (trx) => {
+                await trx.migrate.latest({
+                  directory: 'test/integration2/migrate/test',
+                });
+
+                const data = await trx('knex_migrations').select('*');
+                expect(data).to.have.length(2);
+
+                // Throw to roll the whole transaction back
+                throw rollback;
+              })
+              .catch((error) => {
+                if (error !== rollback) throw error;
               });
-
-              const data = await trx('knex_migrations').select('*');
-              expect(data).to.have.length(2);
-
-              // Roll back the transaction — everything should be undone
-              await trx.rollback();
-            });
 
             // After rollback, no migrations should be recorded
             const hasTable = await knex.schema.hasTable('knex_migrations');
@@ -1109,7 +1119,7 @@ describe('Migrations', function () {
           });
 
           it('should run rollback() inside an external transaction and undo on trx rollback', async function () {
-            if (isSQLite(knex)) {
+            if (!canRollbackDDL(knex)) {
               return this.skip();
             }
             // First, run migrations normally
@@ -1117,17 +1127,22 @@ describe('Migrations', function () {
               directory: 'test/integration2/migrate/test',
             });
 
-            await knex.transaction(async (trx) => {
-              await trx.migrate.rollback({
-                directory: 'test/integration2/migrate/test',
+            const rollback = new Error('rollback');
+            await knex
+              .transaction(async (trx) => {
+                await trx.migrate.rollback({
+                  directory: 'test/integration2/migrate/test',
+                });
+
+                const data = await trx('knex_migrations').select('*');
+                expect(data).to.have.length(0);
+
+                // Throw to undo the rollback we just performed
+                throw rollback;
+              })
+              .catch((error) => {
+                if (error !== rollback) throw error;
               });
-
-              const data = await trx('knex_migrations').select('*');
-              expect(data).to.have.length(0);
-
-              // Roll back the transaction — rollback should be undone
-              await trx.rollback();
-            });
 
             // Migrations should still be there
             const data = await knex('knex_migrations').select('*');

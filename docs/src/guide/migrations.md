@@ -315,18 +315,25 @@ The migration methods `latest`, `up`, `down` and `rollback` can be called on a t
 This is especially useful for transaction-based testing: run your migrations, exercise your code, then roll back the transaction to leave the database untouched.
 
 ```js
-await knex.transaction(async (trx) => {
-  // Migrations run inside `trx`, not in a new nested transaction
-  await trx.migrate.latest();
+const Rollback = new Error('rollback');
+try {
+  await knex.transaction(async (trx) => {
+    // Migrations run inside `trx`, not in a new nested transaction
+    await trx.migrate.latest();
 
-  // ... run your tests against `trx` ...
+    // ... run your tests against `trx` ...
 
-  // Rolling back the transaction undoes the migrations as well
-  await trx.rollback();
-});
+    // Throw to roll the whole transaction (migrations included) back
+    throw Rollback;
+  });
+} catch (err) {
+  if (err !== Rollback) throw err;
+}
 ```
 
-Note that this is not supported on sqlite3, which does not allow schema changes inside a transaction that is later rolled back without side effects.
+Use a thrown error to trigger the rollback rather than calling `trx.rollback()` and letting the callback resolve normally — the latter leaves Knex trying to both roll back and commit the same transaction, which hangs on some drivers (e.g. MSSQL).
+
+Rolling back schema migrations this way relies on the database supporting **transactional DDL**. PostgreSQL, CockroachDB and MSSQL do, so a migration that creates or drops tables can be fully undone by rolling back the surrounding transaction. MySQL/MariaDB and Oracle implicitly commit on DDL statements (e.g. `CREATE TABLE`), so those changes cannot be rolled back, and SQLite has its own limitations here. On those engines you can still run migrations within a transaction that you intend to commit, but you cannot rely on rolling DDL back.
 
 #### Sqlite3-specific concerns
 
