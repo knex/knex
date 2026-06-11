@@ -37,12 +37,19 @@ jobs:
             postgres,
             pgnative,
             mysql,
+            mariadb,
             mssql,
             sqlite3,
             cockroachdb,
             better-sqlite3,
             oracledb,
           ]
+        # mariadb's client only supports Node 20+
+        exclude:
+          - node-version: 18.x
+            database-type: mariadb
+          - node-version: 16.x
+            database-type: mariadb
 
     steps:
       - name: Checkout Repository
