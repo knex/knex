@@ -130,6 +130,31 @@ describe('Additional', function () {
           });
         });
 
+        it('should emit an error rather than crash when the stream cannot acquire a connection (#6460)', async function () {
+          const limitedKnex = getKnexForDb(db, {
+            acquireConnectionTimeout: 200,
+            pool: { min: 0, max: 1 },
+          });
+          const heldConnection = await limitedKnex.client.acquireConnection();
+          try {
+            const stream = limitedKnex.raw('SELECT 1').stream();
+            let error;
+            try {
+              // eslint-disable-next-line no-unused-vars
+              for await (const _ of stream) {
+                //
+              }
+            } catch (e) {
+              error = e;
+            }
+            expect(error).to.be.an('error');
+            await new Promise((res) => setTimeout(res, 50));
+          } finally {
+            await limitedKnex.client.releaseConnection(heldConnection);
+            await limitedKnex.destroy();
+          }
+        });
+
         it('should release the connection when a stream query iteration errors', async function () {
           const spy = sinon.spy(knex.client, 'releaseConnection');
 
