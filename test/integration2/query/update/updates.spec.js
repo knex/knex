@@ -3,7 +3,12 @@
 const { expect } = require('chai');
 
 const { TEST_TIMESTAMP } = require('../../../util/constants');
-const { isPostgreSQL, isMysql, isOracle } = require('../../../util/db-helpers');
+const {
+  isPostgreSQL,
+  isMysql,
+  isMariaDB,
+  isOracle,
+} = require('../../../util/db-helpers');
 const {
   getAllDbs,
   getKnexForDb,
@@ -624,6 +629,10 @@ describe('Updates', function () {
       });
 
       it('with update query', async function () {
+        if (isMariaDB(knex)) {
+          // MariaDB does not support CTEs (WITH) in UPDATE statements.
+          return this.skip();
+        }
         await knex
           .with('withClause', function () {
             this.select('last_name')

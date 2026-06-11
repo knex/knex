@@ -716,6 +716,7 @@ module.exports = function (knex) {
       const mysqlKillConnection = async (connection) =>
         knex.raw('KILL ?', [connection.threadId]);
       const killConnectionMap = {
+        [drivers.MariaDB]: mysqlKillConnection,
         [drivers.MySQL]: mysqlKillConnection,
         [drivers.MySQL2]: mysqlKillConnection,
         [drivers.PostgreSQL]: async (connection) =>

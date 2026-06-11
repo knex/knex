@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const MySQL2_Client = require('../../../lib/dialects/mysql2');
+const MariaDB_Client = require('../../../lib/dialects/mariadb');
 const knex = require('../../../knex');
 
 module.exports = function (dialect) {
@@ -14,6 +15,9 @@ module.exports = function (dialect) {
         break;
       case 'mysql2':
         client = new MySQL2_Client({ client: 'mysql2' });
+        break;
+      case 'mariadb':
+        client = new MariaDB_Client({ client: 'mariadb' });
         break;
     }
 
