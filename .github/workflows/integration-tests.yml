@@ -107,10 +107,19 @@ jobs:
 
       - name: Run Tests
         run: npm run test:db
-        if: matrix.database-type != 'oracledb'
+        if: matrix.database-type != 'oracledb' && matrix.database-type != 'postgres-spanner'
         env:
           CI: true
           DB: ${{ matrix.database-type }}
+          KNEX_TEST_TIMEOUT: 60000
+
+      # Spanner's PostgreSQL interface is a limited subset (no schemas/migrations),
+      # so it runs a dedicated spec instead of the shared integration suite.
+      - name: Run Tests (postgres-spanner)
+        run: npm run test:spanner
+        if: matrix.database-type == 'postgres-spanner'
+        env:
+          CI: true
           KNEX_TEST_TIMEOUT: 60000
 
       # This allows for oracle tests to run and fail as part of PR #4889.
