@@ -1,4 +1,3 @@
-require('../util/chai-setup.js');
 const Knex = require('../../lib/index');
 const QueryBuilder = require('../../lib/query/querybuilder');
 const { expect } = require('chai');

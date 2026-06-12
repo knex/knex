@@ -6209,6 +6209,24 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('should produce correct binding order when updating with a subquery updateFrom in pg (#6277)', () => {
+    testsql(
+      qb()
+        .update({ flagged: true })
+        .table('orders')
+        .updateFrom(
+          qb().from('accounts').where('tier', 'gold').as('gold_accounts')
+        )
+        .where('orders.status', 'unpaid'),
+      {
+        pg: {
+          sql: 'update "orders" set "flagged" = ? from (select * from "accounts" where "tier" = ?) as "gold_accounts" where "orders"."status" = ?',
+          bindings: [true, 'gold', 'unpaid'],
+        },
+      }
+    );
+  });
+
   it('should not update columns undefined values', () => {
     testsql(
       qb()
@@ -6811,6 +6829,32 @@ describe('QueryBuilder', () => {
         .where('email', 'foo2')
         .toString();
     }).to.throw('onConflict().merge().where() is not supported for mysql');
+  });
+
+  it('insert multiple rows - merge with where clause', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'scooby' },
+        ])
+        .onConflict('email')
+        .merge()
+        .where('email', 'foo2'),
+      {
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true ' +
+            'on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `email` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'scooby', 'foo2'],
+        },
+        pg: {
+          sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "email" = ?',
+          bindings: ['foo', 'taylor', 'bar', 'scooby', 'foo2'],
+        },
+      }
+    );
   });
 
   it('Calling decrement and then increment will overwrite the previous value', () => {
