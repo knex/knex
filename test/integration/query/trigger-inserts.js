@@ -1606,6 +1606,177 @@ module.exports = function (knex) {
         expect(rows[0].name).to.equal('BEFORE');
       });
 
+      it('#5257 - pre-existing WHERE clauses do not leak into onConflict merge', async function () {
+        if (isRedshift(knex)) {
+          return this.skip();
+        }
+
+        // Setup: Create table with unique key column
+        await knex.schema.dropTableIfExists('upsert_tests');
+        await knex.schema.createTable('upsert_tests', (table) => {
+          table.string('key');
+          table.string('value');
+          table.unique('key');
+        });
+
+        // Setup: Create row to conflict against
+        await knex('upsert_tests').insert({
+          key: 'existingkey',
+          value: 'BEFORE',
+        });
+
+        // Build a query with a pre-existing WHERE clause, then reuse
+        // the builder for an upsert. The WHERE should NOT leak.
+        try {
+          const builder = knex('upsert_tests').where('key', 'existingkey');
+          await builder
+            .insert(
+              { key: 'existingkey', value: 'AFTER' },
+              'key',
+              insertTriggerOptions
+            )
+            .onConflict('key')
+            .merge(['value']);
+        } catch (err) {
+          if (isOracle(knex) || isMssql(knex)) {
+            expect(err).to.be.an('error');
+            if (err.message.includes('.onConflict() is not supported for'))
+              return;
+          }
+          throw err;
+        }
+
+        // Check that row HAS been updated (upsert succeeded without
+        // the leaked WHERE causing an ambiguous column error)
+        const rows = await knex('upsert_tests')
+          .where({ key: 'existingkey' })
+          .select();
+        expect(rows.length).to.equal(1);
+        expect(rows[0].value).to.equal('AFTER');
+      });
+
+      it('#5257 - pre-existing WHERE clauses do not leak but post-merge WHERE still applies', async function () {
+        if (isRedshift(knex)) {
+          return this.skip();
+        }
+
+        // Setup: Create table with unique email column and a role column
+        await knex.schema.dropTableIfExists('upsert_tests');
+        await knex.schema.createTable('upsert_tests', (table) => {
+          table.string('name');
+          table.string('email');
+          table.string('role');
+          table.unique('email');
+        });
+
+        // Setup: Create row to conflict against
+        await knex('upsert_tests').insert({
+          email: 'mergetest1@example.com',
+          role: 'admin',
+          name: 'BEFORE',
+        });
+
+        // Build a query with a pre-existing WHERE clause, then perform
+        // an upsert with a post-merge WHERE. Only the post-merge WHERE
+        // should appear in the upsert statement.
+        try {
+          const builder = knex('upsert_tests').where('name', 'leaked');
+          await builder
+            .insert(
+              { email: 'mergetest1@example.com', name: 'AFTER' },
+              'email',
+              insertTriggerOptions
+            )
+            .onConflict('email')
+            .merge()
+            .where('upsert_tests.role', 'admin');
+        } catch (err) {
+          if (isOracle(knex) || isMssql(knex)) {
+            expect(err).to.be.an('error');
+            if (err.message.includes('.onConflict() is not supported for'))
+              return;
+          }
+          if (isMysql(knex)) {
+            expect(err).to.be.an('error');
+            if (
+              err.message.includes(
+                '.onConflict().merge().where() is not supported for'
+              )
+            )
+              return;
+          }
+          throw err;
+        }
+
+        // Check that row HAS been updated (post-merge WHERE matched)
+        const rows = await knex('upsert_tests')
+          .where({ email: 'mergetest1@example.com' })
+          .select();
+        expect(rows.length).to.equal(1);
+        expect(rows[0].name).to.equal('AFTER');
+      });
+
+      it('#5257 - pre-existing WHERE clauses do not leak and post-merge WHERE that does not match prevents update', async function () {
+        if (isRedshift(knex)) {
+          return this.skip();
+        }
+
+        // Setup: Create table with unique email column and a role column
+        await knex.schema.dropTableIfExists('upsert_tests');
+        await knex.schema.createTable('upsert_tests', (table) => {
+          table.string('name');
+          table.string('email');
+          table.string('role');
+          table.unique('email');
+        });
+
+        // Setup: Create row to conflict against
+        await knex('upsert_tests').insert({
+          email: 'mergetest1@example.com',
+          role: 'admin',
+          name: 'BEFORE',
+        });
+
+        // Pre-existing WHERE + post-merge WHERE that does NOT match.
+        // The row should NOT be updated because the post-merge WHERE
+        // filters it out (role != 'nonexistent').
+        try {
+          const builder = knex('upsert_tests').where('name', 'leaked');
+          await builder
+            .insert(
+              { email: 'mergetest1@example.com', name: 'AFTER' },
+              'email',
+              insertTriggerOptions
+            )
+            .onConflict('email')
+            .merge()
+            .where('upsert_tests.role', 'nonexistent');
+        } catch (err) {
+          if (isOracle(knex) || isMssql(knex)) {
+            expect(err).to.be.an('error');
+            if (err.message.includes('.onConflict() is not supported for'))
+              return;
+          }
+          if (isMysql(knex)) {
+            expect(err).to.be.an('error');
+            if (
+              err.message.includes(
+                '.onConflict().merge().where() is not supported for'
+              )
+            )
+              return;
+          }
+          throw err;
+        }
+
+        // Check that row HAS NOT been updated (post-merge WHERE did not match)
+        const rows = await knex('upsert_tests')
+          .where({ email: 'mergetest1@example.com' })
+          .select();
+        expect(rows.length).to.equal(1);
+        expect(rows[0].name).to.equal('BEFORE');
+      });
+
       it('updates columns with raw value when inserting a duplicate key to unique column and merge is specified', async function () {
         if (isRedshift(knex)) {
           return this.skip();
