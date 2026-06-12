@@ -24,7 +24,7 @@ knex(knex.ref('users').withSchema('TenantId')).select();
 
 ### alias
 
-Alias is supported using `.alias(string)`
+Alias is supported using `.alias(string)`:
 
 ```js
 // @sql

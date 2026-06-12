@@ -46,6 +46,10 @@ knex
   });
 ```
 
+```js
+knex.batchInsert(tableName)
+```
+
 ## now
 
 **knex.fn.now(precision)**
@@ -91,3 +95,44 @@ Convert a binary uuid (binary(16)) to a string uuid (char(36))
 const res = await knex('uuid_table').select('uuid_col_binary');
 knex.fn.binToUuid(res[0].uuid_col_binary);
 ```
+
+```js
+knex.migrate.make(name, [config])
+```
+
+```js
+knex.migrate.latest([config])
+```
+
+```js
+knex.migrate.rollback([config], [all])
+```
+
+```js
+knex.migrate.up([config])
+```
+
+```js
+knex.migrate.down([config])
+```
+
+```js
+knex.migrate.currentVersion([config])
+```
+
+```js
+knex.migrate.list([config])
+```
+
+```js
+knex.migrate.forceFreeMigrationsLock([config])
+```
+
+```js
+knex.seed.make(name, [config])
+```
+
+```js
+knex.seed.run([config])
+```
+````
