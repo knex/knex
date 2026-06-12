@@ -510,6 +510,74 @@ knex('accounts').jsonInsert(
 );
 ```
 
+### castInt
+
+**.castInt(column|builder|raw|value, [alias])**
+
+Cast a value or column to an integer using the SQL cast function, with the target type resolved for the current dialect. The value can be a literal or a column reference via knex.ref(), and an alias can be specified.
+
+```js
+// @sql
+knex('users').select(knex.castInt(knex.ref('age'), 'age_int'));
+```
+
+cast\*() functions can be used directly from the knex object and can be nested.
+
+```js
+// @sql
+knex('users').select(
+  knex.castChar(knex.castInt(knex.ref('age')), 10, 'age_char')
+);
+```
+
+### castBigint
+
+**.castBigint(column|builder|raw|value, [alias])**
+
+Cast a value or column to a big integer, with the target type resolved for the current dialect.
+
+### castDouble
+
+**.castDouble(column|builder|raw|value, [alias])**
+
+Cast a value or column to a double precision number, with the target type resolved for the current dialect.
+
+### castReal
+
+**.castReal(column|builder|raw|value, [alias])**
+
+Cast a value or column to a real (floating point) number, with the target type resolved for the current dialect.
+
+### castText [-MY]
+
+**.castText(column|builder|raw|value, [alias])**
+
+Cast a value or column to text, with the target type resolved for the current dialect. Not supported by MySQL, use castChar instead.
+
+### castChar
+
+**.castChar(column|builder|raw|value, length, [alias])**
+
+Cast a value or column to a fixed-length char of the given length.
+
+### castJson
+
+**.castJson(column|builder|raw|value, [alias])**
+
+Cast a value or column to json, with the target type resolved for the current dialect.
+
+### castJsonb
+
+**.castJsonb(column|builder|raw|value, [alias])**
+
+Cast a value or column to jsonb, with the target type resolved for the current dialect.
+
+### castBinary
+
+**.castBinary(column|builder|raw|value, [alias])**
+
+Cast a value or column to a binary type, with the target type resolved for the current dialect. On MSSQL it performs a double cast to avoid the null bytes that nvarchar parameters would otherwise produce.
+
 ### offset
 
 **.offset(value, options={skipBinding: boolean})**
