@@ -1055,10 +1055,11 @@ describe('Oracle SchemaBuilder', function () {
         })
         .toSQL();
 
-      expect(spy.callCount).to.equal(3);
+      expect(spy.callCount).to.equal(4);
       expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
-      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
-      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['users', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.lastCall.args).to.deep.equal(['users', 'table context']);
     });
 
     it('TableCompiler passes queryContext to wrapIdentifier', function () {
@@ -1070,10 +1071,11 @@ describe('Oracle SchemaBuilder', function () {
         })
         .toSQL();
 
-      expect(spy.callCount).to.equal(3);
+      expect(spy.callCount).to.equal(4);
       expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
-      expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
-      expect(spy.thirdCall.args).to.deep.equal(['users', undefined]);
+      expect(spy.secondCall.args).to.deep.equal(['users', undefined]);
+      expect(spy.thirdCall.args).to.deep.equal(['email', 'email context']);
+      expect(spy.lastCall.args).to.deep.equal(['users', undefined]);
     });
 
     it('TableCompiler allows overwriting queryContext from SchemaCompiler', function () {
@@ -1087,10 +1089,11 @@ describe('Oracle SchemaBuilder', function () {
         })
         .toSQL();
 
-      expect(spy.callCount).to.equal(3);
+      expect(spy.callCount).to.equal(4);
       expect(spy.firstCall.args).to.deep.equal(['id', 'table context']);
-      expect(spy.secondCall.args).to.deep.equal(['email', 'table context']);
-      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['users', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['email', 'table context']);
+      expect(spy.lastCall.args).to.deep.equal(['users', 'table context']);
     });
 
     it('ColumnCompiler allows overwriting queryContext from TableCompiler', function () {
@@ -1104,10 +1107,11 @@ describe('Oracle SchemaBuilder', function () {
         })
         .toSQL();
 
-      expect(spy.callCount).to.equal(3);
+      expect(spy.callCount).to.equal(4);
       expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
-      expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
-      expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+      expect(spy.secondCall.args).to.deep.equal(['users', 'table context']);
+      expect(spy.thirdCall.args).to.deep.equal(['email', 'email context']);
+      expect(spy.lastCall.args).to.deep.equal(['users', 'table context']);
     });
   });
 
