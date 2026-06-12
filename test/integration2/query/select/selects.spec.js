@@ -1607,10 +1607,8 @@ describe('Selects', function () {
             knex.castInt(knex.ref('logins'), 'aliasInt'),
             knex.castBigint(knex.ref('logins'), 'aliasBigInt'),
             knex.castBinary('binary', 'aliasBinary'),
+            knex.castText(knex.ref('about'), 'aliasText'),
           ];
-          if (!isMysql(knex)) {
-            casts.push(knex.castText(knex.ref('about'), 'aliasText'));
-          }
           await knex
             .select(casts)
             .from('accounts')
@@ -1750,7 +1748,8 @@ describe('Selects', function () {
                 'mysql',
                 'select cast(`logins` as double) as `aliasDouble`, cast(? as char(1)) as `aliasChar`, cast(? as json) ' +
                   'as `aliasJson`, cast(? as json) as `aliasJsonb`, cast(? as real) as `aliasReal`, cast(`logins` as ' +
-                  'unsigned) as `aliasInt`, cast(`logins` as unsigned) as `aliasBigInt`, cast(? as binary) as `aliasBinary` from `accounts`',
+                  'unsigned) as `aliasInt`, cast(`logins` as unsigned) as `aliasBigInt`, cast(? as binary) as `aliasBinary`, ' +
+                  'cast(`about` as char) as `aliasText` from `accounts`',
                 ['S', '{"test": 12}', '{"test": 12}', '5.5', 'binary'],
                 [
                   {
@@ -1762,6 +1761,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                   {
                     aliasBigInt: 1,
@@ -1772,6 +1772,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                   {
                     aliasBigInt: 2,
@@ -1782,6 +1783,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                   {
                     aliasBigInt: 2,
@@ -1792,6 +1794,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                   {
                     aliasBigInt: 2,
@@ -1802,6 +1805,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                   {
                     aliasBigInt: 2,
@@ -1812,6 +1816,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                   {
                     aliasBigInt: 2,
@@ -1822,6 +1827,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                   {
                     aliasBigInt: 3,
@@ -1832,6 +1838,7 @@ describe('Selects', function () {
                     aliasJson: { test: 12 },
                     aliasJsonb: { test: 12 },
                     aliasReal: 5.5,
+                    aliasText: 'Lorem ipsum Dolore labore incididunt enim.',
                   },
                 ]
               );

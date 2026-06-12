@@ -12264,6 +12264,7 @@ describe('QueryBuilder', () => {
     it('castText', () => {
       testCastSql((c) => c.castText('hello', 'val'), {
         pg: 'select cast(? as text) as "val" from "t"',
+        mysql: 'select cast(? as char) as `val` from `t`',
         mssql: 'select cast(? as nvarchar(max)) as [val] from [t]',
         oracledb: 'select cast(? as clob) as "val" from "t"',
         sqlite3: 'select cast(? as text) as `val` from `t`',
@@ -12326,14 +12327,6 @@ describe('QueryBuilder', () => {
         mysql: 'select cast(? as unsigned) from `t`',
         mssql: 'select cast(? as int) from [t]',
       });
-    });
-
-    it('mysql castText should throw', () => {
-      expect(() => {
-        clients.mysql.castText('hello', 'val');
-      }).to.throw(
-        'Cast to Test is not possible in MySQL, use castChar function instead.'
-      );
     });
   });
 });
