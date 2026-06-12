@@ -135,8 +135,7 @@ services:
       - 9010:9010
       - 9020:9020
 
-  # pgadapter exposes Spanner's PostgreSQL interface on the pg wire protocol.
-  # Named `postgres-spanner` so the CI matrix can start it like the other dialects.
+  # pgadapter exposes Spanner over the pg wire protocol.
   postgres-spanner:
     # Most recent container as of 2025-04-25
     image: gcr.io/cloud-spanner-pg-adapter/pgadapter:v0.46.2
@@ -157,7 +156,6 @@ services:
       spanner-emulator:
         condition: service_started
   waitpostgres-spanner:
-    # pgadapter speaks the pg wire protocol, so we reuse the postgres image's psql client.
     # mirror-from: postgres:17-alpine
     image: ghcr.io/knex/postgres:17-alpine
     links:
@@ -167,7 +165,7 @@ services:
     entrypoint:
       - bash
       - -c
-      # autoConfigEmulator auto-creates the instance; create the test database, then wait until it answers.
+      # create the test database, then wait until it answers
       - 'until /usr/local/bin/psql "postgresql://postgres-spanner:5432/knex_test" -c "SELECT 1"; do /usr/local/bin/psql "postgresql://postgres-spanner:5432/postgres" -c "CREATE DATABASE knex_test" || true; sleep 5; done'
 
   cockroachdb:

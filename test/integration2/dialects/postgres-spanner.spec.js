@@ -7,11 +7,8 @@ const {
   getAllDbs,
 } = require('../util/knex-instance-provider');
 
-// Spanner's PostgreSQL interface only implements a subset of PostgreSQL (no
-// schemas, stricter typing, no migrations), so it does not run the shared
-// integration suite. These tests cover the operations Spanner does support and
-// exercise the dialect's own query/schema compiler overrides (columnInfo,
-// hasTable, hasColumn) against the Spanner emulator via PGAdapter.
+// Spanner supports only a subset of PostgreSQL, so it runs this focused spec
+// against the emulator instead of the shared integration suite.
 describe('PostgreSQL Spanner dialect', () => {
   getAllDbs()
     .filter((db) => db === Db.PostgresSpanner)
@@ -22,8 +19,7 @@ describe('PostgreSQL Spanner dialect', () => {
         before(async () => {
           knex = getKnexForDb(db);
           await knex.raw('DROP TABLE IF EXISTS spanner_test');
-          // Created with raw DDL: Spanner requires the PRIMARY KEY inline at
-          // table creation and does not support ALTER TABLE ADD PRIMARY KEY.
+          // raw DDL: Spanner needs the PRIMARY KEY inline at creation.
           await knex.raw(
             'CREATE TABLE spanner_test (id bigint NOT NULL, name varchar, value bigint, PRIMARY KEY (id))'
           );
