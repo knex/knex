@@ -19,6 +19,7 @@ version-resolver:
       - 'bug'
       - 'chore'
       - 'docs'
+      - 'perf'
   default: patch
 
 # categories match the section headings used historically in
@@ -46,6 +47,7 @@ categories:
       - 'docs'
       - 'chore'
       - 'tests'
+      - 'perf'
       - 'patch' # last-resort bucket for patch PRs without a category label
 
 change-template: '* $TITLE by @$AUTHOR in #$NUMBER'
