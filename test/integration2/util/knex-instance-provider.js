@@ -7,6 +7,7 @@ const { cloneDeep, merge } = require('lodash');
 
 const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
+  PostgresSpanner: 'postgres-spanner',
   PgNative: 'pgnative',
   MySQL: 'mysql',
   MySQL2: 'mysql2',
@@ -171,6 +172,21 @@ const testConfigs = {
     connection: testConfig.postgres || {
       adapter: 'postgresql',
       port: 25432,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  'postgres-spanner': {
+    client: 'postgres-spanner',
+    connection: testConfig['postgres-spanner'] || {
+      adapter: 'postgresql',
+      port: 25434,
       host: 'localhost',
       database: 'knex_test',
       user: 'testuser',

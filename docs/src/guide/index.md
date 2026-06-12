@@ -84,6 +84,19 @@ const pg = require('knex')({
 
 :::
 
+::: info Google Cloud Spanner (PostgreSQL)
+The `postgres-spanner` client targets [Google Cloud Spanner's PostgreSQL interface](https://cloud.google.com/spanner/docs/pgadapter), reached over the pg wire protocol through PGAdapter. It reuses the `pg` driver, so install [`pg`](https://github.com/brianc/node-postgres) as for regular PostgreSQL.
+
+```js
+const knex = require('knex')({
+  client: 'postgres-spanner',
+  connection: 'postgresql://localhost:5432/my-database',
+});
+```
+
+Spanner's PostgreSQL interface only implements a subset of PostgreSQL. Notably, it has no concept of schemas, so schema-dependent features (including knex migrations, which rely on `current_schema()`) are not supported.
+:::
+
 The following are SQLite usage patterns for instantiating the Knex configuration object:
 
 ::: info SQLite3 or Better-SQLite3
