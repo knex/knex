@@ -7395,6 +7395,23 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('lock only some tables for update with explicit schema (#5053)', () => {
+    testsql(
+      qb()
+        .withSchema('public')
+        .select('*')
+        .from('foo')
+        .where('bar', '=', 'baz')
+        .forUpdate('lo', 'rem'),
+      {
+        pg: {
+          sql: 'select * from "public"."foo" where "bar" = ? for update of "lo", "rem"',
+          bindings: ['baz'],
+        },
+      }
+    );
+  });
+
   it('lock for update with skip locked #1937', () => {
     testsql(qb().select('*').from('foo').first().forUpdate().skipLocked(), {
       mysql: {

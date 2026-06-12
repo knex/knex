@@ -46,7 +46,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Run npm install
-        run: npm install
+        run: |
+          n=0
+          until npm install; do
+            n=$((n + 1))
+            if [ "$n" -ge 3 ]; then
+              echo "npm install failed after $n attempts"
+              exit 1
+            fi
+            echo "npm install failed, retrying in 15s... (attempt $n)"
+            sleep 15
+          done
 
       - run: npm run build
 
