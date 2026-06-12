@@ -35,6 +35,7 @@ jobs:
         database-type:
           [
             postgres,
+            postgres-spanner,
             pgnative,
             mysql,
             mariadb,
