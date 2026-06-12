@@ -3,7 +3,7 @@
 [![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
 [![npm downloads](https://img.shields.io/npm/dm/knex.svg)](https://npmjs.org/package/knex)
 ![](https://github.com/knex/knex/workflows/CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/knex/knex/badge.svg?branch=master)](https://coveralls.io/r/knex/knex?branch=master)
+[![codecov](https://codecov.io/gh/knex/knex/graph/badge.svg?token=bH39w8lIA9)](https://codecov.io/gh/knex/knex)
 [![Dependencies Status](https://img.shields.io/librariesio/github/knex/knex)](https://libraries.io/npm/knex)
 [![Gitter chat](https://badges.gitter.im/tgriesser/knex.svg)](https://gitter.im/tgriesser/knex)
 
@@ -36,6 +36,27 @@ For knex-based Object Relational Mapper, see:
 - https://bookshelfjs.org
 
 To see the SQL that Knex will generate for a given query, you can use [Knex Query Lab](https://michaelavila.com/knex-querylab/)
+
+## Local Development Setup
+
+### Prerequisites
+
+- Node.js 16+
+- Python 3.x with `setuptools` installed (required for building native dependencies like `better-sqlite3`)
+
+  Python 3.12+ removed the built-in `distutils` module. If you encounter a `ModuleNotFoundError: No module named 'distutils'` error during `npm install`, install `setuptools` for the Python version used by node-gyp:
+
+  ```bash
+  pip install setuptools
+  ```
+
+- **Windows only:** [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with the "Desktop development with C++" workload
+
+### Install dependencies
+
+```bash
+npm install
+```
 
 ## Examples
 

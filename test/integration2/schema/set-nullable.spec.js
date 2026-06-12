@@ -153,6 +153,40 @@ describe('Schema', () => {
             ).to.eventually.be.rejectedWith(errorMessage);
           });
         });
+
+        describe('non-default schema #6024', () => {
+          it('respects the schema when altering nullability', async function () {
+            if (!isPostgreSQL(knex)) {
+              return this.skip();
+            }
+
+            const schemaName = 'test_nullable_schema';
+            await knex.schema.dropSchemaIfExists(schemaName, true);
+            await knex.schema.createSchema(schemaName);
+
+            try {
+              await knex.schema
+                .withSchema(schemaName)
+                .createTable('schema_table', (table) => {
+                  table.integer('id_not_nullable').notNull();
+                });
+
+              await knex.schema
+                .withSchema(schemaName)
+                .table('schema_table', (table) => {
+                  table.setNullable('id_not_nullable');
+                });
+
+              // Without the schema-aware columnInfo lookup the column would
+              // still be NOT NULL and this insert would be rejected.
+              await knex('schema_table')
+                .withSchema(schemaName)
+                .insert({ id_not_nullable: null });
+            } finally {
+              await knex.schema.dropSchemaIfExists(schemaName, true);
+            }
+          });
+        });
       });
     });
   });

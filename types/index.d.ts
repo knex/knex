@@ -9,6 +9,7 @@
 import type { EventEmitter } from 'events';
 import type { Duplex, PassThrough, Stream } from 'stream';
 import type { Pool } from 'tarn';
+import type { PoolOptions } from 'tarn/dist/Pool';
 import type { ConnectionOptions } from 'tls';
 
 import type { Registry } from './result';
@@ -482,6 +483,10 @@ declare namespace knex {
 
   export class KnexTimeoutError extends Error {}
 
+  export class KnexPool<T = any> extends Pool<T> {
+    constructor(config: PoolOptions<T>);
+  }
+
   export const Client: typeof Knex.Client;
 }
 
@@ -501,8 +506,11 @@ declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
+    | Array<Buffer>
     | Record<string, unknown>
     | Knex.Raw;
+
+  type ValueOrBuilder = Value | Knex.QueryBuilder;
 
   interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
   interface AliasDict extends Dict<string> {}
@@ -1018,7 +1026,7 @@ declare namespace Knex {
       >[]
     >(
       columnName: K1,
-      value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]>,
+      value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]> | QueryBuilder,
       returning: readonly K2[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -1028,7 +1036,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, number>;
     update<TResult2 = SafePartial<TRecord>[]>(
       columnName: string,
-      value: Value,
+      value: ValueOrBuilder,
       returning: string | readonly string[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -1101,7 +1109,7 @@ declare namespace Knex {
 
     update<TResult2 = number>(
       columnName: string,
-      value: Value
+      value: ValueOrBuilder
     ): QueryBuilder<TRecord, TResult2>;
 
     returning(
@@ -1701,7 +1709,10 @@ declare namespace Knex {
       TResult
     >;
 
-    (object: Readonly<Record<string, any>>): QueryBuilder<TRecord, TResult>;
+    // note: `Object` is intentional here: its mapped members preserve excess-property
+    // checking so `.where({ unknownColumn })` stays a compile error, while still
+    // accepting pre-typed dynamic objects, see #6452
+    (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof ResolveTableType<TRecord>>(
       columnName: T,
@@ -2754,6 +2765,14 @@ declare namespace Knex {
     jsonbSupport?: boolean;
     version?: string;
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
+    /**
+     * An external pool to use instead of knex creating its own.
+     * Accepts a KnexPool, tarn Pool, or a native driver pool (pg.Pool,
+     * mysql.createPool(), oracledb.createPool()).
+     * Mutually exclusive with `connection` — knex does not own the pool
+     * lifecycle; call pool.end() / pool.close() yourself when done.
+     */
+    connectionPool?: ConnectionPool;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
@@ -2814,7 +2833,8 @@ declare namespace Knex {
     | 'azure-active-directory-access-token'
     | 'azure-active-directory-msi-vm'
     | 'azure-active-directory-msi-app-service'
-    | 'azure-active-directory-service-principal-secret';
+    | 'azure-active-directory-service-principal-secret'
+    | 'token-credential';
 
   interface MsSqlDefaultAuthenticationConfig extends MsSqlConnectionConfigBase {
     type?: 'default' | never;
@@ -2892,6 +2912,19 @@ declare namespace Knex {
     tenantId: string;
   }
 
+  interface MsSqlTokenCredential {
+    getToken(
+      scopes: string | string[],
+      options?: unknown
+    ): Promise<{ token: string; expiresOnTimestamp: number } | null>;
+  }
+
+  interface MsSqlTokenCredentialAuthenticationConfig
+    extends MsSqlConnectionConfigBase {
+    type: 'token-credential';
+    credential: MsSqlTokenCredential;
+  }
+
   interface MsSqlNtlmAuthenticationConfig extends MsSqlConnectionConfigBase {
     type: 'ntlm';
     /**
@@ -2911,7 +2944,8 @@ declare namespace Knex {
     | MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
     | MsSqlAzureActiveDirectoryMsiVmAuthenticationConfig
     | MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
-    | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig;
+    | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig
+    | MsSqlTokenCredentialAuthenticationConfig;
 
   // Config object for tedious: see http://tediousjs.github.io/tedious/api-connection.html
   interface MsSqlConnectionConfigBase {
@@ -3121,6 +3155,46 @@ declare namespace Knex {
     expirationChecker?(): boolean;
   }
 
+  // Pool-like interfaces matching the shapes of native driver pools.
+  // These allow `connectionPool` to accept pools from pg, mysql/mysql2,
+  // oracledb, or any tarn-compatible pool without importing driver types.
+
+  /** Matches the pg.Pool interface */
+  interface PgPoolLike {
+    connect(): Promise<any>;
+    end(): Promise<void>;
+    totalCount: number;
+    idleCount: number;
+    waitingCount: number;
+  }
+
+  /** Matches the mysql / mysql2 pool interface */
+  interface MySQLPoolLike {
+    getConnection(cb: (err: Error | null, connection: any) => void): void;
+    end(cb?: (err?: Error) => void): void;
+  }
+
+  /** Matches the oracledb pool interface */
+  interface OraclePoolLike {
+    getConnection(): Promise<any>;
+    close(drainTime?: number): Promise<void>;
+  }
+
+  /** Any tarn-compatible pool (including KnexPool) */
+  interface TarnPoolLike {
+    acquire(): { promise: Promise<any> };
+    release(resource: any): boolean;
+    destroy(): Promise<void>;
+  }
+
+  /** Types accepted by the `connectionPool` config option */
+  type ConnectionPool =
+    | Pool<any>
+    | TarnPoolLike
+    | PgPoolLike
+    | MySQLPoolLike
+    | OraclePoolLike;
+
   interface PoolConfig {
     name?: string;
     afterCreate?: Function;
@@ -3206,6 +3280,8 @@ declare namespace Knex {
     list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     down(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    to(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    before(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
@@ -3307,7 +3383,8 @@ declare namespace Knex {
     };
     getPoolSettings(poolConfig: any): any;
     initializePool(config?: {}): void;
-    pool: Pool<any> | undefined;
+    initializeExternalPool(externalPool: ConnectionPool): void;
+    pool: Pool<any> | TarnPoolLike | undefined;
     acquireConnection(): any;
     releaseConnection(connection: any): any;
     destroy(callback: any): any;

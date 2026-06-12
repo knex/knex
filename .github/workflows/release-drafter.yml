@@ -1,0 +1,157 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  update_release_draft:
+    # skip the auto-generated "release X.Y.Z" commit pushed by the
+    # release workflow itself — that commit doesn't introduce new PRs to
+    # draft, and updating the draft against it would just re-render the
+    # already-published release notes. matched on actor + message so a
+    # human-authored commit that happens to start with "release " (e.g.
+    # "release unused connection") still triggers normally.
+    if: ${{ !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release ')) }}
+    permissions:
+      # write permission required to create a draft release
+      contents: write
+      # write permission required to autolabel PRs
+      pull-requests: write
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.drafter.outputs.id }}
+      version: ${{ steps.drafter.outputs.resolved_version }}
+      # final body after splicing in New Contributors + Full Changelog;
+      # consumed by verify_release_build so it doesn't need API access
+      # to the draft (drafts return 403 to contents:read tokens).
+      body: ${{ steps.splice.outputs.body }}
+    steps:
+      - id: drafter
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # release-drafter doesn't produce a "## New Contributors" section.
+      # GitHub's generate-notes API does, so call it for the same range
+      # and splice the New Contributors block + Full Changelog link into
+      # the draft body.
+      - id: splice
+        name: Splice in New Contributors and Full Changelog
+        if: steps.drafter.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.drafter.outputs.id }}
+          TAG: ${{ steps.drafter.outputs.tag_name }}
+          DRAFTER_BODY: ${{ steps.drafter.outputs.body }}
+        run: |
+          set -euo pipefail
+
+          # generate-notes works against the proposed tag even though it
+          # doesn't exist yet, as long as we point it at master.
+          generated=$(gh api -X POST "/repos/$REPO/releases/generate-notes" \
+            -f tag_name="$TAG" \
+            -f target_commitish="master" \
+            --jq '.body')
+
+          # extract "## New Contributors" through (but not including) the
+          # Full Changelog line, if present.
+          # generate-notes typically leaves one blank line between the
+          # New Contributors section and the Full Changelog line; strip a
+          # trailing blank from the captured block.
+          new_contribs=$(awk '
+            /^## New Contributors/ { capture=1 }
+            capture && /^\*\*Full Changelog\*\*/ { exit }
+            capture { print }
+          ' <<<"$generated" | sed -e '${/^$/d;}')
+
+          # extract the Full Changelog line.
+          full_changelog=$(grep -E '^\*\*Full Changelog\*\*' <<<"$generated" | head -1 || true)
+
+          body="$DRAFTER_BODY"
+          if [[ -n "$new_contribs" ]]; then
+            body+=$'\n\n'"$new_contribs"
+          fi
+          if [[ -n "$full_changelog" ]]; then
+            body+=$'\n\n'"$full_changelog"
+          fi
+
+          # also PATCH tag_name: release-drafter sometimes leaves it as
+          # the GitHub-generated "untagged-<hash>" placeholder on the
+          # draft (the action's output carries the correct templated
+          # value, but the persisted release object does not — see
+          # release-drafter#204). setting it explicitly here keeps the
+          # draft publishable in one click and self-heals any draft
+          # already stuck on the placeholder.
+          jq -nc --arg body "$body" --arg tag "$TAG" \
+            '{body: $body, tag_name: $tag}' \
+            | gh api -X PATCH "/repos/$REPO/releases/$RELEASE_ID" --input -
+
+          # also surface the final body as a step output so the next job
+          # can use it without needing draft-read permission. multi-line
+          # outputs use a heredoc with a random delimiter to avoid
+          # collisions with body content.
+          delim="EOF_$(uuidgen | tr -d -)"
+          {
+            printf 'body<<%s\n' "$delim"
+            printf '%s\n' "$body"
+            printf '%s\n' "$delim"
+          } >> "$GITHUB_OUTPUT"
+
+  # dry-run the release pipeline against the just-updated draft so we
+  # catch breakage that would only show up at release time. specifically:
+  # apply the projected changelog entry to the working tree, then run
+  # the docs build. if it fails, the draft is still saved (so a
+  # maintainer can see what's queued) but the workflow run is red on the
+  # master commit that introduced the problem.
+  verify_release_build:
+    needs: update_release_draft
+    if: needs.update_release_draft.outputs.release_id != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20.x
+          package-manager-cache: false
+
+      # apply the changelog generation that release.yml will run at
+      # publish time. modifies CHANGELOG.md and docs/src/changelog.md
+      # in-place; nothing is committed. body is passed via env (from the
+      # previous job's output) so we don't need read access to the
+      # draft release via the API.
+      - name: Apply projected changelog entry
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_BODY: ${{ needs.update_release_draft.outputs.body }}
+        run: node ./scripts/update-changelog.mjs "${{ needs.update_release_draft.outputs.version }}"
+
+      - name: Restore cached docs dependencies
+        uses: actions/cache@v3
+        id: docs-cache
+        with:
+          path: docs/node_modules
+          key: ${{ runner.os }}-docs-npm-${{ hashFiles('docs/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-docs-npm-
+
+      - name: Install docs dependencies
+        if: steps.docs-cache.outputs.cache-hit != 'true'
+        working-directory: ./docs
+        run: npm ci
+
+      - name: Build documentation (verification only, not deployed)
+        working-directory: ./docs
+        run: npm run build

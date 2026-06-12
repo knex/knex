@@ -71,6 +71,7 @@ export default defineConfig({
     },
     nav: [
       { text: 'Guide', link: '/guide/', activeMatch: '^/guide/' },
+      { text: 'Blog', link: '/blog/', activeMatch: '^/blog/' },
       {
         text: 'F.A.Q.',
         link: '/faq/',
