@@ -130,6 +130,28 @@ describe('Additional', function () {
           });
         });
 
+        it('should emit an error on the stream when postProcessResponse throws (#6032)', async function () {
+          await knex('accounts').truncate();
+          await insertAccounts(knex, 'accounts');
+
+          const original = knex.client.config.postProcessResponse;
+          knex.client.config.postProcessResponse = () => {
+            throw new Error('postProcessResponse boom');
+          };
+
+          try {
+            const stream = knex('accounts').limit(1).stream();
+            const error = await new Promise((resolve) => {
+              stream.on('error', resolve);
+              stream.on('data', () => {});
+            });
+            expect(error).to.be.an('error');
+            expect(error.message).to.equal('postProcessResponse boom');
+          } finally {
+            knex.client.config.postProcessResponse = original;
+          }
+        });
+
         it('should emit an error rather than crash when the stream cannot acquire a connection (#6460)', async function () {
           const limitedKnex = getKnexForDb(db, {
             acquireConnectionTimeout: 200,
