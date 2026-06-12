@@ -311,6 +311,14 @@ describe('Where', function () {
         await knex('accounts').whereIn('id', [1, 2, 3]).select();
       });
 
+      it('handles "where in" raw cases', async () => {
+        await knex('accounts')
+          // COALESCE() is used here simply to generate a valid left-hand-side
+          // to the expression lhs IN rhs that can take a value parameter
+          .whereIn(knex.raw('COALESCE(??, ?)', ['id', 9]), [1, 2, 3])
+          .select();
+      });
+
       it('handles "or where in" cases', async () => {
         await knex('accounts')
           .where('email', 'test1@example.com')

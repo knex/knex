@@ -8,4 +8,5 @@ describe('CLI tests', function () {
   require('./cli/seed-make.spec');
   require('./cli/version.spec');
   require('./cli/esm-interop.spec');
+  require('./cli/migrate-disable-transactions.spec');
 });

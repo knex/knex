@@ -42,6 +42,9 @@ describe('Migrations', function () {
         await knex.schema.dropTableIfExists('migration_test_1');
         await knex.schema.dropTableIfExists('migration_test_2');
         await knex.schema.dropTableIfExists('migration_test_2_1');
+        await knex.schema.dropTableIfExists('migrate_to_test_1');
+        await knex.schema.dropTableIfExists('migrate_to_test_2');
+        await knex.schema.dropTableIfExists('migrate_to_test_3');
         await knex.migrate.forceFreeMigrationsLock({
           directory: 'test/integration2/migrate/test',
         });
@@ -766,6 +769,29 @@ describe('Migrations', function () {
           });
         });
 
+        describe('explicit migration transactions', () => {
+          const tableName = 'knex_test_exp_mig_trans';
+
+          it('should have used a transaction', async function () {
+            if (isMysql(knex) || isMssql(knex)) {
+              this.skip();
+              return;
+            }
+
+            await expect(
+              knex.migrate.up({
+                directory:
+                  'test/integration2/migrate/migration-explicit-transactions',
+                disableTransactions: true,
+              })
+            ).to.eventually.be.rejectedWith(/oh noes/);
+
+            await expect(
+              knex.select('*').from(tableName)
+            ).to.eventually.be.rejectedWith(tableName);
+          });
+        });
+
         describe('knex.migrate.down', () => {
           describe('with transactions enabled', () => {
             beforeEach(async () => {
@@ -854,6 +880,178 @@ describe('Migrations', function () {
                 .first();
               assertNumber(knex, value, -1); // updated by migration before error
             });
+          });
+        });
+
+        describe('knex.migrate.to', () => {
+          const toBeforeDir = 'test/integration2/migrate/test_to_before';
+
+          afterEach(async () => {
+            await knex.migrate.rollback({ directory: toBeforeDir }, true);
+            await knex.schema.dropTableIfExists('migrate_to_test_1');
+            await knex.schema.dropTableIfExists('migrate_to_test_2');
+            await knex.schema.dropTableIfExists('migrate_to_test_3');
+          });
+
+          it('should run all migrations up to and including the specified one', async () => {
+            await knex.migrate.to({
+              directory: toBeforeDir,
+              name: '20131019235306_migration_2.js',
+            });
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(2);
+            expect(path.basename(data[0].name)).to.equal(
+              '20131019235242_migration_1.js'
+            );
+            expect(path.basename(data[1].name)).to.equal(
+              '20131019235306_migration_2.js'
+            );
+          });
+
+          it('should run only the first migration when targeting it', async () => {
+            await knex.migrate.to({
+              directory: toBeforeDir,
+              name: '20131019235242_migration_1.js',
+            });
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(1);
+            expect(path.basename(data[0].name)).to.equal(
+              '20131019235242_migration_1.js'
+            );
+          });
+
+          it('should run all migrations when targeting the last one', async () => {
+            await knex.migrate.to({
+              directory: toBeforeDir,
+              name: '20131019235320_migration_3.js',
+            });
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(3);
+          });
+
+          it('should skip already completed migrations', async () => {
+            await knex.migrate.up({
+              directory: toBeforeDir,
+            });
+            await knex.migrate.to({
+              directory: toBeforeDir,
+              name: '20131019235320_migration_3.js',
+            });
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(3);
+          });
+
+          it('should be a no-op if target migration is already completed', async () => {
+            await knex.migrate.latest({
+              directory: toBeforeDir,
+            });
+            const [, log] = await knex.migrate.to({
+              directory: toBeforeDir,
+              name: '20131019235306_migration_2.js',
+            });
+            expect(log).to.have.length(0);
+          });
+
+          it('should throw if migration name is not found', async () => {
+            await expect(
+              knex.migrate.to({
+                directory: toBeforeDir,
+                name: 'nonexistent.js',
+              })
+            ).to.eventually.be.rejectedWith(
+              'Migration "nonexistent.js" not found'
+            );
+          });
+
+          it('should throw if no name is provided', async () => {
+            await expect(
+              knex.migrate.to({
+                directory: toBeforeDir,
+              })
+            ).to.eventually.be.rejectedWith(
+              'A migration name must be specified'
+            );
+          });
+        });
+
+        describe('knex.migrate.before', () => {
+          const toBeforeDir = 'test/integration2/migrate/test_to_before';
+
+          afterEach(async () => {
+            await knex.migrate.rollback({ directory: toBeforeDir }, true);
+            await knex.schema.dropTableIfExists('migrate_to_test_1');
+            await knex.schema.dropTableIfExists('migrate_to_test_2');
+            await knex.schema.dropTableIfExists('migrate_to_test_3');
+          });
+
+          it('should run all migrations before the specified one (exclusive)', async () => {
+            await knex.migrate.before({
+              directory: toBeforeDir,
+              name: '20131019235320_migration_3.js',
+            });
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(2);
+            expect(path.basename(data[0].name)).to.equal(
+              '20131019235242_migration_1.js'
+            );
+            expect(path.basename(data[1].name)).to.equal(
+              '20131019235306_migration_2.js'
+            );
+          });
+
+          it('should run nothing when targeting the first migration', async () => {
+            const [, log] = await knex.migrate.before({
+              directory: toBeforeDir,
+              name: '20131019235242_migration_1.js',
+            });
+            expect(log).to.have.length(0);
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(0);
+          });
+
+          it('should run only the first migration when targeting the second', async () => {
+            await knex.migrate.before({
+              directory: toBeforeDir,
+              name: '20131019235306_migration_2.js',
+            });
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(1);
+            expect(path.basename(data[0].name)).to.equal(
+              '20131019235242_migration_1.js'
+            );
+          });
+
+          it('should skip already completed migrations', async () => {
+            await knex.migrate.up({
+              directory: toBeforeDir,
+            });
+            await knex.migrate.before({
+              directory: toBeforeDir,
+              name: '20131019235320_migration_3.js',
+            });
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(2);
+          });
+
+          it('should throw if migration name is not found', async () => {
+            await expect(
+              knex.migrate.before({
+                directory: toBeforeDir,
+                name: 'nonexistent.js',
+              })
+            ).to.eventually.be.rejectedWith(
+              'Migration "nonexistent.js" not found'
+            );
+          });
+
+          it('should throw if no name is provided', async () => {
+            await expect(
+              knex.migrate.before({
+                directory: toBeforeDir,
+              })
+            ).to.eventually.be.rejectedWith(
+              'A migration name must be specified'
+            );
           });
         });
 

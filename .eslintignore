@@ -3,3 +3,5 @@ node_modules
 #
 lib/migrations/util/import-file.js
 test/jake-util/knexfile-imports
+types/*.d.mts
+test-tstyche
