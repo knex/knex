@@ -7,7 +7,6 @@ describe('Util Tests', function () {
   require('./unit/query/string');
   require('./unit/migrations/util/fs');
   require('./unit/migrations/util/is-module-type');
-  require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
   require('./unit/util/format-sql-bindings');
