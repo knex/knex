@@ -6307,16 +6307,22 @@ describe('QueryBuilder', () => {
   it('order by, null first', () => {
     testsql(qb().from('users').orderBy('foo', 'desc', 'first'), {
       mysql: {
-        sql: 'select * from `users` order by (`foo` is not null) desc',
+        sql: 'select * from `users` order by (`foo` is not null) asc, `foo` desc',
+      },
+      sqlite3: {
+        sql: 'select * from `users` order by (`foo` is not null) asc, `foo` desc',
       },
       mssql: {
-        sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+        sql: 'select * from [users] order by IIF([foo] is null,0,1) asc, [foo] desc',
       },
       pg: {
         sql: 'select * from "users" order by "foo" desc nulls first',
       },
       'pg-redshift': {
         sql: 'select * from "users" order by "foo" desc nulls first',
+      },
+      cockroachdb: {
+        sql: 'select * from "users" order by ("foo" is not null) asc, "foo" desc',
       },
     });
   });
@@ -6328,16 +6334,22 @@ describe('QueryBuilder', () => {
         .orderBy([{ column: 'foo', order: 'desc', nulls: 'first' }]),
       {
         mysql: {
-          sql: 'select * from `users` order by (`foo` is not null) desc',
+          sql: 'select * from `users` order by (`foo` is not null) asc, `foo` desc',
+        },
+        sqlite3: {
+          sql: 'select * from `users` order by (`foo` is not null) asc, `foo` desc',
         },
         mssql: {
-          sql: 'select * from [users] order by IIF([foo] is null,0,1) desc',
+          sql: 'select * from [users] order by IIF([foo] is null,0,1) asc, [foo] desc',
         },
         pg: {
           sql: 'select * from "users" order by "foo" desc nulls first',
         },
         'pg-redshift': {
           sql: 'select * from "users" order by "foo" desc nulls first',
+        },
+        cockroachdb: {
+          sql: 'select * from "users" order by ("foo" is not null) asc, "foo" desc',
         },
       }
     );
@@ -6346,16 +6358,22 @@ describe('QueryBuilder', () => {
   it('order by, null last', () => {
     testsql(qb().from('users').orderBy('foo', 'desc', 'last'), {
       mysql: {
-        sql: 'select * from `users` order by (`foo` is null) desc',
+        sql: 'select * from `users` order by (`foo` is null) asc, `foo` desc',
+      },
+      sqlite3: {
+        sql: 'select * from `users` order by (`foo` is null) asc, `foo` desc',
       },
       mssql: {
-        sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
+        sql: 'select * from [users] order by IIF([foo] is null,1,0) asc, [foo] desc',
       },
       pg: {
         sql: 'select * from "users" order by "foo" desc nulls last',
       },
       'pg-redshift': {
         sql: 'select * from "users" order by "foo" desc nulls last',
+      },
+      cockroachdb: {
+        sql: 'select * from "users" order by ("foo" is null) asc, "foo" desc',
       },
     });
   });
@@ -6367,16 +6385,22 @@ describe('QueryBuilder', () => {
         .orderBy([{ column: 'foo', order: 'desc', nulls: 'last' }]),
       {
         mysql: {
-          sql: 'select * from `users` order by (`foo` is null) desc',
+          sql: 'select * from `users` order by (`foo` is null) asc, `foo` desc',
+        },
+        sqlite3: {
+          sql: 'select * from `users` order by (`foo` is null) asc, `foo` desc',
         },
         mssql: {
-          sql: 'select * from [users] order by IIF([foo] is null,1,0) desc',
+          sql: 'select * from [users] order by IIF([foo] is null,1,0) asc, [foo] desc',
         },
         pg: {
           sql: 'select * from "users" order by "foo" desc nulls last',
         },
         'pg-redshift': {
           sql: 'select * from "users" order by "foo" desc nulls last',
+        },
+        cockroachdb: {
+          sql: 'select * from "users" order by ("foo" is null) asc, "foo" desc',
         },
       }
     );
