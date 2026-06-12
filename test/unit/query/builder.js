@@ -6831,6 +6831,32 @@ describe('QueryBuilder', () => {
     }).to.throw('onConflict().merge().where() is not supported for mysql');
   });
 
+  it('insert multiple rows - merge with where clause', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'scooby' },
+        ])
+        .onConflict('email')
+        .merge()
+        .where('email', 'foo2'),
+      {
+        sqlite3: {
+          sql:
+            'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true ' +
+            'on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `email` = ?',
+          bindings: ['foo', 'taylor', 'bar', 'scooby', 'foo2'],
+        },
+        pg: {
+          sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email") do update set "email" = excluded."email", "name" = excluded."name" where "email" = ?',
+          bindings: ['foo', 'taylor', 'bar', 'scooby', 'foo2'],
+        },
+      }
+    );
+  });
+
   it('Calling decrement and then increment will overwrite the previous value', () => {
     testsql(
       qb()
@@ -7362,6 +7388,23 @@ describe('QueryBuilder', () => {
         },
         oracledb: {
           sql: 'select * from "foo" where "bar" = ? for update',
+          bindings: ['baz'],
+        },
+      }
+    );
+  });
+
+  it('lock only some tables for update with explicit schema (#5053)', () => {
+    testsql(
+      qb()
+        .withSchema('public')
+        .select('*')
+        .from('foo')
+        .where('bar', '=', 'baz')
+        .forUpdate('lo', 'rem'),
+      {
+        pg: {
+          sql: 'select * from "public"."foo" where "bar" = ? for update of "lo", "rem"',
           bindings: ['baz'],
         },
       }
