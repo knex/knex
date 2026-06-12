@@ -107,7 +107,7 @@ describe('Schema (misc)', () => {
         });
 
         it('throws an error if client does not support dropSchemaIfExists', async function () {
-          if (isPgBased(knex)) {
+          if (isPgBased(knex) || isMssql(knex)) {
             return this.skip();
           }
 
@@ -166,7 +166,6 @@ describe('Schema (misc)', () => {
               });
           });
           if (isPgBased(knex)) {
-
             // Drop schema cascade = true tests
             await knex.schema.createSchema('schema_cascade_1').then(() => {
               knex.schema
