@@ -994,7 +994,9 @@ describe('Selects', function () {
         try {
           await knex.transaction((trx) => {
             // select all from two test tables and lock only one table
-            return trx.withSchema('public').from('test_default_table')
+            return trx
+              .withSchema('public')
+              .from('test_default_table')
               .innerJoin(
                 'test_default_table2',
                 'test_default_table.tinyint',
