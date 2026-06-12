@@ -2,6 +2,7 @@
 'use strict';
 
 const { expect } = require('chai');
+const MariaDB_Client = require('../../../lib/dialects/mariadb');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const PG_Client = require('../../../lib/dialects/postgres');
 const Redshift_Client = require('../../../lib/dialects/redshift');
@@ -10822,7 +10823,7 @@ describe('QueryBuilder', () => {
         warn: (message) => {
           if (
             message ===
-            '.returning() is not supported by mysql and mariadb < 10.5.0 and will not have any effect.'
+            '.returning() is not supported by mysql and will not have any effect.'
           ) {
             throw new Error(message);
           }
@@ -10831,10 +10832,13 @@ describe('QueryBuilder', () => {
     };
 
     const mysqlClientForWarnings = new MySQL_Client(
-      Object.assign({
-        client: 'mysql',
-        version: '8.0.26',
-      }, loggerConfigForTestingWarnings)
+      Object.assign(
+        {
+          client: 'mysql',
+          version: '8.0.26',
+        },
+        loggerConfigForTestingWarnings
+      )
     );
 
     expect(() => {
@@ -10853,23 +10857,63 @@ describe('QueryBuilder', () => {
     }).to.throw(Error);
   });
 
+  it('should warn to user when use `.returning()` function in MariaDB < 10.5.0', () => {
+    const loggerConfigForTestingWarnings = {
+      log: {
+        warn: (message) => {
+          if (
+            message ===
+            '.returning() is not supported by mariadb < 10.5.0 and will not have any effect.'
+          ) {
+            throw new Error(message);
+          }
+        },
+      },
+    };
+
+    const mariaClientForWarnings = new MariaDB_Client(
+      Object.assign(
+        {
+          client: 'mariadb',
+          version: '10.4.1',
+        },
+        loggerConfigForTestingWarnings
+      )
+    );
+
+    expect(() => {
+      testsql(
+        qb().into('users').insert({ email: 'foo' }).returning('id'),
+        {
+          mariadb: {
+            sql: 'insert into `users` (`email`) values (?)',
+            bindings: ['foo'],
+          },
+        },
+        {
+          mariadb: mariaClientForWarnings,
+        }
+      );
+    }).to.throw(Error);
+  });
+
   it('should NOT warn to user when use `.returning()` function in MariaDB >= 10.5.0', () => {
-    const mysqlClient = new MySQL_Client({
-      client: 'mysql',
-      version: '10.5.0',
+    const mariaClient = new MariaDB_Client({
+      client: 'mariadb',
+      version: '10.6.3',
     });
 
     expect(() => {
       testsql(
         qb().into('users').insert({ email: 'foo' }).returning('id'),
         {
-          mysql: {
+          mariadb: {
             sql: 'insert into `users` (`email`) values (?) returning id',
             bindings: ['foo'],
           },
         },
         {
-          mysql: mysqlClient,
+          mariadb: mariaClient,
         }
       );
     });
