@@ -10857,66 +10857,124 @@ describe('QueryBuilder', () => {
     }).to.throw(Error);
   });
 
-  it('should warn to user when use `.returning()` function in MariaDB < 10.5.0', () => {
-    const loggerConfigForTestingWarnings = {
-      log: {
-        warn: (message) => {
-          if (
-            message ===
-            '.returning() is not supported by mariadb < 10.5.0 and will not have any effect.'
-          ) {
-            throw new Error(message);
-          }
+  const mariaClientForVersion = (version) => {
+    const warnings = [];
+    const client = new MariaDB_Client({
+      client: 'mariadb',
+      version,
+      log: { warn: (message) => warnings.push(message) },
+    });
+    return { client, warnings };
+  };
+
+  it('should warn to user when use `.returning()` on insert in MariaDB < 10.5.0', () => {
+    const { client, warnings } = mariaClientForVersion('10.4.1');
+    testsql(
+      qb().into('users').insert({ email: 'foo' }).returning('id'),
+      {
+        mariadb: {
+          sql: 'insert into `users` (`email`) values (?)',
+          bindings: ['foo'],
         },
       },
-    };
-
-    const mariaClientForWarnings = new MariaDB_Client(
-      Object.assign(
-        {
-          client: 'mariadb',
-          version: '10.4.1',
-        },
-        loggerConfigForTestingWarnings
-      )
+      { mariadb: client }
     );
-
-    expect(() => {
-      testsql(
-        qb().into('users').insert({ email: 'foo' }).returning('id'),
-        {
-          mariadb: {
-            sql: 'insert into `users` (`email`) values (?)',
-            bindings: ['foo'],
-          },
-        },
-        {
-          mariadb: mariaClientForWarnings,
-        }
-      );
-    }).to.throw(Error);
+    expect(warnings).to.eql([
+      '.returning() is not supported for mariadb versions older than 10.5 and will not have any effect.',
+    ]);
   });
 
-  it('should NOT warn to user when use `.returning()` function in MariaDB >= 10.5.0', () => {
-    const mariaClient = new MariaDB_Client({
-      client: 'mariadb',
-      version: '10.6.3',
-    });
-
-    expect(() => {
+  it('should compile `.returning()` on insert/delete in MariaDB >= 10.5.0 without warning', () => {
+    {
+      const { client, warnings } = mariaClientForVersion('10.6.3');
       testsql(
         qb().into('users').insert({ email: 'foo' }).returning('id'),
         {
           mariadb: {
-            sql: 'insert into `users` (`email`) values (?) returning id',
+            sql: 'insert into `users` (`email`) values (?) returning `id`',
             bindings: ['foo'],
           },
         },
-        {
-          mariadb: mariaClient,
-        }
+        { mariadb: client }
       );
-    });
+      expect(warnings).to.eql([]);
+    }
+
+    {
+      const { client, warnings } = mariaClientForVersion('10.5.0');
+      testsql(
+        qb().from('users').where('id', 1).del().returning(['id', 'email']),
+        {
+          mariadb: {
+            sql: 'delete from `users` where `id` = ? returning `id`, `email`',
+            bindings: [1],
+          },
+        },
+        { mariadb: client }
+      );
+      expect(warnings).to.eql([]);
+    }
+  });
+
+  it('should compile `.returning()` on single-table update in MariaDB >= 13.0', () => {
+    const { client, warnings } = mariaClientForVersion('13.0.0');
+    testsql(
+      qb()
+        .from('users')
+        .where('id', 1)
+        .update({ email: 'foo' })
+        .returning('id'),
+      {
+        mariadb: {
+          sql: 'update `users` set `email` = ? where `id` = ? returning `id`',
+          bindings: ['foo', 1],
+        },
+      },
+      { mariadb: client }
+    );
+    expect(warnings).to.eql([]);
+  });
+
+  it('should warn and skip `.returning()` on update in MariaDB < 13.0', () => {
+    const { client, warnings } = mariaClientForVersion('12.0.0');
+    testsql(
+      qb()
+        .from('users')
+        .where('id', 1)
+        .update({ email: 'foo' })
+        .returning('id'),
+      {
+        mariadb: {
+          sql: 'update `users` set `email` = ? where `id` = ?',
+          bindings: ['foo', 1],
+        },
+      },
+      { mariadb: client }
+    );
+    expect(warnings).to.eql([
+      '.returning() is not supported for mariadb versions older than 13.0 and will not have any effect.',
+    ]);
+  });
+
+  it('should warn and skip `.returning()` on multi-table update in MariaDB >= 13.0', () => {
+    const { client, warnings } = mariaClientForVersion('13.0.0');
+    testsql(
+      qb()
+        .from('users')
+        .join('accounts', 'users.id', 'accounts.user_id')
+        .update({ 'users.email': 'foo' })
+        .returning('users.id'),
+      {
+        mariadb: {
+          sql: 'update `users` inner join `accounts` on `users`.`id` = `accounts`.`user_id` set `users`.`email` = ?',
+          bindings: ['foo'],
+        },
+      },
+      { mariadb: client }
+    );
+    expect(warnings).to.eql([
+      '.returning() is not supported for multi-table update statements and will not have any effect.',
+    ]);
   });
 
   it('join with subquery using .withSchema', () => {
