@@ -3,6 +3,7 @@
 
 const { expect } = require('chai');
 const MySQL_Client = require('../../../lib/dialects/mysql');
+const MariaDB_Client = require('../../../lib/dialects/mariadb');
 const PG_Client = require('../../../lib/dialects/postgres');
 const Redshift_Client = require('../../../lib/dialects/redshift');
 const Oracledb_Client = require('../../../lib/dialects/oracledb');
@@ -13,6 +14,7 @@ const CockroachDB_Client = require('../../../lib/dialects/cockroachdb');
 // use driverName as key
 const clients = {
   mysql: new MySQL_Client({ client: 'mysql' }),
+  mariadb: new MariaDB_Client({ client: 'mariadb' }),
   pg: new PG_Client({ client: 'pg' }),
   'pg-redshift': new Redshift_Client({ client: 'redshift' }),
   oracledb: new Oracledb_Client({ client: 'oracledb' }),
@@ -7096,7 +7098,10 @@ describe('QueryBuilder', () => {
       // for users / doesn't prevent data loss
     ];
 
-    const nonMysqlClients = Object.keys(clients).filter((c) => c !== 'mysql');
+    // MariaDB is MySQL-family and also supports LIMIT on single-table DELETE.
+    const nonMysqlClients = Object.keys(clients).filter(
+      (c) => c !== 'mysql' && c !== 'mariadb'
+    );
 
     const statements = [
       { name: 'delete', fn: (qb) => qb.del(), invalid: [_having] },
@@ -12268,6 +12273,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castDouble('3.14', 'val'), {
         pg: 'select cast(? as double precision) as "val" from "t"',
         mysql: 'select cast(? as double) as `val` from `t`',
+        mariadb: 'select cast(? as double) as `val` from `t`',
         mssql: 'select cast(? as float) as [val] from [t]',
         oracledb: 'select cast(? as number(8, 2)) as "val" from "t"',
         sqlite3: 'select cast(? as float) as `val` from `t`',
@@ -12278,6 +12284,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castChar('hello', 5, 'val'), {
         pg: 'select cast(? as char(5)) as "val" from "t"',
         mysql: 'select cast(? as char(5)) as `val` from `t`',
+        mariadb: 'select cast(? as char(5)) as `val` from `t`',
         mssql: 'select cast(? as char(5)) as [val] from [t]',
         oracledb: 'select cast(? as char(5)) as "val" from "t"',
         sqlite3: 'select cast(? as char(5)) as `val` from `t`',
@@ -12288,6 +12295,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castInt('42', 'val'), {
         pg: 'select cast(? as integer) as "val" from "t"',
         mysql: 'select cast(? as unsigned) as `val` from `t`',
+        mariadb: 'select cast(? as unsigned) as `val` from `t`',
         mssql: 'select cast(? as int) as [val] from [t]',
         oracledb: 'select cast(? as integer) as "val" from "t"',
         sqlite3: 'select cast(? as integer) as `val` from `t`',
@@ -12298,6 +12306,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castBigint('42', 'val'), {
         pg: 'select cast(? as bigint) as "val" from "t"',
         mysql: 'select cast(? as unsigned) as `val` from `t`',
+        mariadb: 'select cast(? as unsigned) as `val` from `t`',
         mssql: 'select cast(? as bigint) as [val] from [t]',
         oracledb: 'select cast(? as number(20, 0)) as "val" from "t"',
         sqlite3: 'select cast(? as bigint) as `val` from `t`',
@@ -12308,6 +12317,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castText('hello', 'val'), {
         pg: 'select cast(? as text) as "val" from "t"',
         mysql: 'select cast(? as char) as `val` from `t`',
+        mariadb: 'select cast(? as char) as `val` from `t`',
         mssql: 'select cast(? as nvarchar(max)) as [val] from [t]',
         oracledb: 'select cast(? as clob) as "val" from "t"',
         sqlite3: 'select cast(? as text) as `val` from `t`',
@@ -12317,6 +12327,8 @@ describe('QueryBuilder', () => {
     it('castJson', () => {
       testCastSql((c) => c.castJson('{"a":1}', 'val'), {
         pg: 'select cast(? as json) as "val" from "t"',
+        mysql: 'select cast(? as json) as `val` from `t`',
+        mariadb: 'select cast(? as char) as `val` from `t`',
         mssql: 'select cast(? as nvarchar(max)) as [val] from [t]',
         oracledb: 'select cast(? as clob) as "val" from "t"',
         sqlite3: 'select cast(? as text) as `val` from `t`',
@@ -12327,6 +12339,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castJsonb('{"a":1}', 'val'), {
         pg: 'select cast(? as jsonb) as "val" from "t"',
         mysql: 'select cast(? as json) as `val` from `t`',
+        mariadb: 'select cast(? as char) as `val` from `t`',
         mssql: 'select cast(? as nvarchar(max)) as [val] from [t]',
         oracledb: 'select cast(? as clob) as "val" from "t"',
         sqlite3: 'select cast(? as text) as `val` from `t`',
@@ -12337,6 +12350,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castBinary('data', 'val'), {
         pg: 'select cast(? as bytea) as "val" from "t"',
         mysql: 'select cast(? as binary) as `val` from `t`',
+        mariadb: 'select cast(? as binary) as `val` from `t`',
         mssql:
           'select cast(cast(? as varchar(max)) as varbinary(max)) as [val] from [t]',
         oracledb: 'select cast(? as blob) as "val" from "t"',
@@ -12348,6 +12362,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castReal('1.5', 'val'), {
         pg: 'select cast(? as real) as "val" from "t"',
         mysql: 'select cast(? as real) as `val` from `t`',
+        mariadb: 'select cast(? as double) as `val` from `t`',
         mssql: 'select cast(? as float) as [val] from [t]',
         oracledb: 'select cast(? as float) as "val" from "t"',
         sqlite3: 'select cast(? as float) as `val` from `t`',
@@ -12358,6 +12373,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castInt(c.ref('age'), 'val'), {
         pg: 'select cast("age" as integer) as "val" from "t"',
         mysql: 'select cast(`age` as unsigned) as `val` from `t`',
+        mariadb: 'select cast(`age` as unsigned) as `val` from `t`',
         mssql: 'select cast([age] as int) as [val] from [t]',
         oracledb: 'select cast("age" as integer) as "val" from "t"',
         sqlite3: 'select cast(`age` as integer) as `val` from `t`',
@@ -12368,6 +12384,7 @@ describe('QueryBuilder', () => {
       testCastSql((c) => c.castInt('42'), {
         pg: 'select cast(? as integer) from "t"',
         mysql: 'select cast(? as unsigned) from `t`',
+        mariadb: 'select cast(? as unsigned) from `t`',
         mssql: 'select cast(? as int) from [t]',
       });
     });
