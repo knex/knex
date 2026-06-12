@@ -13,10 +13,7 @@ describe('Util Tests', function () {
   require('./unit/util/format-sql-bindings');
   require('./unit/util/security');
   require('./unit/client/pool-config');
-});
-
-describe('Package Exports Tests', function () {
-  require('./unit/package-exports');
+  require('./unit/client/connection-pool');
 });
 
 describe('Query Building Tests', function () {
@@ -27,6 +24,7 @@ describe('Query Building Tests', function () {
   require('./unit/query/string');
   require('./unit/schema-builder/mysql')('mysql');
   require('./unit/schema-builder/mysql')('mysql2');
+  require('./unit/schema-builder/mysql')('mariadb');
   require('./unit/schema-builder/extensions');
   require('./unit/schema-builder/postgres');
   require('./unit/schema-builder/cockroachdb');
