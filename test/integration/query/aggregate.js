@@ -703,10 +703,11 @@ module.exports = function (knex) {
           return knex('accounts')
             .count('id')
             .groupBy('first_name')
+            .orderBy('first_name', 'asc')
             .testSql(function (tester) {
               tester(
                 'mysql',
-                'select count(`id`) from `accounts` group by `first_name`',
+                'select count(`id`) from `accounts` group by `first_name` order by `first_name` asc',
                 [],
                 [
                   {
@@ -719,7 +720,7 @@ module.exports = function (knex) {
               );
               tester(
                 'pg',
-                'select count("id") from "accounts" group by "first_name"',
+                'select count("id") from "accounts" group by "first_name" order by "first_name" asc',
                 [],
                 [
                   {
@@ -732,7 +733,7 @@ module.exports = function (knex) {
               );
               tester(
                 'pg-redshift',
-                'select count("id") from "accounts" group by "first_name"',
+                'select count("id") from "accounts" group by "first_name" order by "first_name" asc',
                 [],
                 [
                   {
@@ -745,7 +746,7 @@ module.exports = function (knex) {
               );
               tester(
                 'sqlite3',
-                'select count(`id`) from `accounts` group by `first_name`',
+                'select count(`id`) from `accounts` group by `first_name` order by `first_name` asc',
                 [],
                 [
                   {
@@ -758,7 +759,7 @@ module.exports = function (knex) {
               );
               tester(
                 'oracledb',
-                'select count("id") from "accounts" group by "first_name"',
+                'select count("id") from "accounts" group by "first_name" order by "first_name" asc',
                 [],
                 [
                   {
@@ -771,7 +772,7 @@ module.exports = function (knex) {
               );
               tester(
                 'mssql',
-                'select count([id]) from [accounts] group by [first_name]',
+                'select count([id]) from [accounts] group by [first_name] order by [first_name] asc',
                 [],
                 [
                   {
