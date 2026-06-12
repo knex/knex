@@ -1388,9 +1388,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do nothing returning `email`',
                 ['ignoretest1@example.com', 'AFTER']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?)) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) output inserted.[email];',
+                ['ignoretest1@example.com', 'AFTER']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1450,9 +1455,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict do nothing returning `email`',
                 ['ignoretest1@example.com', 'AFTER']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?)) as tsource([email], [name]) on 1=1 when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) output inserted.[email];',
+                ['ignoretest1@example.com', 'AFTER']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1518,9 +1528,14 @@ describe('Inserts', function () {
                 'insert into `upsert_composite_key_tests` (`email`, `name`, `org`) values (?, ?, ?) on conflict (`org`, `email`) do nothing returning `email`',
                 ['ignoretest1@example.com', 'AFTER', 'acme-inc']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_composite_key_tests] using (values (?, ?, ?)) as tsource([email], [name], [org]) on [upsert_composite_key_tests].[org] = tsource.[org] when not matched then insert ([email], [name], [org]) values (tsource.[email], tsource.[name], tsource.[org]) output inserted.[email];',
+                ['ignoretest1@example.com', 'AFTER', 'acme-inc']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1577,9 +1592,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
                 ['mergetest1@example.com', 'AFTER']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?)) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) when matched then update set [email]=tsource.[email], [name]=tsource.[name] output inserted.[email];',
+                ['mergetest1@example.com', 'AFTER']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1634,9 +1654,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
                 ['mergetest1@example.com', 'AFTER', 'tester']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?)) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) when matched and [upsert_tests].[role] = ? then update set [email]=tsource.[email], [name]=tsource.[name] output inserted.[email];',
+                ['mergetest1@example.com', 'AFTER', 'tester']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1700,9 +1725,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` where `upsert_tests`.`role` = ? returning `email`',
                 ['mergetest1@example.com', 'AFTER', 'fake-role']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?)) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) when matched and [upsert_tests].[role] = ? then update set [email]=tsource.[email], [name]=tsource.[name] output inserted.[email];',
+                ['mergetest1@example.com', 'AFTER', 'fake-role']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1776,9 +1806,14 @@ describe('Inserts', function () {
                 "insert into `upsert_tests` (`email`, `name`) values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com')) on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`",
                 ['mergedest@example.com']
               );
+              tester(
+                'mssql',
+                "merge into [upsert_tests] using (values (?, (SELECT name FROM (SELECT * FROM upsert_tests) AS t WHERE email = 'mergesource@example.com'))) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) when matched then update set [email]=tsource.[email], [name]=tsource.[name] output inserted.[email];",
+                ['mergedest@example.com']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1844,9 +1879,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = (SELECT name FROM upsert_value_source) returning `email`',
                 ['mergedest@example.com', 'SHOULD NOT BE USED']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?)) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) when matched then update set [upsert_tests].[name]=((SELECT name FROM upsert_value_source)) output inserted.[email];',
+                ['mergedest@example.com', 'SHOULD NOT BE USED']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1912,9 +1952,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) values (?, ?) on conflict (`email`) do update set `name` = excluded.`name` returning `email`',
                 ['mergedest@example.com', 'SHOULD BE USED']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?)) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) when matched then update set [email]=tsource.[email], [name]=tsource.[name] output inserted.[email];',
+                ['mergedest@example.com', 'SHOULD BE USED']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -1977,9 +2022,14 @@ describe('Inserts', function () {
                 'insert into `upsert_tests` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`) do update set `email` = excluded.`email`, `name` = excluded.`name` returning `email`',
                 ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
               );
+              tester(
+                'mssql',
+                'merge into [upsert_tests] using (values (?, ?), (?, ?)) as tsource([email], [name]) on [upsert_tests].[email] = tsource.[email] when not matched then insert ([email], [name]) values (tsource.[email], tsource.[name]) when matched then update set [email]=tsource.[email], [name]=tsource.[name] output inserted.[email];',
+                ['two@example.com', 'AFTER', 'three@example.com', 'AFTER']
+              );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
@@ -2071,7 +2121,7 @@ describe('Inserts', function () {
               );
             });
         } catch (err) {
-          if (isOracle(knex) || isMssql(knex)) {
+          if (isOracle(knex)) {
             expect(err).to.be.an('error');
             if (err.message.includes('.onConflict() is not supported for'))
               return;
