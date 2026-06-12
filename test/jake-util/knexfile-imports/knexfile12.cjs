@@ -5,7 +5,6 @@ const config = require('../knexfile-esm/knexfile.cjs');
  * @returns {Promise<import("../../../").Config>}
  * */
 module.exports = async () => {
-
   return {
     ...config,
     migrations: {
@@ -13,7 +12,7 @@ module.exports = async () => {
     },
     seeds: {
       directory: './cjs/seeds',
-      loadExtensions: ['.cjs']
+      loadExtensions: ['.cjs'],
     },
   };
 };

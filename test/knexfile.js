@@ -9,8 +9,9 @@ const _ = require('lodash');
 
 // excluding redshift, oracle, and mssql dialects from default integrations test
 const testIntegrationDialects = (
-  process.env.DB || 'sqlite3 postgres mysql mysql2 mssql oracledb'
-).match(/\w+/g);
+  process.env.DB ||
+  'sqlite3 postgres pgnative mysql mysql2 mariadb mssql oracledb cockroachdb better-sqlite3'
+).match(/[\w-]+/g);
 
 console.log(`ENV DB: ${process.env.DB}`);
 
@@ -28,6 +29,17 @@ const poolSqlite = {
   afterCreate: function (connection, callback) {
     assert.ok(typeof connection.__knexUid !== 'undefined');
     connection.run('PRAGMA foreign_keys = ON', callback);
+  },
+};
+
+const poolBetterSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function (connection, callback) {
+    assert.ok(typeof connection.__knexUid !== 'undefined');
+    connection.prepare('PRAGMA foreign_keys = ON').run();
+    callback(null, connection);
   },
 };
 
@@ -80,6 +92,24 @@ const testConfigs = {
     seeds,
   },
 
+  mariadb: {
+    client: 'mariadb',
+    connection: testConfig.mysql || {
+      port: 23306,
+      database: 'knex_test',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
+      charset: 'utf8',
+      insertIdAsNumber: true,
+      bigIntAsNumber: true,
+      checkDuplicate: false,
+    },
+    pool: mysqlPool,
+    migrations,
+    seeds,
+  },
+
   oracledb: {
     client: 'oracledb',
     connection: testConfig.oracledb || {
@@ -98,6 +128,36 @@ const testConfigs = {
     connection: testConfig.postgres || {
       adapter: 'postgresql',
       port: 25432,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  cockroachdb: {
+    client: 'cockroachdb',
+    connection: testConfig.cockroachdb || {
+      adapter: 'cockroachdb',
+      port: 26257,
+      host: 'localhost',
+      database: 'test',
+      user: 'root',
+      password: undefined,
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  pgnative: {
+    client: 'pgnative',
+    connection: testConfig.pgnative || {
+      adapter: 'postgresql',
+      port: 25433,
       host: 'localhost',
       database: 'knex_test',
       user: 'testuser',
@@ -131,6 +191,18 @@ const testConfigs = {
     pool: poolSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false,
+  },
+
+  'better-sqlite3': {
+    client: 'better-sqlite3',
+    connection: testConfig.sqlite3 || {
+      filename: __dirname + '/test.sqlite3',
+    },
+    pool: poolBetterSqlite,
+    migrations,
+    seeds,
+    useNullAsDefault: false,
   },
 
   mssql: {

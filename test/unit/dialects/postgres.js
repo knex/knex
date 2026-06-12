@@ -2,7 +2,6 @@ const knex = require('../../../knex');
 const expect = require('chai').expect;
 const sinon = require('sinon');
 const pgDialect = require('../../../lib/dialects/postgres/index.js');
-const pg = require('pg');
 const _ = require('lodash');
 const { isFunction } = require('../../../lib/util/is');
 
@@ -25,10 +24,9 @@ describe('Postgres Unit Tests', function () {
       .callsFake(function () {
         return Promise.resolve('9.6');
       });
-
-    sinon.stub(pg.Client.prototype, 'connect').callsFake(function (cb) {
-      cb(null, fakeConnection);
-    });
+    sinon
+      .stub(pgDialect.prototype, '_acquireOnlyConnection')
+      .returns(Promise.resolve(fakeConnection));
   });
   afterEach(() => {
     querySpy.resetHistory();
@@ -37,18 +35,17 @@ describe('Postgres Unit Tests', function () {
     sinon.restore();
   });
 
-  it('does not resolve client version if specified explicitly', (done) => {
+  it('does not resolve client version if specified explicitly', () => {
     const knexInstance = knex({
-      client: 'postgresql',
+      client: 'postgres',
       version: '10.5',
       connection: {
         pool: {},
       },
     });
-    knexInstance.raw('select 1 as 1').then((result) => {
+    return knexInstance.raw('select 1 as 1').then((result) => {
       expect(checkVersionStub.notCalled).to.equal(true);
       knexInstance.destroy();
-      done();
     });
   });
 
@@ -75,17 +72,16 @@ describe('Postgres Unit Tests', function () {
     );
   });
 
-  it('resolve client version if not specified explicitly', (done) => {
+  it('resolve client version if not specified explicitly', () => {
     const knexInstance = knex({
       client: 'postgresql',
       connection: {
         pool: {},
       },
     });
-    knexInstance.raw('select 1 as 1').then((result) => {
+    return knexInstance.raw('select 1 as 1').then((result) => {
       expect(checkVersionStub.calledOnce).to.equal(true);
       knexInstance.destroy();
-      done();
     });
   });
 
@@ -130,12 +126,50 @@ describe('Postgres Unit Tests', function () {
         );
       });
   });
-  it('Uses documented query config as param when providing bindings', (done) => {
+
+  it('escapes double quotes in searchPath to prevent SQL injection (#6383)', function () {
+    const knexInstance = knex({
+      client: 'pg',
+    });
+
+    const fakeQueryFn = function (expectedSearchPath) {
+      return {
+        query: function (sql, callback) {
+          try {
+            expect(sql).to.equal('set search_path to ' + expectedSearchPath);
+            callback(null);
+          } catch (error) {
+            callback(error);
+          }
+        },
+      };
+    };
+
+    return knexInstance.client
+      .setSchemaSearchPath(
+        fakeQueryFn('"public""; DROP TABLE users; --"'),
+        'public"; DROP TABLE users; --'
+      )
+      .then(function () {
+        return knexInstance.client.setSchemaSearchPath(
+          fakeQueryFn('"schema""name"'),
+          'schema"name'
+        );
+      })
+      .then(function () {
+        return knexInstance.client.setSchemaSearchPath(
+          fakeQueryFn('"clean","has""quote"'),
+          ['clean', 'has"quote']
+        );
+      });
+  });
+
+  it('Uses documented query config as param when providing bindings', () => {
     const knexInstance = knex({
       client: 'postgresql',
       connection: {},
     });
-    knexInstance.raw('select 1 as ?', ['foo']).then((result) => {
+    return knexInstance.raw('select 1 as ?', ['foo']).then((result) => {
       sinon.assert.calledOnce(querySpy);
       sinon.assert.calledWithExactly(
         querySpy,
@@ -146,7 +180,151 @@ describe('Postgres Unit Tests', function () {
         sinon.match.func
       );
       knexInstance.destroy();
-      done();
     });
+  });
+
+  it("throws a helpful error when pg-query-stream isn't installed", async () => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      version: '10.5',
+      connection: {
+        pool: {},
+      },
+    });
+
+    const Module = require('module');
+    const originalLoad = Module._load;
+    const loadStub = sinon
+      .stub(Module, '_load')
+      .callsFake((request, parent, isMain) => {
+        if (request === 'pg-query-stream') {
+          const err = new Error("Cannot find module 'pg-query-stream'");
+          err.code = 'MODULE_NOT_FOUND';
+          throw err;
+        }
+        return originalLoad(request, parent, isMain);
+      });
+
+    try {
+      expect(() =>
+        knexInstance.client._stream(
+          {
+            query() {
+              throw new Error('connection.query should not be called');
+            },
+          },
+          { sql: 'select 1', bindings: [] },
+          { on: _.noop, emit: _.noop }
+        )
+      ).to.throw(
+        "knex PostgreSQL query streaming requires the 'pg-query-stream' package. Please install it (e.g. `npm i pg-query-stream`)."
+      );
+    } finally {
+      loadStub.restore();
+      await knexInstance.destroy();
+    }
+  });
+
+  it('does not require pg-query-stream in browser mode', async () => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      version: '10.5',
+      connection: {
+        pool: {},
+      },
+    });
+
+    const Module = require('module');
+    const originalLoad = Module._load;
+    const loadStub = sinon
+      .stub(Module, '_load')
+      .callsFake((request, parent, isMain) => {
+        if (request === 'pg-query-stream') {
+          throw new Error('pg-query-stream should not be required in browser');
+        }
+        return originalLoad(request, parent, isMain);
+      });
+
+    const originalBrowser = process.browser;
+    process.browser = true;
+
+    try {
+      const connection = {
+        query() {
+          throw new Error('connection.query should not be called');
+        },
+      };
+
+      await knexInstance.client
+        ._stream(
+          connection,
+          { sql: 'select 1', bindings: [] },
+          { on: _.noop, emit: _.noop }
+        )
+        .then(
+          () => {
+            throw new Error('expected stream to reject in browser mode');
+          },
+          (err) => {
+            expect(err).to.be.instanceOf(TypeError);
+            expect(err.message).to.not.include('Please install it');
+          }
+        );
+
+      expect(loadStub.calledWith('pg-query-stream')).to.equal(false);
+    } finally {
+      process.browser = originalBrowser;
+      loadStub.restore();
+      await knexInstance.destroy();
+    }
+  });
+
+  it('rethrows non-MODULE_NOT_FOUND errors when loading pg-query-stream', async () => {
+    const knexInstance = knex({
+      client: 'postgresql',
+      version: '10.5',
+      connection: {
+        pool: {},
+      },
+    });
+
+    const Module = require('module');
+    const originalLoad = Module._load;
+    const loadStub = sinon
+      .stub(Module, '_load')
+      .callsFake((request, parent, isMain) => {
+        if (request === 'pg-query-stream') {
+          const err = new Error('access denied');
+          err.code = 'EACCES';
+          throw err;
+        }
+        return originalLoad(request, parent, isMain);
+      });
+
+    try {
+      const connection = {
+        query() {
+          throw new Error('connection.query should not be called');
+        },
+      };
+      let thrown;
+
+      try {
+        knexInstance.client._stream(
+          connection,
+          { sql: 'select 1', bindings: [] },
+          { on: _.noop, emit: _.noop }
+        );
+      } catch (err) {
+        thrown = err;
+      }
+
+      expect(thrown).to.be.instanceOf(Error);
+      expect(thrown.message).to.equal('access denied');
+      expect(thrown.code).to.equal('EACCES');
+    } finally {
+      loadStub.restore();
+      await knexInstance.destroy();
+    }
   });
 });

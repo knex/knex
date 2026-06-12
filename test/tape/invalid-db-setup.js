@@ -12,8 +12,10 @@ module.exports = (knexfile) => {
     // TODO: FIX ORACLE AND MSSQL TO WORK THE SAME WAY WITH OTHER DIALECTS IF POSSIBLE
     if (
       dialect !== 'sqlite3' &&
+      dialect !== 'better-sqlite3' &&
       dialect !== 'oracledb' &&
-      dialect !== 'mssql'
+      dialect !== 'mssql' &&
+      dialect !== 'cockroachdb'
     ) {
       const knexConf = _.cloneDeep(knexfile[key]);
       knexConf.connection.database = knexConf.connection.db =

@@ -1,4 +1,4 @@
-import { Knex } from "knex";
+import type { Knex } from "knex";
 
 <% if (d.tableName) { %>
 export async function up(knex: Knex): Promise<Knex.SchemaBuilder> {

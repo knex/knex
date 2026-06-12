@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const {
+  Db,
   getAllDbs,
   getKnexForDb,
 } = require('../../util/knex-instance-provider');
@@ -8,7 +9,7 @@ describe('Selects', () => {
   describe('FTS queries', () => {
     getAllDbs()
       // only sqlite is currently supported
-      .filter((db) => db === 'sqlite3')
+      .filter((db) => db === Db.SQLite)
       .forEach((db) => {
         describe(db, () => {
           let knex;

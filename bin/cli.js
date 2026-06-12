@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const rechoir = require('rechoir');
+const merge = require('lodash/merge');
 const interpret = require('interpret');
 const resolveFrom = require('resolve-from');
 const path = require('path');
@@ -9,17 +10,20 @@ const color = require('colorette');
 const argv = require('getopts')(process.argv.slice(2));
 const cliPkg = require('../package');
 const {
+  parseConfigObj,
   mkConfigObj,
   resolveEnvironmentConfig,
   exit,
   success,
   checkLocalModule,
+  checkConfigurationOptions,
   getMigrationExtension,
   getSeedExtension,
   getStubPath,
   findUpModulePath,
   findUpConfig,
 } = require('./utils/cli-config-utils');
+const { KnexfileRuntimeError } = require('./knexfile-runtime-error');
 const {
   existsSync,
   readFile,
@@ -30,17 +34,29 @@ const { listMigrations } = require('./utils/migrationsLister');
 
 async function openKnexfile(configPath) {
   const importFile = require('../lib/migrations/util/import-file'); // require me late!
-  let config = await importFile(configPath);
-  if (config && config.default) {
-    config = config.default;
+
+  try {
+    let config = await importFile(configPath);
+
+    if (config && config.default) {
+      config = config.default;
+    }
+    if (typeof config === 'function') {
+      config = await config();
+    }
+    return config;
+  } catch (err) {
+    // Ensure that anything thrown by user code while loading the knexfile
+    // becomes an instance of Error. This ensures that `exit()` behaves correctly.
+    throw new KnexfileRuntimeError(
+      'Failed to read config from knexfile',
+      configPath,
+      err
+    );
   }
-  if (typeof config === 'function') {
-    config = await config();
-  }
-  return config;
 }
 
-async function initKnex(env, opts) {
+async function initKnex(env, opts, useDefaultClientIfNotSpecified) {
   checkLocalModule(env);
   if (process.cwd() !== env.cwd) {
     process.chdir(env.cwd);
@@ -48,6 +64,10 @@ async function initKnex(env, opts) {
       'Working directory changed to',
       color.magenta(tildify(env.cwd))
     );
+  }
+
+  if (!useDefaultClientIfNotSpecified) {
+    checkConfigurationOptions(env, opts);
   }
 
   env.configuration = env.configPath
@@ -59,12 +79,26 @@ async function initKnex(env, opts) {
     env.configuration,
     env.configPath
   );
+
+  const optionsConfig = parseConfigObj(opts);
+  const config = merge(resolvedConfig, optionsConfig);
+
+  // Migrations directory gets defaulted if it is undefined.
+  if (!env.configPath && !config.migrations.directory) {
+    config.migrations.directory = null;
+  }
+
+  // Client gets defaulted if undefined and it's allowed
+  if (useDefaultClientIfNotSpecified && config.client === undefined) {
+    config.client = 'sqlite3';
+  }
+
   const knex = require(env.modulePath);
-  return knex(resolvedConfig);
+  return knex(config);
 }
 
 function invoke() {
-  const filetypes = ['js', 'coffee', 'ts', 'eg', 'ls'];
+  const filetypes = ['js', 'mjs', 'coffee', 'ts', 'eg', 'ls'];
 
   const cwd = argv.knexfile
     ? path.dirname(path.resolve(argv.knexfile))
@@ -112,15 +146,15 @@ function invoke() {
     configuration: null,
   };
 
-  // rechoir.prepare(interpret.jsVariants, configPath, cwd);
-
   let modulePackage = {};
   try {
     modulePackage = require(path.join(
       path.dirname(env.modulePath),
       'package.json'
     ));
-  } catch (e) {}
+  } catch (e) {
+    /* empty */
+  }
 
   const cliVersion = [
     color.blue('Knex CLI version:'),
@@ -138,16 +172,10 @@ function invoke() {
     .option('--knexfile [path]', 'Specify the knexfile path.')
     .option('--knexpath [path]', 'Specify the path to knex instance.')
     .option('--cwd [path]', 'Specify the working directory.')
-    .option('--client [name]', 'Set DB client without a knexfile.')
-    .option('--connection [address]', 'Set DB connection without a knexfile.')
-    .option(
-      '--migrations-directory [path]',
-      'Set migrations directory without a knexfile.'
-    )
-    .option(
-      '--migrations-table-name [path]',
-      'Set migrations table name without a knexfile.'
-    )
+    .option('--client [name]', 'Set DB client.')
+    .option('--connection [address]', 'Set DB connection.')
+    .option('--migrations-directory [path]', 'Set migrations directory.')
+    .option('--migrations-table-name [path]', 'Set migrations table name.')
     .option(
       '--env [name]',
       'environment, default: process.env.NODE_ENV || development'
@@ -203,33 +231,43 @@ function invoke() {
       'Specify the migration stub to use. If using <name> the file must be located in config.migrations.directory'
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating migrations
-      const instance = await initKnex(env, opts);
-      const ext = getMigrationExtension(env, opts);
-      const configOverrides = { extension: ext };
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating migrations
+        const ext = getMigrationExtension(env, opts);
+        const configOverrides = { extension: ext };
 
-      const stub = getStubPath('migrations', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
+        const stub = getStubPath('migrations', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
+
+        instance.migrate
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created Migration: ${name}`));
+          })
+          .catch(exit);
+      } catch (err) {
+        exit(err);
       }
-
-      instance.migrate
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created Migration: ${name}`));
-        })
-        .catch(exit);
     });
 
   commander
     .command('migrate:latest')
     .description('        Run all migrations that have not yet been run.')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
     .option('--verbose', 'verbose')
-    .action(async () => {
+    .action(async (cmd) => {
       try {
+        const disableTransactions = !!cmd.disableTransactions;
         const instance = await initKnex(env, commander.opts());
-        const [batchNo, log] = await instance.migrate.latest();
+        const [batchNo, log] = await instance.migrate.latest({
+          disableTransactions,
+        });
         if (log.length === 0) {
           success(color.cyan('Already up to date'));
         }
@@ -242,14 +280,13 @@ function invoke() {
       }
     });
 
-  commander
-    .command('migrate:up [<name>]')
-    .description(
-      '        Run the next or the specified migration that has not yet been run.'
-    )
-    .action((name) => {
+  function migrateUpAction(method) {
+    return (name, cmd) => {
+      const disableTransactions = !!cmd.disableTransactions;
       initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.up({ name }))
+        .then((instance) =>
+          instance.migrate[method]({ name, disableTransactions })
+        )
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already up to date'));
@@ -264,18 +301,39 @@ function invoke() {
           );
         })
         .catch(exit);
-    });
+    };
+  }
+
+  commander
+    .command('migrate:up [<name>]')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run the next or the specified migration that has not yet been run.'
+    )
+    .action(migrateUpAction('up'));
 
   commander
     .command('migrate:rollback')
     .description('        Rollback the last batch of migrations performed.')
     .option('--all', 'rollback all completed migrations')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
     .option('--verbose', 'verbose')
     .action((cmd) => {
-      const { all } = cmd;
+      const { all, disableTransactions } = cmd;
 
       initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.rollback(null, all))
+        .then((instance) =>
+          instance.migrate.rollback(
+            { disableTransactions: !!disableTransactions },
+            all
+          )
+        )
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
@@ -291,12 +349,19 @@ function invoke() {
 
   commander
     .command('migrate:down [<name>]')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
     .description(
       '        Undo the last or the specified migration that was already run.'
     )
-    .action((name) => {
+    .action((name, cmd) => {
+      const disableTransactions = !!cmd.disableTransactions;
       initKnex(env, commander.opts())
-        .then((instance) => instance.migrate.down({ name }))
+        .then((instance) =>
+          instance.migrate.down({ name, disableTransactions })
+        )
         .then(([batchNo, log]) => {
           if (log.length === 0) {
             success(color.cyan('Already at the base migration'));
@@ -311,6 +376,28 @@ function invoke() {
         })
         .catch(exit);
     });
+
+  commander
+    .command('migrate:to <name>')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run all migrations up to and including the specified migration.'
+    )
+    .action(migrateUpAction('to'));
+
+  commander
+    .command('migrate:before <name>')
+    .option(
+      '--disable-transactions',
+      'run migrations without an implicit transaction'
+    )
+    .description(
+      '        Run all migrations before the specified migration (exclusive).'
+    )
+    .action(migrateUpAction('before'));
 
   commander
     .command('migrate:currentVersion')
@@ -370,26 +457,30 @@ function invoke() {
       false
     )
     .action(async (name) => {
-      const opts = commander.opts();
-      opts.client = opts.client || 'sqlite3'; // We don't really care about client when creating seeds
-      const instance = await initKnex(env, opts);
-      const ext = getSeedExtension(env, opts);
-      const configOverrides = { extension: ext };
-      const stub = getStubPath('seeds', env, opts);
-      if (stub) {
-        configOverrides.stub = stub;
-      }
+      try {
+        const opts = commander.opts();
+        const instance = await initKnex(env, opts, true); // Skip config check, we don't really care about client when creating seeds
+        const ext = getSeedExtension(env, opts);
+        const configOverrides = { extension: ext };
+        const stub = getStubPath('seeds', env, opts);
+        if (stub) {
+          configOverrides.stub = stub;
+        }
 
-      if (opts.timestampFilenamePrefix) {
-        configOverrides.timestampFilenamePrefix = opts.timestampFilenamePrefix;
-      }
+        if (opts.timestampFilenamePrefix) {
+          configOverrides.timestampFilenamePrefix =
+            opts.timestampFilenamePrefix;
+        }
 
-      instance.seed
-        .make(name, configOverrides)
-        .then((name) => {
-          success(color.green(`Created seed file: ${name}`));
-        })
-        .catch(exit);
+        instance.seed
+          .make(name, configOverrides)
+          .then((name) => {
+            success(color.green(`Created seed file: ${name}`));
+          })
+          .catch(exit);
+      } catch (err) {
+        exit(err);
+      }
     });
 
   commander

@@ -1,5 +1,6 @@
 yarn.lock
 package-lock.json
+!docs/package-lock.json
 raw
 *.sw?
 .idea
@@ -11,6 +12,8 @@ node_modules
 test.sqlite3
 npm-debug.log
 tmp
+knex-*.tgz
+.eslintcache
 
 # Testing for the knex cli:
 bin/migrations-folder
@@ -28,3 +31,5 @@ test/coverage/*
 #VsCode workspace
 .vscode
 /coverage/
+
+test/integration/migrate/migration/

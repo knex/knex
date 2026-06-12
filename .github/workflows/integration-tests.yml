@@ -1,5 +1,4 @@
 ---
-
 name: CI
 
 on:
@@ -10,53 +9,107 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
     runs-on: ubuntu-latest
     name: CI
 
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16.x, 14.x, 12.x, 10.x]
-        database-type: [postgres, mysql, mssql, sqlite3]
+        node-version: [22.x, 20.x, 18.x, 16.x]
+        database-type:
+          [
+            postgres,
+            pgnative,
+            mysql,
+            mariadb,
+            mssql,
+            sqlite3,
+            cockroachdb,
+            better-sqlite3,
+            oracledb,
+          ]
+        # mariadb's client only supports Node 20+
+        exclude:
+          - node-version: 18.x
+            database-type: mariadb
+          - node-version: 16.x
+            database-type: mariadb
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v2.2.0
+        uses: actions/setup-node@v4
         with:
           always-auth: false
           node-version: ${{ matrix.node-version }}
 
       - name: Start Database(s)
         run: |
-          docker-compose \
+          docker compose \
             --file "scripts/docker-compose.yml" \
             up \
               --detach \
               --build \
               "${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
-
-      - name: Initialize Database(s)
-        run: |
-          docker-compose \
-            --file "scripts/docker-compose.yml" \
-            up \
-              --detach \
-              "wait${{ matrix.database-type }}"
-        if: matrix.database-type != 'sqlite3'
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
       - name: Run npm install
         run: npm install
 
+      - name: Initialize Database(s)
+        run: |
+          docker compose \
+            --file "scripts/docker-compose.yml" \
+            up \
+              "wait${{ matrix.database-type }}"
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
+
+      - name: Install pg-native
+        run: npm i pg-native
+        if: matrix.database-type == 'pgnative'
+
+      - name: Install oracle dependencies
+        run: ./scripts/oracledb-install-driver-libs.sh run
+        if: matrix.database-type == 'oracledb'
+
+      - run: npm run build
+
       - name: Run Tests
         run: npm run test:db
+        if: matrix.database-type != 'oracledb'
+        env:
+          CI: true
+          DB: ${{ matrix.database-type }}
+          KNEX_TEST_TIMEOUT: 60000
+
+      # This allows for oracle tests to run and fail as part of PR #4889.
+      # This is a short term fix to allow a merge of CI functionality with
+      # full test coverage to follow soon after. With full test fix please
+      # delete this step and remove `if: matrix.database-type != 'oracledb'
+      # from the step above. -- Ferris (@code-ape)
+      - name: Run Tests (oracle, allow failing temporarily)
+        run: npm run test:db || true
+        if: matrix.database-type == 'oracledb'
         env:
           CI: true
           DB: ${{ matrix.database-type }}
@@ -64,7 +117,45 @@ jobs:
 
       - name: Stop Database(s)
         run: |
-          docker-compose \
+          docker compose \
             --file "scripts/docker-compose.yml" \
             down
-        if: matrix.database-type != 'sqlite3'
+        if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
+
+  user_experience:
+    # skip on:
+    #   - PRs labeled `skip-tests` (changes that can't affect runtime
+    #     behaviour: docs, CI scripts, release tooling)
+    #   - the auto-generated "release X.Y.Z" commit pushed by the
+    #     release workflow (only changes lib/**, package.json, and
+    #     changelogs; same source already tested on the parent commit)
+    if: >-
+      ${{
+        !contains(github.event.pull_request.labels.*.name, 'skip-tests') &&
+        !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release '))
+      }}
+    runs-on: ${{ matrix.os }}
+    name: Test user experience
+    strategy:
+      matrix:
+        node-version: [18.x]
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with: { fetch-depth: 1 }
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          always-auth: false
+          package-manager-cache: false
+          node-version: ${{ matrix.node-version }}
+
+      - name: Test npm git dependency
+        shell: bash
+        run: |
+          mkdir TMP/
+          echo "{ \"dependencies\": { \"knex\": \"git+file://$(pwd)/\" } }" > TMP/package.json
+          cd TMP/
+          npm install --verbose

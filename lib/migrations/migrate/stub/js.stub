@@ -1,4 +1,7 @@
-
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
 exports.up = function(knex) {
   <% if (d.tableName) { %>
   return knex.schema.createTable("<%= d.tableName %>", function(t) {
@@ -8,6 +11,10 @@ exports.up = function(knex) {
   <% } %>
 };
 
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
 exports.down = function(knex) {
   <% if (d.tableName) { %>
   return knex.schema.dropTable("<%= d.tableName %>");

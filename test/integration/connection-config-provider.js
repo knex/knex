@@ -4,6 +4,7 @@ const { expect } = require('chai');
 
 const _ = require('lodash');
 const makeKnex = require('../../knex');
+const { setHiddenProperty } = require('../../lib/util/security');
 
 module.exports = function (config) {
   describe('Connection configuration provider', function () {
@@ -13,6 +14,9 @@ module.exports = function (config) {
 
     this.beforeEach(() => {
       configWorkingCopy = _.cloneDeep(config);
+      if (config.connection && config.connection.password) {
+        setHiddenProperty(configWorkingCopy.connection, config.connection);
+      }
       configWorkingCopy.pool.min = 1;
       configWorkingCopy.pool.max = 2;
       providerInvocationCount = 0;
@@ -56,7 +60,28 @@ module.exports = function (config) {
           expirationChecker: () => true,
         });
       };
-      return runTwoConcurrentTransactions(2);
+      const knex = makeKnex(configWorkingCopy);
+      let caught;
+      try {
+        const initial = await knex.client.connectionConfigProvider();
+        knex.client.connectionSettings = initial;
+        if (initial.expirationChecker) {
+          knex.client.connectionConfigExpirationChecker =
+            initial.expirationChecker;
+          delete initial.expirationChecker;
+        }
+        const poolConfig = knex.client.getPoolSettings(knex.client.config.pool);
+        await poolConfig.validate({});
+      } catch (err) {
+        caught = err;
+      } finally {
+        await knex.destroy();
+      }
+      expect(caught).to.be.an('error');
+      expect(caught.message).to.contain(
+        'Connection configuration still reported expired after refresh'
+      );
+      expect(providerInvocationCount).equals(2);
     });
 
     async function runTwoConcurrentTransactions(expectedInvocationCount) {

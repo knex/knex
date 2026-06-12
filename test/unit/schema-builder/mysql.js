@@ -3,6 +3,8 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const MySQL_Client = require('../../../lib/dialects/mysql');
 const MySQL2_Client = require('../../../lib/dialects/mysql2');
+const MariaDB_Client = require('../../../lib/dialects/mariadb');
+const knex = require('../../../knex');
 
 module.exports = function (dialect) {
   describe(dialect + ' SchemaBuilder', function () {
@@ -13,6 +15,9 @@ module.exports = function (dialect) {
         break;
       case 'mysql2':
         client = new MySQL2_Client({ client: 'mysql2' });
+        break;
+      case 'mariadb':
+        client = new MariaDB_Client({ client: 'mariadb' });
         break;
     }
 
@@ -34,18 +39,80 @@ module.exports = function (dialect) {
       );
     });
 
+    it('create table like another', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTableLike('users_like', 'users')
+        .toSQL();
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users_like` like `users`'
+      );
+    });
+
+    it('create table like another with additionnal columns', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTableLike('users_like', 'users', function (table) {
+          table.text('add_col');
+          table.integer('numeric_col');
+        })
+        .toSQL();
+      expect(tableSql.length).to.equal(2);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users_like` like `users`'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table `users_like` add `add_col` text, add `numeric_col` int'
+      );
+    });
+
     it('test basic create table with incrementing without primary key', function () {
       tableSql = client
         .schemaBuilder()
         .createTable('users', function (table) {
           table.increments('id');
+          // In MySQL a autoincrement column is always a primary key
           table.increments('other_id', { primaryKey: false });
         })
         .toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null auto_increment)'
+        'create table `users` (`id` int unsigned not null auto_increment primary key, `other_id` int unsigned not null)'
+      );
+    });
+
+    it('test basic create table with composite key on incrementing column + other', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.primary(['userId', 'name']);
+          table.increments('userId');
+          table.string('name');
+        })
+        .toSQL();
+
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`userId` int unsigned not null, `name` varchar(255), primary key (`userId`, `name`))'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table `users` modify column `userId` int unsigned not null auto_increment'
+      );
+    });
+
+    it('test basic create table with inline primary key creation', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.string('id', 24).primary();
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`id` varchar(24), primary key (`id`))'
       );
     });
 
@@ -79,6 +146,160 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add `id` int unsigned not null auto_increment primary key, add `email` varchar(255)'
       );
+    });
+
+    describe('views', function () {
+      let knexMysql;
+
+      before(function () {
+        knexMysql = knex({
+          client: 'mysql2',
+          connection: {},
+        });
+      });
+
+      it('basic create view', async function () {
+        const viewSql = client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+        equal(1, viewSql.length);
+        expect(viewSql[0].sql).to.equal(
+          "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+        );
+      });
+
+      it('basic create view without columns', async function () {
+        const viewSql = client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+        equal(1, viewSql.length);
+        expect(viewSql[0].sql).to.equal(
+          "create view `adults` as select `name` from `users` where `age` > '18'"
+        );
+      });
+
+      it('create view or replace', async function () {
+        const viewSql = client
+          .schemaBuilder()
+          .createViewOrReplace('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+        expect(viewSql.length).to.equal(1);
+        expect(viewSql[0].sql).to.equal(
+          "create or replace view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+        );
+      });
+
+      it('create view or replace without columns', async function () {
+        const viewSql = client
+          .schemaBuilder()
+          .createViewOrReplace('adults', function (view) {
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+          })
+          .toSQL();
+        expect(viewSql.length).to.equal(1);
+        expect(viewSql[0].sql).to.equal(
+          "create or replace view `adults` as select `name` from `users` where `age` > '18'"
+        );
+      });
+
+      it('create view with check options', async function () {
+        const viewSqlLocalCheck = client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+            view.localCheckOption();
+          })
+          .toSQL();
+        equal(1, viewSqlLocalCheck.length);
+        expect(viewSqlLocalCheck[0].sql).to.equal(
+          "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with local check option"
+        );
+
+        const viewSqlCascadedCheck = client
+          .schemaBuilder()
+          .createView('adults', function (view) {
+            view.columns(['name']);
+            view.as(knexMysql('users').select('name').where('age', '>', '18'));
+            view.cascadedCheckOption();
+          })
+          .toSQL();
+        equal(1, viewSqlCascadedCheck.length);
+        expect(viewSqlCascadedCheck[0].sql).to.equal(
+          "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with cascaded check option"
+        );
+      });
+
+      it('drop view', function () {
+        tableSql = client.schemaBuilder().dropView('users').toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('drop view `users`');
+      });
+
+      it('drop view with schema', function () {
+        tableSql = client
+          .schemaBuilder()
+          .withSchema('myschema')
+          .dropView('users')
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal('drop view `myschema`.`users`');
+      });
+
+      it('rename and change default of column of view', function () {
+        expect(() => {
+          tableSql = client
+            .schemaBuilder()
+            .view('users', function (view) {
+              view.column('oldName').rename('newName').defaultTo('10');
+            })
+            .toSQL();
+        }).to.throw('rename column of views is not supported by this dialect.');
+      });
+
+      it('rename view', function () {
+        tableSql = client
+          .schemaBuilder()
+          .renameView('old_view', 'new_view')
+          .toSQL();
+        equal(1, tableSql.length);
+        expect(tableSql[0].sql).to.equal(
+          'rename table `old_view` to `new_view`'
+        );
+      });
+
+      it('create materialized view', function () {
+        expect(() => {
+          tableSql = client
+            .schemaBuilder()
+            .createMaterializedView('mat_view', function (view) {
+              view.columns(['name']);
+              view.as(
+                knexMysql('users').select('name').where('age', '>', '18')
+              );
+            })
+            .toSQL();
+        }).to.throw('materialized views are not supported by this dialect.');
+      });
+
+      it('refresh view', function () {
+        expect(() => {
+          tableSql = client
+            .schemaBuilder()
+            .refreshMaterializedView('view_to_refresh')
+            .toSQL();
+        }).to.throw('materialized views are not supported by this dialect.');
+      });
     });
 
     it('adding json', function () {
@@ -171,6 +392,17 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop primary key');
     });
 
+    it('test drop primary if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropPrimaryIfExists();
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
+    });
+
     it('test drop unique', function () {
       tableSql = client
         .schemaBuilder()
@@ -195,6 +427,17 @@ module.exports = function (dialect) {
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
+    });
+
+    it('test drop unique if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropUniqueIfExists('foo');
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
     });
 
     it('test drop index', function () {
@@ -251,6 +494,17 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test drop foreign if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropForeignIfExists('foo');
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
+    });
+
     it('test drop timestamps', function () {
       tableSql = client
         .schemaBuilder()
@@ -300,6 +554,23 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test adding unique key with storage engine index type', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.unique('foo', {
+            indexName: 'bar',
+            storageEngineIndexType: 'HASH',
+          });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add unique `bar`(`foo`) using HASH'
+      );
+    });
+
     it('test adding index', function () {
       tableSql = client
         .schemaBuilder()
@@ -322,9 +593,26 @@ module.exports = function (dialect) {
         })
         .toSQL();
 
-      equal(1, tableSql.length);
+      expect(tableSql.length).to.equal(1);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add FULLTEXT index `baz`(`foo`, `bar`)'
+      );
+    });
+
+    it('test adding index with an index type and storage engine index type', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.index(['foo', 'bar'], 'baz', {
+            indexType: 'UNIQUE',
+            storageEngineIndexType: 'BTREE',
+          });
+        })
+        .toSQL();
+
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add UNIQUE index `baz`(`foo`, `bar`) using BTREE'
       );
     });
 
@@ -382,6 +670,24 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo_id` int');
       expect(tableSql[1].sql).to.equal(
         'alter table `users` add constraint `fk_foo` foreign key (`foo_id`) references `orders` (`id`)'
+      );
+    });
+
+    it('adds foreign key with deferred throw error ', function () {
+      const addDeferredConstraint = () => {
+        client
+          .schemaBuilder()
+          .createTable('person', function (table) {
+            table
+              .integer('user_id')
+              .notNull()
+              .references('users.id')
+              .deferrable('immediate');
+          })
+          .toSQL();
+      };
+      expect(addDeferredConstraint).to.throw(
+        'mysql does not support deferrable'
       );
     });
 
@@ -443,13 +749,33 @@ module.exports = function (dialect) {
       tableSql = client
         .schemaBuilder()
         .table('users', function () {
+          // In MySQL a autoincrement column is always a primary key
           this.bigIncrements('id', { primaryKey: false });
         })
         .toSQL();
 
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'alter table `users` add `id` bigint unsigned not null auto_increment'
+        'alter table `users` add `id` bigint unsigned not null'
+      );
+    });
+
+    it('test basic create table with composite key on big incrementing column + other', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.primary(['userId', 'name']);
+          table.bigincrements('userId');
+          table.string('name');
+        })
+        .toSQL();
+
+      equal(2, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`userId` bigint unsigned not null, `name` varchar(255), primary key (`userId`, `name`))'
+      );
+      expect(tableSql[1].sql).to.equal(
+        'alter table `users` modify column `userId` bigint unsigned not null auto_increment'
       );
     });
 
@@ -893,6 +1219,34 @@ module.exports = function (dialect) {
       );
     });
 
+    it('adding uuid', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.uuid('foo');
+        })
+        .toSQL();
+
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` char(36)'
+      );
+    });
+
+    it('adding binary uuid', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.uuid('foo', { useBinaryUuid: true });
+        })
+        .toSQL();
+
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` binary(16)'
+      );
+    });
+
     it('test set comment', function () {
       tableSql = client
         .schemaBuilder()
@@ -973,6 +1327,42 @@ module.exports = function (dialect) {
       }).to.throw(TypeError);
     });
 
+    it('set comment to old comment limit (size 60+) #4863', function () {
+      const warnMessages = [];
+      client.logger = {
+        warn: (msg) => {
+          warnMessages.push(msg);
+        },
+      };
+      client
+        .schemaBuilder()
+        .createTable('user', function (t) {
+          t.comment(
+            "A big comment. If we write more than 60 characters here it shouldn't trigger any warning since mysql and mariaDB maximum length is 1024 characters. Please fix this warning, it's annoying when a migration is taking place with multiple long comments."
+          );
+        })
+        .toSQL();
+      expect(warnMessages.length).to.equal(0);
+    });
+
+    it('set comment to current comment limit (size 1024+) #4863', function () {
+      const warnMessages = [];
+      client.logger = {
+        warn: (msg) => {
+          warnMessages.push(msg);
+        },
+      };
+      client
+        .schemaBuilder()
+        .createTable('users', function (t) {
+          t.comment('big comment'.repeat(100));
+        })
+        .toSQL();
+      expect(warnMessages[0]).to.equal(
+        'The max length for a table comment is 1024 characters'
+      );
+    });
+
     it('should alter columns with the alter flag', function () {
       tableSql = client
         .schemaBuilder()
@@ -1019,6 +1409,36 @@ module.exports = function (dialect) {
       );
     });
 
+    it('allows dropping a unique compound index if exists', function () {
+      client.isMariaDB = true;
+      tableSql = client
+        .schemaBuilder()
+        .table('composite_key_test', function (t) {
+          t.dropUniqueIfExists(['column_a', 'column_b']);
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `composite_key_test` drop index if exists `composite_key_test_column_a_column_b_unique`'
+      );
+    });
+
+    it('allows dropping a single-column unique index if exists on MariaDB', function () {
+      client.isMariaDB = true;
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (t) {
+          t.dropUniqueIfExists('email');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` drop index if exists `users_email_unique`'
+      );
+    });
+
     it('allows default as alias for defaultTo', function () {
       tableSql = client
         .schemaBuilder()
@@ -1055,17 +1475,6 @@ module.exports = function (dialect) {
         .toSQL();
       expect(tableSql[0].sql).to.equal(
         'alter table `users` add primary key `testconstraintname`(`test1`, `test2`)'
-      );
-
-      tableSql = client
-        .schemaBuilder()
-        .createTable('users', function (t) {
-          t.string('test').primary('testconstraintname');
-        })
-        .toSQL();
-
-      expect(tableSql[1].sql).to.equal(
-        'alter table `users` add primary key `testconstraintname`(`test`)'
       );
     });
 
@@ -1153,6 +1562,259 @@ module.exports = function (dialect) {
         expect(spy.firstCall.args).to.deep.equal(['id', 'id context']);
         expect(spy.secondCall.args).to.deep.equal(['email', 'email context']);
         expect(spy.thirdCall.args).to.deep.equal(['users', 'table context']);
+      });
+    });
+
+    describe('Checks tests', function () {
+      it('allows adding checks positive', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkPositive();
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add `price` int check (`price` > 0)'
+        );
+      });
+
+      it('allows adding checks negative', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkNegative();
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add `price` int check (`price` < 0)'
+        );
+      });
+
+      it('allows adding checks in', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.string('animal').checkIn(['cat', 'dog']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add `animal` varchar(255) check (`animal` in ('cat','dog'))"
+        );
+      });
+
+      it('allows adding checks not in', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.string('animal').checkNotIn(['cat', 'dog']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add `animal` varchar(255) check (`animal` not in ('cat','dog'))"
+        );
+      });
+
+      it('allows adding checks between', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween([10, 15]);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add `price` int check (`price` between 10 and 15)'
+        );
+      });
+
+      it('allows adding checks between with multiple intervals', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween([
+              [10, 15],
+              [20, 25],
+            ]);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add `price` int check (`price` between 10 and 15 or `price` between 20 and 25)'
+        );
+      });
+
+      it('allows adding checks between strings', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.integer('price').checkBetween(['banana', 'orange']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add `price` int check (`price` between 'banana' and 'orange')"
+        );
+      });
+
+      it('allows length equals', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.varchar('phone').checkLength('=', 8);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` add `phone` varchar(255) check (length(`phone`) = 8)'
+        );
+      });
+
+      it('check regexp', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.varchar('phone').checkRegex('[0-9]{8}');
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          "alter table `user` add `phone` varchar(255) check (`phone` REGEXP '[0-9]{8}')"
+        );
+      });
+
+      it('drop checks', function () {
+        tableSql = client
+          .schemaBuilder()
+          .table('user', function (t) {
+            t.dropChecks(['check_constraint1', 'check_constraint2']);
+          })
+          .toSQL();
+        expect(tableSql[0].sql).to.equal(
+          'alter table `user` drop constraint check_constraint1, drop constraint check_constraint2'
+        );
+      });
+    });
+
+    describe('dropFKRefs and createFKRefs with lowercase column names (#6391)', function () {
+      // mysql2 may return INFORMATION_SCHEMA column names in lowercase,
+      // which caused table names and constraint names to be `undefined`.
+      const TableBuilder = require('../../../lib/schema/tablebuilder');
+      let tableCompiler;
+
+      beforeEach(function () {
+        const tableBuilder = new TableBuilder(
+          client,
+          'alter',
+          'test_table',
+          undefined,
+          function () {}
+        );
+        tableCompiler = client.tableCompiler(tableBuilder);
+      });
+
+      it('dropFKRefs handles lowercase ref keys from mysql2', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            table_name: 'my_table',
+            constraint_name: 'fk_my_constraint',
+          },
+        ];
+
+        await tableCompiler.dropFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `my_table` drop foreign key `fk_my_constraint`'
+        );
+      });
+
+      it('dropFKRefs still works with uppercase ref keys', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            TABLE_NAME: 'my_table',
+            CONSTRAINT_NAME: 'fk_my_constraint',
+          },
+        ];
+
+        await tableCompiler.dropFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `my_table` drop foreign key `fk_my_constraint`'
+        );
+      });
+
+      it('createFKRefs handles lowercase ref keys from mysql2', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            table_name: 'child_table',
+            constraint_name: 'fk_parent',
+            column_name: 'parent_id',
+            referenced_table_name: 'parent_table',
+            referenced_column_name: 'id',
+            update_rule: 'NO ACTION',
+            delete_rule: 'CASCADE',
+          },
+        ];
+
+        await tableCompiler.createFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `child_table` add constraint `fk_parent` ' +
+            'foreign key (`parent_id`) references `parent_table` (`id`) ' +
+            'ON UPDATE NO ACTION ON DELETE CASCADE'
+        );
+      });
+
+      it('createFKRefs still works with uppercase ref keys', async function () {
+        const queries = [];
+        const mockRunner = {
+          query(obj) {
+            queries.push(obj.sql);
+            return Promise.resolve();
+          },
+        };
+
+        const refs = [
+          {
+            TABLE_NAME: 'child_table',
+            CONSTRAINT_NAME: 'fk_parent',
+            COLUMN_NAME: 'parent_id',
+            REFERENCED_TABLE_NAME: 'parent_table',
+            REFERENCED_COLUMN_NAME: 'id',
+            UPDATE_RULE: 'NO ACTION',
+            DELETE_RULE: 'CASCADE',
+          },
+        ];
+
+        await tableCompiler.createFKRefs(mockRunner, refs);
+
+        expect(queries).to.have.length(1);
+        expect(queries[0]).to.equal(
+          'alter table `child_table` add constraint `fk_parent` ' +
+            'foreign key (`parent_id`) references `parent_table` (`id`) ' +
+            'ON UPDATE NO ACTION ON DELETE CASCADE'
+        );
       });
     });
   });

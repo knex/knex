@@ -1,0 +1,5 @@
+# Do not include tsc generated type definitions
+**/*.d.ts
+
+# Do not include tsc source maps
+**/*.js.map

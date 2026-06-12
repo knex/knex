@@ -1,21 +1,71 @@
 const { promisify } = require('util');
 const knex = require('../../../lib');
+
 const testConfig =
   (process.env.KNEX_TEST && require(process.env.KNEX_TEST)) || {};
+const { cloneDeep, merge } = require('lodash');
 
-const Db = {
+const Db = /** @type {const} */ ({
   PostgresSQL: 'postgres',
+  PgNative: 'pgnative',
   MySQL: 'mysql',
   MySQL2: 'mysql2',
+  MariaDB: 'mariadb',
   MSSQL: 'mssql',
   SQLite: 'sqlite3',
   Oracle: 'oracledb',
-};
+  CockroachDB: 'cockroachdb',
+  BetterSqlite3: 'better-sqlite3',
+});
+/** @typedef {typeof Db[keyof typeof Db]} DriverName */
+/** @typedef {import('../../../types/index').Knex} Knex*/
 
-const defaultDbs = [Db.PostgresSQL, Db.MySQL, Db.MySQL2, Db.SQLite, Db.MSSQL];
+const defaultDbs = [
+  Db.PostgresSQL,
+  Db.PgNative,
+  Db.MySQL,
+  Db.MySQL2,
+  Db.MariaDB,
+  Db.SQLite,
+  Db.MSSQL,
+  Db.CockroachDB,
+  Db.BetterSqlite3,
+];
 
 function getAllDbs() {
   return process.env.DB ? process.env.DB.split(' ') : defaultDbs;
+}
+
+/**
+ * Conditionally execute the callback with a configured instance of knex
+ * for a subset of the available drivers, and only when those drivers are
+ * included in the `DB` environment variable.
+ *
+ * @param {DriverName[]|'*'} dbNames The list of drivers for which the callback
+ * should be executed.
+ * @param {(knex: Knex, name: DriverName) => void} cb
+ * @example
+ * withDbs([Db.SQLite], (knex) => {
+ *   describe('SQLite-specific tests', () => {
+ *     // ...
+ *   })
+ * })
+ */
+function withDbs(dbNames, cb) {
+  dbNames = dbNames === '*' ? Object.values(Db) : dbNames;
+
+  const configuredDbs = getAllDbs();
+
+  for (const name of dbNames) {
+    if (!defaultDbs.includes(name)) {
+      throw new Error(
+        `Unknown db: ${name} (supported: ${Object.values(Db).join(', ')})`
+      );
+    }
+    if (!configuredDbs.includes(name)) continue;
+    const knex = getKnexForDb(name);
+    cb(knex, name);
+  }
 }
 
 const pool = {
@@ -30,6 +80,16 @@ const poolSqlite = {
   acquireTimeoutMillis: 1000,
   afterCreate: function (connection, callback) {
     connection.run('PRAGMA foreign_keys = ON', callback);
+  },
+};
+
+const poolBetterSqlite = {
+  min: 0,
+  max: 1,
+  acquireTimeoutMillis: 1000,
+  afterCreate: function (connection, callback) {
+    connection.prepare('PRAGMA foreign_keys = ON').run();
+    callback(null, connection);
   },
 };
 
@@ -61,6 +121,12 @@ const testConfigs = {
       user: 'testuser',
       password: 'testpassword',
       charset: 'utf8',
+      typeCast: function (field, next) {
+        if (field.type === 'JSON') {
+          return JSON.parse(field.string());
+        }
+        return next();
+      },
     },
     pool: mysqlPool,
     migrations,
@@ -82,11 +148,59 @@ const testConfigs = {
     seeds,
   },
 
+  mariadb: {
+    client: 'mariadb',
+    connection: testConfig.mysql || {
+      port: 23306,
+      database: 'knex_test',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
+      charset: 'utf8',
+      insertIdAsNumber: true,
+      bigIntAsNumber: true,
+      checkDuplicate: false,
+    },
+    pool: mysqlPool,
+    migrations,
+    seeds,
+  },
+
   postgres: {
     client: 'postgres',
     connection: testConfig.postgres || {
       adapter: 'postgresql',
       port: 25432,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  cockroachdb: {
+    client: 'cockroachdb',
+    connection: testConfig.cockroachdb || {
+      adapter: 'cockroachdb',
+      port: 26257,
+      host: 'localhost',
+      database: 'test',
+      user: 'root',
+      password: '',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
+  pgnative: {
+    client: Db.PgNative,
+    connection: testConfig.pgnative || {
+      adapter: 'postgresql',
+      port: 25433,
       host: 'localhost',
       database: 'knex_test',
       user: 'testuser',
@@ -103,6 +217,15 @@ const testConfigs = {
     pool: poolSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false, // retain default behavior, silence warning
+  },
+  'better-sqlite3': {
+    client: 'better-sqlite3',
+    connection: testConfig['better-sqlite3'] || ':memory:',
+    pool: poolBetterSqlite,
+    migrations,
+    seeds,
+    useNullAsDefault: false, // retain default behavior, silence warning
   },
 
   mssql: {
@@ -113,6 +236,13 @@ const testConfigs = {
       server: 'localhost',
       port: 21433,
       database: 'knex_test',
+      options: {
+        mapBinding(value) {
+          if (value && value.type) {
+            return { value: value.value, type: value.type };
+          }
+        },
+      },
     },
     pool: pool,
     migrations,
@@ -134,15 +264,50 @@ const testConfigs = {
 };
 
 function getKnexForDb(db, configOverrides = {}) {
-  const config = testConfigs[db];
-  return knex({
-    ...config,
+  const config = cloneDeep(testConfigs[db]);
+  merge(config, configOverrides);
+  return knex(config);
+}
+
+/** @returns {import('../../../types/index').Knex} */
+function getKnexForSqlite(foreignKeys, configOverrides = {}) {
+  const sql = `PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'}`;
+  const config = {
+    ...testConfigs.sqlite3,
     ...configOverrides,
-  });
+  };
+  config.pool = {
+    ...config.pool,
+    afterCreate: function (connection, callback) {
+      connection.run(sql, callback);
+    },
+  };
+  return knex(config);
+}
+
+/** @returns {import('../../../types/index').Knex} */
+function getKnexForBetterSqlite(foreignKeys, configOverrides = {}) {
+  const sql = `PRAGMA foreign_keys = ${foreignKeys ? 'ON' : 'OFF'}`;
+  const config = {
+    ...testConfigs['better-sqlite3'],
+    ...configOverrides,
+  };
+  config.pool = {
+    ...config.pool,
+    afterCreate: function (connection, callback) {
+      connection.prepare(sql).run();
+      callback(null, connection);
+    },
+  };
+  return knex(config);
 }
 
 module.exports = {
   Db,
   getAllDbs,
   getKnexForDb,
+  getKnexForSqlite,
+  getKnexForBetterSqlite,
+  testConfigs,
+  withDbs,
 };

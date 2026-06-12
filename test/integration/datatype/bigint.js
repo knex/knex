@@ -6,8 +6,8 @@ const { isMssql } = require('../../util/db-helpers');
 module.exports = function (knex) {
   const bigintTimestamp = 1464294366973;
   const negativeBigintTimestamp = -1464294366973;
-  const unsafeBigint = 99071992547409911;
-  const negativeUnsafeBigint = -99071992547409911;
+  const unsafeBigint = 99071992547409900;
+  const negativeUnsafeBigint = -99071992547409900;
 
   it('#test number mssql should not allow unsafe bigint', function () {
     if (!isMssql(knex)) {

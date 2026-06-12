@@ -13,6 +13,13 @@ const pg = Knex({
   pool: { max: 50 },
 });
 
+const pgnative = Knex({
+  client: 'pgnative',
+  connection:
+    'postgres://postgres:postgresrootpassword@localhost:25433/postgres',
+  pool: { max: 50 },
+});
+
 const mysql2 = Knex({
   client: 'mysql2',
   connection:
@@ -74,7 +81,7 @@ let lastCounters = _.cloneDeep(counters);
 
 setInterval(() => {
   const reqsPerSec = {};
-  for (let key of Object.keys(counters)) {
+  for (const key of Object.keys(counters)) {
     reqsPerSec[key] = {
       queries: (counters[key].queries - lastCounters[key].queries) / 2,
       results: (counters[key].results - lastCounters[key].results) / 2,
@@ -91,15 +98,15 @@ setInterval(() => {
   lastCounters = _.cloneDeep(counters);
 }, 2000);
 
-async function killConnectionsPg() {
-  return pg.raw(`SELECT pg_terminate_backend(pg_stat_activity.pid) 
+async function killConnectionsPg(client) {
+  return client.raw(`SELECT pg_terminate_backend(pg_stat_activity.pid)
     FROM pg_stat_activity
-    WHERE pg_stat_activity.datname = 'postgres' 
+    WHERE pg_stat_activity.datname = 'postgres'
       AND pid <> pg_backend_pid()`);
 }
 
 async function killConnectionsMyslq(client) {
-  const [rows, colDefs] = await client.raw(`SHOW FULL PROCESSLIST`);
+  const [rows] = await client.raw(`SHOW FULL PROCESSLIST`);
   await Promise.all(rows.map((row) => client.raw(`KILL ${row.Id}`)));
 }
 
@@ -112,6 +119,7 @@ async function main() {
   async function loopQueries(prefix, query) {
     const queries = () => [...Array(50).fill(query)];
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         await Promise.all(queries());
@@ -126,7 +134,9 @@ async function main() {
       await rp.delete({
         url: `${toxicli.host}/proxies/${serviceName}`,
       });
-    } catch (err) {}
+    } catch (err) {
+      /* empty */
+    }
 
     const proxy = await toxicli.createProxy({
       name: serviceName,
@@ -154,8 +164,9 @@ async function main() {
   // create TCP proxies for simulating bad connections etc.
   async function recreateProxies() {
     await recreateProxy('postgresql', 25432, 5432);
+    await recreateProxy('postgresql', 25433, 5433);
     await recreateProxy('mysql', 23306, 3306);
-    await recreateProxy('oracledbxe', 21521, 1521);
+    await recreateProxy('oracledb', 21521, 1521);
     await recreateProxy('mssql', 21433, 1433);
   }
 
@@ -163,6 +174,9 @@ async function main() {
 
   loopQueries('PSQL:', pg.raw('select 1'));
   loopQueries('PSQL TO:', pg.raw('select 1').timeout(20));
+
+  loopQueries('PGNATIVE:', pgnative.raw('select 1'));
+  loopQueries('PGNATIVE TO:', pgnative.raw('select 1').timeout(20));
 
   loopQueries('MYSQL:', mysql.raw('select 1'));
   loopQueries('MYSQL TO:', mysql.raw('select 1').timeout(20));
@@ -177,11 +191,13 @@ async function main() {
 
   setInterval(recreateProxies, 2000);
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     await delay(20); // kill everything every quite often from server side
     try {
       await Promise.all([
-        killConnectionsPg(),
+        killConnectionsPg(pg),
+        killConnectionsPg(pgnative),
         killConnectionsMyslq(mysql),
         //        killConnectionsMyslq(mysql2),
         killConnectionsMssql(),
