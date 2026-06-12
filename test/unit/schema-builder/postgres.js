@@ -131,6 +131,13 @@ describe('PostgreSQL Config', function () {
   });
 });
 
+const toNative = function (tableSql) {
+  return tableSql.map(({ sql, bindings }) => ({
+    sql: client.positionBindings(sql),
+    bindings: client.prepBindings(bindings),
+  }));
+};
+
 describe('PostgreSQL SchemaBuilder', function () {
   it('fixes memoization regression', function () {
     tableSql = client
@@ -1307,6 +1314,21 @@ describe('PostgreSQL SchemaBuilder', function () {
     equal(1, tableSql.length);
     expect(tableSql[0].sql).to.equal(
       'alter table "users" add column "foo" varchar(100) default \'bar\''
+    );
+  });
+
+  it('adding a string with a default that contains a ?', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.string('foo', 100).defaultTo('bar?');
+      })
+      .toSQL();
+
+    const nativeTableSql = toNative(tableSql);
+    equal(1, nativeTableSql.length);
+    expect(nativeTableSql[0].sql).to.equal(
+      'alter table "users" add column "foo" varchar(100) default \'bar?\''
     );
   });
 
