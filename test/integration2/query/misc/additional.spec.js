@@ -130,6 +130,28 @@ describe('Additional', function () {
           });
         });
 
+        it('should emit an error on the stream when postProcessResponse throws (#6032)', async function () {
+          await knex('accounts').truncate();
+          await insertAccounts(knex, 'accounts');
+
+          const original = knex.client.config.postProcessResponse;
+          knex.client.config.postProcessResponse = () => {
+            throw new Error('postProcessResponse boom');
+          };
+
+          try {
+            const stream = knex('accounts').limit(1).stream();
+            const error = await new Promise((resolve) => {
+              stream.on('error', resolve);
+              stream.on('data', () => {});
+            });
+            expect(error).to.be.an('error');
+            expect(error.message).to.equal('postProcessResponse boom');
+          } finally {
+            knex.client.config.postProcessResponse = original;
+          }
+        });
+
         it('should emit an error rather than crash when the stream cannot acquire a connection (#6460)', async function () {
           const limitedKnex = getKnexForDb(db, {
             acquireConnectionTimeout: 200,
@@ -380,6 +402,7 @@ describe('Additional', function () {
 
         it('should allow raw queries directly with `knex.raw`', async function () {
           const tables = {
+            [drivers.MariaDB]: 'SHOW TABLES',
             [drivers.MySQL]: 'SHOW TABLES',
             [drivers.MySQL2]: 'SHOW TABLES',
             [drivers.CockroachDB]:
@@ -420,6 +443,7 @@ describe('Additional', function () {
         it('should allow using .fn.uuid to create raw statements', function () {
           const expectedStatement = {
             [drivers.MsSQL]: '(NEWID())',
+            [drivers.MariaDB]: '(UUID())',
             [drivers.MySQL]: '(UUID())',
             [drivers.MySQL2]: '(UUID())',
             [drivers.Oracle]: '(random_uuid())',
@@ -801,6 +825,9 @@ describe('Additional', function () {
             [drivers.PgNative]: function () {
               return knex.raw('SELECT pg_sleep(1)');
             },
+            [drivers.MariaDB]: function () {
+              return knex.raw('SELECT SLEEP(1)');
+            },
             [drivers.MySQL]: function () {
               return knex.raw(`SELECT SLEEP(1) -- zero ${driverName}`);
             },
@@ -858,6 +885,9 @@ describe('Additional', function () {
             [drivers.PgNative]: function () {
               return knex.raw('SELECT pg_sleep(10)');
             },
+            [drivers.MariaDB]: function () {
+              return knex.raw('SELECT SLEEP(10)');
+            },
             [drivers.MySQL]: function () {
               return knex.raw(`SELECT SLEEP(10) -- one ${driverName}`);
             },
@@ -900,6 +930,9 @@ describe('Additional', function () {
             },
             [drivers.PgNative]: function () {
               return knex.raw('SELECT * from pg_stat_activity');
+            },
+            [drivers.MariaDB]: function () {
+              return knex.raw('SHOW PROCESSLIST');
             },
             [drivers.MySQL]: function () {
               return knex.raw('SHOW PROCESSLIST');
@@ -977,6 +1010,9 @@ describe('Additional', function () {
             [drivers.PgNative]: function () {
               return 'SELECT pg_sleep(10)';
             },
+            [drivers.MariaDB]: function () {
+              return 'SELECT SLEEP(10)';
+            },
             [drivers.MySQL]: function () {
               return `SELECT SLEEP(10) -- two ${driverName}`;
             },
@@ -1019,6 +1055,9 @@ describe('Additional', function () {
             },
             [drivers.PgNative]: function () {
               return knex.raw('SELECT * from pg_stat_activity');
+            },
+            [drivers.MariaDB]: function () {
+              return knex.raw('SHOW PROCESSLIST');
             },
             [drivers.MySQL]: function () {
               return knex.raw('SHOW PROCESSLIST');
@@ -1107,6 +1146,9 @@ describe('Additional', function () {
             [drivers.PgNative]: function () {
               return knexDb.raw('SELECT pg_sleep(10)');
             },
+            [drivers.MariaDB]: function () {
+              return knexDb.raw('SELECT SLEEP(10)');
+            },
             [drivers.MySQL]: function () {
               return knexDb.raw(`SELECT SLEEP(10) -- three ${driverName}`);
             },
@@ -1152,6 +1194,10 @@ describe('Additional', function () {
                 _.filter(results.rows, { state: 'active' }),
                 'query'
               );
+            },
+            [drivers.MariaDB]: async () => {
+              const results = await knex.raw('SHOW PROCESSLIST');
+              return _.map(results[0], 'Info');
             },
             [drivers.MySQL]: async () => {
               const results = await knex.raw('SHOW PROCESSLIST');
@@ -1232,6 +1278,8 @@ describe('Additional', function () {
             [drivers.MySQL]: (sleepSeconds) =>
               `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
             [drivers.MySQL2]: (sleepSeconds) =>
+              `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
+            [drivers.MariaDB]: (sleepSeconds) =>
               `SELECT SLEEP(${sleepSeconds}) -- four ${driverName}`,
           };
 
