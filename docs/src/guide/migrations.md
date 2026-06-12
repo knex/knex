@@ -308,6 +308,33 @@ exports.config = { transaction: false };
 
 The same config property can be used for enabling transaction per-migration in case the common configuration has `disableTransactions: false`.
 
+#### Running migrations within an external transaction
+
+The migration methods `latest`, `up`, `down` and `rollback` can be called on a transaction object. When invoked this way, they reuse the surrounding transaction instead of opening a new (nested) one, so the migrations become part of the outer transaction and are committed or rolled back together with it.
+
+This is especially useful for transaction-based testing: run your migrations, exercise your code, then roll back the transaction to leave the database untouched.
+
+```js
+const Rollback = new Error('rollback');
+try {
+  await knex.transaction(async (trx) => {
+    // Migrations run inside `trx`, not in a new nested transaction
+    await trx.migrate.latest();
+
+    // ... run your tests against `trx` ...
+
+    // Throw to roll the whole transaction (migrations included) back
+    throw Rollback;
+  });
+} catch (err) {
+  if (err !== Rollback) throw err;
+}
+```
+
+Use a thrown error to trigger the rollback rather than calling `trx.rollback()` and letting the callback resolve normally — the latter leaves Knex trying to both roll back and commit the same transaction, which hangs on some drivers (e.g. MSSQL).
+
+Rolling back schema migrations this way relies on the database supporting **transactional DDL**. PostgreSQL, CockroachDB and MSSQL do, so a migration that creates or drops tables can be fully undone by rolling back the surrounding transaction. MySQL/MariaDB and Oracle implicitly commit on DDL statements (e.g. `CREATE TABLE`), so those changes cannot be rolled back, and SQLite has its own limitations here. On those engines you can still run migrations within a transaction that you intend to commit, but you cannot rely on rolling DDL back.
+
 #### Sqlite3-specific concerns
 
 Disabling / enabling foreign key checking [has no effect within a transaction](https://sqlite.org/pragma.html#pragma_foreign_keys) on sqlite3, so features such as `.dropColumn()` cannot be emulated correctly inside of a migration-level transaction (and [can even cause data loss](https://github.com/knex/knex/pull/6315)). Knex now throws an error in these cases.
