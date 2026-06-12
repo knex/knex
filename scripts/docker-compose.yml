@@ -70,7 +70,7 @@ services:
     command: --sync_binlog=0 --innodb_doublewrite=OFF --innodb-flush-log-at-trx-commit=0 --innodb-flush-method=nosync
     # shares mysql's host port: only one of the two is ever started per CI job
     ports:
-      - '23306:3306'
+      - '23307:3306'
     environment:
       - MARIADB_ROOT_PASSWORD=testrootpassword
       - MARIADB_DATABASE=knex_test
