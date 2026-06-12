@@ -1,6 +1,6 @@
 # Installation
 
-Knex can be used as an SQL query builder in both Node.JS and the browser, limited to WebSQL's constraints (like the inability to drop tables or read schemas). Composing SQL queries in the browser for execution on the server is highly discouraged, as this can be the cause of serious security vulnerabilities. The browser builds outside of WebSQL are primarily for learning purposes - for example, you can pop open the console and build queries on this page using the **knex** object.
+Knex can be used as an SQL query builder in both Node.JS and the browser. In the browser, Knex can only be used for building SQL query strings - it does not support connecting to browser databases like sql.js or SQLite WASM. Composing SQL queries in the browser for execution on the server is highly discouraged, as this can be the cause of serious security vulnerabilities. The browser builds are primarily for learning purposes or for building queries to send to a backend API - for example, you can pop open the console and build queries on this page using the **knex** object.
 
 ## Node.js
 
@@ -27,6 +27,112 @@ _If you want to use a MariaDB instance, you can use the `mysql` driver._
 ## Browser
 
 Knex can be built using a JavaScript build tool such as [browserify](http://browserify.org/) or [webpack](https://github.com/webpack/webpack). In fact, this documentation uses a webpack build which [includes knex](https://github.com/knex/documentation/blob/a4de1b2eb50d6699f126be8d134f3d1acc4fc69d/components/Container.jsx#L3). View source on this page to see the browser build in-action (the global `knex` variable).
+
+### Webpack 5 Configuration
+
+Since Webpack 5 no longer includes polyfills for Node.js core modules by default, you'll need to configure them manually to use Knex in the browser.
+
+#### Step 1: Install Required Dependencies
+
+```bash
+npm install knex --save
+npm install --save-dev webpack webpack-cli \
+  assert buffer browserify-zlib constants-browserify \
+  crypto-browserify https-browserify os-browserify \
+  path-browserify process querystring-es3 \
+  stream-browserify stream-http timers-browserify \
+  tty-browserify url util vm-browserify
+```
+
+#### Step 2: Configure Webpack
+
+Create a `webpack.config.js` file with the following configuration:
+
+```javascript
+const path = require('path');
+const webpack = require('webpack');
+
+module.exports = {
+  mode: 'production',
+  entry: './src/index.js',
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  resolve: {
+    fallback: {
+      // Core Node.js module polyfills
+      assert: require.resolve('assert/'),
+      buffer: require.resolve('buffer/'),
+      crypto: require.resolve('crypto-browserify'),
+      constants: require.resolve('constants-browserify'),
+      fs: false,
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify'),
+      os: require.resolve('os-browserify/browser'),
+      path: require.resolve('path-browserify'),
+      process: require.resolve('process/browser'),
+      querystring: require.resolve('querystring-es3'),
+      stream: require.resolve('stream-browserify'),
+      timers: require.resolve('timers-browserify'),
+      tty: require.resolve('tty-browserify'),
+      url: require.resolve('url/'),
+      util: require.resolve('util/'),
+      vm: require.resolve('vm-browserify'),
+      zlib: require.resolve('browserify-zlib'),
+      // Database drivers - not needed in browser
+      child_process: false,
+      net: false,
+      tls: false,
+      dns: false,
+    },
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser',
+    }),
+  ],
+};
+```
+
+#### Step 3: Using Knex in the Browser
+
+```javascript
+import knex from 'knex';
+
+// Initialize with a specific client to match your backend database
+const db = knex({
+  client: 'mysql2', // or 'pg', 'mssql', etc.
+  // No connection needed for query building
+});
+
+// Build queries to send to your backend
+const query = db('users')
+  .select('name', 'email')
+  .where('active', true)
+  .toString();
+
+// Send to your API
+fetch('/api/query', {
+  method: 'POST',
+  body: JSON.stringify({ sql: query }),
+  headers: { 'Content-Type': 'application/json' },
+});
+```
+
+::: warning Browser Limitations
+
+- **No Browser Database Support**: Knex does not support browser databases like sql.js, SQLite WASM, or IndexedDB
+- **No Remote Database Connections**: Browsers cannot connect to remote database servers (MySQL, PostgreSQL, etc.) for security reasons
+- **Security**: Never expose database credentials in browser code
+- **Bundle Size**: The browser bundle will be approximately 1MB minified
+- **Use Cases**: Query building for backend APIs, educational purposes, or client-side SQL generation only
+  :::
+
+### Webpack 4 and Earlier
+
+If you're using Webpack 4 or earlier, the Node.js polyfills are included automatically, so no additional configuration is needed beyond installing Knex.
 
 ## Configuration Options
 
