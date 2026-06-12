@@ -63,7 +63,7 @@ const main = async () => {
     })
   );
 
-  expectType<any[]>(
+  expectType<Pick<Article, 'id' | 'subject'>[]>(
     await knexInstance.transaction(async (trx) => {
       const articles: Article[] = [
         { id: 1, subject: 'Canterbury Tales' },
@@ -79,7 +79,7 @@ const main = async () => {
     })
   );
 
-  expectType<any[]>(
+  expectType<Pick<Article, 'id' | 'subject'>[]>(
     await knexInstance.transaction(async (trx) => {
       const articles: ReadonlyArray<Article> = [
         { id: 1, subject: 'Canterbury Tales' },
@@ -114,6 +114,18 @@ const main = async () => {
       }
     )
   );
+
+  expectType<boolean>(
+    await knexInstance.transaction((trx) => {
+      return trx.commit(true);
+    })
+  );
+
+  await knexInstance.transaction(async (trx) => {
+    expectType<Promise<void>>(trx.commit());
+    expectType<Promise<boolean>>(trx.commit(true));
+    expectType<Promise<never>>(trx.rollback(new Error('rollback')));
+  });
 
   const transactionConfig: Knex.TransactionConfig = {
     isolationLevel: 'serializable',

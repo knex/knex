@@ -135,7 +135,12 @@ try {
 Throwing an error directly from the transaction handler function automatically rolls back the transaction, same as returning a rejected promise.
 
 Notice that if the handler does not return a promise, it is up to you to ensure `trx.commit`, or `trx.rollback` are called, otherwise the transaction connection will hang.
-If the handler does not return a promise, `knex.transaction` will return the transaction `trx`.
+`knex.transaction` returns a thenable transaction object, and awaiting it resolves with the value passed to `trx.commit(value)`.
+If you call `trx.commit(value)` manually inside an async handler, `value` becomes the final transaction result and any later callback return value is ignored at runtime.
+In TypeScript, this manual side-effect pattern cannot be inferred from callback body alone, so prefer either:
+
+- returning a promise and letting knex auto-commit from the resolved callback value, or
+- returning `trx.commit(value)` directly when using explicit commit/rollback control.
 
 Calling `trx.rollback` will return a rejected Promise. If you don't pass any argument to `trx.rollback`, a generic `Error` object will be created and passed in to ensure the Promise always rejects with something.
 
