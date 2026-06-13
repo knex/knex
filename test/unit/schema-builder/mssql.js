@@ -677,6 +677,22 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('test adding index with a parameterized predicate captures its bindings', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().where('email', '=', 'foo@bar'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'CREATE INDEX [baz] ON [users] ([foo], [bar]) where [email] = ?'
+    );
+    expect(tableSql[0].bindings).to.deep.equal(['foo@bar']);
+  });
+
   it('test adding unique index with a predicate', function () {
     tableSql = client
       .schemaBuilder()
@@ -707,6 +723,23 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'CREATE UNIQUE INDEX [baz] ON [users] ([foo], [bar]) where [email] is not null'
     );
+  });
+
+  it('test adding unique index with a parameterized predicate captures its bindings', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().where('email', '=', 'foo@bar'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'CREATE UNIQUE INDEX [baz] ON [users] ([foo], [bar]) where [email] = ?'
+    );
+    expect(tableSql[0].bindings).to.deep.equal(['foo@bar']);
   });
 
   it('throws when adding unique constraint with predicate', function () {
