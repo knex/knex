@@ -1433,4 +1433,26 @@ describe('OracleDb SchemaBuilder', function () {
       );
     });
   });
+
+  describe('SQL injection prevention in DDL operations', function () {
+    it('should escape single quotes in table names for columnInfo (doubly-nested breakout)', function () {
+      const compiledQuery = client
+        .queryBuilder()
+        .from("users'; DROP TABLE users--")
+        .columnInfo()
+        .toSQL();
+
+      // table_name is doubly nested: inside an inner SQL string literal that is
+      // itself inside the outer dbms_xmlgen.getXMLType('...') literal. A single
+      // quote must be quadrupled; merely doubling it collapses back to a
+      // breakout once the outer literal is decoded.
+      expect(compiledQuery.sql).to.include(
+        "table_name = ''users''''; DROP TABLE users--''"
+      );
+      // Regression guard: the previously-vulnerable doubled form must NOT appear.
+      expect(compiledQuery.sql).to.not.include(
+        "table_name = ''users''; DROP TABLE users--''"
+      );
+    });
+  });
 });
