@@ -63,6 +63,48 @@ services:
       - -c
       - 'until /usr/bin/mysql -hmysql -utestuser -ptestpassword -e "SELECT 1"; do sleep 5; done'
 
+  mariadb:
+    # mirror-from: mariadb:11.4
+    image: ghcr.io/knex/mariadb:11.4
+    # nosync only for unix, edit for local start on other systems
+    command: --sync_binlog=0 --innodb_doublewrite=OFF --innodb-flush-log-at-trx-commit=0 --innodb-flush-method=nosync
+    # shares mysql's host port: only one of the two is ever started per CI job
+    ports:
+      - '23306:3306'
+    environment:
+      - MARIADB_ROOT_PASSWORD=testrootpassword
+      - MARIADB_DATABASE=knex_test
+      - MARIADB_USER=testuser
+      - MARIADB_PASSWORD=testpassword
+    healthcheck:
+      test:
+        [
+          'CMD',
+          '/usr/bin/mariadb',
+          '-hlocalhost',
+          '-utestuser',
+          '-ptestpassword',
+          '-e',
+          'SELECT 1',
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: always
+    volumes:
+      - mariadb_data:/var/lib/mysql
+  waitmariadb:
+    # mirror-from: mariadb:11.4
+    image: ghcr.io/knex/mariadb:11.4
+    links:
+      - mariadb
+    depends_on:
+      - mariadb
+    entrypoint:
+      - bash
+      - -c
+      - 'until /usr/bin/mariadb -hmariadb -utestuser -ptestpassword -e "SELECT 1"; do sleep 5; done'
+
   postgres:
     # mirror-from: postgres:17-alpine
     image: ghcr.io/knex/postgres:17-alpine
@@ -155,6 +197,10 @@ services:
 
 volumes:
   mysql_data:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  mariadb_data:
     driver_opts:
       type: tmpfs
       device: tmpfs

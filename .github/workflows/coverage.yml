@@ -63,7 +63,17 @@ jobs:
         run: npm run db:start:no-oracle
 
       - name: Run npm install
-        run: npm install
+        run: |
+          n=0
+          until npm install; do
+            n=$((n + 1))
+            if [ "$n" -ge 3 ]; then
+              echo "npm install failed after $n attempts"
+              exit 1
+            fi
+            echo "npm install failed, retrying in 15s... (attempt $n)"
+            sleep 15
+          done
 
       - name: Install pg-native
         run: npm i pg-native
@@ -74,7 +84,7 @@ jobs:
         run: npm run test:coverage  || true
         env:
           CI: true
-          DB: 'postgres pgnative mysql mysql2 mssql sqlite3 cockroachdb'
+          DB: 'postgres pgnative mysql mysql2 mariadb mssql sqlite3 cockroachdb'
           KNEX_TEST_TIMEOUT: 60000
 
       - name: Stop Databases

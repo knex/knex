@@ -1,4 +1,4 @@
-# [knex.js](https://knex.github.io/documentation/)
+# [knex.js](https://knexjs.org/)
 
 [![npm version](http://img.shields.io/npm/v/knex.svg)](https://npmjs.org/package/knex)
 [![npm downloads](https://img.shields.io/npm/dm/knex.svg)](https://npmjs.org/package/knex)

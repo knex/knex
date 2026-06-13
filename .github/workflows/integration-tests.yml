@@ -37,12 +37,19 @@ jobs:
             postgres,
             pgnative,
             mysql,
+            mariadb,
             mssql,
             sqlite3,
             cockroachdb,
             better-sqlite3,
             oracledb,
           ]
+        # mariadb's client only supports Node 20+
+        exclude:
+          - node-version: 18.x
+            database-type: mariadb
+          - node-version: 16.x
+            database-type: mariadb
 
     steps:
       - name: Checkout Repository
@@ -67,7 +74,17 @@ jobs:
         if: matrix.database-type != 'sqlite3' && matrix.database-type != 'better-sqlite3'
 
       - name: Run npm install
-        run: npm install
+        run: |
+          n=0
+          until npm install; do
+            n=$((n + 1))
+            if [ "$n" -ge 3 ]; then
+              echo "npm install failed after $n attempts"
+              exit 1
+            fi
+            echo "npm install failed, retrying in 15s... (attempt $n)"
+            sleep 15
+          done
 
       - name: Initialize Database(s)
         run: |
