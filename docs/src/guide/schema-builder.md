@@ -993,7 +993,7 @@ knex.schema.table('users', function (table) {
 
 **table.dropIndexIfExists(columns, [indexName])**
 
-Like dropIndex, but does not error if the index does not exist. Supported in PostgreSQL, CockroachDB, MariaDB, MSSQL, SQLite/better-sqlite3, and Oracle 23ai+ (and the 19.28 backport). Not supported in MySQL or Redshift, nor on Oracle before 23ai/19.28; calling it there throws a “not supported” error.
+Like dropIndex, but does not error if the index does not exist. Supported in PostgreSQL, CockroachDB, MariaDB, MSSQL, SQLite/better-sqlite3, and Oracle 23ai+ (and the 19c LTS backport, from 19.28). Not supported in MySQL or Redshift, nor on Oracle before 23ai/19.28; calling it there throws a “not supported” error.
 
 ```js
 // @sql
