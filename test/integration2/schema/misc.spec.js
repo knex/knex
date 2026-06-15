@@ -7,6 +7,7 @@ const { isString, isObject } = require('../../../lib/util/is');
 const {
   isPgBased,
   isMysql,
+  isMariaDB,
   isOracle,
   isSQLite,
   isRedshift,
@@ -1678,9 +1679,9 @@ describe('Schema (misc)', () => {
             t.dropIndex('first_name');
           }));
 
-        describe('dropIndexIfExists, except mysql and oracle', () => {
+        describe('dropIndexIfExists, except mysql and oracle (mariadb supported)', () => {
           it('allows dropping a index if exists', async function () {
-            if (isOracle(knex) || isMysql(knex)) {
+            if (isOracle(knex) || (isMysql(knex) && !isMariaDB(knex))) {
               return this.skip();
             }
             await knex.schema.table('test_table_one', (t) => {
@@ -1692,7 +1693,7 @@ describe('Schema (misc)', () => {
           });
 
           it("allows dropping a index if exists, when it doesn't exist", async function () {
-            if (isOracle(knex) || isMysql(knex)) {
+            if (isOracle(knex) || (isMysql(knex) && !isMariaDB(knex))) {
               return this.skip();
             }
             await knex.schema.table('test_table_one', (t) => {

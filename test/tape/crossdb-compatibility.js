@@ -1,7 +1,7 @@
 'use strict';
 const tape = require('tape');
 const { expect } = require('chai');
-const { isOracle, isMysql } = require('../util/db-helpers');
+const { isOracle, isMysql, isMariaDB } = require('../util/db-helpers');
 
 /**
  * Collection of tests for making sure that certain features are cross database compatible
@@ -158,7 +158,7 @@ module.exports = function (knex) {
       ' - create and drop index works in different cases, with dropIndexIfExists',
     async (t) => {
       t.plan(1);
-      if (isMysql(knex) || isOracle(knex)) {
+      if ((isMysql(knex) && !isMariaDB(knex)) || isOracle(knex)) {
         t.pass('dropIndexIfExists not supported on mysql/oracle');
         t.end();
         return;
