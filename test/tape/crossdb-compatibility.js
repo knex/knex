@@ -152,4 +152,44 @@ module.exports = function (knex) {
       }
     }
   );
+
+  tape(
+    driverName +
+      ' - create and drop index works in different cases, with dropIndexIfExists',
+    async (t) => {
+      t.plan(1);
+      if (isMysql(knex) || isOracle(knex)) {
+        t.pass('dropIndexIfExists not supported on mysql/oracle');
+        t.end();
+        return;
+      }
+      try {
+        await knex.schema
+          .dropTableIfExists('test_table_drop_index_if_exists')
+          .createTable('test_table_drop_index_if_exists', (t) => {
+            t.integer('id');
+            t.string('first');
+            t.string('second');
+            t.string('third').index();
+            t.string('fourth');
+            t.index(['first', 'second']);
+            t.index('fourth');
+          })
+          .alterTable('test_table_drop_index_if_exists', (t) => {
+            t.dropIndexIfExists('third');
+            t.dropIndexIfExists('fourth');
+            t.dropIndexIfExists(['first', 'second']);
+            t.dropIndexIfExists('foo');
+          })
+          .alterTable('test_table_drop_index_if_exists', (t) => {
+            t.index(['first', 'second']);
+            t.index('third');
+            t.index('fourth');
+          });
+        t.assert(true, 'Creating / dropping / creating index was a success');
+      } finally {
+        t.end();
+      }
+    }
+  );
 };

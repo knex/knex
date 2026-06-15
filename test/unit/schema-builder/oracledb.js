@@ -375,6 +375,17 @@ describe('OracleDb SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal('drop index "foo"');
   });
 
+  it('test drop index if exists', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropIndexIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
   it('test drop foreign', function () {
     tableSql = client
       .schemaBuilder()
