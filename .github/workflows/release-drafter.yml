@@ -139,7 +139,7 @@ jobs:
         run: node ./scripts/update-changelog.mjs "${{ needs.update_release_draft.outputs.version }}"
 
       - name: Restore cached docs dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: docs-cache
         with:
           path: docs/node_modules
