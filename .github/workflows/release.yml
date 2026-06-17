@@ -223,7 +223,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Download tarball artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: ${{ needs.build.outputs.tarball }}
           path: .
@@ -248,7 +248,7 @@ jobs:
       # overlay the changelog artifact AFTER the tarball assertion so the
       # tarball contract stays strict (only lib/** + package.json).
       - name: Apply changelog
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: release-changelog
           path: docs/src/
