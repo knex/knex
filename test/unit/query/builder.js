@@ -11965,6 +11965,10 @@ describe('QueryBuilder', () => {
               sql: 'select * from "users" where json_extract_path("address", ?, ?)::int > ? or json_extract_path("address", ?, ?)::int < ?',
               bindings: ['street', 'number', 5, 'street', 'number', 8],
             },
+            'pg-redshift': {
+              sql: 'select * from "users" where json_extract_path_text("address", ?, ?) > ? or json_extract_path_text("address", ?, ?) < ?',
+              bindings: ['street', 'number', 5, 'street', 'number', 8],
+            },
           }
         );
       });
