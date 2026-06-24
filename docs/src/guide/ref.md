@@ -7,16 +7,12 @@ Can be used to create references in a query, such as column- or tablenames. This
 `knex.ref` can be used essentially anywhere in a build-chain. Here is an example:
 
 ```js
+// @sql
 knex(knex.ref('Users').withSchema('TenantId'))
   .where(knex.ref('Id'), 1)
   .orWhere(knex.ref('Name'), 'Admin')
   .select(['Id', knex.ref('Name').as('Username')]);
 ```
-
-<SqlOutput code="knex(knex.ref('Users').withSchema('TenantId'))
-  .where(knex.ref('Id'), 1)
-  .orWhere(knex.ref('Name'), 'Admin')
-  .select(['Id', knex.ref('Name').as('Username')])"/>
 
 ### withSchema
 
@@ -31,8 +27,6 @@ knex(knex.ref('users').withSchema('TenantId')).select();
 Alias is supported using `.alias(string)`
 
 ```js
+// @sql
 knex('users').select(knex.ref('Id').as('UserId'));
 ```
-
-<SqlOutput code="knex('users')
-  .select(knex.ref('Id').as('UserId'))"/>

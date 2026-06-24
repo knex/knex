@@ -628,6 +628,29 @@ const main = async () => {
     // $ExpectType Pick<User, "id" | "age">[]
     expectType<Array<Pick<User, 'id' | 'age'>>>(r);
   }
+
+  {
+    const r = await knexInstance<User>('users')
+      .where('id', 10)
+      .update(
+        'active',
+        knexInstance('something').select('email').where('id', 1),
+        ['id', 'age']
+      );
+    // $ExpectType Pick<User, "id" | "age">[]
+    expectType<Array<Pick<User, 'id' | 'age'>>>(r);
+  }
+
+  {
+    const r = await knexInstance<User>('users')
+      .where('id', 10)
+      .update(
+        'active',
+        knexInstance('something').select('email').where('id', 1)
+      );
+    // $ExpectType number
+    expectType<number>(r);
+  }
 };
 
 class ExcelClient extends knex.Client {}

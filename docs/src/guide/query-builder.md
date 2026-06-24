@@ -16,6 +16,7 @@ If the object has multiple aliases `{ alias1: 'identifier1', alias2: 'identifier
 Identifier syntax has no place for selecting schema, so if you are doing `schemaName.tableName`, query might be rendered wrong. Use `.withSchema('schemaName')` instead.
 
 ```js
+// @sql
 knex({ a: 'table', b: 'table' })
   .select({
     aTitle: 'a.title',
@@ -30,14 +31,10 @@ knex({ a: 'table', b: 'table' })
 
 ### knex
 
-**knex(tableName, options={only: boolean})**  
+**knex(tableName, options)**
 **knex.[methodName]**
 
-The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream. Optional second argument for passing options:\* **only**: if `true`, the ONLY keyword is used before the `tableName` to discard inheriting tables' data.
-
-::: warning
-Only supported in PostgreSQL for now.
-:::
+The query builder starts off either by specifying a tableName you wish to query against, or by calling any method directly on the knex object. This kicks off a jQuery-like chain, with which you can call additional query builder methods as needed to construct the query, eventually calling any of the interface methods, to either convert toString, or execute the query with a promise, callback, or stream.
 
 #### Usage with TypeScript
 
@@ -121,7 +118,20 @@ queryBuilder.select('name').then((users) => {
 
 If you don't want to manually specify the result type, it is recommended to always use the type of last value of the chain and assign result of any future chain continuation to a separate variable (which will have a different type).
 
-#### timeout
+### only (knex/from option) [-MY -SQ -MS -OR -CR -RS]
+
+The `only` option is a second argument you can pass to `knex(tableName, options)` or `.from(tableName, options)`. When `only: true` is set, Knex prefixes the table name with the `ONLY` keyword, which tells PostgreSQL to read rows from the named table only, excluding rows inherited from child tables. This is useful when table inheritance is in use and you want to avoid pulling in data from descendants.
+
+::: warning
+Only supported in PostgreSQL for now.
+:::
+
+```js
+knex('users', { only: true }).select('*');
+knex.select('*').from('users', { only: true });
+```
+
+### timeout [-SQ -MS -OR -CR -RS]
 
 **.timeout(ms, options={cancel: boolean})**
 
@@ -137,7 +147,6 @@ Passing `{ cancel: true }` will cancel the query at the database level if the `t
 
 ```js
 knex.select().from('books').timeout(1000);
-
 knex.select().from('books').timeout(1000, {
   cancel: true, // MySQL and PostgreSQL only
 });
@@ -150,8 +159,10 @@ knex.select().from('books').timeout(1000, {
 Creates a select query, taking an optional array of columns for the query, eventually defaulting to \* if none are specified when the query is built. The response of a select call will resolve with an array of objects selected from the database.
 
 ```js
+// @sql
 knex.select('title', 'author', 'year').from('books');
 
+// @sql
 knex.select().table('books');
 ```
 
@@ -160,18 +171,23 @@ knex.select().table('books');
 We are generally able to infer the result type based on the columns being selected as long as the select arguments match exactly the key names in record type. However, aliasing and scoping can get in the way of inference.
 
 ```ts
+// @sql
 knex.select('id').from<User>('users'); // Resolves to Pick<User, "id">[]
 
+// @sql
 knex.select('users.id').from<User>('users'); // Resolves to any[]
 // ^ TypeScript doesn't provide us a way to look into a string and infer the type
 //   from a substring, so we fall back to any
 
 // We can side-step this using knex.ref:
+// @sql
 knex.select(knex.ref('id').withSchema('users')).from<User>('users'); // Resolves to Pick<User, "id">[]
 
+// @sql
 knex.select('id as identifier').from<User>('users'); // Resolves to any[], for same reason as above
 
 // Refs are handy here too:
+// @sql
 knex.select(knex.ref('id').as('identifier')).from<User>('users'); // Resolves to { identifier: number; }[]
 ```
 
@@ -182,6 +198,7 @@ knex.select(knex.ref('id').as('identifier')).from<User>('users'); // Resolves to
 Allows for aliasing a subquery, taking the string you wish to name the current query. If the query is not a sub-query, it will be ignored.
 
 ```ts
+// @sql
 knex
   .avg('sum_column1')
   .from(function () {
@@ -197,10 +214,13 @@ knex
 Specifically set the columns to be selected on a select query, taking an array, an object or a list of column names. Passing an object will automatically alias the columns with the given keys.
 
 ```js
+// @sql
 knex.column('title', 'author', 'year').select().from('books');
 
+// @sql
 knex.column(['title', 'author', 'year']).select().from('books');
 
+// @sql
 knex.column('title', { by: 'author' }, 'year').select().from('books');
 ```
 
@@ -215,6 +235,7 @@ Only supported in PostgreSQL for now.
 :::
 
 ```js
+// @sql
 knex.select('*').from('users');
 ```
 
@@ -223,8 +244,10 @@ knex.select('*').from('users');
 We can specify the type of database row through the TRecord type parameter
 
 ```ts
+// @sql
 knex.select('id').from('users'); // Resolves to any[]
 
+// @sql
 knex.select('id').from<User>('users'); // Results to Pick<User, "id">[]
 ```
 
@@ -233,16 +256,18 @@ knex.select('id').from<User>('users'); // Results to Pick<User, "id">[]
 **.fromRaw(sql, [bindings])**
 
 ```js
+// @sql
 knex.select('*').fromRaw('(select * from "users" where "age" > ?)', '18');
 ```
 
-### with
+### with [-MY -CR -RS]
 
 **.with(alias, [columns], callback|builder|raw)**
 
 Add a "with" clause to the query. "With" clauses are supported by PostgreSQL, Oracle, SQLite3 and MSSQL. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
 ```js
+// @sql
 knex
   .with(
     'with_alias',
@@ -251,6 +276,7 @@ knex
   .select('*')
   .from('with_alias');
 
+// @sql
 knex
   .with(
     'with_alias',
@@ -260,6 +286,7 @@ knex
   .select('*')
   .from('with_alias');
 
+// @sql
 knex
   .with('with_alias', (qb) => {
     qb.select('*').from('books').where('author', 'Test');
@@ -268,20 +295,21 @@ knex
   .from('with_alias');
 ```
 
-### withRecursive
+### withRecursive [-MY -CR -RS]
 
 **.withRecursive(alias, [columns], callback|builder|raw)**
 
-Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE.
+Identical to the `with` method except "recursive" is appended to "with" (or not, as required by the target database) to make self-referential CTEs possible. Note that some databases, such as Oracle, require a column list be provided when using an rCTE. When using `union`/`unionAll`, both terms must return the same columns and types; avoid `select('*')` in the recursive term if it introduces a join.
 
 ```js
+// @sql
 knex
   .withRecursive('ancestors', (qb) => {
-    qb.select('*')
+    qb.select('people.*')
       .from('people')
       .where('people.id', 1)
-      .union((qb) => {
-        qb.select('*')
+      .unionAll((qb) => {
+        qb.select('people.*')
           .from('people')
           .join('ancestors', 'ancestors.parentId', 'people.id');
       });
@@ -289,6 +317,7 @@ knex
   .select('*')
   .from('ancestors');
 
+// @sql
 knex
   .withRecursive('family', ['name', 'parentName'], (qb) => {
     qb.select('name', 'parentName')
@@ -305,13 +334,14 @@ knex
   .from('family');
 ```
 
-### withMaterialized
+### withMaterialized [-MY -MS -OR -CR -RS]
 
 **.withMaterialized(alias, [columns], callback|builder|raw)**
 
 Add a "with" materialized clause to the query. "With" materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
 ```js
+// @sql
 knex
   .withMaterialized(
     'with_alias',
@@ -320,6 +350,7 @@ knex
   .select('*')
   .from('with_alias');
 
+// @sql
 knex
   .withMaterialized(
     'with_alias',
@@ -329,6 +360,7 @@ knex
   .select('*')
   .from('with_alias');
 
+// @sql
 knex
   .withMaterialized('with_alias', (qb) => {
     qb.select('*').from('books').where('author', 'Test');
@@ -337,13 +369,14 @@ knex
   .from('with_alias');
 ```
 
-### withNotMaterialized
+### withNotMaterialized [-MY -MS -OR -CR -RS]
 
 **.withNotMaterialized(alias, [columns], callback|builder|raw)**
 
 Add a "with" not materialized clause to the query. "With" not materialized clauses are supported by PostgreSQL and SQLite3. An optional column list can be provided after the alias; if provided, it must include at least one column name.
 
 ```js
+// @sql
 knex
   .withNotMaterialized(
     'with_alias',
@@ -352,6 +385,7 @@ knex
   .select('*')
   .from('with_alias');
 
+// @sql
 knex
   .withNotMaterialized(
     'with_alias',
@@ -361,6 +395,7 @@ knex
   .select('*')
   .from('with_alias');
 
+// @sql
 knex
   .withNotMaterialized('with_alias', (qb) => {
     qb.select('*').from('books').where('author', 'Test');
@@ -376,6 +411,7 @@ knex
 Specifies the schema to be used as prefix of table name.
 
 ```js
+// @sql
 knex.withSchema('public').select('*').from('users');
 ```
 
@@ -386,12 +422,16 @@ knex.withSchema('public').select('*').from('users');
 Extract a value from a json column given a JsonPath. An alias can be specified. The singleValue boolean can be used to specify, with Oracle or MSSQL, if the value returned by the function is a single value or an array/object value. An array of arrays can be used to specify multiple extractions with one call to this function.
 
 ```js
+// @sql
 knex('accounts').jsonExtract('json_col', '$.name');
 
+// @sql
 knex('accounts').jsonExtract('json_col', '$.name', 'accountName');
 
+// @sql
 knex('accounts').jsonExtract('json_col', '$.name', 'accountName', true);
 
+// @sql
 knex('accounts').jsonExtract([
   ['json_col', '$.name', 'accountName'],
   ['json_col', '$.lastName', 'accountLastName'],
@@ -401,6 +441,7 @@ knex('accounts').jsonExtract([
 All json\*() functions can be used directly from knex object and can be nested.
 
 ```js
+// @sql
 knex('cities').jsonExtract([
   [knex.jsonRemove('population', '$.min'), '$', 'withoutMin'],
   [knex.jsonRemove('population', '$.max'), '$', 'withoutMax'],
@@ -408,15 +449,17 @@ knex('cities').jsonExtract([
 ]);
 ```
 
-### jsonSet
+### jsonSet [-RS]
 
 **.jsonSet(column|builder|raw, path, value, [alias])**
 
 Return a json value/object/array where a given value is set at the given JsonPath. Value can be single value or json object. If a value already exists at the given place, the value is replaced. Not supported by Redshift and versions before Oracle 21c.
 
 ```js
+// @sql
 knex('accounts').jsonSet('json_col', '$.name', 'newName', 'newNameCol');
 
+// @sql
 knex('accounts').jsonSet(
   'json_col',
   '$.name',
@@ -425,15 +468,17 @@ knex('accounts').jsonSet(
 );
 ```
 
-### jsonInsert
+### jsonInsert [-RS]
 
 **.jsonInsert(column|builder|raw, path, value, [alias])**
 
 Return a json value/object/array where a given value is inserted at the given JsonPath. Value can be single value or json object. If a value exists at the given path, the value is not replaced. Not supported by Redshift and versions before Oracle 21c.
 
 ```js
+// @sql
 knex('accounts').jsonInsert('json_col', '$.name', 'newName', 'newNameCol');
 
+// @sql
 knex('accounts').jsonInsert(
   'json_col',
   '$.name',
@@ -441,6 +486,7 @@ knex('accounts').jsonInsert(
   'newNameCol'
 );
 
+// @sql
 knex('accounts').jsonInsert(
   knex.jsonExtract('json_col', '$.otherAccount'),
   '$.name',
@@ -449,15 +495,17 @@ knex('accounts').jsonInsert(
 );
 ```
 
-### jsonRemove
+### jsonRemove [-RS]
 
 **.jsonRemove(column|builder|raw, path, [alias])**
 
 Return a json value/object/array where a given value is removed at the given JsonPath. Not supported by Redshift and versions before Oracle 21c.
 
 ```js
+// @sql
 knex('accounts').jsonRemove('json_col', '$.name', 'colWithRemove');
 
+// @sql
 knex('accounts').jsonInsert(
   'json_col',
   '$.name',
@@ -473,26 +521,43 @@ knex('accounts').jsonInsert(
 Adds an offset clause to the query. An optional skipBinding parameter may be specified which would avoid setting offset as a prepared value (some databases don't allow prepared values for offset).
 
 ```js
+// @sql
 knex.select('*').from('users').offset(10);
 
+// @sql
 knex.select('*').from('users').offset(10).toSQL().sql;
 
 // Offset value isn't a prepared value.
+// @sql
 knex.select('*').from('users').offset(10, { skipBinding: true }).toSQL().sql;
 ```
 
 ### limit
+
+**Important:** Knex may throw errors during SQL compilation when the query is unsound. This prevents unexpected data loss or unexpected behavior. "Limit" clauses may throw when:
+
+- A "limit" clause is present on a "delete" or "truncate" statement
+
+Examples of queries that would throw:
+
+```js
+knex('accounts').limit(10).del().toSQL();
+knex('logs').limit(10).truncate().toSQL();
+```
 
 **.limit(value, options={skipBinding: boolean})**
 
 Adds a limit clause to the query. An optional skipBinding parameter may be specified to avoid adding limit as a prepared value (some databases don't allow prepared values for limit).
 
 ```js
+// @sql
 knex.select('*').from('users').limit(10).offset(30);
 
+// @sql
 knex.select('*').from('users').limit(10).offset(30).toSQL().sql;
 
 // Limit value isn't a prepared value.
+// @sql
 knex
   .select('*')
   .from('users')
@@ -508,6 +573,7 @@ knex
 Creates a union query, taking an array or a list of callbacks, builders, or raw statements to build the union statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -516,12 +582,14 @@ knex
     this.select('*').from('users').whereNull('first_name');
   });
 
+// @sql
 knex
   .select('*')
   .from('users')
   .whereNull('last_name')
   .union([knex.select('*').from('users').whereNull('first_name')]);
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -536,11 +604,13 @@ If you want to apply `orderBy`, `groupBy`, `limit`, `offset` or `having` to inpu
 
 ```js
 // example showing how clauses get appended to the end of the query
+// @sql
 knex('users')
   .select('id', 'name')
   .groupBy('id')
   .union(knex('invitations').select('id', 'name').orderBy('expires_at'));
 
+// @sql
 knex.union([
   knex('users').select('id', 'name').groupBy('id'),
   knex('invitations').select('id', 'name').orderBy('expires_at'),
@@ -556,6 +626,7 @@ knex.union([
 Creates a union all query, with the same method signature as the union method. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -564,12 +635,14 @@ knex
     this.select('*').from('users').whereNull('first_name');
   });
 
+// @sql
 knex
   .select('*')
   .from('users')
   .whereNull('last_name')
   .unionAll([knex.select('*').from('users').whereNull('first_name')]);
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -587,6 +660,7 @@ knex
 Creates an intersect query, taking an array or a list of callbacks, builders, or raw statements to build the intersect statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses. The intersect method is unsupported on MySQL.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -595,12 +669,14 @@ knex
     this.select('*').from('users').whereNull('first_name');
   });
 
+// @sql
 knex
   .select('*')
   .from('users')
   .whereNull('last_name')
   .intersect([knex.select('*').from('users').whereNull('first_name')]);
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -618,6 +694,7 @@ knex
 Creates an except query, taking an array or a list of callbacks, builders, or raw statements to build the except statement, with optional boolean wrap. If the `wrap` parameter is `true`, the queries will be individually wrapped in parentheses. The except method is unsupported on MySQL.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -626,12 +703,14 @@ knex
     this.select('*').from('users').whereNull('first_name');
   });
 
+// @sql
 knex
   .select('*')
   .from('users')
   .whereNull('last_name')
   .except([knex.select('*').from('users').whereNull('first_name')]);
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -652,12 +731,15 @@ Creates an insert query, taking either a hash of properties to be inserted into 
 // Returns [1] in "mysql", "sqlite", "oracle";
 // [] in "postgresql"
 // unless the 'returning' parameter is set.
+// @sql
 knex('books').insert({ title: 'Slaughterhouse Five' });
 
 // Normalizes for empty keys on multi-row insert:
+// @sql
 knex('coords').insert([{ x: 20 }, { y: 30 }, { x: 10, y: 20 }]);
 
 // Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
+// @sql
 knex
   .insert([{ title: 'Great Gatsby' }, { title: 'Fahrenheit 451' }], ['id'])
   .into('books');
@@ -669,6 +751,7 @@ For MSSQL, triggers on tables can interrupt returning a valid value from the sta
 // Adding the option includeTriggerModifications
 // allows you to run statements on tables
 // that contain triggers. Only affects MSSQL.
+// @sql
 knex('books').insert({ title: 'Alice in Wonderland' }, ['id'], {
   includeTriggerModifications: true,
 });
@@ -692,14 +775,14 @@ const knex = require('knex')({
 knex('coords').insert([{ x: 20 }, { y: 30 }, { x: 10, y: 20 }]);
 ```
 
-```sql
+```js
 insert into `coords` (`x`, `y`) values (20, NULL), (NULL, 30), (10, 20)"
 ```
 
-### onConflict
+### onConflict [-MS -OR -CR -RS]
 
-**insert(..).onConflict(column)**  
-**insert(..).onConflict([column1, column2, ...])**  
+**insert(..).onConflict(column)**
+**insert(..).onConflict([column1, column2, ...])**
 **insert(..).onConflict(knex.raw(...))**
 
 Implemented for the PostgreSQL, MySQL, and SQLite databases. A modifier for insert queries that specifies alternative behaviour in the case of a conflict. A conflict occurs when a table has a PRIMARY KEY or a UNIQUE index on a column (or a composite index on a set of columns) and a row being inserted has the same value as a row which already exists in the table in those column(s). The default behaviour in case of conflict is to raise an error and abort the query. Using this method you can change this behaviour to either silently ignore the error by using .onConflict().ignore() or to update the existing row with new data (perform an "UPSERT") by using .onConflict().merge().
@@ -711,6 +794,7 @@ For PostgreSQL and SQLite, you can use knex.raw(...) function in onConflict. It 
 :::
 
 ```js
+// @sql
 knex('tableName')
   .insert({
     email: 'ignore@example.com',
@@ -731,6 +815,7 @@ See documentation on .ignore() and .merge() methods for more details.
 Implemented for the PostgreSQL, MySQL, and SQLite databases. Modifies an insert query, and causes it to be silently dropped without an error if a conflict occurs. Uses INSERT IGNORE in MySQL, and adds an ON CONFLICT (columns) DO NOTHING clause to the insert statement in PostgreSQL and SQLite.
 
 ```js
+// @sql
 knex('tableName')
   .insert({
     email: 'ignore@example.com',
@@ -742,12 +827,13 @@ knex('tableName')
 
 #### merge
 
-**insert(..).onConflict(..).merge()**  
+**insert(..).onConflict(..).merge()**
 **insert(..).onConflict(..).merge(updates)**
 
 Implemented for the PostgreSQL, MySQL, and SQLite databases. Modifies an insert query, to turn it into an 'upsert' operation. Uses ON DUPLICATE KEY UPDATE in MySQL, and adds an ON CONFLICT (columns) DO UPDATE clause to the insert statement in PostgreSQL and SQLite. By default, it merges all columns.
 
 ```js
+// @sql
 knex('tableName')
   .insert({
     email: 'ignore@example.com',
@@ -760,6 +846,7 @@ knex('tableName')
 This also works with batch inserts:
 
 ```js
+// @sql
 knex('tableName')
   .insert([
     { email: 'john@example.com', name: 'John Doe' },
@@ -774,6 +861,7 @@ It is also possible to specify a subset of the columns to merge when a conflict 
 
 ```js
 const timestamp = Date.now();
+// @sql
 knex('tableName')
   .insert({
     email: 'ignore@example.com',
@@ -789,6 +877,7 @@ It is also possible to specify data to update separately from the data to insert
 
 ```js
 const timestamp = Date.now();
+// @sql
 knex('tableName')
   .insert({
     email: 'ignore@example.com',
@@ -806,6 +895,7 @@ knex('tableName')
 
 ```js
 const timestamp = Date.now();
+// @sql
 knex('tableName')
   .insert({
     email: 'ignore@example.com',
@@ -818,10 +908,10 @@ knex('tableName')
     name: 'John Doe',
     updated_at: timestamp,
   })
-  .where('updated_at', '<', timestamp);
+  .where('tableName.updated_at', '<', timestamp);
 ```
 
-### upsert
+### upsert [-PG -SQ -MS -OR -RS]
 
 **.upsert(data, [returning], [options])**
 
@@ -829,10 +919,12 @@ Implemented for the CockroachDB and MySQL. Creates an upsert query, taking eithe
 
 ```js
 // insert new row with unique index on title column
+// @sql
 knex('books').upsert({ title: 'Great Gatsby' });
 
 // update row by unique title 'Great Gatsby'
 // and insert row with title 'Fahrenheit 451'
+// @sql
 knex('books').upsert(
   [{ title: 'Great Gatsby' }, { title: 'Fahrenheit 451' }],
   ['id']
@@ -841,6 +933,7 @@ knex('books').upsert(
 // Normalizes for empty keys on multi-row upsert,
 // result sql:
 // ("x", "y") values (20, default), (default, 30), (10, 20):
+// @sql
 knex('coords').upsert([{ x: 20 }, { y: 30 }, { x: 10, y: 20 }]);
 ```
 
@@ -852,6 +945,7 @@ knex('coords').upsert([{ x: 20 }, { y: 30 }, { x: 10, y: 20 }]);
 Creates an update query, taking a hash of properties or a key/value pair to be updated based on the other query constraints. If returning array is passed e.g. \['id', 'title'\], it resolves the promise / fulfills the callback with an array of all the updated rows with specified columns. It's a shortcut for [returning method](#returning)
 
 ```js
+// @sql
 knex('books').where('published_date', '<', 2000).update({
   status: 'archived',
   thisKeyIsSkipped: undefined,
@@ -860,6 +954,7 @@ knex('books').where('published_date', '<', 2000).update({
 // Returns [1] in "mysql", "sqlite", "oracle";
 // [] in "postgresql"
 // unless the 'returning' parameter is set.
+// @sql
 knex('books').update('title', 'Slaughterhouse Five');
 
 /** Returns
@@ -867,6 +962,7 @@ knex('books').update('title', 'Slaughterhouse Five');
  *   id: 42,
  *   title: "The Hitchhiker's Guide to the Galaxy"
  * }] **/
+// @sql
 knex('books').where({ id: 42 }).update(
   {
     title: "The Hitchhiker's Guide to the Galaxy",
@@ -881,18 +977,20 @@ For MSSQL, triggers on tables can interrupt returning a valid value from the sta
 // Adding the option includeTriggerModifications allows you
 // to run statements on tables that contain triggers.
 // Only affects MSSQL.
+// @sql
 knex('books').update({ title: 'Alice in Wonderland' }, ['id', 'title'], {
   includeTriggerModifications: true,
 });
 ```
 
-### updateFrom
+### updateFrom [-MY -SQ -MS -OR -CR -RS]
 
 **.updateFrom(tableName)**
 
 Can be used to define in PostgreSQL an update statement with explicit 'from' syntax which can be referenced in 'where' conditions.
 
 ```js
+// @sql
 knex('accounts')
   .update({ enabled: false })
   .updateFrom('clients')
@@ -907,6 +1005,7 @@ knex('accounts')
 Aliased to del as delete is a reserved word in JavaScript, this method deletes one or more rows, based on other conditions specified in the query. Resolves the promise / fulfills the callback with the number of affected rows for the query.
 
 ```js
+// @sql
 knex('accounts').where('activated', false).del();
 ```
 
@@ -916,6 +1015,7 @@ For MSSQL, triggers on tables can interrupt returning a valid value from the sta
 // Adding the option includeTriggerModifications allows you
 // to run statements on tables that contain triggers.
 // Only affects MSSQL.
+// @sql
 knex('books')
   .where('title', 'Alice in Wonderland')
   .del(['id', 'title'], { includeTriggerModifications: true });
@@ -924,19 +1024,21 @@ knex('books')
 For PostgreSQL, Delete statement with joins is both supported with classic 'join' syntax and 'using' syntax.
 
 ```js
+// @sql
 knex('accounts')
   .where('activated', false)
   .join('accounts', 'accounts.id', 'users.account_id')
   .del();
 ```
 
-### using
+### using [-MY -SQ -MS -OR -CR -RS]
 
 **.using(tableName|tableNames)**
 
 Can be used to define in PostgreSQL a delete statement with joins with explicit 'using' syntax. Classic join syntax can be used too.
 
 ```js
+// @sql
 knex('accounts')
   .where('activated', false)
   .using('accounts')
@@ -944,7 +1046,7 @@ knex('accounts')
   .del();
 ```
 
-### returning
+### returning [-MY -CR -RS]
 
 **.returning(column, [options])**
 **.returning([column1, column2, ...], [options])**
@@ -953,15 +1055,18 @@ Utilized by PostgreSQL, MSSQL, SQLite, and Oracle databases, the returning metho
 
 ```js
 // Returns [ { id: 1 } ]
+// @sql
 knex('books').returning('id').insert({ title: 'Slaughterhouse Five' });
 
 // Returns [{ id: 2 } ] in "mysql", "sqlite";
 // [ { id: 2 }, { id: 3 } ] in "postgresql"
+// @sql
 knex('books')
   .returning('id')
   .insert([{ title: 'Great Gatsby' }, { title: 'Fahrenheit 451' }]);
 
 // Returns [ { id: 1, title: 'Slaughterhouse Five' } ]
+// @sql
 knex('books')
   .returning(['id', 'title'])
   .insert({ title: 'Slaughterhouse Five' });
@@ -973,6 +1078,7 @@ For MSSQL, triggers on tables can interrupt returning a valid value from the sta
 // Adding the option includeTriggerModifications allows you
 // to run statements on tables that contain triggers.
 // Only affects MSSQL.
+// @sql
 knex('books')
   .returning(['id', 'title'], { includeTriggerModifications: true })
   .insert({ title: 'Slaughterhouse Five' });
@@ -1006,63 +1112,69 @@ knex
   });
 ```
 
-#### forUpdate
+### forUpdate [-SQ -MS -OR -CR -RS]
 
 **.transacting(t).forUpdate()**
 
 Dynamically added after a transaction is specified, the forUpdate adds a FOR UPDATE in PostgreSQL and MySQL during a select statement. Not supported on Amazon Redshift due to lack of table locks.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forUpdate().select('*');
 ```
 
-#### forShare
+### forShare [-SQ -MS -OR -CR -RS]
 
 **.transacting(t).forShare()**
 
 Dynamically added after a transaction is specified, the forShare adds a FOR SHARE in PostgreSQL and a LOCK IN SHARE MODE for MySQL during a select statement. Not supported on Amazon Redshift due to lack of table locks.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forShare().select('*');
 ```
 
-#### forNoKeyUpdate
+### forNoKeyUpdate [-MY -SQ -MS -OR -CR -RS]
 
 **.transacting(t).forNoKeyUpdate()**
 
 Dynamically added after a transaction is specified, the forNoKeyUpdate adds a FOR NO KEY UPDATE in PostgreSQL.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forNoKeyUpdate().select('*');
 ```
 
-#### forKeyShare
+### forKeyShare [-MY -SQ -MS -OR -CR -RS]
 
 **.transacting(t).forKeyShare()**
 
 Dynamically added after a transaction is specified, the forKeyShare adds a FOR KEY SHARE in PostgreSQL.
 
 ```js
+// @sql
 knex('tableName').transacting(trx).forKeyShare().select('*');
 ```
 
-### skipLocked
+### skipLocked [-SQ -MS -OR -CR -RS]
 
 **.skipLocked()**
 
 MySQL 8.0+, MariaDB-10.6+ and PostgreSQL 9.5+ only. This method can be used after a lock mode has been specified with either forUpdate or forShare, and will cause the query to skip any locked rows, returning an empty set if none are available.
 
 ```js
+// @sql
 knex('tableName').select('*').forUpdate().skipLocked();
 ```
 
-### noWait
+### noWait [-SQ -MS -OR -CR -RS]
 
 **.noWait()**
 
 MySQL 8.0+, MariaDB-10.3+ and PostgreSQL 9.5+ only. This method can be used after a lock mode has been specified with either forUpdate or forShare, and will cause the query to fail immediately if any selected rows are currently locked.
 
 ```js
+// @sql
 knex('tableName').select('*').forUpdate().noWait();
 ```
 
@@ -1073,20 +1185,28 @@ knex('tableName').select('*').forUpdate().noWait();
 Performs a count on the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions. The value returned from count (and other aggregation queries) is an array of objects like: `[{'COUNT(*)': 1}]`. The actual keys are dialect specific, so usually we would want to specify an alias (Refer examples below). Note that in Postgres, count returns a bigint type which will be a String and not a Number ([more info](https://github.com/brianc/node-pg-types#use)).
 
 ```js
+// @sql
 knex('users').count('active');
 
+// @sql
 knex('users').count('active', { as: 'a' });
 
+// @sql
 knex('users').count('active as a');
 
+// @sql
 knex('users').count({ a: 'active' });
 
+// @sql
 knex('users').count({ a: 'active', v: 'valid' });
 
+// @sql
 knex('users').count('id', 'active');
 
+// @sql
 knex('users').count({ count: ['id', 'active'] });
 
+// @sql
 knex('users').count(knex.raw('??', ['active']));
 ```
 
@@ -1095,8 +1215,10 @@ knex('users').count(knex.raw('??', ['active']));
 The value of count will, by default, have type of `string | number`. This may be counter-intuitive but some connectors (eg. postgres) will automatically cast BigInt result to string when javascript's Number type is not large enough for the value.
 
 ```ts
+// @sql
 knex('users').count('age'); // Resolves to: Record<string, number | string>
 
+// @sql
 knex('users').count({ count: '*' }); // Resolves to { count?: string | number | undefined; }
 ```
 
@@ -1118,6 +1240,7 @@ declare module 'knex/types/result' {
 Use **countDistinct** to add a distinct expression inside the aggregate function.
 
 ```ts
+// @sql
 knex('users').countDistinct('active');
 ```
 
@@ -1128,20 +1251,28 @@ knex('users').countDistinct('active');
 Gets the minimum value for the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions.
 
 ```js
+// @sql
 knex('users').min('age');
 
+// @sql
 knex('users').min('age', { as: 'a' });
 
+// @sql
 knex('users').min('age as a');
 
+// @sql
 knex('users').min({ a: 'age' });
 
+// @sql
 knex('users').min({ a: 'age', b: 'experience' });
 
+// @sql
 knex('users').min('age', 'logins');
 
+// @sql
 knex('users').min({ min: ['age', 'logins'] });
 
+// @sql
 knex('users').min(knex.raw('??', ['age']));
 ```
 
@@ -1152,20 +1283,28 @@ knex('users').min(knex.raw('??', ['age']));
 Gets the maximum value for the specified column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions.
 
 ```js
+// @sql
 knex('users').max('age');
 
+// @sql
 knex('users').max('age', { as: 'a' });
 
+// @sql
 knex('users').max('age as a');
 
+// @sql
 knex('users').max({ a: 'age' });
 
+// @sql
 knex('users').max('age', 'logins');
 
+// @sql
 knex('users').max({ max: ['age', 'logins'] });
 
+// @sql
 knex('users').max({ max: 'age', exp: 'experience' });
 
+// @sql
 knex('users').max(knex.raw('??', ['age']));
 ```
 
@@ -1176,22 +1315,29 @@ knex('users').max(knex.raw('??', ['age']));
 Retrieve the sum of the values of a given column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions.
 
 ```js
+// @sql
 knex('users').sum('products');
 
+// @sql
 knex('users').sum('products as p');
 
+// @sql
 knex('users').sum({ p: 'products' });
 
+// @sql
 knex('users').sum('products', 'orders');
 
+// @sql
 knex('users').sum({ sum: ['products', 'orders'] });
 
+// @sql
 knex('users').sum(knex.raw('??', ['products']));
 ```
 
 Use **sumDistinct** to add a distinct expression inside the aggregate function.
 
 ```js
+// @sql
 knex('users').sumDistinct('products');
 ```
 
@@ -1202,22 +1348,29 @@ knex('users').sumDistinct('products');
 Retrieve the average of the values of a given column or array of columns (note that some drivers do not support multiple columns). Also accepts raw expressions.
 
 ```js
+// @sql
 knex('users').avg('age');
 
+// @sql
 knex('users').avg('age as a');
 
+// @sql
 knex('users').avg({ a: 'age' });
 
+// @sql
 knex('users').avg('age', 'logins');
 
+// @sql
 knex('users').avg({ avg: ['age', 'logins'] });
 
+// @sql
 knex('users').avg(knex.raw('??', ['age']));
 ```
 
 Use **avgDistinct** to add a distinct expression inside the aggregate function.
 
 ```js
+// @sql
 knex('users').avgDistinct('age');
 ```
 
@@ -1228,8 +1381,10 @@ knex('users').avgDistinct('age');
 Increments a column value by the specified amount. Object syntax is supported for `column`.
 
 ```js
+// @sql
 knex('accounts').where('userid', '=', 1).increment('balance', 10);
 
+// @sql
 knex('accounts').where('id', '=', 1).increment({
   balance: 10,
   times: 1,
@@ -1243,8 +1398,10 @@ knex('accounts').where('id', '=', 1).increment({
 Decrements a column value by the specified amount. Object syntax is supported for `column`.
 
 ```js
+// @sql
 knex('accounts').where('userid', '=', 1).decrement('balance', 5);
 
+// @sql
 knex('accounts').where('id', '=', 1).decrement({
   balance: 50,
 });
@@ -1257,6 +1414,7 @@ knex('accounts').where('id', '=', 1).decrement({
 Truncates the current table.
 
 ```js
+// @sql
 knex('accounts').truncate();
 ```
 
@@ -1292,13 +1450,14 @@ knex
   });
 ```
 
-### hintComment
+### hintComment [-PG -SQ -MS -CR -RS]
 
 **.hintComment(hint|hints)**
 
 Add hints to the query using comment-like syntax `/*+ ... */`. MySQL and Oracle use this syntax for optimizer hints. Also various DB proxies and routers use this syntax to pass hints to alter their behavior. In other dialects the hints are ignored as simple comments.
 
 ```js
+// @sql
 knex('accounts').where('userid', '=', 1).hintComment('NO_ICP(accounts)');
 ```
 
@@ -1309,6 +1468,7 @@ knex('accounts').where('userid', '=', 1).hintComment('NO_ICP(accounts)');
 Prepend comment to the sql query using the syntax `/* ... */`. Some characters are forbidden such as `/*`, `*/` and `?`.
 
 ```js
+// @sql
 knex('users').where('id', '=', 1).comment('Get user by id');
 ```
 
@@ -1327,12 +1487,14 @@ Add a dense_rank() call to your query. For all the following queries, alias can 
 String Syntax — .denseRank(alias, orderByClause, \[partitionByClause\]) :
 
 ```js
+// @sql
 knex('users').select('*').denseRank('alias_name', 'email', 'firstName');
 ```
 
 It also accepts arrays of strings as argument :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .denseRank('alias_name', ['email', 'address'], ['firstName', 'lastName']);
@@ -1341,6 +1503,7 @@ knex('users')
 Raw Syntax — .denseRank(alias, rawQuery) :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .denseRank('alias_name', knex.raw('order by ??', ['email']));
@@ -1351,6 +1514,7 @@ Function Syntax — .denseRank(alias, function) :
 Use orderBy() and partitionBy() (both chainable) to build your query :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .denseRank('alias_name', function () {
@@ -1367,12 +1531,14 @@ Add a rank() call to your query. For all the following queries, alias can be set
 String Syntax — .rank(alias, orderByClause, \[partitionByClause\]) :
 
 ```js
+// @sql
 knex('users').select('*').rank('alias_name', 'email', 'firstName');
 ```
 
 It also accepts arrays of strings as argument :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rank('alias_name', ['email', 'address'], ['firstName', 'lastName']);
@@ -1381,6 +1547,7 @@ knex('users')
 Raw Syntax — .rank(alias, rawQuery) :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rank('alias_name', knex.raw('order by ??', ['email']));
@@ -1391,6 +1558,7 @@ Function Syntax — .rank(alias, function) :
 Use orderBy() and partitionBy() (both chainable) to build your query :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rank('alias_name', function () {
@@ -1407,12 +1575,14 @@ Add a row_number() call to your query. For all the following queries, alias can 
 String Syntax — .rowNumber(alias, orderByClause, \[partitionByClause\]) :
 
 ```js
+// @sql
 knex('users').select('*').rowNumber('alias_name', 'email', 'firstName');
 ```
 
 It also accepts arrays of strings as argument :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rowNumber('alias_name', ['email', 'address'], ['firstName', 'lastName']);
@@ -1421,6 +1591,7 @@ knex('users')
 Raw Syntax — .rowNumber(alias, rawQuery) :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rowNumber('alias_name', knex.raw('order by ??', ['email']));
@@ -1431,6 +1602,7 @@ Function Syntax — .rowNumber(alias, function) :
 Use orderBy() and partitionBy() (both chainable) to build your query :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rowNumber('alias_name', function () {
@@ -1447,6 +1619,7 @@ Partitions rowNumber, denseRank, rank after a specific column or columns. If dir
 No direction sort :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rowNumber('alias_name', function () {
@@ -1457,6 +1630,7 @@ knex('users')
 With direction sort :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rowNumber('alias_name', function () {
@@ -1467,6 +1641,7 @@ knex('users')
 With multiobject :
 
 ```js
+// @sql
 knex('users')
   .select('*')
   .rowNumber('alias_name', function () {
@@ -1489,6 +1664,7 @@ const withUserName = function (queryBuilder, foreignKey) {
     .leftJoin('users', foreignKey, 'users.id')
     .select('users.user_name');
 };
+
 knex
   .table('articles')
   .select('title', 'body')
@@ -1565,6 +1741,26 @@ knex('accounts as a1')
   });
 ```
 
+::: info Better-SQLite3
+`better-sqlite3` can return integers as either plain JS `number` (the default) or as `bigint`. You can configure this per-query with `.options({safeIntegers: boolean})`.
+
+Example:
+
+```js
+// {balance: bigint}[]
+const rows = await knex('accounts')
+  .select('balance')
+  .options({ safeIntegers: true });
+
+// {balance: number}[]
+const rows = await knex('accounts')
+  .select('balance')
+  .options({ safeIntegers: false });
+```
+
+The default for all queries can be set via [global configuration options](/guide/#configuration-options)
+:::
+
 ### queryContext
 
 **.queryContext(context)**
@@ -1572,6 +1768,7 @@ knex('accounts as a1')
 Allows for configuring a context to be passed to the [wrapIdentifier](/guide/#wrapidentifier) and [postProcessResponse](/guide/#postprocessresponse) hooks:
 
 ```js
+// @sql
 knex('accounts as a1')
   .queryContext({ foo: 'bar' })
   .select(['a1.email', 'a2.email']);
@@ -1633,20 +1830,27 @@ declare module 'knex' {
 
 Several methods exist to assist in dynamic where clauses. In many places functions may be used in place of values, constructing subqueries. In most places existing knex queries may be used to compose sub-queries, etc. Take a look at a few of the examples for each method for instruction on use:
 
-**Important:** Supplying knex with an `undefined` value to any of the `where` functions will cause knex to throw an error during sql compilation. This is both for yours and our sake. Knex cannot know what to do with undefined values in a where clause, and generally it would be a programmatic error to supply one to begin with. The error will throw a message containing the type of query and the compiled query-string. Example:
+**Important:** Knex may throw errors during SQL compilation when the query is unsound. This prevents unexpected data loss or unexpected behavior. "Where" clauses may throw when:
+
+- Any "undefined" value is passed to a where clause
+- A "where" clause is present on a "truncate" statement
+
+Examples of queries that would throw:
 
 ```js
 knex('accounts').where('login', undefined).select().toSQL();
+knex('logs').where('server', 'dev').truncate().toSQL();
 ```
 
 ### where
 
-**.where(~mixed~)**  
+**.where(~mixed~)**
 **.orWhere**
 
 Object Syntax:
 
 ```js
+// @sql
 knex('users')
   .where({
     first_name: 'Test',
@@ -1658,12 +1862,14 @@ knex('users')
 Key, Value:
 
 ```js
+// @sql
 knex('users').where('id', 1);
 ```
 
 Functions:
 
 ```js
+// @sql
 knex('users')
   .where((builder) =>
     builder.whereIn('id', [1, 11, 15]).whereNotIn('id', [17, 19])
@@ -1676,6 +1882,7 @@ knex('users')
 Grouped Chain:
 
 ```js
+// @sql
 knex('users')
   .where(function () {
     this.where('id', 1).orWhere('id', '>', 10);
@@ -1686,12 +1893,14 @@ knex('users')
 Operator:
 
 ```js
+// @sql
 knex('users').where('columnName', 'like', '%rowlikeme%');
 ```
 
 The above query demonstrates the common use case of returning all users for which a specific pattern appears within a designated column.
 
 ```js
+// @sql
 knex('users').where('votes', '>', 100);
 
 const subquery = knex('users')
@@ -1700,12 +1909,14 @@ const subquery = knex('users')
   .orWhere('name', 'John')
   .select('id');
 
+// @sql
 knex('accounts').where('id', 'in', subquery);
 ```
 
 .orWhere with an object automatically wraps the statement and creates an `or (and - and - and)` clause
 
 ```js
+// @sql
 knex('users').where('id', 1).orWhere({ votes: 100, user: 'knex' });
 ```
 
@@ -1717,6 +1928,7 @@ knex('users').where('id', 1).orWhere({ votes: 100, user: 'knex' });
 Object Syntax:
 
 ```js
+// @sql
 knex('users')
   .whereNot({
     first_name: 'Test',
@@ -1728,12 +1940,14 @@ knex('users')
 Key, Value:
 
 ```js
+// @sql
 knex('users').whereNot('id', 1);
 ```
 
 Grouped Chain:
 
 ```js
+// @sql
 knex('users')
   .whereNot(function () {
     this.where('id', 1).orWhereNot('id', '>', 10);
@@ -1744,6 +1958,7 @@ knex('users')
 Operator:
 
 ```js
+// @sql
 knex('users').whereNot('votes', '>', 100);
 ```
 
@@ -1758,23 +1973,26 @@ const subquery = knex('users')
   .orWhere('name', 'John')
   .select('id');
 
+// @sql
 knex('accounts').where('id', 'not in', subquery);
 ```
 
 ### whereIn
 
-**.whereIn(column|columns, array|callback|builder)**  
+**.whereIn(column|columns, array|callback|builder)**
 **.orWhereIn**
 
 Shorthand for .where('id', 'in', obj), the .whereIn and .orWhereIn methods add a "where in" clause to the query. Note that passing empty array as the value results in a query that never returns any rows (`WHERE 1 = 0`)
 
 ```js
+// @sql
 knex
   .select('name')
   .from('users')
   .whereIn('id', [1, 2, 3])
   .orWhereIn('id', [4, 5, 6]);
 
+// @sql
 knex
   .select('name')
   .from('users')
@@ -1784,8 +2002,10 @@ knex
 
 const subquery = knex.select('id').from('accounts');
 
+// @sql
 knex.select('name').from('users').whereIn('account_id', subquery);
 
+// @sql
 knex
   .select('name')
   .from('users')
@@ -1797,6 +2017,7 @@ knex
     ]
   );
 
+// @sql
 knex
   .select('name')
   .from('users')
@@ -1812,39 +2033,45 @@ knex
 **.orWhereNotIn**
 
 ```js
+// @sql
 knex('users').whereNotIn('id', [1, 2, 3]);
 
+// @sql
 knex('users').where('name', 'like', '%Test%').orWhereNotIn('id', [1, 2, 3]);
 ```
 
 ### whereNull
 
-**.whereNull(column)**  
+**.whereNull(column)**
 **.orWhereNull**
 
 ```js
+// @sql
 knex('users').whereNull('updated_at');
 ```
 
 ### whereNotNull
 
-**.whereNotNull(column)**  
+**.whereNotNull(column)**
 **.orWhereNotNull**
 
 ```js
+// @sql
 knex('users').whereNotNull('created_at');
 ```
 
 ### whereExists
 
-**.whereExists(builder | callback)**  
+**.whereExists(builder | callback)**
 **.orWhereExists**
 
 ```js
+// @sql
 knex('users').whereExists(function () {
   this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
 });
 
+// @sql
 knex('users').whereExists(
   knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id')
 );
@@ -1852,14 +2079,16 @@ knex('users').whereExists(
 
 ### whereNotExists
 
-**.whereNotExists(builder | callback)**  
+**.whereNotExists(builder | callback)**
 **.orWhereNotExists**
 
 ```js
+// @sql
 knex('users').whereNotExists(function () {
   this.select('*').from('accounts').whereRaw('users.account_id = accounts.id');
 });
 
+// @sql
 knex('users').whereNotExists(
   knex.select('*').from('accounts').whereRaw('users.account_id = accounts.id')
 );
@@ -1867,19 +2096,21 @@ knex('users').whereNotExists(
 
 ### whereBetween
 
-**.whereBetween(column, range)**  
+**.whereBetween(column, range)**
 **.orWhereBetween**
 
 ```js
+// @sql
 knex('users').whereBetween('votes', [1, 100]);
 ```
 
 ### whereNotBetween
 
-**.whereNotBetween(column, range)**  
+**.whereNotBetween(column, range)**
 **.orWhereNotBetween**
 
 ```js
+// @sql
 knex('users').whereNotBetween('votes', [1, 100]);
 ```
 
@@ -1890,19 +2121,22 @@ knex('users').whereNotBetween('votes', [1, 100]);
 Convenience helper for .where(knex.raw(query)).
 
 ```js
+// @sql
 knex('users').whereRaw('id = ?', [1]);
 ```
 
 ### whereLike
 
-**.whereLike(column, string|builder|raw)**  
+**.whereLike(column, string|builder|raw)**
 **.orWhereLike**
 
 Adds a where clause with case-sensitive substring comparison on a given column with a given value.
 
 ```js
+// @sql
 knex('users').whereLike('email', '%mail%');
 
+// @sql
 knex('users')
   .whereLike('email', '%mail%')
   .andWhereLike('email', '%.com')
@@ -1911,14 +2145,16 @@ knex('users')
 
 ### whereILike
 
-**.whereILike(column, string|builder|raw)**  
+**.whereILike(column, string|builder|raw)**
 **.orWhereILike**
 
 Adds a where clause with case-insensitive substring comparison on a given column with a given value.
 
 ```js
+// @sql
 knex('users').whereILike('email', '%mail%');
 
+// @sql
 knex('users')
   .whereILike('email', '%MAIL%')
   .andWhereILike('email', '%.COM')
@@ -1932,6 +2168,7 @@ knex('users')
 Adds a where clause with json object comparison on given json column.
 
 ```js
+// @sql
 knex('users').whereJsonObject('json_col', { name: 'user_name' });
 ```
 
@@ -1942,22 +2179,25 @@ knex('users').whereJsonObject('json_col', { name: 'user_name' });
 Adds a where clause with comparison of a value returned by a JsonPath given an operator and a value.
 
 ```js
+// @sql
 knex('users').whereJsonPath('json_col', '$.age', '>', 18);
 
+// @sql
 knex('users').whereJsonPath('json_col', '$.name', '=', 'username');
 ```
 
-### whereJsonSupersetOf
+### whereJsonSupersetOf [-SQ -MS -OR -RS]
 
 **.whereJsonSupersetOf(column, string|json|builder|raw)**
 
 Adds a where clause where the comparison is true if a json given by the column include a given value. Only on MySQL, PostgreSQL and CockroachDB.
 
 ```js
+// @sql
 knex('users').whereJsonSupersetOf('hobbies', { sport: 'foot' });
 ```
 
-### whereJsonSubsetOf
+### whereJsonSubsetOf [-SQ -MS -OR -RS]
 
 **.whereJsonSubsetOf(column, string|json|builder|raw)**
 
@@ -1966,6 +2206,7 @@ Adds a where clause where the comparison is true if a json given by the column i
 ```js
 // given a hobby column with { "sport" : "tennis" },
 // the where clause is true
+// @sql
 knex('users').whereJsonSubsetOf('hobby', { sport: 'tennis', book: 'fantasy' });
 ```
 
@@ -1980,10 +2221,12 @@ Several methods are provided which assist in building joins.
 The join builder can be used to specify joins between tables, with the first argument being the joining table, the next three arguments being the first join column, the join operator and the second join column, respectively.
 
 ```js
+// @sql
 knex('users')
   .join('contacts', 'users.id', '=', 'contacts.user_id')
   .select('users.id', 'contacts.phone');
 
+// @sql
 knex('users')
   .join('contacts', 'users.id', 'contacts.user_id')
   .select('users.id', 'contacts.phone');
@@ -1992,6 +2235,7 @@ knex('users')
 For grouped joins, specify a function as the second argument for the join query, and use `on` with `orOn` or `andOn` to create joins that are grouped with parentheses.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2007,6 +2251,7 @@ knex
 For nested join statements, specify a function as first argument of `on`, `orOn` or `andOn`
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2021,6 +2266,7 @@ knex
 It is also possible to use an object to represent the join syntax.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2030,6 +2276,7 @@ knex
 If you need to use a literal value (string, number, or boolean) in a join instead of a column, use `knex.raw`.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2041,10 +2288,13 @@ knex
 **.innerJoin(table, ~mixed~)**
 
 ```js
+// @sql
 knex.from('users').innerJoin('accounts', 'users.id', 'accounts.user_id');
 
+// @sql
 knex.table('users').innerJoin('accounts', 'users.id', '=', 'accounts.user_id');
 
+// @sql
 knex('users').innerJoin('accounts', function () {
   this.on('accounts.id', '=', 'users.account_id').orOn(
     'accounts.owner_id',
@@ -2059,11 +2309,13 @@ knex('users').innerJoin('accounts', function () {
 **.leftJoin(table, ~mixed~)**
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
   .leftJoin('accounts', 'users.id', 'accounts.user_id');
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2081,11 +2333,13 @@ knex
 **.leftOuterJoin(table, ~mixed~)**
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
   .leftOuterJoin('accounts', 'users.id', 'accounts.user_id');
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2103,11 +2357,13 @@ knex
 **.rightJoin(table, ~mixed~)**
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
   .rightJoin('accounts', 'users.id', 'accounts.user_id');
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2125,11 +2381,13 @@ knex
 **.rightOuterJoin(table, ~mixed~)**
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
   .rightOuterJoin('accounts', 'users.id', 'accounts.user_id');
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2147,11 +2405,13 @@ knex
 **.fullOuterJoin(table, ~mixed~)**
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
   .fullOuterJoin('accounts', 'users.id', 'accounts.user_id');
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2170,14 +2430,21 @@ knex
 
 Cross join conditions are only supported in MySQL and SQLite3. For join conditions rather use innerJoin.
 
+### crossJoin conditions [-PG -MS -OR -CR -RS]
+
+Cross join conditions are only supported in MySQL and SQLite3. For join conditions rather use innerJoin.
+
 ```js
+// @sql
 knex.select('*').from('users').crossJoin('accounts');
 
+// @sql
 knex
   .select('*')
   .from('users')
   .crossJoin('accounts', 'users.id', 'accounts.user_id');
 
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2195,12 +2462,14 @@ knex
 **.joinRaw(sql, [bindings])**
 
 ```js
+// @sql
 knex
   .select('*')
   .from('accounts')
   .joinRaw('natural full join table1')
   .where('id', 1);
 
+// @sql
 knex
   .select('*')
   .from('accounts')
@@ -2217,6 +2486,7 @@ knex
 Adds a onIn clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2235,6 +2505,7 @@ knex
 Adds a onNotIn clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2253,6 +2524,7 @@ knex
 Adds a onNull clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2268,6 +2540,7 @@ knex
 Adds a onNotNull clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2283,6 +2556,7 @@ knex
 Adds a onExists clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2302,6 +2576,7 @@ knex
 Adds a onNotExists clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2321,6 +2596,7 @@ knex
 Adds a onBetween clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2336,6 +2612,7 @@ knex
 Adds a onNotBetween clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2354,6 +2631,7 @@ knex
 Adds a onJsonPathEquals clause to the query. The clause performs a join on value returned by two json paths on two json columns.
 
 ```js
+// @sql
 knex('cities')
   .select('cities.name as cityName', 'country.name as countryName')
   .join('country', function () {
@@ -2379,6 +2657,7 @@ knex('cities')
 Clears the specified operator from the query. Available operators: 'select' alias 'columns', 'with', 'select', 'columns', 'where', 'union', 'join', 'group', 'order', 'having', 'limit', 'offset', 'counter', 'counters'. Counter(s) alias for method .clearCounter()
 
 ```js
+// @sql
 knex
   .select('email', 'name')
   .from('users')
@@ -2394,6 +2673,7 @@ knex
 Deprecated, use clear('select'). Clears all select clauses from the query, excluding subqueries.
 
 ```js
+// @sql
 knex.select('email', 'name').from('users').clearSelect();
 ```
 
@@ -2404,6 +2684,7 @@ knex.select('email', 'name').from('users').clearSelect();
 Deprecated, use clear('where'). Clears all where clauses from the query, excluding subqueries.
 
 ```js
+// @sql
 knex.select('email', 'name').from('users').where('id', 1).clearWhere();
 ```
 
@@ -2414,6 +2695,7 @@ knex.select('email', 'name').from('users').where('id', 1).clearWhere();
 Deprecated, use clear('group'). Clears all group clauses from the query, excluding subqueries.
 
 ```js
+// @sql
 knex.select().from('users').groupBy('id').clearGroup();
 ```
 
@@ -2424,6 +2706,7 @@ knex.select().from('users').groupBy('id').clearGroup();
 Deprecated, use clear('order'). Clears all order clauses from the query, excluding subqueries.
 
 ```js
+// @sql
 knex.select().from('users').orderBy('name', 'desc').clearOrder();
 ```
 
@@ -2434,6 +2717,7 @@ knex.select().from('users').orderBy('name', 'desc').clearOrder();
 Deprecated, use clear('having'). Clears all having clauses from the query, excluding subqueries.
 
 ```js
+// @sql
 knex.select().from('users').having('id', '>', 5).clearHaving();
 ```
 
@@ -2444,6 +2728,7 @@ knex.select().from('users').having('id', '>', 5).clearHaving();
 Clears all increments/decrements clauses from the query.
 
 ```js
+// @sql
 knex('accounts')
   .where('id', '=', 1)
   .update({ email: 'foo@bar.com' })
@@ -2461,19 +2746,22 @@ Sets a distinct clause on the query. If the parameter is falsy or empty array, m
 
 ```js
 // select distinct 'first_name' from customers
+// @sql
 knex('customers').distinct('first_name', 'last_name');
 
 // select which eliminates duplicate rows
+// @sql
 knex('customers').distinct();
 ```
 
-### distinctOn
+### distinctOn [-MY -SQ -MS -OR -CR -RS]
 
 **.distinctOn([\*columns])**
 
 PostgreSQL only. Adds a distinctOn clause to the query.
 
 ```js
+// @sql
 knex('users').distinctOn('age');
 ```
 
@@ -2484,6 +2772,7 @@ knex('users').distinctOn('age');
 Adds a group by clause to the query.
 
 ```js
+// @sql
 knex('users').groupBy('count');
 ```
 
@@ -2494,6 +2783,7 @@ knex('users').groupBy('count');
 Adds a raw group by clause to the query.
 
 ```js
+// @sql
 knex
   .select('year', knex.raw('SUM(profit)'))
   .from('sales')
@@ -2509,20 +2799,26 @@ Adds an order by clause to the query. column can be string, or list mixed with s
 Single Column:
 
 ```js
+// @sql
 knex('users').orderBy('email');
 
+// @sql
 knex('users').orderBy('name', 'desc');
 
+// @sql
 knex('users').orderBy('name', 'desc', 'first');
 ```
 
 Multiple Columns:
 
 ```js
+// @sql
 knex('users').orderBy(['email', { column: 'age', order: 'desc' }]);
 
+// @sql
 knex('users').orderBy([{ column: 'email' }, { column: 'age', order: 'desc' }]);
 
+// @sql
 knex('users').orderBy([
   { column: 'email' },
   { column: 'age', order: 'desc', nulls: 'last' },
@@ -2536,10 +2832,22 @@ knex('users').orderBy([
 Adds an order by raw clause to the query.
 
 ```js
+// @sql
 knex.select('*').from('table').orderByRaw('col DESC NULLS LAST');
 ```
 
 ## Having Clauses
+
+**Important:** Knex may throw errors during SQL compilation when the query is unsound. This prevents unexpected data loss or unexpected behavior. "Having" clauses may throw when:
+
+- A "having" clause is present on a "delete" or "truncate" statement
+
+Examples of queries that would throw:
+
+```js
+knex('accounts').having('login', '=', 'user').del().toSQL();
+knex('logs').having('server', '=', 'dev').truncate().toSQL();
+```
 
 ### having
 
@@ -2548,6 +2856,7 @@ knex.select('*').from('table').orderByRaw('col DESC NULLS LAST');
 Adds a having clause to the query.
 
 ```js
+// @sql
 knex('users')
   .groupBy('count')
   .orderBy('name', 'desc')
@@ -2561,6 +2870,7 @@ knex('users')
 Adds a havingIn clause to the query.
 
 ```js
+// @sql
 knex.select('*').from('users').havingIn('id', [5, 3, 10, 17]);
 ```
 
@@ -2571,6 +2881,7 @@ knex.select('*').from('users').havingIn('id', [5, 3, 10, 17]);
 Adds a havingNotIn clause to the query.
 
 ```js
+// @sql
 knex.select('*').from('users').havingNotIn('id', [5, 3, 10, 17]);
 ```
 
@@ -2581,6 +2892,7 @@ knex.select('*').from('users').havingNotIn('id', [5, 3, 10, 17]);
 Adds a havingNull clause to the query.
 
 ```js
+// @sql
 knex.select('*').from('users').havingNull('email');
 ```
 
@@ -2591,6 +2903,7 @@ knex.select('*').from('users').havingNull('email');
 Adds a havingNotNull clause to the query.
 
 ```js
+// @sql
 knex.select('*').from('users').havingNotNull('email');
 ```
 
@@ -2601,6 +2914,7 @@ knex.select('*').from('users').havingNotNull('email');
 Adds a havingExists clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2618,6 +2932,7 @@ knex
 Adds a havingNotExists clause to the query.
 
 ```js
+// @sql
 knex
   .select('*')
   .from('users')
@@ -2635,6 +2950,7 @@ knex
 Adds a havingBetween clause to the query.
 
 ```js
+// @sql
 knex.select('*').from('users').havingBetween('id', [5, 10]);
 ```
 
@@ -2645,6 +2961,7 @@ knex.select('*').from('users').havingBetween('id', [5, 10]);
 Adds a havingNotBetween clause to the query.
 
 ```js
+// @sql
 knex.select('*').from('users').havingNotBetween('id', [5, 10]);
 ```
 
@@ -2655,6 +2972,7 @@ knex.select('*').from('users').havingNotBetween('id', [5, 10]);
 Adds a havingRaw clause to the query.
 
 ```js
+// @sql
 knex('users')
   .groupBy('count')
   .orderBy('name', 'desc')

@@ -10,7 +10,10 @@ describe('Util Tests', function () {
   require('./unit/util/nanoid');
   require('./unit/util/save-async-stack');
   require('./unit/util/comma-no-paren-regex');
+  require('./unit/util/format-sql-bindings');
   require('./unit/util/security');
+  require('./unit/client/pool-config');
+  require('./unit/client/connection-pool');
 });
 
 describe('Query Building Tests', function () {
@@ -21,6 +24,7 @@ describe('Query Building Tests', function () {
   require('./unit/query/string');
   require('./unit/schema-builder/mysql')('mysql');
   require('./unit/schema-builder/mysql')('mysql2');
+  require('./unit/schema-builder/mysql')('mariadb');
   require('./unit/schema-builder/extensions');
   require('./unit/schema-builder/postgres');
   require('./unit/schema-builder/cockroachdb');
@@ -29,7 +33,9 @@ describe('Query Building Tests', function () {
   require('./unit/schema-builder/oracle');
   require('./unit/schema-builder/mssql');
   require('./unit/schema-builder/oracledb');
+  require('./unit/schema/tablecompiler-base');
   require('./unit/migrations/migrate/migration-list-resolver');
+  require('./unit/migrations/migrate/migrator-use-transaction');
   require('./unit/migrations/seed/seeder');
   // require('./unit/interface'); ToDo Uncomment after fixed
   require('./unit/knex');
@@ -53,20 +59,11 @@ if (config.oracledb) {
 
 if (config.mysql) {
   require('./unit/dialects/mysql');
+  require('./unit/dialects/mysql-version');
 }
 
 if (config['better-sqlite3']) {
   require('./unit/dialects/better-sqlite3');
 }
 
-describe('CLI tests', function () {
-  this.timeout(process.env.KNEX_TEST_TIMEOUT || 5000);
-  require('./cli/help.spec');
-  require('./cli/knexfile-test.spec');
-  require('./cli/migrate.spec');
-  require('./cli/migrate-make.spec');
-  require('./cli/seed.spec');
-  require('./cli/seed-make.spec');
-  require('./cli/version.spec');
-  require('./cli/esm-interop.spec');
-});
+require('./cli-tests-suite');
