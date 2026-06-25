@@ -11740,6 +11740,32 @@ describe('QueryBuilder', () => {
         );
       });
 
+      it('should set json value with deeply nested path', () => {
+        testsql(qb().jsonSet('address', '$.a.b.c', '5').from('users'), {
+          pg: {
+            sql: 'select jsonb_set("address", ?, ?) from "users"',
+            bindings: ['{a,b,c}', '5'],
+          },
+          cockroachdb: {
+            sql: 'select jsonb_set("address", ?, ?) from "users"',
+            bindings: ['{a,b,c}', '5'],
+          },
+        });
+      });
+
+      it('should set json value with multiple array indices', () => {
+        testsql(qb().jsonSet('address', '$.a[0].b[1]', '5').from('users'), {
+          pg: {
+            sql: 'select jsonb_set("address", ?, ?) from "users"',
+            bindings: ['{a,0,b,1}', '5'],
+          },
+          cockroachdb: {
+            sql: 'select jsonb_set("address", ?, ?) from "users"',
+            bindings: ['{a,0,b,1}', '5'],
+          },
+        });
+      });
+
       it('should set json value with nested function', async function () {
         testsql(
           qb()
