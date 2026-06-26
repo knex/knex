@@ -138,6 +138,21 @@ const testConfigs = {
     seeds,
   },
 
+  'postgres-spanner': {
+    client: 'postgres-spanner',
+    connection: testConfig['postgres-spanner'] || {
+      adapter: 'postgresql',
+      port: 25434,
+      host: 'localhost',
+      database: 'knex_test',
+      user: 'testuser',
+      password: 'knextest',
+    },
+    pool,
+    migrations,
+    seeds,
+  },
+
   cockroachdb: {
     client: 'cockroachdb',
     connection: testConfig.cockroachdb || {

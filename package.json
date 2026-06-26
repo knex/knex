@@ -24,6 +24,7 @@
     "test:unit": "npm run test:unit-only && npm run test:cli",
     "test:unit-only": "mocha --exit -t 10000 --config test/mocha-unit-config-test.js",
     "test:db": "mocha --exit -t 10000 --config test/mocha-integration-config-test.js",
+    "test:spanner": "cross-env DB=postgres-spanner mocha --exit -t 10000 --config test/mocha-spanner-config-test.js",
     "test:db:coverage": "nyc mocha --exit --check-leaks -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
     "test:db:no-oracle": "cross-env DB=\"mssql mysql mysql2 mariadb postgres sqlite3\" mocha --exit -t 10000 --config test/mocha-integration-config-test.js && npm run test:tape",
     "test": "mocha --exit -t 10000 --config test/mocha-all-config-test.js && npm run test:tape && npm run test:cli",
