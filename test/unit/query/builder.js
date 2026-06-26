@@ -3601,6 +3601,26 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('nested having with having callbacks', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .having(function () {
+          this.having('email', '>', 10);
+          this.orHaving('email', '=', 7);
+        }),
+      {
+        mysql: 'select * from `users` having (`email` > ? or `email` = ?)',
+        mssql: 'select * from [users] having ([email] > ? or [email] = ?)',
+        pg: 'select * from "users" having ("email" > ? or "email" = ?)',
+        'pg-redshift':
+          'select * from "users" having ("email" > ? or "email" = ?)',
+        oracledb: 'select * from "users" having ("email" > ? or "email" = ?)',
+      }
+    );
+  });
+
   it('nested or havings', () => {
     testsql(
       qb()
