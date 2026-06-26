@@ -1714,7 +1714,61 @@ describe('Schema (misc)', () => {
             expect(results).to.not.be.empty;
           });
         });
+        describe('supports operator class indexes - postgres only', function () {
+          before(async function () {
+            await knex.schema.createTable('trgm_test', (t) => {
+              t.increments('id');
+              t.text('title');
+              t.text('bio');
+            });
+          });
 
+          after(async function () {
+            await knex.schema.dropTableIfExists('trgm_test');
+          });
+
+          it('creates a gin index with gin_trgm_ops operator class', async function () {
+            if (!isPostgreSQL(knex)) {
+              return this.skip();
+            }
+
+            await knex.schema.table('trgm_test', (t) => {
+              t.index(
+                [{ column: 'bio', operator: 'gin_trgm_ops' }],
+                'idx_trgm_bio',
+                { storageEngineIndexType: 'gin' }
+              );
+            });
+
+            const result = await knex
+              .from('pg_class')
+              .innerJoin('pg_index', 'pg_index.indexrelid', 'pg_class.oid')
+              .where({ relname: 'idx_trgm_bio', indisvalid: true });
+
+            expect(result).to.not.be.empty;
+          });
+
+          it('creates a gin index with mixed plain and operator-class columns', async function () {
+            if (!isPostgreSQL(knex)) {
+              return this.skip();
+            }
+
+            await knex.schema.table('trgm_test', (t) => {
+              t.index(
+                ['title', { column: 'bio', operator: 'gin_trgm_ops' }],
+                'idx_trgm_mixed',
+                { storageEngineIndexType: 'gin' }
+              );
+            });
+
+            const result = await knex
+              .from('pg_class')
+              .innerJoin('pg_index', 'pg_index.indexrelid', 'pg_class.oid')
+              .where({ relname: 'idx_trgm_mixed', indisvalid: true });
+
+            expect(result).to.not.be.empty;
+          });
+        });
         describe('supports partial unique indexes - postgres, sqlite, and mssql', function () {
           it('allows creating a unique index with predicate', async function () {
             if (!(isPostgreSQL(knex) || isMssql(knex) || isSQLite(knex))) {
