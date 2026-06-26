@@ -135,10 +135,14 @@ knex.select('*').from('users', { only: true });
 
 **.timeout(ms, options={cancel: boolean})**
 
-Sets a timeout for the query and will throw a TimeoutError if the timeout is exceeded. The error contains information about the query, bindings, and the timeout that was set. Useful for complex queries that you want to make sure are not taking too long to execute. Optional second argument for passing options:\* **cancel**: if `true`, cancel query if timeout is reached.
+Sets a timeout for the query and will throw a `TimeoutError` if the timeout is exceeded. By default, the method will not cancel the query at the database level.
+
+The thrown error contains information about the query, bindings, and the timeout that was set. Useful for complex queries that you want to make sure are not taking too long to execute.
+
+Passing `{ cancel: true }` will cancel the query at the database level if the `timeout` value is reached.
 
 ::: warning
-Only supported in MySQL and PostgreSQL for now.
+`{ cancel: true }` Is only supported in MySQL and PostgreSQL for now.
 :::
 
 ```js
