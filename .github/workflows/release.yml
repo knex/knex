@@ -151,14 +151,14 @@ jobs:
       # hand off built artifact to privileged publish job
       - name: Upload tarball artifact
         # v6 fails with "crypto is not defined" -- node version problem?
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.build.outputs.tarball }}
           path: ${{ steps.build.outputs.tarball }}
           if-no-files-found: error
 
       - name: Upload changelog artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-changelog
           path: docs/src/changelog.md
