@@ -1111,6 +1111,22 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('adding index with a parameterized predicate captures its bindings', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.index(['foo', 'bar'], 'baz', {
+          predicate: client.queryBuilder().where('email', '=', 'foo@bar'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create index "baz" on "users" ("foo", "bar") where "email" = ?'
+    );
+    expect(tableSql[0].bindings).to.deep.equal(['foo@bar']);
+  });
+
   it('adding unique index using index method', function () {
     tableSql = client
       .schemaBuilder()
@@ -1187,6 +1203,23 @@ describe('PostgreSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal(
       'create unique index "baz" on "users" ("foo", "bar") where "email" is not null'
     );
+  });
+
+  it('adding unique index with a parameterized predicate captures its bindings', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.unique(['foo', 'bar'], {
+          indexName: 'baz',
+          predicate: client.queryBuilder().where('email', '=', 'foo@bar'),
+        });
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'create unique index "baz" on "users" ("foo", "bar") where "email" = ?'
+    );
+    expect(tableSql[0].bindings).to.deep.equal(['foo@bar']);
   });
 
   it('throws when adding unique constraint with a predicate', function () {
