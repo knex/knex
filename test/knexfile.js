@@ -95,7 +95,7 @@ const testConfigs = {
   mariadb: {
     client: 'mariadb',
     connection: testConfig.mysql || {
-      port: 23306,
+      port: 23307,
       database: 'knex_test',
       host: 'localhost',
       user: 'testuser',
