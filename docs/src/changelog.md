@@ -1,5 +1,39 @@
 ## Changelog
 
+### 3.3.0 - 26 June, 2026
+
+**New features**
+
+- feat: add support for returning in mariadb [#4572](https://github.com/knex/knex/pull/4572)
+- feat: mariadb driver support [#6415](https://github.com/knex/knex/pull/6415)
+- Fixes \_setNullableState not respecting schema [#6025](https://github.com/knex/knex/pull/6025)
+- feat: add connectionPool option for bringing an external pool [#6414](https://github.com/knex/knex/pull/6414)
+- Added knex.migrate.to and knex.migrate.before [#6420](https://github.com/knex/knex/pull/6420)
+- feat: set error.cause for tarn acquire connection error [#5681](https://github.com/knex/knex/pull/5681)
+
+**Bug fixes**
+
+- Fix FOR UPDATE OF with explicit schema [#5791](https://github.com/knex/knex/pull/5791)
+- Fix sqlite conditional insert/merge when inserting multiple rows [#6185](https://github.com/knex/knex/pull/6185)
+- Fix: Stream postProcessResponse error is not catchable with .on('error') [#6033](https://github.com/knex/knex/pull/6033)
+- fix(pg): preserve updateFrom binding order [#6454](https://github.com/knex/knex/pull/6454)
+- fix: #6451, support token-credential in mssql auth [#6465](https://github.com/knex/knex/pull/6465)
+- fix(types): #6452 - .where type regression for invalid types [#6463](https://github.com/knex/knex/pull/6463)
+- fix: #6460 unhandled error on connection timeout with stream [#6462](https://github.com/knex/knex/pull/6462)
+- fix: #6455, correctly state tedious as dependency needed for mssql [#6464](https://github.com/knex/knex/pull/6464)
+- fix(pg,mssql): preserve binding order in delete and update queries [#6438](https://github.com/knex/knex/pull/6438)
+
+**Misc**
+
+- chore: bump tarn@3.1.0 [#6492](https://github.com/knex/knex/pull/6492)
+- micro-optimization in wrappingFormatter [#6456](https://github.com/knex/knex/pull/6456)
+- cleanup flake in the cancellation tests [#6486](https://github.com/knex/knex/pull/6486)
+- Update docs: timeout section [#6471](https://github.com/knex/knex/pull/6471)
+- ci: make npm install resilient to transient network failures [#6468](https://github.com/knex/knex/pull/6468)
+- Update homepage urls [#6450](https://github.com/knex/knex/pull/6450)
+- chore: add mariadb to docker-compose [#6466](https://github.com/knex/knex/pull/6466)
+- chore: set codecov to default coverage provider [#6448](https://github.com/knex/knex/pull/6448)
+
 ### 3.2.10 - 2 May, 2026
 
 **Bug fixes**
