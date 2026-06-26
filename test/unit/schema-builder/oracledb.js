@@ -375,6 +375,70 @@ describe('OracleDb SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal('drop index "foo"');
   });
 
+  it('test drop index if exists throws on oracle before 23ai/19.28', function () {
+    // default `client` is version 18.0
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropIndexIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+
+    const oracle1927 = new Oracle_Client({
+      client: 'oracledb',
+      version: '19.27',
+    });
+    expect(() => {
+      oracle1927
+        .schemaBuilder()
+        .table('users', function () {
+          this.dropIndexIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
+  it('test drop index if exists on oracle 23ai', function () {
+    const oracle23 = new Oracle_Client({ client: 'oracledb', version: '23.4' });
+    tableSql = oracle23
+      .schemaBuilder()
+      .table('users', function () {
+        this.dropIndexIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop index if exists "users_foo_index"');
+  });
+
+  it('test drop index if exists, custom, on oracle 23ai', function () {
+    const oracle23 = new Oracle_Client({ client: 'oracledb', version: '23.4' });
+    tableSql = oracle23
+      .schemaBuilder()
+      .table('users', function () {
+        this.dropIndexIfExists(null, 'foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop index if exists "foo"');
+  });
+
+  it('test drop index if exists on oracle 19.28 backport', function () {
+    const oracle1928 = new Oracle_Client({
+      client: 'oracledb',
+      version: '19.28',
+    });
+    tableSql = oracle1928
+      .schemaBuilder()
+      .table('users', function () {
+        this.dropIndexIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop index if exists "users_foo_index"');
+  });
+
   it('test drop foreign', function () {
     tableSql = client
       .schemaBuilder()

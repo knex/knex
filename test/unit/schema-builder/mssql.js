@@ -460,6 +460,32 @@ describe('MSSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal('DROP INDEX [foo] ON [users]');
   });
 
+  it('test drop index if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.dropIndexIfExists('foo');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'DROP INDEX IF EXISTS [users_foo_index] ON [users]'
+    );
+  });
+
+  it('test drop index if exists, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function () {
+        this.dropIndexIfExists(null, 'foo');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('DROP INDEX IF EXISTS [foo] ON [users]');
+  });
+
   it('test drop foreign', function () {
     tableSql = client
       .schemaBuilder()

@@ -402,6 +402,17 @@ describe('Redshift SchemaBuilder', function () {
     equal(0, tableSql.length);
   });
 
+  it('drop index if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropIndexIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
   it('drop foreign', function () {
     tableSql = client
       .schemaBuilder()

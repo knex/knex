@@ -350,6 +350,30 @@ describe('BetterSQLite3 SchemaBuilder', function () {
     equal(tableSql[0].sql, 'drop index `foo`');
   });
 
+  it('drop index if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropIndexIfExists('foo');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'drop index if exists `users_foo_index`');
+  });
+
+  it('drop index if exists, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropIndexIfExists(null, 'foo');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'drop index if exists `foo`');
+  });
+
   it('rename table', function () {
     tableSql = client.schemaBuilder().renameTable('users', 'foo').toSQL();
 
