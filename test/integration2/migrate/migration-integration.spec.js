@@ -1055,6 +1055,123 @@ describe('Migrations', function () {
           });
         });
 
+        describe('knex.migrate within external transaction', () => {
+          // Rolling DDL back needs transactional DDL. MySQL/MariaDB and
+          // Oracle implicitly commit on DDL; SQLite can't roll it back here.
+          const canRollbackDDL = (knex) =>
+            !isSQLite(knex) && !isMysql(knex) && !isOracle(knex);
+
+          afterEach(async () => {
+            await knex.migrate.rollback(
+              { directory: 'test/integration2/migrate/test' },
+              true
+            );
+          });
+
+          it('should run latest() inside an external transaction and roll back cleanly', async function () {
+            if (!canRollbackDDL(knex)) {
+              return this.skip();
+            }
+            const rollback = new Error('rollback');
+            await knex
+              .transaction(async (trx) => {
+                await trx.migrate.latest({
+                  directory: 'test/integration2/migrate/test',
+                });
+
+                const data = await trx('knex_migrations').select('*');
+                expect(data).to.have.length(2);
+
+                // Throw to roll the whole transaction back
+                throw rollback;
+              })
+              .catch((error) => {
+                if (error !== rollback) throw error;
+              });
+
+            // After rollback, no migrations should be recorded
+            const hasTable = await knex.schema.hasTable('knex_migrations');
+            if (hasTable) {
+              const data = await knex('knex_migrations').select('*');
+              expect(data).to.have.length(0);
+            }
+          });
+
+          it('should run up() inside an external transaction', async function () {
+            if (isSQLite(knex)) {
+              return this.skip();
+            }
+            await knex.transaction(async (trx) => {
+              await trx.migrate.up({
+                directory: 'test/integration2/migrate/test',
+              });
+
+              const data = await trx('knex_migrations').select('*');
+              expect(data).to.have.length(1);
+              expect(path.basename(data[0].name)).to.equal(
+                '20131019235242_migration_1.js'
+              );
+            });
+
+            // Transaction committed — migration should persist
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(1);
+          });
+
+          it('should run rollback() inside an external transaction and undo on trx rollback', async function () {
+            if (!canRollbackDDL(knex)) {
+              return this.skip();
+            }
+            // First, run migrations normally
+            await knex.migrate.latest({
+              directory: 'test/integration2/migrate/test',
+            });
+
+            const rollback = new Error('rollback');
+            await knex
+              .transaction(async (trx) => {
+                await trx.migrate.rollback({
+                  directory: 'test/integration2/migrate/test',
+                });
+
+                const data = await trx('knex_migrations').select('*');
+                expect(data).to.have.length(0);
+
+                // Throw to undo the rollback we just performed
+                throw rollback;
+              })
+              .catch((error) => {
+                if (error !== rollback) throw error;
+              });
+
+            // Migrations should still be there
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(2);
+          });
+
+          it('should run down() inside an external transaction', async function () {
+            if (isSQLite(knex)) {
+              return this.skip();
+            }
+            await knex.migrate.latest({
+              directory: 'test/integration2/migrate/test',
+            });
+
+            await knex.transaction(async (trx) => {
+              await trx.migrate.down({
+                directory: 'test/integration2/migrate/test',
+              });
+
+              const data = await trx('knex_migrations').select('*');
+              expect(data).to.have.length(1);
+            });
+
+            // Transaction committed — should have undone last migration
+            const data = await knex('knex_migrations').select('*');
+            expect(data).to.have.length(1);
+          });
+        });
+
         describe('knex.migrate.list', () => {
           const availableMigrations = [
             '20131019235242_migration_1.js',
