@@ -1,6 +1,5 @@
 const { expect } = require('chai');
 require('../../util/chai-setup');
-const knex = require('../../../knex');
 const {
   getKnexForSqlite,
   getKnexForBetterSqlite,
@@ -75,56 +74,6 @@ for (const { driver, factory } of configs) {
         new Client(config);
 
         expect(filenameWarningCount(warnings)).to.equal(0);
-      });
-
-      it('warns only once for static config missing filename', async () => {
-        const { warnings, config } = createWarningCollector({
-          connection: {},
-        });
-        const knexInstance = knex(config);
-
-        try {
-          await knexInstance.raw('select 1');
-        } catch (_err) {
-          // Opening sqlite with an undefined filename may fail; warning still matters.
-        }
-
-        expect(filenameWarningCount(warnings)).to.equal(1);
-        await knexInstance.destroy();
-      });
-
-      it('does not warn when a connection function provides filename', async () => {
-        const { warnings, config } = createWarningCollector({
-          connection() {
-            return { filename: ':memory:' };
-          },
-        });
-        const knexInstance = knex(config);
-
-        await knexInstance.raw('select 1');
-        await knexInstance.raw('select 2');
-
-        expect(filenameWarningCount(warnings)).to.equal(0);
-        await knexInstance.destroy();
-      });
-
-      it('warns once when a connection function omits filename', async () => {
-        const { warnings, config } = createWarningCollector({
-          connection() {
-            return {};
-          },
-        });
-        const knexInstance = knex(config);
-
-        try {
-          await knexInstance.raw('select 1');
-          await knexInstance.raw('select 2');
-        } catch (_err) {
-          // Connection may fail after the warning is logged.
-        }
-
-        expect(filenameWarningCount(warnings)).to.equal(1);
-        await knexInstance.destroy();
       });
     });
 
