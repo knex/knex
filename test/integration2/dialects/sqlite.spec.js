@@ -5,6 +5,7 @@ const {
   getKnexForBetterSqlite,
 } = require('../util/knex-instance-provider');
 const Client_SQLite3 = require('../../../lib/dialects/sqlite3');
+const Client_BetterSQLite3 = require('../../../lib/dialects/better-sqlite3');
 const Transaction_Sqlite = require('../../../lib/dialects/sqlite3/execution/sqlite-transaction');
 
 const configs = [
@@ -15,8 +16,67 @@ const configs = [
 for (const { driver, factory } of configs) {
   const knexChecked = factory(true);
   const knexUnchecked = factory(false);
+  const Client =
+    driver === 'better-sqlite3' ? Client_BetterSQLite3 : Client_SQLite3;
 
   describe(`Sqlite3 dialect (${driver})`, () => {
+    describe('connection.filename warning', () => {
+      function filenameWarningCount(warnings) {
+        return warnings.filter((message) =>
+          message.includes('connection.filename')
+        ).length;
+      }
+
+      function createWarningCollector(extraConfig = {}) {
+        const warnings = [];
+        return {
+          warnings,
+          config: {
+            client: driver,
+            useNullAsDefault: true,
+            log: {
+              warn(message) {
+                warnings.push(message);
+              },
+            },
+            ...extraConfig,
+          },
+        };
+      }
+
+      it('warns at construction for static config missing filename', () => {
+        const { warnings, config } = createWarningCollector({
+          connection: {},
+        });
+
+        new Client(config);
+
+        expect(filenameWarningCount(warnings)).to.equal(1);
+      });
+
+      it('does not warn at construction for static config with filename', () => {
+        const { warnings, config } = createWarningCollector({
+          connection: { filename: ':memory:' },
+        });
+
+        new Client(config);
+
+        expect(filenameWarningCount(warnings)).to.equal(0);
+      });
+
+      it('does not warn at construction when connection is a function', () => {
+        const { warnings, config } = createWarningCollector({
+          connection() {
+            return { filename: ':memory:' };
+          },
+        });
+
+        new Client(config);
+
+        expect(filenameWarningCount(warnings)).to.equal(0);
+      });
+    });
+
     describe('strict transactions', () => {
       /** @type {Client_SQLite3} checked */
       let checked;
