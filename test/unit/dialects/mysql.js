@@ -88,4 +88,62 @@ describe('MySQL unit tests', () => {
       );
     }
   });
+
+  it('columnInfo() handles lowercase INFORMATION_SCHEMA keys from mysql2 #6391', () => {
+    const { output } = qb('users').columnInfo().toSQL();
+
+    const expected = {
+      id: {
+        defaultValue: null,
+        type: 'int',
+        maxLength: null,
+        nullable: false,
+      },
+      email: {
+        defaultValue: null,
+        type: 'varchar',
+        maxLength: 255,
+        nullable: true,
+      },
+    };
+
+    // mysql2 may return INFORMATION_SCHEMA column names in lowercase
+    // depending on server configuration.
+    const lowercaseResp = [
+      {
+        column_name: 'id',
+        column_default: null,
+        data_type: 'int',
+        character_maximum_length: null,
+        is_nullable: 'NO',
+      },
+      {
+        column_name: 'email',
+        column_default: 'NULL',
+        data_type: 'varchar',
+        character_maximum_length: 255,
+        is_nullable: 'YES',
+      },
+    ];
+
+    const uppercaseResp = [
+      {
+        COLUMN_NAME: 'id',
+        COLUMN_DEFAULT: null,
+        DATA_TYPE: 'int',
+        CHARACTER_MAXIMUM_LENGTH: null,
+        IS_NULLABLE: 'NO',
+      },
+      {
+        COLUMN_NAME: 'email',
+        COLUMN_DEFAULT: 'NULL',
+        DATA_TYPE: 'varchar',
+        CHARACTER_MAXIMUM_LENGTH: 255,
+        IS_NULLABLE: 'YES',
+      },
+    ];
+
+    expect(output(lowercaseResp)).to.eql(expected);
+    expect(output(uppercaseResp)).to.eql(expected);
+  });
 });
