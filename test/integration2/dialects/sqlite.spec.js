@@ -1,10 +1,12 @@
 const { expect } = require('chai');
 require('../../util/chai-setup');
+const knex = require('../../../knex');
 const {
   getKnexForSqlite,
   getKnexForBetterSqlite,
 } = require('../util/knex-instance-provider');
 const Client_SQLite3 = require('../../../lib/dialects/sqlite3');
+const Client_BetterSQLite3 = require('../../../lib/dialects/better-sqlite3');
 const Transaction_Sqlite = require('../../../lib/dialects/sqlite3/execution/sqlite-transaction');
 
 const configs = [
@@ -15,8 +17,117 @@ const configs = [
 for (const { driver, factory } of configs) {
   const knexChecked = factory(true);
   const knexUnchecked = factory(false);
+  const Client =
+    driver === 'better-sqlite3' ? Client_BetterSQLite3 : Client_SQLite3;
 
   describe(`Sqlite3 dialect (${driver})`, () => {
+    describe('connection.filename warning', () => {
+      function filenameWarningCount(warnings) {
+        return warnings.filter((message) =>
+          message.includes('connection.filename')
+        ).length;
+      }
+
+      function createWarningCollector(extraConfig = {}) {
+        const warnings = [];
+        return {
+          warnings,
+          config: {
+            client: driver,
+            useNullAsDefault: true,
+            log: {
+              warn(message) {
+                warnings.push(message);
+              },
+            },
+            ...extraConfig,
+          },
+        };
+      }
+
+      it('warns at construction for static config missing filename', () => {
+        const { warnings, config } = createWarningCollector({
+          connection: {},
+        });
+
+        new Client(config);
+
+        expect(filenameWarningCount(warnings)).to.equal(1);
+      });
+
+      it('does not warn at construction for static config with filename', () => {
+        const { warnings, config } = createWarningCollector({
+          connection: { filename: ':memory:' },
+        });
+
+        new Client(config);
+
+        expect(filenameWarningCount(warnings)).to.equal(0);
+      });
+
+      it('does not warn at construction when connection is a function', () => {
+        const { warnings, config } = createWarningCollector({
+          connection() {
+            return { filename: ':memory:' };
+          },
+        });
+
+        new Client(config);
+
+        expect(filenameWarningCount(warnings)).to.equal(0);
+      });
+
+      it('warns only once for static config missing filename', async () => {
+        const { warnings, config } = createWarningCollector({
+          connection: {},
+        });
+        const knexInstance = knex(config);
+
+        try {
+          await knexInstance.raw('select 1');
+        } catch (_err) {
+          // Opening sqlite with an undefined filename may fail; warning still matters.
+        }
+
+        expect(filenameWarningCount(warnings)).to.equal(1);
+        await knexInstance.destroy();
+      });
+
+      it('does not warn when a connection function provides filename', async () => {
+        const { warnings, config } = createWarningCollector({
+          connection() {
+            return { filename: ':memory:' };
+          },
+        });
+        const knexInstance = knex(config);
+
+        await knexInstance.raw('select 1');
+        await knexInstance.raw('select 2');
+
+        expect(filenameWarningCount(warnings)).to.equal(0);
+        await knexInstance.destroy();
+      });
+
+      it('warns once when a connection function omits filename', async () => {
+        const { warnings, config } = createWarningCollector({
+          connection() {
+            return {};
+          },
+        });
+        const knexInstance = knex(config);
+
+        try {
+          await knexInstance.raw('select 1');
+          await knexInstance.raw('select 2');
+        } catch (_err) {
+          // Connection may fail after the warning is logged.
+        }
+
+        expect(filenameWarningCount(warnings)).to.equal(1);
+        await knexInstance.destroy();
+      });
+    });
+
     describe('strict transactions', () => {
       /** @type {Client_SQLite3} checked */
       let checked;
