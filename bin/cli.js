@@ -100,7 +100,7 @@ async function initKnex(env, opts, useDefaultClientIfNotSpecified) {
 function invoke() {
   const filetypes = ['js', 'mjs', 'coffee', 'ts', 'eg', 'ls'];
 
-  const cwd = argv.knexfile
+  const cwd = argv.knexfile && !argv.cwd
     ? path.dirname(path.resolve(argv.knexfile))
     : process.cwd();
 
