@@ -1,5 +1,5 @@
 import { knex, Knex } from '../types';
-import { expectType } from 'tsd';
+import { expectType, expectError } from 'tsd';
 
 const clientConfig = {
   client: 'sqlite3',
@@ -425,6 +425,45 @@ const main = async () => {
       .modify<User, Pick<User, 'id' | 'age'>>(withAge);
 
     expectType<Pick<User, 'id' | 'age'>>(r);
+  }
+
+  {
+    const withAsAge = (
+      queryBuilder: Knex.QueryBuilder<User, any[]>,
+      { as }: { as: string }
+    ) => queryBuilder.select({ age: as });
+
+    // $ExpectType Pick<User, "id" | "age">
+    const r = await knexInstance
+      .table<User>('users')
+      .select('id')
+      .modify<User, Pick<User, 'id' | 'age'>>(withAsAge, { as: 'userAge' });
+
+    expectType<Pick<User, 'id' | 'age'>>(r);
+  }
+
+  {
+    const withAsAge = (
+      queryBuilder: Knex.QueryBuilder<User, any[]>,
+      { as }: { as: string }
+    ) => queryBuilder.select({ age: as });
+
+    const r = await knexInstance
+      .table<User>('users')
+      .select('id')
+      // No explicit type params → TRecord2/TResult2 default to any, args inferred
+      .modify(withAsAge, { as: 'userAge' });
+
+    expectType<any>(r);
+    expectError(
+      knexInstance
+        .table<User>('users')
+        .select('id')
+        .modify(withAsAge, { as: 123 })
+    );
+    expectError(
+      knexInstance.table<User>('users').select('id').modify(withAsAge)
+    );
   }
 
   // With:

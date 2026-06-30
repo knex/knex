@@ -998,9 +998,19 @@ declare namespace Knex {
         : DbRecordArr<TRecord> | ReadonlyArray<DbRecordArr<TRecord>>
     ): QueryBuilder<TRecord, TResult2>;
 
-    modify<TRecord2 extends {} = any, TResult2 extends {} = any>(
-      callback: QueryCallbackWithArgs<TRecord, any>,
-      ...args: any[]
+    modify<
+      TRecord2 extends {} = any,
+      TResult2 extends {} = any,
+      TCallback extends (...args: any[]) => any = any
+    >(
+      callback: TCallback,
+      ...args: TCallback extends (
+        this: any,
+        builder: any,
+        ...args: infer TArgs
+      ) => any
+        ? TArgs
+        : []
     ): QueryBuilder<TRecord2, TResult2>;
     update<
       K1 extends StrKey<ResolveTableType<TRecord, 'update'>>,
