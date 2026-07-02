@@ -282,7 +282,7 @@ Each method takes an optional `config` object, which may specify the following p
 
 ### Transactions in migrations
 
-By default, each migration is run inside a transaction. Whenever needed, one can disable transactions for all migrations via the common migration config option `config.disableTransactions` or per-migration, via exposing a boolean property `config.transaction` from a migration file:
+By default, each migration is run inside a transaction. However, users should be aware that transactional behaviour is different across database engines (more on that below). Whenever needed, one can disable transactions for all migrations via the common migration config option `config.disableTransactions` or per-migration, via exposing a boolean property `config.transaction` from a migration file:
 
 ```js
 exports.up = function (knex) {
@@ -335,6 +335,36 @@ exports.down = function (knex) {
 };
 exports.config = { transaction: false };
 ```
+
+#### MySQL-specific concerns
+
+If you are making DDL / schema changes to MySQL tables you should be aware that a sudden failure does not rollback any successful schema changes made in the same migration file.
+
+This is because MySQL uses an `Implicit Commit` for many schema related commands changes. 
+
+Example:
+
+
+```typescript
+export const up = async (knex: Knex): Promise<void> => {
+  await knex.schema.createTable('my_table', (table) => {
+    table.bigInteger('id').unsigned().nullable().alter();
+  });
+
+  throw new Error('Some bad code');
+
+  await knex.schema.createTable('my_table_2', (table) => {
+    table.bigInteger('id').unsigned().nullable().alter();
+  });
+};
+```
+
+In this case, the migration will error and won't be classed as complete, but you will be left with `my_table` in your database.
+
+*For a full list of MySQL `implicit commit` commands see: https://dev.mysql.com/doc/refman/9.7/en/implicit-commit.html*
+
+
+
 
 ### make
 
