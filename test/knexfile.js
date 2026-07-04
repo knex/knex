@@ -10,7 +10,7 @@ const _ = require('lodash');
 // excluding redshift, oracle, and mssql dialects from default integrations test
 const testIntegrationDialects = (
   process.env.DB ||
-  'sqlite3 postgres pgnative mysql mysql2 mssql oracledb cockroachdb better-sqlite3'
+  'sqlite3 postgres pgnative mysql mysql2 mariadb mssql oracledb cockroachdb better-sqlite3'
 ).match(/[\w-]+/g);
 
 console.log(`ENV DB: ${process.env.DB}`);
@@ -86,6 +86,24 @@ const testConfigs = {
       user: 'testuser',
       password: 'testpassword',
       charset: 'utf8',
+    },
+    pool: mysqlPool,
+    migrations,
+    seeds,
+  },
+
+  mariadb: {
+    client: 'mariadb',
+    connection: testConfig.mysql || {
+      port: 23307,
+      database: 'knex_test',
+      host: 'localhost',
+      user: 'testuser',
+      password: 'testpassword',
+      charset: 'utf8',
+      insertIdAsNumber: true,
+      bigIntAsNumber: true,
+      checkDuplicate: false,
     },
     pool: mysqlPool,
     migrations,
@@ -173,6 +191,7 @@ const testConfigs = {
     pool: poolSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false,
   },
 
   'better-sqlite3': {
@@ -183,6 +202,7 @@ const testConfigs = {
     pool: poolBetterSqlite,
     migrations,
     seeds,
+    useNullAsDefault: false,
   },
 
   mssql: {

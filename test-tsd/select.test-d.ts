@@ -78,6 +78,12 @@ const main = async () => {
     )
   );
 
+  expectType<Pick<User, 'name'>[]>(
+    await knex.select().from(function () {
+      return this.from<User>('users').select('name');
+    })
+  );
+
   knex.transaction(async (trx) => {
     expectType<User[]>(await trx.select('*').from('users'));
   });

@@ -1,0 +1,19 @@
+{
+  "name": "Knex.js",
+  "short_name": "Knex",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#E16426",
+  "background_color": "#E16426",
+  "display": "standalone"
+}

@@ -30,6 +30,8 @@ Knex can be built using a JavaScript build tool such as [browserify](http://brow
 
 ## Configuration Options
 
+### connection
+
 The `knex` module is itself a function which takes a configuration object for Knex, accepting a few parameters. The `client` parameter is required and determines which client adapter will be used with the library.
 
 ```js
@@ -155,6 +157,20 @@ const knex = require('knex')({
 });
 ```
 
+For handling large integers (larger than `Number.MAX_SAFE_INTEGER`), you can use `connection.options.safeIntegers` to enable BigInt support. This prevents precision loss when working with 64-bit integers:
+
+```js
+const knex = require('knex')({
+  client: 'better-sqlite3',
+  connection: {
+    filename: './mydb.sqlite',
+    options: {
+      safeIntegers: true, // Returns bigint for large integers
+    },
+  },
+});
+```
+
 For more information, see the [Better-SQLite3 documentation](https://github.com/WiseLibs/better-sqlite3/blob/master/docs/api.md#new-databasepath-options) on database connection options.
 
 :::
@@ -254,7 +270,7 @@ const knex = require('knex')({
 });
 ```
 
-By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object. The `expirationChecker` is consulted before trying to create new connections, and in case it returns `true`, a new configuration object is retrieved. For example, to work with an authentication token that has a limited lifespan:
+By default, the configuration object received via a function is cached and reused for all connections. To change this behavior, an `expirationChecker` function can be returned as part of the configuration object.
 
 ```js
 const knex = require('knex')({
@@ -271,6 +287,23 @@ const knex = require('knex')({
       expirationChecker: () => {
         return tokenExpiration <= Date.now();
       },
+    };
+  },
+});
+```
+
+The `expirationChecker` is consulted both when creating a new connection and before reusing an existing one from the pool. If it returns `true`, Knex refreshes the connection settings from your provider and discards the old connection so the pool can create a new one with the updated configuration.
+
+For example, if your reader endpoints or credentials rotate every 10 minutes:
+
+```js
+const knex = require('knex')({
+  client: 'postgres',
+  connection: async () => {
+    const cfg = await fetchConfigFromVault(); // returns { settings, expiresAt }
+    return {
+      ...cfg.settings,
+      expirationChecker: () => Date.now() > cfg.expiresAt,
     };
   },
 });
@@ -322,6 +355,114 @@ pg('table').insert({ a: 'b' }).returning('*').toString();
 // "insert into "table" ("a") values ('b') returning *"
 ```
 
+### connectionPool
+
+::: info
+The `connectionPool` option is available since knex v3.3.
+:::
+
+Instead of providing a `connection` config and letting knex create its own pool, you can pass an existing pool instance via `connectionPool`. This is mutually exclusive with `connection` — you must use one or the other.
+
+The `connectionPool` option accepts:
+
+- A **native driver pool** — `pg.Pool`, `mysql.createPool()`, `mysql2.createPool()`, or `oracledb.createPool()`
+- A **`KnexPool`** or **tarn `Pool`** instance — useful for sharing a single pool across multiple knex instances
+
+When `connectionPool` is provided, knex does **not** own the pool lifecycle. Calling `knex.destroy()` releases the reference but does **not** close the pool — you are responsible for calling `pool.end()` (or `pool.close()` for oracledb) yourself.
+
+#### Option 1: Native Driver Pool
+
+```js
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  host: '127.0.0.1',
+  user: 'your_database_user',
+  password: 'your_database_password',
+  database: 'myapp_test',
+  max: 20,
+});
+
+const knex = require('knex')({
+  client: 'pg',
+  connectionPool: pool,
+});
+
+// Use knex normally
+const rows = await knex('users').select('*');
+
+// Destroy knex — does NOT close the pool
+await knex.destroy();
+
+// Pool is still usable
+const client = await pool.connect();
+// ...
+client.release();
+
+// Close the pool when you're done
+await pool.end();
+```
+
+MySQL and MySQL2 work the same way:
+
+```js
+const mysql = require('mysql2');
+
+const pool = mysql.createPool({
+  host: '127.0.0.1',
+  user: 'your_database_user',
+  password: 'your_database_password',
+  database: 'myapp_test',
+});
+
+const knex = require('knex')({
+  client: 'mysql2',
+  connectionPool: pool,
+});
+```
+
+#### Option 2: Shared KnexPool
+
+`KnexPool` extends tarn's `Pool` and is exported on the knex namespace. Use it to share a single pool across multiple knex instances — for example, a read replica and a primary that share the same connections:
+
+```js
+const knex = require('knex');
+const { Client } = require('pg');
+
+const sharedPool = new knex.KnexPool({
+  create: () => {
+    const client = new Client({ host: '127.0.0.1', database: 'myapp' });
+    return client.connect().then(() => client);
+  },
+  destroy: (connection) => connection.end(),
+  validate: (connection) => !connection._ending,
+  min: 0,
+  max: 10,
+});
+
+// Both instances share the same underlying pool
+const db1 = knex({ client: 'pg', connectionPool: sharedPool });
+const db2 = knex({ client: 'pg', connectionPool: sharedPool });
+
+// Destroying either knex instance doesn't affect the pool
+await db1.destroy();
+// db2 and sharedPool are still usable
+
+// Clean up when done
+await db2.destroy();
+await sharedPool.destroy();
+```
+
+You can also pass a plain tarn `Pool` instance directly — any object with the tarn pool interface (`acquire`, `release`, `destroy`, `numFree`, `numUsed`, `numPendingAcquires`) is accepted without wrapping.
+
+::: warning
+When using `connectionPool`, the `pool` config option (min, max, afterCreate, validate, etc.) is ignored since knex is not creating the pool. Configure these on the pool instance you provide instead.
+:::
+
+::: warning
+The `connectionPool` option is supported for **pg**, **mysql**, **mysql2**, and **oracledb** dialects when passing native driver pools. SQLite and MSSQL do not support native driver pools, but you can still pass a tarn `Pool` or `KnexPool` to any dialect.
+:::
+
 ### withUserParams
 
 You can call method `withUserParams` on a Knex instance if you want to get a copy (with same connections) with custom parameters (e. g. to execute same migrations with different parameters)
@@ -367,7 +508,44 @@ const knex = require('knex')({
 });
 ```
 
-If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use knex.initialize(\[config\]), if no config is passed, it will use the first knex configuration used.
+If you ever need to explicitly teardown the connection pool, you may use `knex.destroy([callback])`. You may use `knex.destroy` by passing a callback, or by chaining as a promise, just not both. To manually initialize a destroyed connection pool, you may use `knex.initialize([config])`, if no config is passed, it will use the first knex configuration used.
+
+#### Custom validation (`pool.validate`)
+
+You can provide a `pool.validate` function to decide if a pooled connection should be reused. It can be sync or async; return/resolve `false` (or throw) to discard the connection and force the pool to replace it.
+
+```js
+const knex = require('knex')({
+  client: 'mysql2',
+  connection: {
+    /*...*/
+  },
+  pool: {
+    validate: async (conn) => {
+      // Evict connections that flipped to read-only after a failover
+      const [row] = await conn.query('SELECT @@global.read_only as read_only');
+      return row.read_only === 0;
+    },
+  },
+});
+```
+
+#### Max connection lifetime (with optional jitter)
+
+To force periodic churn (e.g., to rebalance traffic to new reader instances), set `maxConnectionLifetimeMillis`. Optionally add `maxConnectionLifetimeJitterMillis` to spread reconnections out and avoid a thundering herd.
+
+```js
+const knex = require('knex')({
+  client: 'pg',
+  connection: {
+    /*...*/
+  },
+  pool: {
+    maxConnectionLifetimeMillis: 5 * 60_000, // 5 minutes
+    maxConnectionLifetimeJitterMillis: 60_000, // up to +1 minute random
+  },
+});
+```
 
 ### afterCreate
 
@@ -431,6 +609,22 @@ const knex = require('knex')({
     /*...*/
   },
   fetchAsString: ['number', 'clob'],
+});
+```
+
+### defaultDateTimePrecision
+
+Utilized by PostgreSQL and CockroachDB. The default value of `precision` to use when creating a [datetime](schema-builder.html#datetime) column with the schema builder.
+
+When the precision of a timestamp column is unspecified in postgres, it defaults to 6 (microseconds), which is finer-grained than Javascript's `Date` class (milliseconds). This can lead to unexpected behavior when database-generated values (such as default "now" timestamp values) are read into JS and written back to the database. As a workaround, timestamp columns can be created with a lower precision that matches the JS runtime. To specify this behavior across all migrations, you can configure it at the knex level:
+
+```js
+const knex = require('knex')({
+  client: 'postgres',
+  connection: {
+    /* ... */
+  },
+  defaultDateTimePrecision: 3,
 });
 ```
 

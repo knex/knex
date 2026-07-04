@@ -1,5 +1,5 @@
 import { knex, Knex } from '../types';
-import { expectType } from 'tsd';
+import { expectError, expectType } from 'tsd';
 
 const clientConfig = {
   client: 'sqlite3',
@@ -125,6 +125,11 @@ const main = async () => {
   expectType<User[]>(await knexInstance<User>('users').where({ id: 10 }));
   expectType<User[]>(await knexInstance('users_inferred').where({ id: 10 }));
   expectType<User[]>(await knexInstance('users_composite').where({ id: 10 }));
+
+  // #6452 — object form must reject unknown/invalid columns
+  expectError(knexInstance<User>('users').where({ not_a_column: 10 }));
+  expectError(knexInstance<User>('users').whereNot({ not_a_column: 10 }));
+  expectError(knexInstance<User>('users').where({ id: '1' }));
 
   expectType<Array<Pick<User, 'name' | 'id'>>>(
     await knexInstance<User>('users').select('id', 'name').where({ id: 10 })

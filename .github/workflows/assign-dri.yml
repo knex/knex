@@ -1,0 +1,61 @@
+name: Assign PR to DRI
+
+on:
+  pull_request_target:
+    types: [opened, labeled, synchronize]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign based on DRI label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.info('No pull request payload; exiting.');
+              return;
+            }
+
+            const labels = (pr.labels || []).map((label) => label.name);
+            const labelMatch = labels.find((name) => /^DRI:@/i.test(name));
+            if (!labelMatch) {
+              core.info('No DRI label found; skipping assignment.');
+              return;
+            }
+
+            const driUser = labelMatch
+              .replace(/^DRI:@/i, '')
+              .trim()
+              .replace(/^@+/, '');
+            core.info(`Found DRI label: ${labelMatch} -> ${driUser}`);
+
+            const driUserLower = driUser.toLowerCase();
+            const assignees = (pr.assignees || [])
+              .map((assignee) => assignee.login?.toLowerCase())
+              .filter(Boolean);
+            if (assignees.includes(driUserLower)) {
+              core.info('DRI already assigned; skipping assignment.');
+              return;
+            }
+
+            if (context.payload.action === 'synchronize') {
+              const sender = context.payload.sender?.login || '';
+              if (sender.toLowerCase() === driUserLower) {
+                core.info('Latest commit by DRI; skipping assignment.');
+                return;
+              }
+            }
+
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              assignees: [driUser],
+            });
+            core.info(`Set assignee for PR #${pr.number} to ${driUser}`);

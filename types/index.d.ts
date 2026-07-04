@@ -6,15 +6,14 @@
 //                 Shrey Jain <https://github.com/shreyjain1994>
 // TypeScript Version: 4.1
 
-import tarn = require('tarn');
-import events = require('events');
-import stream = require('stream');
-import ResultTypes = require('./result');
+import type { EventEmitter } from 'events';
+import type { Duplex, PassThrough, Stream } from 'stream';
+import type { Pool } from 'tarn';
+import type { PoolOptions } from 'tarn/dist/Pool';
+import type { ConnectionOptions } from 'tls';
 
-import { Tables } from './tables';
-
-import { Stream } from 'stream';
-import { ConnectionOptions } from 'tls';
+import type { Registry } from './result';
+import type { Tables } from './tables';
 
 // # Generic type-level utilities
 
@@ -376,7 +375,7 @@ interface DMLOptions {
 
 interface Knex<TRecord extends {} = any, TResult = any[]>
   extends Knex.QueryInterface<TRecord, TResult>,
-    events.EventEmitter {
+    EventEmitter {
   <TTable extends Knex.TableNames>(
     tableName: TTable,
     options?: TableOptions
@@ -388,7 +387,7 @@ interface Knex<TRecord extends {} = any, TResult = any[]>
     TRecord2 extends {} = TRecord,
     TResult2 = DeferredKeySelection<TRecord2, never>[]
   >(
-    tableName?: Knex.TableDescriptor | Knex.AliasDict,
+    tableName: Knex.TableDescriptor | Knex.AliasDict,
     options?: TableOptions
   ): Knex.QueryBuilder<TRecord2, TResult2>;
   VERSION: string;
@@ -484,6 +483,10 @@ declare namespace knex {
 
   export class KnexTimeoutError extends Error {}
 
+  export class KnexPool<T = any> extends Pool<T> {
+    constructor(config: PoolOptions<T>);
+  }
+
   export const Client: typeof Knex.Client;
 }
 
@@ -503,8 +506,11 @@ declare namespace Knex {
     | Array<Date>
     | Array<boolean>
     | Buffer
-    | object
+    | Array<Buffer>
+    | Record<string, unknown>
     | Knex.Raw;
+
+  type ValueOrBuilder = Value | Knex.QueryBuilder;
 
   interface ValueDict extends Dict<Value | Knex.QueryBuilder> {}
   interface AliasDict extends Dict<string> {}
@@ -571,7 +577,10 @@ declare namespace Knex {
       mergeColumns?: (keyof ResolveTableType<TRecord, 'update'>)[]
     ): QueryBuilder<TRecord, TResult>;
     merge(
-      data?: Extract<DbRecord<ResolveTableType<TRecord, 'update'>>, object>
+      data?: Extract<
+        DbRecord<ResolveTableType<TRecord, 'update'>>,
+        Record<string, any>
+      >
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -773,12 +782,12 @@ declare namespace Knex {
     count: AsymmetricAggregation<
       TRecord,
       TResult,
-      Lookup<ResultTypes.Registry, 'Count', number | string>
+      Lookup<Registry, 'Count', number | string>
     >;
     countDistinct: AsymmetricAggregation<
       TRecord,
       TResult,
-      Lookup<ResultTypes.Registry, 'Count', number | string>
+      Lookup<Registry, 'Count', number | string>
     >;
     min: TypePreservingAggregation<TRecord, TResult>;
     max: TypePreservingAggregation<TRecord, TResult>;
@@ -788,7 +797,7 @@ declare namespace Knex {
     avgDistinct: TypePreservingAggregation<TRecord, TResult>;
 
     increment(
-      columnName: keyof TRecord,
+      columnName: keyof ResolveTableType<TRecord, 'update'>,
       amount?: number
     ): QueryBuilder<TRecord, number>;
     increment(
@@ -796,11 +805,11 @@ declare namespace Knex {
       amount?: number
     ): QueryBuilder<TRecord, number>;
     increment(columns: {
-      [column in keyof TRecord]: number;
+      [column in keyof ResolveTableType<TRecord, 'update'>]: number;
     }): QueryBuilder<TRecord, number>;
 
     decrement(
-      columnName: keyof TRecord,
+      columnName: keyof ResolveTableType<TRecord, 'update'>,
       amount?: number
     ): QueryBuilder<TRecord, number>;
     decrement(
@@ -808,7 +817,7 @@ declare namespace Knex {
       amount?: number
     ): QueryBuilder<TRecord, number>;
     decrement(columns: {
-      [column in keyof TRecord]: number;
+      [column in keyof ResolveTableType<TRecord, 'update'>]: number;
     }): QueryBuilder<TRecord, number>;
 
     // Analytics
@@ -822,9 +831,9 @@ declare namespace Knex {
       DeferredKeySelection.AddUnionMember<UnwrapArrayMember<TResult>, undefined>
     >;
 
-    pluck<K extends keyof TRecord>(
+    pluck<K extends keyof ResolveTableType<TRecord>>(
       column: K
-    ): QueryBuilder<TRecord, TRecord[K][]>;
+    ): QueryBuilder<TRecord, ResolveTableType<TRecord>[K][]>;
     pluck<TResult2 extends {}>(column: string): QueryBuilder<TRecord, TResult2>;
 
     insert(
@@ -1017,7 +1026,7 @@ declare namespace Knex {
       >[]
     >(
       columnName: K1,
-      value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]>,
+      value: DbColumn<ResolveTableType<TRecord, 'update'>[K1]> | QueryBuilder,
       returning: readonly K2[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -1027,7 +1036,7 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, number>;
     update<TResult2 = SafePartial<TRecord>[]>(
       columnName: string,
-      value: Value,
+      value: ValueOrBuilder,
       returning: string | readonly string[],
       options?: DMLOptions
     ): QueryBuilder<TRecord, TResult2>;
@@ -1100,7 +1109,7 @@ declare namespace Knex {
 
     update<TResult2 = number>(
       columnName: string,
-      value: Value
+      value: ValueOrBuilder
     ): QueryBuilder<TRecord, TResult2>;
 
     returning(
@@ -1400,7 +1409,9 @@ declare namespace Knex {
       TRecord2 extends {} = {},
       TResult2 = DeferredKeySelection.ReplaceBase<TResult, TRecord2>
     >(
-      callback: Function,
+      callback: (
+        this: QueryBuilder<TRecord, TResult>
+      ) => QueryBuilder<TRecord2, TResult2>,
       options?: TableOptions
     ): QueryBuilder<TRecord2, TResult2>;
     <
@@ -1648,7 +1659,7 @@ declare namespace Knex {
     (
       alias: string,
       sql: string,
-      bindings?: readonly Value[] | Object
+      bindings?: readonly Value[] | Record<string, Value>
     ): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
@@ -1659,7 +1670,7 @@ declare namespace Knex {
       alias: string,
       columnList: string[],
       sql: string,
-      bindings?: readonly Value[] | Object
+      bindings?: readonly Value[] | Record<string, Value>
     ): QueryBuilder<TRecord, TResult>;
   }
 
@@ -1698,6 +1709,9 @@ declare namespace Knex {
       TResult
     >;
 
+    // note: `Object` is intentional here: its mapped members preserve excess-property
+    // checking so `.where({ unknownColumn })` stays a compile error, while still
+    // accepting pre-typed dynamic objects, see #6452
     (object: Readonly<Object>): QueryBuilder<TRecord, TResult>;
 
     <T extends keyof ResolveTableType<TRecord>>(
@@ -1954,12 +1968,12 @@ declare namespace Knex {
 
   interface OrderBy<TRecord extends {} = any, TResult = unknown[]> {
     (
-      columnName: keyof TRecord | QueryBuilder,
+      columnName: keyof TRecord | QueryBuilder | Raw,
       order?: 'asc' | 'desc',
       nulls?: 'first' | 'last'
     ): QueryBuilder<TRecord, TResult>;
     (
-      columnName: string | QueryBuilder,
+      columnName: string | QueryBuilder | Raw,
       order?: string,
       nulls?: string
     ): QueryBuilder<TRecord, TResult>;
@@ -1967,7 +1981,7 @@ declare namespace Knex {
       columnDefs: Array<
         | keyof TRecord
         | Readonly<{
-            column: keyof TRecord | QueryBuilder;
+            column: keyof TRecord | QueryBuilder | Raw;
             order?: 'asc' | 'desc';
             nulls?: 'first' | 'last';
           }>
@@ -1977,7 +1991,7 @@ declare namespace Knex {
       columnDefs: Array<
         | string
         | Readonly<{
-            column: string | QueryBuilder;
+            column: string | QueryBuilder | Raw;
             order?: string;
             nulls?: string;
           }>
@@ -2108,7 +2122,7 @@ declare namespace Knex {
   // Raw
 
   interface Raw<TResult = any>
-    extends events.EventEmitter,
+    extends EventEmitter,
       ChainableInterface<ResolveResult<TResult>> {
     timeout(ms: number, options?: { cancel?: boolean }): Raw<TResult>;
     wrap<TResult2 = TResult>(before: string, after: string): Raw<TResult>;
@@ -2290,18 +2304,18 @@ declare namespace Knex {
     connection(connection: any): this;
     debug(enabled: boolean): this;
     transacting(trx: Transaction): this;
-    stream(handler: (readable: stream.PassThrough) => any): Promise<any>;
+    stream(handler: (readable: PassThrough) => any): Promise<any>;
     stream(
       options: Readonly<{ [key: string]: any }>,
-      handler: (readable: stream.PassThrough) => any
+      handler: (readable: PassThrough) => any
     ): Promise<any>;
     stream(
       options?: Readonly<{ [key: string]: any }>
-    ): stream.PassThrough & AsyncIterable<ArrayMember<T>>;
+    ): PassThrough & AsyncIterable<ArrayMember<T>>;
     pipe<T extends NodeJS.WritableStream>(
       writable: T,
       options?: Readonly<{ [key: string]: any }>
-    ): stream.PassThrough;
+    ): PassThrough;
     asCallback(callback: Function): Promise<T>;
   }
 
@@ -2318,6 +2332,8 @@ declare namespace Knex {
     doNotRejectOnRollback?: boolean;
     connection?: any;
     readOnly?: boolean;
+    /** sqlite3 only */
+    enforceForeignCheck?: boolean | null;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any[]>
@@ -2564,11 +2580,20 @@ declare namespace Knex {
       columnNames: string | readonly string[],
       foreignKeyName?: string
     ): TableBuilder;
+    dropForeignIfExists(
+      columnNames: string | readonly string[],
+      foreignKeyName?: string
+    ): TableBuilder;
     dropUnique(
       columnNames: readonly (string | Raw)[],
       indexName?: string
     ): TableBuilder;
+    dropUniqueIfExists(
+      columnNames: readonly (string | Raw)[],
+      indexName?: string
+    ): TableBuilder;
     dropPrimary(constraintName?: string): TableBuilder;
+    dropPrimaryIfExists(constraintName?: string): TableBuilder;
     dropIndex(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string
@@ -2610,7 +2635,14 @@ declare namespace Knex {
   type lengthOperator = '>' | '<' | '<=' | '>=' | '!=' | '=';
 
   interface ColumnBuilder {
-    index(indexName?: string): ColumnBuilder;
+    index(
+      indexName?: string,
+      options?: Readonly<{
+        indexType?: string;
+        storageEngineIndexType?: storageEngineIndexType;
+        predicate?: QueryBuilder;
+      }>
+    ): ColumnBuilder;
     primary(
       options?: Readonly<{
         constraintName?: string;
@@ -2733,6 +2765,14 @@ declare namespace Knex {
     jsonbSupport?: boolean;
     version?: string;
     connection?: string | StaticConnectionConfig | ConnectionConfigProvider;
+    /**
+     * An external pool to use instead of knex creating its own.
+     * Accepts a KnexPool, tarn Pool, or a native driver pool (pg.Pool,
+     * mysql.createPool(), oracledb.createPool()).
+     * Mutually exclusive with `connection` — knex does not own the pool
+     * lifecycle; call pool.end() / pool.close() yourself when done.
+     */
+    connectionPool?: ConnectionPool;
     pool?: PoolConfig;
     migrations?: MigratorConfig;
     postProcessResponse?: (result: any, queryContext: any) => any;
@@ -2749,6 +2789,11 @@ declare namespace Knex {
     log?: Logger;
     compileSqlOnError?: boolean;
     fetchAsString?: string[];
+    /**
+     * If set, will be used as the default precision for datetime & timestamp columns.
+     * Valid only on PostgreSQL and CockroachDB
+     */
+    defaultDateTimePrecision?: number;
   }
 
   type StaticConnectionConfig =
@@ -2788,7 +2833,8 @@ declare namespace Knex {
     | 'azure-active-directory-access-token'
     | 'azure-active-directory-msi-vm'
     | 'azure-active-directory-msi-app-service'
-    | 'azure-active-directory-service-principal-secret';
+    | 'azure-active-directory-service-principal-secret'
+    | 'token-credential';
 
   interface MsSqlDefaultAuthenticationConfig extends MsSqlConnectionConfigBase {
     type?: 'default' | never;
@@ -2866,6 +2912,19 @@ declare namespace Knex {
     tenantId: string;
   }
 
+  interface MsSqlTokenCredential {
+    getToken(
+      scopes: string | string[],
+      options?: unknown
+    ): Promise<{ token: string; expiresOnTimestamp: number } | null>;
+  }
+
+  interface MsSqlTokenCredentialAuthenticationConfig
+    extends MsSqlConnectionConfigBase {
+    type: 'token-credential';
+    credential: MsSqlTokenCredential;
+  }
+
   interface MsSqlNtlmAuthenticationConfig extends MsSqlConnectionConfigBase {
     type: 'ntlm';
     /**
@@ -2885,7 +2944,8 @@ declare namespace Knex {
     | MsSqlAzureActiveDirectoryMsiAppServiceAuthenticationConfig
     | MsSqlAzureActiveDirectoryMsiVmAuthenticationConfig
     | MsSqlAzureActiveDirectoryPasswordAuthenticationConfig
-    | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig;
+    | MsSqlAzureActiveDirectoryServicePrincipalSecretConfig
+    | MsSqlTokenCredentialAuthenticationConfig;
 
   // Config object for tedious: see http://tediousjs.github.io/tedious/api-connection.html
   interface MsSqlConnectionConfigBase {
@@ -3046,7 +3106,7 @@ declare namespace Knex {
     host?: string;
     connectionString?: string;
     keepAlive?: boolean;
-    stream?: () => stream.Duplex | stream.Duplex | undefined;
+    stream?: () => Duplex | undefined;
     statement_timeout?: false | number;
     parseInputDatesAsUTC?: boolean;
     ssl?: boolean | ConnectionOptions;
@@ -3082,6 +3142,7 @@ declare namespace Knex {
     options?: {
       nativeBinding?: string;
       readonly?: boolean;
+      safeIntegers?: boolean;
     };
   }
 
@@ -3094,9 +3155,50 @@ declare namespace Knex {
     expirationChecker?(): boolean;
   }
 
+  // Pool-like interfaces matching the shapes of native driver pools.
+  // These allow `connectionPool` to accept pools from pg, mysql/mysql2,
+  // oracledb, or any tarn-compatible pool without importing driver types.
+
+  /** Matches the pg.Pool interface */
+  interface PgPoolLike {
+    connect(): Promise<any>;
+    end(): Promise<void>;
+    totalCount: number;
+    idleCount: number;
+    waitingCount: number;
+  }
+
+  /** Matches the mysql / mysql2 pool interface */
+  interface MySQLPoolLike {
+    getConnection(cb: (err: Error | null, connection: any) => void): void;
+    end(cb?: (err?: Error) => void): void;
+  }
+
+  /** Matches the oracledb pool interface */
+  interface OraclePoolLike {
+    getConnection(): Promise<any>;
+    close(drainTime?: number): Promise<void>;
+  }
+
+  /** Any tarn-compatible pool (including KnexPool) */
+  interface TarnPoolLike {
+    acquire(): { promise: Promise<any> };
+    release(resource: any): boolean;
+    destroy(): Promise<void>;
+  }
+
+  /** Types accepted by the `connectionPool` config option */
+  type ConnectionPool =
+    | Pool<any>
+    | TarnPoolLike
+    | PgPoolLike
+    | MySQLPoolLike
+    | OraclePoolLike;
+
   interface PoolConfig {
     name?: string;
     afterCreate?: Function;
+    validate?: (connection: any) => boolean | Promise<boolean>;
     min?: number;
     max?: number;
     refreshIdle?: boolean;
@@ -3112,6 +3214,8 @@ declare namespace Knex {
     createTimeoutMillis?: number;
     destroyTimeoutMillis?: number;
     acquireTimeoutMillis?: number;
+    maxConnectionLifetimeMillis?: number;
+    maxConnectionLifetimeJitterMillis?: number;
   }
 
   type LogFn = (message: any) => void;
@@ -3176,6 +3280,8 @@ declare namespace Knex {
     list(config?: MigratorConfig): Promise<any>;
     up(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     down(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    to(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
+    before(config?: MigratorConfigWithLifecycleHooks): Promise<any>;
     forceFreeMigrationsLock(config?: MigratorConfig): Promise<any>;
   }
 
@@ -3227,7 +3333,7 @@ declare namespace Knex {
     constraintName?: string;
   }
 
-  class Client extends events.EventEmitter {
+  class Client extends EventEmitter {
     constructor(config: Config);
     config: Config;
     dialect: string;
@@ -3277,7 +3383,8 @@ declare namespace Knex {
     };
     getPoolSettings(poolConfig: any): any;
     initializePool(config?: {}): void;
-    pool: tarn.Pool<any> | undefined;
+    initializeExternalPool(externalPool: ConnectionPool): void;
+    pool: Pool<any> | TarnPoolLike | undefined;
     acquireConnection(): any;
     releaseConnection(connection: any): any;
     destroy(callback: any): any;

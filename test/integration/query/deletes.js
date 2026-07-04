@@ -2,7 +2,7 @@
 
 const { expect } = require('chai');
 const { TEST_TIMESTAMP } = require('../../util/constants');
-const { isSQLite, isOracle, isCockroachDB } = require('../../util/db-helpers');
+const { isSQLite, isOracle, isMysql } = require('../../util/db-helpers');
 const { isPostgreSQL } = require('../../util/db-helpers.js');
 
 module.exports = function (knex) {
@@ -107,7 +107,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test3@example.com' })
           .del();
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (isSQLite(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -161,6 +161,38 @@ module.exports = function (knex) {
         });
       });
 
+      it('should preserve binding order when deleting with a raw join condition in PostgreSQL', async function () {
+        if (!isPostgreSQL(knex)) {
+          this.skip();
+        }
+
+        await knex('test_table_two').insert({
+          account_id: 5,
+          details: '',
+          status: 1,
+        });
+
+        return knex('test_table_two')
+          .join(
+            knex('accounts')
+              .where('email', 'test5@example.com')
+              .as('matching_accounts'),
+            knex.raw('coalesce(matching_accounts.id, ?)', [-1]),
+            '=',
+            'test_table_two.account_id'
+          )
+          .where('test_table_two.status', 1)
+          .del()
+          .testSql(function (tester) {
+            tester(
+              'pg',
+              'delete from "test_table_two" using (select * from "accounts" where "email" = ?) as "matching_accounts" where "test_table_two"."status" = ? and coalesce(matching_accounts.id, ?) = "test_table_two"."account_id"',
+              ['test5@example.com', 1, -1],
+              1
+            );
+          });
+      });
+
       it('should handle returning', async function () {
         await knex('test_table_two').insert({
           account_id: 4,
@@ -171,7 +203,7 @@ module.exports = function (knex) {
           .join('accounts', 'accounts.id', 'test_table_two.account_id')
           .where({ 'accounts.email': 'test4@example.com' })
           .del('*');
-        if (isSQLite(knex) || isCockroachDB(knex) || isOracle(knex)) {
+        if (isSQLite(knex) || isOracle(knex)) {
           await expect(query).to.be.rejected;
           return;
         }
@@ -211,6 +243,71 @@ module.exports = function (knex) {
             [{ id: 9, account_id: 4, details: '', status: 1 }]
           );
         });
+      });
+    });
+
+    describe('Delete with limit', function () {
+      it('should support delete with limit in MySQL', async function () {
+        if (!isMysql(knex)) {
+          return this.skip();
+        }
+
+        await knex('accounts').insert([
+          {
+            first_name: 'LimitDel',
+            last_name: 'One',
+            email: 'limitdel1@example.com',
+            logins: 1,
+            balance: 0,
+            about: '',
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          {
+            first_name: 'LimitDel',
+            last_name: 'Two',
+            email: 'limitdel2@example.com',
+            logins: 1,
+            balance: 0,
+            about: '',
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+          {
+            first_name: 'LimitDel',
+            last_name: 'Three',
+            email: 'limitdel3@example.com',
+            logins: 1,
+            balance: 0,
+            about: '',
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          },
+        ]);
+
+        const deleted = await knex('accounts')
+          .where('first_name', 'LimitDel')
+          .del()
+          .limit(2);
+
+        expect(deleted).to.equal(2);
+
+        const remaining = await knex('accounts')
+          .where('first_name', 'LimitDel')
+          .select();
+        expect(remaining).to.have.length(1);
+
+        await knex('accounts').where('first_name', 'LimitDel').del();
+      });
+
+      it('should reject delete with limit for non-MySQL dialects', async function () {
+        if (isMysql(knex)) {
+          return this.skip();
+        }
+
+        expect(() => {
+          knex('accounts').where('id', 1).del().limit(1).toSQL();
+        }).to.throw(/limit.*has no effect.*delete/);
       });
     });
   });

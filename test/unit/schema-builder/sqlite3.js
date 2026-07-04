@@ -298,6 +298,52 @@ describe('SQLite SchemaBuilder', function () {
     equal(tableSql[0].sql, 'drop index `foo`');
   });
 
+  it('drop unique if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropUniqueIfExists('foo');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'drop index if exists `users_foo_unique`');
+  });
+
+  it('drop unique if exists, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropUniqueIfExists(null, 'foo');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'drop index if exists `foo`');
+  });
+
+  it('drop foreign if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropForeignIfExists('foo');
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
+  it('drop primary if exists is not supported', function () {
+    expect(() => {
+      client
+        .schemaBuilder()
+        .table('users', function (table) {
+          table.dropPrimaryIfExists();
+        })
+        .toSQL();
+    }).to.throw(/not supported/);
+  });
+
   it('drop index', function () {
     tableSql = client
       .schemaBuilder()

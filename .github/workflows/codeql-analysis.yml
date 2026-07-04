@@ -13,6 +13,11 @@ permissions:
 
 jobs:
   analyze:
+    # skip the auto-generated "release X.Y.Z" commit pushed by the
+    # release workflow (lib/** is rebuilt from unchanged source; the
+    # parent commit was already analysed). security analysis still runs
+    # on `skip-tests` PRs — it's orthogonal to test coverage.
+    if: ${{ !(github.actor == 'github-actions[bot]' && startsWith(github.event.head_commit.message, 'release ')) }}
     permissions:
       actions: read # for github/codeql-action/init to get workflow details
       contents: read # for actions/checkout to fetch code
@@ -27,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v2
