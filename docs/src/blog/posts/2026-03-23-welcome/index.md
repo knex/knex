@@ -6,13 +6,13 @@ summary: Where is Knex now, and where we want to take it; a quick recap about th
 
 # Knex, the Garden, and the Long Road Back
 
-Knex as a project has been around for a long time. Development started in 2013, when JavaScript still didn’t have classes, `let`/`const`, arrow functions, template literals, destructuring, modules, native Promises, or `async`/`await`. It's free software; so, development sometimes tends to happen in cycles where intense development is followed by periods of lighter activity. That’s a normal and healthy -- and in fact this is even true for commercial software, the differce being the lack of funding (commercial software) rather than the lack of contributors (free software).
+Knex as a project has been around for a long time. Development started in 2013, when JavaScript still didn’t have classes, `let`/`const`, arrow functions, template literals, destructuring, modules, native Promises, or `async`/`await`. It's free software; so, development sometimes tends to happen in cycles where intense development is followed by periods of lighter activity. That’s normal and healthy -- and in fact this is even true for commercial software, the difference being the lack of funding (commercial software) rather than the lack of contributors (free software).
 
 After a period of lighter activity, knex is now is in a period of much more intense development. This article is to share what has been done so far, and what we have planned for the near future.
 
 ## What we did
 
-The most glaring advancement in the last few months has been the work on the issue backlog. Knex had 1,079 open issues, and many of them were duplicate or irrelevant.
+The most glaring advancement in the last few months has been the work on the issue backlog. Knex had 1,079 open issues, and many of them were duplicates or irrelevant.
 
 This required going through each one of the 1,079 open issues, working on categorization, deduplication, and adding an AI write‑up to provide a starting point for when we would come back to them. The write up was also helpful to see if original posters were still interested in Knex. In some cases, it had been _years_ since submission or the last comment! It was a lot of tedious work. Each issue had to be faced individually, and we never knew what we would find: a simple bug, or something that required major architectural changes. It was disheartening at times, especially since each issue was only a tiny step towards the top of the mountain we had to climb.
 
@@ -34,7 +34,7 @@ Once all of the bugs are sorted out or recategorised as part of wider refactorin
 
 ## A “Side Project” That Mattered
 
-One side project we took on while working through PRs was a drastic improvement of the website. As maintainers, we felt that it was important for the documentation to show developers exactly what it Knex _does_. So we updated the documentation to include the actual SQL Knex generates for each dialect, both for query building and schema building.
+One side project we took on while working through PRs was a drastic improvement of the website. As maintainers, we felt that it was important for the documentation to show developers exactly what Knex _does_. So we updated the documentation to include the actual SQL Knex generates for each dialect, both for query building and schema building.
 
 The schema work was especially tricky. The only reliable way to know what Knex actually did was to run the schema changes shown in the documentation. That took a lot of time, but the result is documentation that shows Knex as it truly is. The end result is revealing, in terms of how amazing and useful Knex actually is, and how much work went behind the scenes to consider every edge case.
 
