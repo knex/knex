@@ -562,6 +562,34 @@ describe('QueryBuilder', () => {
     });
   });
 
+  it('table wrapping with declared schema and object-notation alias in from (#6276)', () => {
+    testsql(qb().withSchema('myschema').select('*').from({ t: 'users' }), {
+      mysql: 'select * from `myschema`.`users` as `t`',
+      pg: 'select * from "myschema"."users" as "t"',
+      'pg-redshift': 'select * from "myschema"."users" as "t"',
+      mssql: 'select * from [myschema].[users] as [t]',
+    });
+  });
+
+  it('table wrapping with declared schema and object-notation alias in join (#6276)', () => {
+    testsql(
+      qb()
+        .withSchema('myschema')
+        .select('a.id')
+        .from({ a: 'table_a' })
+        .join({ b: 'table_b' }, 'a.id', '=', 'b.a_id'),
+      {
+        mysql:
+          'select `a`.`id` from `myschema`.`table_a` as `a` inner join `myschema`.`table_b` as `b` on `a`.`id` = `b`.`a_id`',
+        pg: 'select "a"."id" from "myschema"."table_a" as "a" inner join "myschema"."table_b" as "b" on "a"."id" = "b"."a_id"',
+        'pg-redshift':
+          'select "a"."id" from "myschema"."table_a" as "a" inner join "myschema"."table_b" as "b" on "a"."id" = "b"."a_id"',
+        mssql:
+          'select [a].[id] from [myschema].[table_a] as [a] inner join [myschema].[table_b] as [b] on [a].[id] = [b].[a_id]',
+      }
+    );
+  });
+
   it('selects from only', () => {
     testsql(qb().select('*').from('users', { only: true }), {
       pg: 'select * from only "users"',
