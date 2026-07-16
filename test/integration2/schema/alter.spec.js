@@ -209,6 +209,96 @@ describe('Schema', () => {
               ]);
             });
           });
+
+          describe('generateDdlCommands for drop/add constraint operations', () => {
+            beforeEach(async () => {
+              await knex.schema.createTable('ddl_preview_parent', (table) => {
+                table.integer('id');
+              });
+              await knex.schema.createTable('ddl_preview_table', (table) => {
+                table.integer('id');
+                table.string('name');
+                table.integer('parent_id').references('id').inTable('ddl_preview_parent');
+                table.primary('id');
+              });
+            });
+
+            afterEach(async () => {
+              await knex.schema.dropTable('ddl_preview_table');
+              await knex.schema.dropTable('ddl_preview_parent');
+            });
+
+            it('generates the full multi-statement plan for dropColumn', async () => {
+              const builder = knex.schema.alterTable('ddl_preview_table', (table) => {
+                table.dropColumn('name');
+              });
+
+              const queries = await builder.generateDdlCommands();
+
+              expect(queries.sql.length).to.be.greaterThan(1);
+              expect(queries.sql[0]).to.match(/^CREATE TABLE/);
+              expect(queries.sql.some((s) => /^DROP TABLE/.test(s))).to.equal(
+                true
+              );
+              expect(
+                queries.sql.some((s) => /RENAME TO "ddl_preview_table"/.test(s))
+              ).to.equal(true);
+            });
+
+            it('generates the full multi-statement plan for dropForeign', async () => {
+              const builder = knex.schema.alterTable('ddl_preview_table', (table) => {
+                table.dropForeign('parent_id');
+              });
+
+              const queries = await builder.generateDdlCommands();
+
+              expect(queries.sql.length).to.be.greaterThan(1);
+              expect(queries.sql[0]).to.match(/^CREATE TABLE/);
+              expect(queries.sql.some((s) => /^DROP TABLE/.test(s))).to.equal(
+                true
+              );
+            });
+
+            it('generates the full multi-statement plan for dropPrimary', async () => {
+              const builder = knex.schema.alterTable('ddl_preview_table', (table) => {
+                table.dropPrimary();
+              });
+
+              const queries = await builder.generateDdlCommands();
+
+              expect(queries.sql.length).to.be.greaterThan(1);
+              expect(queries.sql[0]).to.match(/^CREATE TABLE/);
+              expect(queries.sql.some((s) => /^DROP TABLE/.test(s))).to.equal(
+                true
+              );
+            });
+
+            it('generates the full multi-statement plan for adding a primary key', async () => {
+              await knex.schema.createTable('ddl_preview_no_pk', (table) => {
+                table.integer('id');
+                table.string('name');
+              });
+
+              try {
+                const builder = knex.schema.alterTable(
+                  'ddl_preview_no_pk',
+                  (table) => {
+                    table.primary('id');
+                  }
+                );
+
+                const queries = await builder.generateDdlCommands();
+
+                expect(queries.sql.length).to.be.greaterThan(1);
+                expect(queries.sql[0]).to.match(/^CREATE TABLE/);
+                expect(queries.sql.some((s) => /^DROP TABLE/.test(s))).to.equal(
+                  true
+                );
+              } finally {
+                await knex.schema.dropTable('ddl_preview_no_pk');
+              }
+            });
+          });
         });
       });
   });
