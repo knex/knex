@@ -904,6 +904,20 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` add `foo` text');
     });
 
+    it('test adding case-insensitive text types', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.text('foo', 'MEDIUMTEXT');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `foo` mediumtext'
+      );
+    });
+
     it('test adding big integer', function () {
       tableSql = client
         .schemaBuilder()
