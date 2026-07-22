@@ -6832,6 +6832,29 @@ describe('QueryBuilder', () => {
     }).to.throw('onConflict().merge().where() is not supported for mysql');
   });
 
+  it('insert merge without conflict target throws', () => {
+    const err =
+      '.onConflict().merge() requires a conflict target - pass column name(s) to .onConflict(columns)';
+    expect(() => {
+      clients.pg
+        .queryBuilder()
+        .insert({ email: 'foo' })
+        .onConflict()
+        .merge()
+        .into('users')
+        .toSQL();
+    }).to.throw(err);
+    expect(() => {
+      clients.sqlite3
+        .queryBuilder()
+        .insert({ email: 'foo' })
+        .onConflict()
+        .merge()
+        .into('users')
+        .toSQL();
+    }).to.throw(err);
+  });
+
   it('insert multiple rows - merge with where clause', () => {
     testsql(
       qb()
