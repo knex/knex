@@ -691,7 +691,9 @@ knex.schema.createTable('events', (table) => {
 Adds created_at and updated_at columns on the database, setting each to datetime types. When true is passed as the first argument a timestamp type is used instead. Both columns default to being not null and using the current timestamp when true is passed as the second argument. Note that on MySQL the .timestamps() only have seconds precision, to get better precision use the .datetime or .timestamp methods directly with precision. If useCamelCase is true, the name of columns are createdAt and updatedAt.
 
 ::: info
-PostgreSQL `updated_at` field will not automatically be updated. Please see this [issue](https://github.com/knex/knex/issues/1928 'issue') for details
+PostgreSQL does not automatically update `updated_at` when a row changes. It
+does not support MySQL's column-level `ON UPDATE` clause, so update the column
+in application code or use a trigger.
 :::
 
 ```js
@@ -700,6 +702,37 @@ knex.schema.createTable('timestamps_example', function (table) {
   table.timestamps(true, true);
 });
 ```
+
+For example, this PostgreSQL migration keeps `public.users.updated_at` current:
+
+```js
+exports.up = async function up(knex) {
+  await knex.raw(`
+    CREATE OR REPLACE FUNCTION public.set_users_updated_at()
+    RETURNS trigger AS $$
+    BEGIN
+      NEW.updated_at := CURRENT_TIMESTAMP;
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE TRIGGER users_updated_at
+    BEFORE UPDATE ON public.users
+    FOR EACH ROW
+    EXECUTE FUNCTION public.set_users_updated_at();
+  `);
+};
+
+exports.down = async function down(knex) {
+  await knex.raw(`
+    DROP TRIGGER IF EXISTS users_updated_at ON public.users;
+    DROP FUNCTION IF EXISTS public.set_users_updated_at();
+  `);
+};
+```
+
+Change the schema, table, function, and column names to match your migration.
+The trigger runs in the same transaction as the update.
 
 ### dropTimestamps
 
