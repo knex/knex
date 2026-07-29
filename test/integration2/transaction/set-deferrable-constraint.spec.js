@@ -1,5 +1,8 @@
 const { getAllDbs, getKnexForDb } = require('../util/knex-instance-provider');
 const { isMssql, isOracle, isPostgreSQL } = require('../../util/db-helpers');
+const chai = require('chai');
+chai.use(require('chai-as-promised'));
+const { expect } = chai;
 
 describe('Transaction', () => {
   describe('setDeferrableConstraint', () => {
@@ -108,6 +111,28 @@ describe('Transaction', () => {
           });
           await knex.schema.table(tableName1, (table) => {
             table.dropForeign('value', 'fk');
+          });
+        });
+
+        it('rejects an explicit commit when a deferred constraint is violated at commit time', async () => {
+          await knex.schema.table(tableName, (table) => {
+            table.integer('value');
+            table
+              .foreign('value')
+              .deferrable('deferred')
+              .references(`${tableName1}.id`)
+              .withKeyName('fk6141');
+          });
+          const trx = await knex.transaction({
+            isolationLevel: 'read committed',
+          });
+          // tableName1 has no matching row, so this violates the foreign key.
+          // Being deferred, the violation is only detected at COMMIT, so the
+          // explicit commit must reject instead of resolving as if it succeeded.
+          await trx(tableName).insert({ id: 1, value: 999 });
+          await expect(trx.commit()).to.be.rejected;
+          await knex.schema.table(tableName, (table) => {
+            table.dropForeign('value', 'fk6141');
           });
         });
       });
