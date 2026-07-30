@@ -6801,6 +6801,57 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('insert merge without explicit onConflict columns (auto-detect)', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([{ email: 'foo', name: 'taylor' }])
+        .onConflict()
+        .merge(),
+      {
+        mysql: {
+          sql: 'insert into `users` (`email`, `name`) values (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+          bindings: ['foo', 'taylor'],
+        },
+        sqlite3: {
+          sql: 'insert into `users` (`email`, `name`) values (?, ?) on conflict (`email`, `name`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+          bindings: ['foo', 'taylor'],
+        },
+        pg: {
+          sql: 'insert into "users" ("email", "name") values (?, ?) on conflict ("email", "name") do update set "email" = excluded."email", "name" = excluded."name"',
+          bindings: ['foo', 'taylor'],
+        },
+      }
+    );
+  });
+
+  it('insert merge without explicit onConflict columns with multi-insert', () => {
+    testsql(
+      qb()
+        .from('users')
+        .insert([
+          { email: 'foo', name: 'taylor' },
+          { email: 'bar', name: 'dayle' },
+        ])
+        .onConflict()
+        .merge(),
+      {
+        mysql: {
+          sql: 'insert into `users` (`email`, `name`) values (?, ?), (?, ?) on duplicate key update `email` = values(`email`), `name` = values(`name`)',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        sqlite3: {
+          sql: 'insert into `users` (`email`, `name`) select ? as `email`, ? as `name` union all select ? as `email`, ? as `name` where true on conflict (`email`, `name`) do update set `email` = excluded.`email`, `name` = excluded.`name`',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+        pg: {
+          sql: 'insert into "users" ("email", "name") values (?, ?), (?, ?) on conflict ("email", "name") do update set "email" = excluded."email", "name" = excluded."name"',
+          bindings: ['foo', 'taylor', 'bar', 'dayle'],
+        },
+      }
+    );
+  });
+
   it('insert merge with where clause', () => {
     testsql(
       qb()
