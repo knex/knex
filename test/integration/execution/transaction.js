@@ -79,6 +79,27 @@ module.exports = function (knex) {
         });
     });
 
+    // The explicit commit path is dialect-independent, so this guards the happy path on every
+    // dialect: `commit()` now returns the transaction's execution promise, and that promise must
+    // still resolve — and the work still be persisted — when the COMMIT succeeds. See #6141.
+    it('resolves an explicit commit and persists the work', async () => {
+      const email = 'transaction-explicit-commit@example.com';
+      const trx = await knex.transaction();
+      await knex('accounts').transacting(trx).insert({
+        first_name: 'Explicit',
+        last_name: 'Commit',
+        email,
+        logins: 1,
+        about: 'Lorem ipsum Dolore labore incididunt enim.',
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      await trx.commit();
+
+      const rows = await knex('accounts').where({ email });
+      expect(rows).to.have.length(1);
+    });
+
     it('should throw when null transaction is sent to transacting', function () {
       return knex
         .transaction(function (t) {
