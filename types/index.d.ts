@@ -2504,6 +2504,12 @@ declare namespace Knex {
     geometry(columnName: string): ColumnBuilder;
     geography(columnName: string): ColumnBuilder;
     point(columnName: string): ColumnBuilder;
+    linestring(columnName: string): ColumnBuilder;
+    polygon(columnName: string): ColumnBuilder;
+    multipoint(columnName: string): ColumnBuilder;
+    multilinestring(columnName: string): ColumnBuilder;
+    multipolygon(columnName: string): ColumnBuilder;
+    geometrycollection(columnName: string): ColumnBuilder;
     binary(columnName: string, length?: number): ColumnBuilder;
     enum(
       columnName: string,
@@ -2563,6 +2569,10 @@ declare namespace Knex {
     ): TableBuilder;
     /** @deprecated */
     unique(
+      columnNames: string | readonly (string | Raw)[],
+      indexName?: string
+    ): TableBuilder;
+    spatial(
       columnNames: string | readonly (string | Raw)[],
       indexName?: string
     ): TableBuilder;
@@ -2657,6 +2667,8 @@ declare namespace Knex {
     ): ColumnBuilder;
     /** @deprecated */
     unique(indexName?: string): ColumnBuilder;
+    spatial(indexName?: string): ColumnBuilder;
+    srid(val: number): ColumnBuilder;
     references(columnName: string): ReferencingColumnBuilder;
     defaultTo(value: Value | null, options?: DefaultToOptions): ColumnBuilder;
     unsigned(): ColumnBuilder;
