@@ -1817,5 +1817,49 @@ module.exports = function (dialect) {
         );
       });
     });
+
+    describe('spatial data types & indexes', function () {
+      it('creates table with spatial columns and srid modifier', function () {
+        tableSql = client
+          .schemaBuilder()
+          .createTable('gis_test', function (table) {
+            table.point('pt');
+            table.polygon('poly').srid(4326);
+            table.linestring('ls');
+            table.multipoint('mp');
+            table.multilinestring('mls');
+            table.multipolygon('mpol');
+            table.geometrycollection('gc');
+          })
+          .toSQL();
+
+        expect(tableSql).to.have.length(1);
+        expect(tableSql[0].sql).to.equal(
+          'create table `gis_test` (`pt` point, `poly` polygon srid 4326, `ls` linestring, `mp` multipoint, `mls` multilinestring, `mpol` multipolygon, `gc` geometrycollection)'
+        );
+      });
+
+      it('creates spatial index via table.spatial and column chaining', function () {
+        tableSql = client
+          .schemaBuilder()
+          .createTable('gis_test', function (table) {
+            table.point('pt').spatial();
+            table.polygon('poly').srid(4326);
+            table.spatial('poly', 'custom_poly_idx');
+          })
+          .toSQL();
+
+        expect(tableSql).to.have.length(3);
+        expect(tableSql[0].sql).to.equal(
+          'create table `gis_test` (`pt` point, `poly` polygon srid 4326)'
+        );
+        expect(tableSql[1].sql).to.equal(
+          'alter table `gis_test` add spatial index `gis_test_pt_spatial`(`pt`)'
+        );
+        expect(tableSql[2].sql).to.equal(
+          'alter table `gis_test` add spatial index `custom_poly_idx`(`poly`)'
+        );
+      });
+    });
   });
 };
