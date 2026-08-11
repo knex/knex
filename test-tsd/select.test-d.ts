@@ -46,6 +46,12 @@ const main = async () => {
     await knex('users_composite').select([knex.ref('name'), knex.ref('id')])
   );
 
+  expectType<{ identifier: string }[]>(
+    await knex<User>('users').select({
+      identifier: knex.raw<string>('id::text'),
+    })
+  );
+
   expectType<Pick<User, 'id'> | undefined>(
     await knex.first('id').from<User>('users')
   );

@@ -90,6 +90,10 @@ type PartialOrAny<TBase, TKeys> = Boxed<TKeys> extends Boxed<never>
 type MappedAliasType<TBase, TAliasMapping> = {} & {
   [K in keyof TAliasMapping]: TAliasMapping[K] extends keyof TBase
     ? TBase[TAliasMapping[K]]
+    : TAliasMapping[K] extends Knex.Ref<any, any>
+    ? any
+    : TAliasMapping[K] extends Knex.Raw<infer TValue>
+    ? TValue
     : any;
 };
 
