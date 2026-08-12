@@ -195,6 +195,116 @@ describe('Additional', function () {
           spy.restore();
         });
 
+        it('should release the connection only once when a stream query fails (#6288)', async function () {
+          const spy = sinon.spy(knex.client, 'releaseConnection');
+
+          try {
+            const stream = knex('wrongtable').limit(1).stream();
+            try {
+              // eslint-disable-next-line no-unused-vars
+              for await (const _ of stream) {
+                //
+              }
+              // eslint-disable-next-line no-empty
+            } catch (e) {}
+
+            await new Promise((res) => setTimeout(res, 50));
+
+            // Releasing twice returns the connection to the pool while another
+            // consumer already holds it, and both then share one connection.
+            expect(spy).to.have.been.calledOnce;
+          } finally {
+            spy.restore();
+          }
+        });
+
+        it('should not release a connection it did not acquire when streaming (#6288)', async function () {
+          await knex('accounts').truncate();
+          await insertAccounts(knex, 'accounts');
+
+          const connection = await knex.client.acquireConnection();
+          try {
+            const stream = knex('accounts')
+              .limit(1)
+              .connection(connection)
+              .stream();
+            // eslint-disable-next-line no-unused-vars
+            for await (const _ of stream) {
+              //
+            }
+
+            await new Promise((res) => setTimeout(res, 50));
+
+            // The connection belongs to the caller. Returning it to the pool
+            // lets another query check it out while it is still in use.
+            const returnedToPool = knex.client.pool.free.some(
+              (free) => free.resource === connection
+            );
+            expect(returnedToPool).to.equal(false);
+          } finally {
+            await knex.client.releaseConnection(connection);
+          }
+        });
+
+        it('should not share a connection between concurrent streams started after a stream error (#6288)', async function () {
+          // Both streams have to hold a connection at the same time for this
+          // to say anything. SQLite is tested with a single connection in the
+          // pool, and the mssql dialect writes rows to the stream without
+          // honouring backpressure, so it lets go of its connection once the
+          // server stops sending rather than once the rows are consumed.
+          if (isSQLite(knex) || isMssql(knex)) {
+            return this.skip();
+          }
+
+          const tableName = 'stream_connection_test';
+          const concurrentKnex = getKnexForDb(db, {
+            pool: { min: 0, max: 2 },
+          });
+
+          try {
+            // Enough rows that a stream cannot buffer the whole result set,
+            // so both cursors stay open while the rows are consumed.
+            await concurrentKnex.schema.dropTableIfExists(tableName);
+            await concurrentKnex.schema.createTable(tableName, (table) => {
+              table.integer('id');
+            });
+            await concurrentKnex(tableName).insert(
+              _.range(100).map((id) => ({ id }))
+            );
+
+            try {
+              // eslint-disable-next-line no-unused-vars
+              for await (const _ of concurrentKnex('wrongtable')
+                .limit(1)
+                .stream()) {
+                //
+              }
+              // eslint-disable-next-line no-empty
+            } catch (e) {}
+
+            const spy = sinon.spy(concurrentKnex.client, 'stream');
+
+            const readAll = async () => {
+              const stream = concurrentKnex(tableName).stream({
+                highWaterMark: 1,
+              });
+              // eslint-disable-next-line no-unused-vars
+              for await (const _ of stream) {
+                await delay(2);
+              }
+            };
+
+            await Promise.all([readAll(), readAll()]);
+
+            const connections = spy.getCalls().map((call) => call.args[0]);
+            expect(connections).to.have.lengthOf(2);
+            expect(connections[0]).to.not.equal(connections[1]);
+          } finally {
+            await concurrentKnex.schema.dropTableIfExists(tableName);
+            await concurrentKnex.destroy();
+          }
+        });
+
         it('should close the db connection when prematurely closing a stream', async function () {
           await knex('accounts').truncate();
           await insertAccounts(knex, 'accounts');
