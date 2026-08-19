@@ -7314,12 +7314,28 @@ describe('QueryBuilder', () => {
   });
 
   it('lock for key share', () => {
-    testsql(qb().select('*').from('foo').where('bar', '=', 'baz').forShare(), {
-      pg: {
-        sql: 'select * from "foo" where "bar" = ? for share',
-        bindings: ['baz'],
-      },
-    });
+    testsql(
+      qb().select('*').from('foo').where('bar', '=', 'baz').forKeyShare(),
+      {
+        pg: {
+          sql: 'select * from "foo" where "bar" = ? for key share',
+          bindings: ['baz'],
+        },
+      }
+    );
+  });
+
+  it('throws a clear error for lock modes unsupported by the dialect', () => {
+    testFailure(
+      qb().select('*').from('foo').forNoKeyUpdate(),
+      "Locking method 'forNoKeyUpdate' is not supported by this dialect",
+      ['mysql', 'mssql', 'oracledb']
+    );
+    testFailure(
+      qb().select('*').from('foo').forKeyShare(),
+      "Locking method 'forKeyShare' is not supported by this dialect",
+      ['mysql', 'mssql', 'oracledb']
+    );
   });
 
   it('should allow lock (such as forUpdate) outside of a transaction', () => {
