@@ -116,6 +116,38 @@ module.exports = function (dialect) {
       );
     });
 
+    it('test basic create table with composite primary key and constraint name as a string', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.string('userId', 24).notNullable();
+          table.string('name', 24).notNullable();
+          table.primary(['userId', 'name'], 'users_pk');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`userId` varchar(24) not null, `name` varchar(24) not null, constraint `users_pk` primary key (`userId`, `name`))'
+      );
+    });
+
+    it('test basic create table with composite primary key and constraint name in options object', function () {
+      tableSql = client
+        .schemaBuilder()
+        .createTable('users', function (table) {
+          table.string('userId', 24).notNullable();
+          table.string('name', 24).notNullable();
+          table.primary(['userId', 'name'], { constraintName: 'users_pk' });
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'create table `users` (`userId` varchar(24) not null, `name` varchar(24) not null, constraint `users_pk` primary key (`userId`, `name`))'
+      );
+    });
+
     it('test basic create table with charset and collate', function () {
       tableSql = client.schemaBuilder().createTable('users', function (table) {
         table.increments('id');
