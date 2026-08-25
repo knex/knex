@@ -441,6 +441,23 @@ describe('SQLite SchemaBuilder', function () {
     );
   });
 
+  it('adding composite primary key with constraint name in options object', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('users', function (table) {
+        table.string('foo');
+        table.string('order_id');
+        table.primary(['foo', 'order_id'], { constraintName: 'pk-users' });
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `users` (`foo` varchar(255), `order_id` varchar(255), constraint `pk-users` primary key (`foo`, `order_id`))'
+    );
+  });
+
   it('adding primary key fluently', function () {
     tableSql = client
       .schemaBuilder()

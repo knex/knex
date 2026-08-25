@@ -242,6 +242,56 @@ describe('Schema', () => {
               { constraintName: 'my_custom_constraint_name' },
             ],
           ]) {
+            it(`creates a compound primary key on table creation with a custom constraint name ${flavor}`, async function () {
+              await knex.schema.dropTableIfExists('primary_created_table');
+
+              try {
+                await knex.schema.createTable(
+                  'primary_created_table',
+                  (table) => {
+                    table.integer('id_one').notNullable();
+                    table.integer('id_two').notNullable();
+                    table.primary(['id_one', 'id_two'], customConstraintName);
+                  }
+                );
+
+                await knex('primary_created_table').insert({
+                  id_one: 1,
+                  id_two: 1,
+                });
+                await knex('primary_created_table').insert({
+                  id_one: 2,
+                  id_two: 1,
+                });
+                await knex('primary_created_table').insert({
+                  id_one: 1,
+                  id_two: 2,
+                });
+
+                let error;
+                try {
+                  await knex('primary_created_table').insert({
+                    id_one: 1,
+                    id_two: 1,
+                  });
+                } catch (err) {
+                  error = err;
+                }
+                expect(error, 'a duplicate compound primary key was accepted')
+                  .to.not.be.undefined;
+              } finally {
+                await knex.schema.dropTableIfExists('primary_created_table');
+              }
+            });
+          }
+
+          for (const [flavor, customConstraintName] of [
+            ['provided directly as a string', 'my_custom_constraint_name'],
+            [
+              'provided in the options object',
+              { constraintName: 'my_custom_constraint_name' },
+            ],
+          ]) {
             it(`creates a compound primary key with a custom constraint name ${flavor}`, async function () {
               // As of 2021-10-02, CockroachDB does not support dropping a primary key without creating a new one in the same transaction.
               if (isCockroachDB(knex)) {
