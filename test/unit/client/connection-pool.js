@@ -404,4 +404,68 @@ describe('connectionPool config option', () => {
       expect(connection).to.equal(mockConnection);
     });
   });
+
+  // ── Oracledb adapter ──────────────────────────────────────────────
+
+  describe('Oracledb wrapNativePool', () => {
+    let OracledbClient;
+
+    before(() => {
+      try {
+        OracledbClient = require('../../../lib/dialects/oracledb/index');
+      } catch (_e) {
+        // oracledb driver may not be installed in test env
+      }
+    });
+
+    it('acquire calls nativePool.getConnection and assigns __knexUid', async function () {
+      if (!OracledbClient) this.skip();
+
+      const mockConnection = {};
+      const mockPool = { getConnection: sinon.stub().resolves(mockConnection) };
+
+      const client = Object.create(OracledbClient.prototype);
+      const adapter = client.wrapNativePool(mockPool);
+
+      const connection = await adapter.acquire().promise;
+
+      expect(mockPool.getConnection.calledOnce).to.be.true;
+      expect(connection.__knexUid).to.be.a('string');
+      expect(connection).to.equal(mockConnection);
+    });
+
+    it('release closes healthy connections back into the pool', function () {
+      if (!OracledbClient) this.skip();
+
+      const conn = { close: sinon.stub().callsFake((opts, cb) => cb(null)) };
+      const client = Object.create(OracledbClient.prototype);
+      const adapter = client.wrapNativePool({});
+
+      expect(adapter.release(conn)).to.be.true;
+      expect(conn.close.firstCall.args[0]).to.deep.equal({});
+    });
+
+    it('release drops disposed connections from the pool', function () {
+      if (!OracledbClient) this.skip();
+
+      const conn = {
+        close: sinon.stub().callsFake((opts, cb) => cb(null)),
+        __knex__disposed: 'err',
+      };
+      const client = Object.create(OracledbClient.prototype);
+      const adapter = client.wrapNativePool({});
+
+      expect(adapter.release(conn)).to.be.true;
+      expect(conn.close.firstCall.args[0]).to.deep.equal({ drop: true });
+    });
+
+    it('release returns false when connection has no close method', function () {
+      if (!OracledbClient) this.skip();
+
+      const client = Object.create(OracledbClient.prototype);
+      const adapter = client.wrapNativePool({});
+
+      expect(adapter.release({})).to.be.false;
+    });
+  });
 });
