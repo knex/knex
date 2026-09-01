@@ -2159,6 +2159,20 @@ describe('PostgreSQL SchemaBuilder', function () {
     );
   });
 
+  it('escapes single quotes inside JSON default objects (CWE-89)', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('user', function (t) {
+        t.json('preferences').defaultTo({ tag: "O'Reilly" });
+      })
+      .toSQL();
+    // JSON.stringify puts a bare ' inside the SQL string literal; without
+    // escaping that closes the quote early and injects SQL. See #6509.
+    expect(tableSql[0].sql).to.equal(
+      'alter table "user" add column "preferences" json default \'{"tag":"O\'\'Reilly"}\''
+    );
+  });
+
   it('sets specificType correctly', function () {
     tableSql = client
       .schemaBuilder()
