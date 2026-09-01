@@ -1291,6 +1291,20 @@ describe('MSSQL SchemaBuilder', function () {
     );
   });
 
+  it('escapes single quotes inside JSON default objects (CWE-89)', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.json('preferences').defaultTo({ tag: "O'Reilly" });
+      })
+      .toSQL();
+
+    expect(tableSql.length).to.equal(1);
+    expect(tableSql[0].sql).to.equal(
+      'ALTER TABLE [users] ADD [preferences] nvarchar(max) CONSTRAINT [users_preferences_default] DEFAULT \'{"tag":"O\'\'Reilly"}\''
+    );
+  });
+
   it('adding binary uuid', function () {
     tableSql = client
       .schemaBuilder()
