@@ -1663,12 +1663,12 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
-      columnList: string[],
+      columnList: readonly string[],
       raw: Raw | QueryBuilder
     ): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
-      columnList: string[],
+      columnList: readonly string[],
       sql: string,
       bindings?: readonly Value[] | Record<string, Value>
     ): QueryBuilder<TRecord, TResult>;
@@ -1686,12 +1686,12 @@ declare namespace Knex {
     ): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
-      columnList: string[],
+      columnList: readonly string[],
       queryBuilder: QueryBuilder
     ): QueryBuilder<TRecord, TResult>;
     (
       alias: string,
-      columnList: string[],
+      columnList: readonly string[],
       callback: (queryBuilder: QueryBuilder) => any
     ): QueryBuilder<TRecord, TResult>;
   }

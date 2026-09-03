@@ -183,3 +183,25 @@ knexInstance.with(
   'sql with positional bindings',
   [1]
 );
+// the column list is never mutated, so a readonly one works everywhere too
+knexInstance.with(
+  'readonlyColumnList+qb',
+  ['columnName'] as const,
+  knexInstance.select('column').from('table')
+);
+knexInstance.with(
+  'readonlyColumnList+callback',
+  ['columnName'] as const,
+  (qb) => qb.select('column').from('table')
+);
+knexInstance.with(
+  'readonlyColumnList+raw',
+  ['columnName'] as const,
+  knexInstance.raw('raw')
+);
+knexInstance.with(
+  'readonlyColumnList+sql+bindingsArr',
+  ['columnName'] as const,
+  'sql with positional bindings',
+  [1]
+);
