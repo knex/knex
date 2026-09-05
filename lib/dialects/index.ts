@@ -13,6 +13,7 @@ const dbNameToDialectLoader: Record<string, () => any> = Object.freeze({
   postgres: () => require('./postgres'),
   redshift: () => require('./redshift'),
   sqlite3: () => require('./sqlite3'),
+  tidb: () => require('./tidb'),
 });
 
 /**
