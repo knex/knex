@@ -32,6 +32,7 @@ describe('Schema', () => {
           await knex.schema.createTable('primary_table', (table) => {
             table.integer('id_nullable').nullable();
             table.integer('id_not_nullable').notNull();
+            table.string('with_default').notNull().defaultTo('a-default');
           });
         });
 
@@ -151,6 +152,23 @@ describe('Schema', () => {
                 id_not_nullable: 1,
               })
             ).to.eventually.be.rejectedWith(errorMessage);
+          });
+        });
+
+        describe('setNullable and dropNullable together', () => {
+          it('preserves a string default value across both calls', async () => {
+            await knex.schema.table('primary_table', (table) => {
+              table.setNullable('with_default');
+            });
+            await knex.schema.table('primary_table', (table) => {
+              table.dropNullable('with_default');
+            });
+
+            await knex('primary_table').insert({
+              id_not_nullable: 1,
+            });
+            const [row] = await knex('primary_table').select('with_default');
+            expect(row.with_default).to.equal('a-default');
           });
         });
 
