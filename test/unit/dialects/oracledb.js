@@ -1,6 +1,9 @@
 const { expect } = require('chai');
 const Oracle_Client = require('../../../lib/dialects/oracledb');
-const { NameHelper } = require('../../../lib/dialects/oracle/utils');
+const {
+  NameHelper,
+  isConnectionError,
+} = require('../../../lib/dialects/oracle/utils');
 
 describe('OracleDB Unit Tests', () => {
   describe('Client', () => {
@@ -89,6 +92,36 @@ describe('OracleDB Unit Tests', () => {
 
       expect(ora121NameHelper.limit).to.equal(30);
       expect(ora11NameHelper.limit).to.equal(30);
+    });
+  });
+
+  describe('isConnectionError', () => {
+    it('should treat node-oracledb Thin mode connection errors as connection errors', () => {
+      expect(
+        isConnectionError(
+          new Error(
+            'NJS-500: connection to Oracle Database was closed or broken'
+          )
+        )
+      ).to.equal(true);
+      expect(
+        isConnectionError(
+          new Error(
+            'NJS-521: connection to host db.example.com port 1521 received end-of-file on communication channel. (CONNECTION_ID=abc)'
+          )
+        )
+      ).to.equal(true);
+    });
+
+    it('should not treat unrelated errors as connection errors', () => {
+      expect(
+        isConnectionError(new Error('ORA-00942: table or view does not exist'))
+      ).to.equal(false);
+      expect(
+        isConnectionError(
+          new Error('NJS-522: connection descriptor limit exceeded')
+        )
+      ).to.equal(false);
     });
   });
 });
