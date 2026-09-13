@@ -1,6 +1,55 @@
 'use strict';
 const expect = require('chai').expect;
 const knex = require('../../../knex');
+const Client_MySQL2 = require('../../../lib/dialects/mysql2');
+
+describe('MySQL2 validateConnection', () => {
+  const client = new Client_MySQL2({ client: 'mysql2' });
+
+  it('should use the public state getter when mysql2 provides it (#6255)', () => {
+    const connection = (state) => ({ state, stream: { destroyed: false } });
+
+    expect(client.validateConnection(connection('authenticated'))).to.equal(
+      true
+    );
+    expect(client.validateConnection(connection('connected'))).to.equal(true);
+    expect(client.validateConnection(connection('error'))).to.equal(false);
+    expect(client.validateConnection(connection('disconnected'))).to.equal(
+      false
+    );
+    expect(
+      client.validateConnection(connection('protocol_handshake'))
+    ).to.equal(false);
+  });
+
+  it('should fall back to the internal fields for mysql2 versions without the state getter', () => {
+    const connection = (fields) => ({
+      _fatalError: null,
+      _protocolError: null,
+      _closing: false,
+      stream: { destroyed: false },
+      ...fields,
+    });
+
+    expect(client.validateConnection(connection({}))).to.equal(true);
+    expect(
+      client.validateConnection(connection({ _fatalError: new Error('x') }))
+    ).to.equal(false);
+    expect(
+      client.validateConnection(connection({ _protocolError: new Error('x') }))
+    ).to.equal(false);
+    expect(client.validateConnection(connection({ _closing: true }))).to.equal(
+      false
+    );
+    expect(
+      client.validateConnection(connection({ stream: { destroyed: true } }))
+    ).to.equal(false);
+  });
+
+  it('should not validate a missing connection', () => {
+    expect(client.validateConnection(undefined)).to.not.be.ok;
+  });
+});
 
 describe('MySQL unit tests', () => {
   const qb = knex({
