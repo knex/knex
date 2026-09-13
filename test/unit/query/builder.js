@@ -11396,6 +11396,56 @@ describe('QueryBuilder', () => {
       );
     });
 
+    it('should reference an aliased table by its alias when deleting with joins in MySQL #6272', () => {
+      const mariadb = new MariaDB_Client({ client: 'mariadb' });
+
+      testsql(
+        qb()
+          .from('comment as c')
+          .leftJoin('post as p', 'c.id_post', 'p.id')
+          .where('p.status', 'draft')
+          .del(),
+        {
+          mysql: {
+            sql: 'delete `c` from `comment` as `c` left join `post` as `p` on `c`.`id_post` = `p`.`id` where `p`.`status` = ?',
+            bindings: ['draft'],
+          },
+          mariadb: {
+            sql: 'delete `c` from `comment` as `c` left join `post` as `p` on `c`.`id_post` = `p`.`id` where `p`.`status` = ?',
+            bindings: ['draft'],
+          },
+        },
+        { ...clients, mariadb }
+      );
+
+      testsql(
+        qb()
+          .from({ c: 'comment' })
+          .leftJoin('post as p', 'c.id_post', 'p.id')
+          .where('p.status', 'draft')
+          .del(),
+        {
+          mysql: {
+            sql: 'delete `c` from `comment` as `c` left join `post` as `p` on `c`.`id_post` = `p`.`id` where `p`.`status` = ?',
+            bindings: ['draft'],
+          },
+        }
+      );
+
+      testsql(
+        qb()
+          .withSchema('app')
+          .from('comment as c')
+          .leftJoin('post as p', 'c.id_post', 'p.id')
+          .del(),
+        {
+          mysql: {
+            sql: 'delete `c` from `app`.`comment` as `c` left join `app`.`post` as `p` on `c`.`id_post` = `p`.`id`',
+          },
+        }
+      );
+    });
+
     it('should include joins without where clause when deleting #5015', () => {
       testsql(
         qb().del().from('users').join('photos', 'photos.id', 'users.id'),
