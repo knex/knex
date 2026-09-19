@@ -1312,6 +1312,24 @@ describe('Inserts', function () {
           });
         });
 
+        it('should reject NaN chunk sizes', async function () {
+          await expect(
+            Promise.resolve().then(() =>
+              knex.batchInsert('BatchInsert', items, NaN)
+            )
+          ).to.be.rejectedWith(TypeError, 'Invalid chunkSize: NaN');
+        });
+
+        it('should reject NaN chunk sizes within a transaction', async function () {
+          await knex.transaction(async function (tr) {
+            await expect(
+              Promise.resolve().then(() =>
+                tr.batchInsert('BatchInsert', items, NaN)
+              )
+            ).to.be.rejectedWith(TypeError, 'Invalid chunkSize: NaN');
+          });
+        });
+
         it('transaction.batchInsert using specified transaction', async function () {
           await knex.transaction(function (tr) {
             return tr
