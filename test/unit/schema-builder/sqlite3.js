@@ -37,6 +37,34 @@ describe('SQLite SchemaBuilder', function () {
     );
   });
 
+  it('quoted table names containing dots are not treated as schema.table (#2762)', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('"my.table.name"', function (table) {
+        table.integer('id');
+        table.text('data');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(
+      tableSql[0].sql,
+      'create table `my.table.name` (`id` integer, `data` text)'
+    );
+  });
+
+  it('unquoted dotted table names are still treated as schema.table', function () {
+    tableSql = client
+      .schemaBuilder()
+      .createTable('my.table', function (table) {
+        table.integer('id');
+      })
+      .toSQL();
+
+    equal(1, tableSql.length);
+    equal(tableSql[0].sql, 'create table `my`.`table` (`id` integer)');
+  });
+
   it('basic create table like', function () {
     tableSql = client
       .schemaBuilder()

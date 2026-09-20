@@ -1,5 +1,9 @@
 # [Master (Unreleased)](https://github.com/knex/knex/compare/3.3.0...master)
 
+### Bug fixes
+
+- Fix quoted SQLite table names containing `.` being split as schema.table [#2762](https://github.com/knex/knex/issues/2762)
+
 # 3.3.0 - 26 June, 2026
 
 ### New features

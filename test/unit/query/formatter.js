@@ -2,8 +2,10 @@ const { expect } = require('chai');
 const Formatter = require('../../../lib/formatter');
 const {
   getAliasSeparatorIndex,
+  unwrapFullyQuotedIdentifier,
 } = require('../../../lib/formatter/wrappingFormatter');
 const Client = require('../../../lib/client');
+const SQLite3_Client = require('../../../lib/dialects/sqlite3');
 
 describe('formatter', () => {
   const queryContext = () => {
@@ -35,6 +37,46 @@ describe('formatter', () => {
   it('correctly handles dotted identifiers with case-insensitive aliases', () => {
     const wrapped = formatter.wrap('schema.table AS alias');
     expect(wrapped).to.equal('"schema"."table" as "alias"');
+  });
+
+  it('does not split quoted sqlite identifiers that contain dots (#2762)', () => {
+    const sqliteClient = new SQLite3_Client({
+      client: 'sqlite3',
+      useNullAsDefault: true,
+    });
+    const sqliteFormatter = new Formatter(sqliteClient, { queryContext });
+
+    expect(sqliteFormatter.wrap('"my.table.name"')).to.equal('`my.table.name`');
+    expect(sqliteFormatter.wrap('`my.table.name`')).to.equal('`my.table.name`');
+    expect(sqliteFormatter.wrap('[my.table.name]')).to.equal('`my.table.name`');
+    expect(sqliteFormatter.wrap('"my.table.name" as t')).to.equal(
+      '`my.table.name` as `t`'
+    );
+    expect(sqliteFormatter.wrap('schema.table')).to.equal('`schema`.`table`');
+  });
+
+  describe('unwrapFullyQuotedIdentifier', () => {
+    it('unwraps a single quoted identifier', () => {
+      expect(unwrapFullyQuotedIdentifier('"my.table.name"')).to.equal(
+        'my.table.name'
+      );
+      expect(unwrapFullyQuotedIdentifier('`my.table.name`')).to.equal(
+        'my.table.name'
+      );
+      expect(unwrapFullyQuotedIdentifier('[my.table.name]')).to.equal(
+        'my.table.name'
+      );
+      expect(unwrapFullyQuotedIdentifier('"foo""bar.baz"')).to.equal(
+        'foo"bar.baz'
+      );
+    });
+
+    it('returns null when the value is not a single quoted identifier', () => {
+      expect(unwrapFullyQuotedIdentifier('my.table.name')).to.equal(null);
+      expect(unwrapFullyQuotedIdentifier('"schema"."table"')).to.equal(null);
+      expect(unwrapFullyQuotedIdentifier('"unclosed')).to.equal(null);
+      expect(unwrapFullyQuotedIdentifier('')).to.equal(null);
+    });
   });
 
   describe('getAliasSeparatorIndex', () => {
