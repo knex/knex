@@ -835,6 +835,36 @@ module.exports = function (dialect) {
       );
     });
 
+    // https://github.com/knex/knex/issues/4943
+    it('test adding an increments column on the first place', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.increments('id').first();
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `id` int unsigned not null auto_increment primary key first'
+      );
+    });
+
+    // https://github.com/knex/knex/issues/4943
+    it('test adding an increments column after another column', function () {
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function () {
+          this.increments('id').after('foo');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` add `id` int unsigned not null auto_increment primary key after `foo`'
+      );
+    });
+
     it('test adding string', function () {
       tableSql = client
         .schemaBuilder()
