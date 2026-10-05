@@ -36,4 +36,25 @@ module.exports = {
     mocha: true,
     es6: true,
   },
+  overrides: [
+    {
+      files: ['lib/tracing.js', 'test/unit/tracing.js'],
+      rules: {
+        'n/no-unsupported-features/node-builtins': [
+          ERR_IN_CI,
+          {
+            allowExperimental: true,
+            ignores: [
+              'process.getBuiltinModule',
+              'diagnostics_channel',
+              'diagnostics_channel.tracingChannel',
+              'diagnostics_channel.channel',
+              'diagnostics_channel.Channel',
+              'diagnostics_channel.TracingChannel',
+            ],
+          },
+        ],
+      },
+    },
+  ],
 };
