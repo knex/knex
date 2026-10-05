@@ -12096,6 +12096,78 @@ describe('QueryBuilder', () => {
         );
       });
 
+      // Oracle needs the json path as a string literal (bind variables are not
+      // allowed there), so the path must be escaped rather than bound.
+      describe('json path escaping (oracledb)', () => {
+        const injectionPath = "$.a') OR 1=1 --";
+
+        it('does not let a json path break out of the literal in whereJsonPath', () => {
+          testsql(
+            qb()
+              .select()
+              .from('users')
+              .whereJsonPath('data', injectionPath, '=', 1),
+            {
+              pg: {
+                sql: 'select * from "users" where jsonb_path_query_first("data", ?)::int = ?',
+                bindings: [injectionPath, 1],
+              },
+              oracledb: {
+                sql: 'select * from "users" where json_value("data", \'$.a\'\') OR 1=1 --\') = ?',
+                bindings: [1],
+              },
+            }
+          );
+        });
+
+        it('does not let a json path break out of the literal in jsonExtract', () => {
+          testsql(qb().from('users').jsonExtract('data', injectionPath), {
+            pg: {
+              sql: 'select jsonb_path_query("data", ?) from "users"',
+              bindings: [injectionPath],
+            },
+            oracledb: {
+              sql: 'select json_value("data", \'$.a\'\') OR 1=1 --\') from "users"',
+              bindings: [],
+            },
+          });
+        });
+
+        it('does not let a json path break out of the literal in multi-column jsonExtract', () => {
+          testsql(
+            qb()
+              .from('users')
+              .jsonExtract([
+                ['data', injectionPath, 'a'],
+                ['data', '$.b', 'b'],
+              ]),
+            {
+              oracledb: {
+                sql: 'select json_value("data", \'$.a\'\') OR 1=1 --\') "a", json_value("data", \'$.b\') "b" from "users"',
+                bindings: [],
+              },
+            }
+          );
+        });
+
+        it('doubles every single quote in the json path', () => {
+          testsql(qb().from('users').jsonExtract('data', "$.'a'.'b'"), {
+            oracledb: {
+              sql: "select json_value(\"data\", '$.''a''.''b''') from \"users\"",
+              bindings: [],
+            },
+          });
+        });
+
+        it('rejects a json path that is not a string', () => {
+          testFailure(
+            qb().from('users').whereJsonPath('data', { a: 1 }, '=', 1),
+            'JSON path must be a string',
+            ['oracledb']
+          );
+        });
+      });
+
       it('where a json column is a superset of value', async function () {
         testsql(
           qb()
