@@ -488,6 +488,8 @@ declare namespace knex {
   }
 
   export const Client: typeof Knex.Client;
+
+  export const Raw: new (client?: any) => Knex.Raw;
 }
 
 declare namespace Knex {
