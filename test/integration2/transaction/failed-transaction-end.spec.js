@@ -21,9 +21,8 @@ describe('Transaction', () => {
         });
 
         async function pidsAndCodes(db, table) {
-          const pid = (
-            await db.raw('select pg_backend_pid() as pid')
-          ).rows[0].pid;
+          const pid = (await db.raw('select pg_backend_pid() as pid')).rows[0]
+            .pid;
           const codes = (await db(table).select('code').orderBy('code')).map(
             (row) => row.code
           );
@@ -66,15 +65,13 @@ describe('Transaction', () => {
               table.text('code').primary();
             });
             const trx = await db.transaction();
-            const first = (
-              await trx.raw('select pg_backend_pid() as pid')
-            ).rows[0].pid;
+            const first = (await trx.raw('select pg_backend_pid() as pid'))
+              .rows[0].pid;
             await trx('failed_tx_end').insert({ code: 'doomed' });
             await trx.rollback().catch(() => {});
             const next = await db.transaction();
-            const second = (
-              await next.raw('select pg_backend_pid() as pid')
-            ).rows[0].pid;
+            const second = (await next.raw('select pg_backend_pid() as pid'))
+              .rows[0].pid;
             await next('failed_tx_end').insert({ code: 'next' });
             await next.commit();
             const codes = (
@@ -112,8 +109,8 @@ describe('Transaction', () => {
             await new Promise((resolve) => setTimeout(resolve, 1500));
             let second;
             await db.transaction(async (trx) => {
-              second = (await trx.raw('select pg_backend_pid() as pid'))
-                .rows[0].pid;
+              second = (await trx.raw('select pg_backend_pid() as pid')).rows[0]
+                .pid;
               await trx('failed_tx_end').insert({ code: 'next' });
             });
             const { codes } = await pidsAndCodes(db, 'failed_tx_end');
@@ -148,8 +145,8 @@ describe('Transaction', () => {
             await new Promise((resolve) => setTimeout(resolve, 1500));
             let second;
             await db.transaction(async (trx) => {
-              second = (await trx.raw('select pg_backend_pid() as pid'))
-                .rows[0].pid;
+              second = (await trx.raw('select pg_backend_pid() as pid')).rows[0]
+                .pid;
               await trx('failed_tx_end').insert({ code: 'next' });
             });
             const { codes } = await pidsAndCodes(db, 'failed_tx_end');
@@ -373,15 +370,13 @@ describe('Transaction', () => {
               table.text('code').primary();
             });
             const trx = await db.transaction();
-            const first = (
-              await trx.raw('select pg_backend_pid() as pid')
-            ).rows[0].pid;
+            const first = (await trx.raw('select pg_backend_pid() as pid'))
+              .rows[0].pid;
             await trx('failed_tx_end_pool').insert({ code: 'doomed' });
             await trx.rollback().catch(() => {});
             const next = await db.transaction();
-            const second = (
-              await next.raw('select pg_backend_pid() as pid')
-            ).rows[0].pid;
+            const second = (await next.raw('select pg_backend_pid() as pid'))
+              .rows[0].pid;
             await next('failed_tx_end_pool').insert({ code: 'next' });
             await next.commit();
             const codes = (
