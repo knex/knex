@@ -198,6 +198,133 @@ describe('Transaction', () => {
           }
         });
 
+        function stubTransactionStatus(fake) {
+          const original = pg.Client.prototype.getTransactionStatus;
+          pg.Client.prototype.getTransactionStatus = fake;
+          return () => {
+            pg.Client.prototype.getTransactionStatus = original;
+          };
+        }
+
+        function settleWithin(promise, ms) {
+          let timer;
+          const deadline = new Promise((resolve, reject) => {
+            timer = setTimeout(
+              () => reject(new Error(`did not settle within ${ms} ms`)),
+              ms
+            );
+          });
+          return Promise.race([promise, deadline]).finally(() =>
+            clearTimeout(timer)
+          );
+        }
+
+        async function dropStatusTables(db) {
+          await db.raw('drop table if exists failed_tx_end_status_child');
+          await db.raw('drop table if exists failed_tx_end_status_parent');
+        }
+
+        async function createStatusTables(db) {
+          await dropStatusTables(db);
+          await db.raw(`
+            create table failed_tx_end_status_parent (id int primary key);
+            create table failed_tx_end_status_child (
+              id int primary key,
+              parent_id int references failed_tx_end_status_parent (id)
+                deferrable initially deferred
+            )
+          `);
+        }
+
+        // COMMIT fails on the deferred foreign key. Then a new transaction
+        // inserts the parent and the child, and must commit.
+        async function failCommitThenCommit(db, id) {
+          let first;
+          const error = await settleWithin(
+            db
+              .transaction(async (trx) => {
+                first = (await trx.raw('select pg_backend_pid() as pid'))
+                  .rows[0].pid;
+                await trx.raw(
+                  'insert into failed_tx_end_status_child (id, parent_id) values (?, ?)',
+                  [id, id]
+                );
+              })
+              .then(
+                () => null,
+                (err) => err
+              ),
+            5000
+          );
+          let second;
+          await db.transaction(async (trx) => {
+            second = (await trx.raw('select pg_backend_pid() as pid')).rows[0]
+              .pid;
+            await trx.raw(
+              'insert into failed_tx_end_status_parent (id) values (?)',
+              [id]
+            );
+            await trx.raw(
+              'insert into failed_tx_end_status_child (id, parent_id) values (?, ?)',
+              [id, id]
+            );
+          });
+          return { error, first, second };
+        }
+
+        // pg 8.21+ gives the native client a getTransactionStatus() that calls
+        // pg-native's binding, which has it only from pg-native 3.8.0.
+        it('reports the COMMIT error and discards the connection when the status accessor throws', async function () {
+          this.timeout(10000);
+          const db = getKnexForDb(dialect, { pool: { min: 0, max: 1 } });
+          const restore = stubTransactionStatus(() => {
+            throw new TypeError(
+              'this.native.getTransactionStatus is not a function'
+            );
+          });
+          try {
+            await createStatusTables(db);
+            const { error, first, second } = await failCommitThenCommit(db, 1);
+            expect(error).to.not.be.an.instanceOf(TypeError);
+            expect(error.code).to.equal('23503');
+            expect(second).to.not.equal(first);
+            const rows = await db('failed_tx_end_status_child').select('id');
+            expect(rows).to.deep.equal([{ id: 1 }]);
+          } finally {
+            restore();
+            await dropStatusTables(db);
+            await db.destroy();
+          }
+        });
+
+        it('discards the connection when the status accessor returns an unexpected value', async function () {
+          this.timeout(10000);
+          const db = getKnexForDb(dialect, { pool: { min: 0, max: 1 } });
+          const values = [undefined, null, 'X', 0];
+          let current;
+          const restore = stubTransactionStatus(() => current);
+          try {
+            await createStatusTables(db);
+            for (const [index, value] of values.entries()) {
+              current = value;
+              const { error, first, second } = await failCommitThenCommit(
+                db,
+                index + 1
+              );
+              expect(error.code, String(value)).to.equal('23503');
+              expect(second, String(value)).to.not.equal(first);
+            }
+            const rows = await db('failed_tx_end_status_child')
+              .select('id')
+              .orderBy('id');
+            expect(rows.map((row) => row.id)).to.deep.equal([1, 2, 3, 4]);
+          } finally {
+            restore();
+            await dropStatusTables(db);
+            await db.destroy();
+          }
+        });
+
         it('keeps the connection when a nested transaction rolls back', async function () {
           this.timeout(10000);
           const db = getKnexForDb(dialect, { pool: { min: 0, max: 1 } });
