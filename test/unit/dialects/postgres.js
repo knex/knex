@@ -328,3 +328,66 @@ describe('Postgres Unit Tests', function () {
     }
   });
 });
+
+describe('Postgres transaction commit outcomes', () => {
+  const Transaction = require('../../../lib/dialects/postgres/execution/pg-transaction');
+  let transaction;
+  let connection;
+
+  beforeEach(() => {
+    transaction = Object.create(Transaction.prototype);
+    transaction._completed = false;
+    transaction._resolver = sinon.spy();
+    transaction._rejecter = sinon.spy();
+    transaction.trxClient = { query: sinon.stub() };
+    connection = {};
+  });
+
+  it('marks the transaction completed while COMMIT is pending', async () => {
+    let resolveQuery;
+    transaction.trxClient.query.returns(
+      new Promise((resolve) => {
+        resolveQuery = resolve;
+      })
+    );
+
+    const committed = transaction.commit(connection, 'committed');
+    expect(transaction.isCompleted()).to.equal(true);
+    sinon.assert.notCalled(transaction._resolver);
+    sinon.assert.calledWithExactly(
+      transaction.trxClient.query,
+      connection,
+      'COMMIT;'
+    );
+
+    const response = { response: { command: 'COMMIT' } };
+    resolveQuery(response);
+    expect(await committed).to.equal(response);
+    sinon.assert.calledOnceWithExactly(transaction._resolver, 'committed');
+    sinon.assert.notCalled(transaction._rejecter);
+  });
+
+  it('rejects only the transaction outcome when the server rolls back', async () => {
+    const response = { response: { command: 'ROLLBACK' } };
+    transaction.trxClient.query.resolves(response);
+    transaction.doNotRejectOnRollback = true;
+
+    expect(await transaction.commit(connection)).to.equal(response);
+    sinon.assert.notCalled(transaction._resolver);
+    sinon.assert.calledOnce(transaction._rejecter);
+    expect(transaction._rejecter.firstCall.args[0]).to.be.instanceOf(Error);
+    expect(transaction._rejecter.firstCall.args[0].message).to.equal(
+      'Transaction was rolled back by the database'
+    );
+  });
+
+  it('preserves a driver error without resolving the transaction afterward', async () => {
+    const error = new Error('COMMIT failed');
+    transaction.trxClient.query.rejects(error);
+
+    expect(await transaction.commit(connection)).to.equal(undefined);
+    sinon.assert.calledOnceWithExactly(transaction._rejecter, error);
+    sinon.assert.notCalled(transaction._resolver);
+    expect(transaction.isCompleted()).to.equal(true);
+  });
+});
