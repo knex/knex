@@ -644,6 +644,58 @@ module.exports = function (knex) {
         });
     });
 
+    it('rejects when the handler rejects with undefined #6065', async function () {
+      await expect(knex.transaction(() => Promise.reject())).to.be.rejectedWith(
+        Error,
+        'Transaction rejected with non-error: undefined'
+      );
+    });
+
+    it('rejects when the handler throws undefined #6065', async function () {
+      await expect(
+        knex.transaction(() => {
+          throw undefined;
+        })
+      ).to.be.rejectedWith(
+        Error,
+        'Transaction rejected with non-error: undefined'
+      );
+    });
+
+    it('rejects a nested transaction whose handler rejects with undefined #6065', async function () {
+      await knex.transaction(async (trx) => {
+        await expect(
+          trx.transaction(() => Promise.reject())
+        ).to.be.rejectedWith(
+          Error,
+          'Transaction rejected with non-error: undefined'
+        );
+      });
+    });
+
+    it('rolls back the work of a handler that rejects with undefined #6065', async function () {
+      const email = 'reject-undefined-6065@example.com';
+      await expect(
+        knex.transaction(async (trx) => {
+          await trx('accounts').insert({
+            first_name: 'Transaction',
+            last_name: 'Undefined',
+            email,
+            logins: 1,
+            about: 'Lorem ipsum Dolore labore incididunt enim.',
+            created_at: new Date(),
+            updated_at: new Date(),
+          });
+          return Promise.reject();
+        })
+      ).to.be.rejectedWith(
+        Error,
+        'Transaction rejected with non-error: undefined'
+      );
+      const rows = await knex('accounts').where({ email });
+      expect(rows).to.have.length(0);
+    });
+
     it('#1052 - transaction promise mutating', function () {
       const transactionReturning = knex.transaction(function (trx) {
         return trx
