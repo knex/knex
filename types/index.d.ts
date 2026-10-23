@@ -3253,6 +3253,7 @@ declare namespace Knex {
     loadExtensions?: readonly string[];
     migrationSource?: MigrationSource<unknown>;
     name?: string;
+    lockTimeout?: number;
   }
 
   // Note that the shape of the `migration` depends on the MigrationSource which may be custom.

@@ -279,6 +279,7 @@ Each method takes an optional `config` object, which may specify the following p
 - `sortDirsSeparately`: if true and multiple directories are specified, all migrations from a single directory will be executed before executing migrations in the next folder (default `false`)
 - `loadExtensions`: array of file extensions which knex will treat as migrations. For example, if you have typescript transpiled into javascript in the same folder, you want to execute only javascript migrations. In this case, set `loadExtensions` to `['.js']` (Notice the dot!) (default `['.co', '.coffee', '.eg', '.iced', '.js', '.litcoffee', '.ls', '.ts']`)
 - `migrationSource`: specify a custom migration source, see [Custom Migration Source](#custom-migration-sources) for more info (default filesystem)
+- `lockTimeout`: how long, in milliseconds, a run holds the migration lock before another run may take it over; the run extends it before each migration, so it must be longer than the longest migration (default `600000`)
 
 ### Transactions in migrations
 
@@ -399,11 +400,11 @@ Forcibly unlocks the migrations lock table, and ensures that there is only one r
 
 ## Notes about locks
 
-A lock system is there to prevent multiple processes from running the same migration batch in the same time. When a batch of migrations is about to be run, the migration system first tries to get a lock using a `SELECT ... FOR UPDATE` statement (preventing race conditions from happening). If it can get a lock, the migration batch will run. If it can't, it will wait until the lock is released.
+A lock system is there to prevent multiple processes from running the same migration batch in the same time. When a batch of migrations is about to be run, the migration system first takes the lock with a single conditional update of the lock table. If it gets the lock, the migration batch runs; if another process holds it, the batch fails with a `MigrationLocked` error that names the holder (`<host>:<pid>`) and when its hold runs out.
 
-Please note that if your process unfortunately crashes, the lock will have to be _manually_ removed with `knex migrate:unlock` in order to let migrations run again.
+A process holds the lock for `lockTimeout` milliseconds and extends it before each migration, so a batch may run longer than `lockTimeout` as long as each of its migrations does not; nothing renews the lock while a migration runs. If the process crashes, the next run takes the lock over once that time has passed and logs a warning naming the previous holder. A process that finds it no longer holds the lock stops before recording or running anything more. When all migrations of a batch run in one transaction, the lock is held inside that transaction and released when the transaction ends.
 
-The locks are saved in a table called "`tableName`\_lock"; it has a column called `is_locked` that `knex migrate:unlock` sets to `0` in order to release the lock. The `index` column in the lock table exists for compatibility with some database clusters that require a primary key, but is otherwise unused. There must be only one row in this table, or an error will be thrown when running migrations: "Migration table is already locked". Run `knex migrate:unlock` to ensure that there is only one row in the table.
+The locks are saved in a table called "`tableName`\_lock"; it has a column called `is_locked` that `knex migrate:unlock` sets to `0` in order to release the lock, and columns recording the current holder and when its hold expires, which are added to lock tables created by earlier versions on first use. The `index` column in the lock table exists for compatibility with some database clusters that require a primary key, but is otherwise unused. The table should hold one row: extra unlocked rows, which processes starting together on an empty database can leave, are cut to one when a run takes the lock, while more than one locked row makes running migrations fail with "Migration table is already locked". Run `knex migrate:unlock` to reset the table to one row; it releases the lock whoever holds it, and a lock set by an earlier version without a recorded holder stays until it is released this way.
 
 ## Custom migration sources
 
