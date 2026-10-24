@@ -1224,9 +1224,17 @@ describe('Additional', function () {
             const promise = query
               .timeout(50, { cancel: true })
               .then(_.identity);
+            let processesBeforeTimeout = [];
+            let i = 0;
 
-            await delay(15);
-            const processesBeforeTimeout = await getProcesses();
+            do {
+              await delay(10);
+              processesBeforeTimeout = await getProcesses();
+            } while (
+              !processesBeforeTimeout.includes(query.toString()) &&
+              i++ < 4
+            );
+
             expect(processesBeforeTimeout).to.include(query.toString());
 
             await expect(promise).to.eventually.be.rejected.and.to.deep.include(

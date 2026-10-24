@@ -16,6 +16,7 @@ const {
   isSQLite,
   isMssql,
   isMysql,
+  isMariaDB,
   isOracle,
   isPgBased,
 } = require('../../../util/db-helpers');
@@ -163,6 +164,50 @@ describe('Inserts', function () {
               [{ id: '1' }]
             );
           });
+      });
+
+      it('returns rows for mariadb via .returning() on insert/update/delete', async function () {
+        if (!isMariaDB(knex)) {
+          return this.skip();
+        }
+
+        // UPDATE ... RETURNING is only supported on MariaDB >= 13.0; insert and
+        // delete returning are supported on the versions used in CI (11.4).
+        const version = parseFloat(knex.client.version);
+        const supportsUpdateReturning = !version || version >= 13;
+
+        const inserted = await knex('accounts')
+          .insert({
+            first_name: 'Returning',
+            last_name: 'Test',
+            email: 'mariadb-returning@example.com',
+            logins: 1,
+            about: 'returning support',
+            created_at: TEST_TIMESTAMP,
+            updated_at: TEST_TIMESTAMP,
+          })
+          .returning(['id', 'email']);
+
+        expect(inserted).to.have.lengthOf(1);
+        expect(inserted[0].email).to.equal('mariadb-returning@example.com');
+        expect(inserted[0].id).to.exist;
+        const insertedId = inserted[0].id;
+
+        if (supportsUpdateReturning) {
+          const updated = await knex('accounts')
+            .where('id', insertedId)
+            .update({ logins: 2 })
+            .returning(['id', 'logins']);
+          expect(updated).to.eql([{ id: insertedId, logins: 2 }]);
+        }
+
+        const deleted = await knex('accounts')
+          .where('id', insertedId)
+          .del()
+          .returning(['id', 'email']);
+        expect(deleted).to.eql([
+          { id: insertedId, email: 'mariadb-returning@example.com' },
+        ]);
       });
 
       it('should handle multi inserts', async function () {

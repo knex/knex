@@ -11,7 +11,7 @@
     "resolve-schema-snippets": "node scripts/resolve-schema-snippets-docker.mjs"
   },
   "devDependencies": {
-    "knex": "^3.2.10",
+    "knex": "^3.3.0",
     "sqlite3": "5.0.11",
     "typescript": "^5.9.3",
     "vitepress": "^1.6.4"
