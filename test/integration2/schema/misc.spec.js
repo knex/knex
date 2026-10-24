@@ -7,6 +7,7 @@ const { isString, isObject } = require('../../../lib/util/is');
 const {
   isPgBased,
   isMysql,
+  isMariaDB,
   isOracle,
   isSQLite,
   isRedshift,
@@ -1677,6 +1678,29 @@ describe('Schema (misc)', () => {
           knex.schema.table('test_table_one', (t) => {
             t.dropIndex('first_name');
           }));
+
+        describe('dropIndexIfExists, except mysql and oracle (mariadb supported)', () => {
+          it('allows dropping a index if exists', async function () {
+            if (isOracle(knex) || (isMysql(knex) && !isMariaDB(knex))) {
+              return this.skip();
+            }
+            await knex.schema.table('test_table_one', (t) => {
+              t.index('last_name');
+            });
+            await knex.schema.table('test_table_one', (t) => {
+              t.dropIndexIfExists('last_name');
+            });
+          });
+
+          it("allows dropping a index if exists, when it doesn't exist", async function () {
+            if (isOracle(knex) || (isMysql(knex) && !isMariaDB(knex))) {
+              return this.skip();
+            }
+            await knex.schema.table('test_table_one', (t) => {
+              t.dropIndexIfExists('foo');
+            });
+          });
+        });
 
         describe('supports partial indexes - postgres, sqlite, and mssql', function () {
           it('allows creating indexes with predicate', async function () {

@@ -721,6 +721,42 @@ describe('PostgreSQL SchemaBuilder', function () {
     expect(tableSql[0].sql).to.equal('drop index "mySchema"."users_foo_index"');
   });
 
+  it('drop index if exists', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropIndexIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop index if exists "users_foo_index"');
+  });
+
+  it('drop index if exists, custom', function () {
+    tableSql = client
+      .schemaBuilder()
+      .table('users', function (table) {
+        table.dropIndexIfExists(null, 'foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal('drop index if exists "foo"');
+  });
+
+  it('drop index if exists, with schema', function () {
+    tableSql = client
+      .schemaBuilder()
+      .withSchema('mySchema')
+      .table('users', function (table) {
+        table.dropIndexIfExists('foo');
+      })
+      .toSQL();
+    equal(1, tableSql.length);
+    expect(tableSql[0].sql).to.equal(
+      'drop index if exists "mySchema"."users_foo_index"'
+    );
+  });
+
   it('drop foreign', function () {
     tableSql = client
       .schemaBuilder()

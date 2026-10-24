@@ -466,6 +466,17 @@ module.exports = function (dialect) {
       expect(tableSql[0].sql).to.equal('alter table `users` drop index `foo`');
     });
 
+    it('test drop index if exists', function () {
+      expect(() => {
+        client
+          .schemaBuilder()
+          .table('users', function () {
+            this.dropIndexIfExists('foo');
+          })
+          .toSQL();
+      }).to.throw(/not supported/);
+    });
+
     it('test drop foreign', function () {
       tableSql = client
         .schemaBuilder()
@@ -1436,6 +1447,36 @@ module.exports = function (dialect) {
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
         'alter table `users` drop index if exists `users_email_unique`'
+      );
+    });
+
+    it('allows dropping an index if exists on MariaDB', function () {
+      client.isMariaDB = true;
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (t) {
+          t.dropIndexIfExists('foo');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` drop index if exists `users_foo_index`'
+      );
+    });
+
+    it('allows dropping an index if exists by name on MariaDB', function () {
+      client.isMariaDB = true;
+      tableSql = client
+        .schemaBuilder()
+        .table('users', function (t) {
+          t.dropIndexIfExists(null, 'foo');
+        })
+        .toSQL();
+
+      equal(1, tableSql.length);
+      expect(tableSql[0].sql).to.equal(
+        'alter table `users` drop index if exists `foo`'
       );
     });
 

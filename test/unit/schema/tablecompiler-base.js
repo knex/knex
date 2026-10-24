@@ -32,6 +32,13 @@ describe('Base TableCompiler', () => {
     );
   });
 
+  it('dropIndexIfExists throws by default', () => {
+    const compiler = createCompiler();
+    expect(() => compiler.dropIndexIfExists()).to.throw(
+      /implemented in the dialect driver/
+    );
+  });
+
   it('dropForeignIfExists throws by default', () => {
     const compiler = createCompiler();
     expect(() => compiler.dropForeignIfExists()).to.throw(
