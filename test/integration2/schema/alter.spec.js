@@ -211,5 +211,46 @@ describe('Schema', () => {
           });
         });
       });
+
+    getAllDbs()
+      .filter((db) => db === Db.MSSQL)
+      .forEach((db) => {
+        describe(db, () => {
+          let knex;
+          before(async () => {
+            knex = getKnexForDb(db);
+          });
+
+          after(() => {
+            return knex.destroy();
+          });
+
+          beforeEach(async () => {
+            await knex.schema.dropTableIfExists('user');
+            await knex.schema.createTable('user', (table) => {
+              table.integer('id');
+              table.integer('column_dropped').defaultTo(1);
+              table.string('column_altered').defaultTo('old');
+            });
+          });
+
+          afterEach(async () => {
+            await knex.schema.dropTableIfExists('user');
+          });
+
+          it('drops and alters columns with a default on a table named after a reserved word', async () => {
+            await knex.schema.alterTable('user', (table) => {
+              table.dropColumn('column_dropped');
+              table.string('column_altered').defaultTo('new').alter();
+            });
+
+            expect(await knex.schema.hasColumn('user', 'column_dropped')).to.be
+              .false;
+            await knex('user').insert({ id: 1 });
+            const rows = await knex('user').select('column_altered');
+            expect(rows).to.eql([{ column_altered: 'new' }]);
+          });
+        });
+      });
   });
 });
