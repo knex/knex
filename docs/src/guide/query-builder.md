@@ -504,14 +504,6 @@ Return a json value/object/array where a given value is removed at the given Jso
 ```js
 // @sql
 knex('accounts').jsonRemove('json_col', '$.name', 'colWithRemove');
-
-// @sql
-knex('accounts').jsonInsert(
-  'json_col',
-  '$.name',
-  { name: 'newName' },
-  'newNameCol'
-);
 ```
 
 ### offset
@@ -738,7 +730,8 @@ knex('books').insert({ title: 'Slaughterhouse Five' });
 // @sql
 knex('coords').insert([{ x: 20 }, { y: 30 }, { x: 10, y: 20 }]);
 
-// Returns [2] in "mysql", "sqlite"; [2, 3] in "postgresql"
+// Returns [2] in "mysql";
+// [ { id: 2 }, { id: 3 } ] in "postgresql", "sqlite"
 // @sql
 knex
   .insert([{ title: 'Great Gatsby' }, { title: 'Fahrenheit 451' }], ['id'])
@@ -951,8 +944,7 @@ knex('books').where('published_date', '<', 2000).update({
   thisKeyIsSkipped: undefined,
 });
 
-// Returns [1] in "mysql", "sqlite", "oracle";
-// [] in "postgresql"
+// Returns the number of updated rows, e.g. 1,
 // unless the 'returning' parameter is set.
 // @sql
 knex('books').update('title', 'Slaughterhouse Five');
@@ -1058,8 +1050,7 @@ Utilized by PostgreSQL, MSSQL, SQLite, and Oracle databases, the returning metho
 // @sql
 knex('books').returning('id').insert({ title: 'Slaughterhouse Five' });
 
-// Returns [{ id: 2 } ] in "mysql", "sqlite";
-// [ { id: 2 }, { id: 3 } ] in "postgresql"
+// Returns [ { id: 2 }, { id: 3 } ]
 // @sql
 knex('books')
   .returning('id')
@@ -1216,10 +1207,10 @@ The value of count will, by default, have type of `string | number`. This may be
 
 ```ts
 // @sql
-knex('users').count('age'); // Resolves to: Record<string, number | string>
+knex('users').count('age'); // Resolves to: Record<string, number | string>[]
 
 // @sql
-knex('users').count({ count: '*' }); // Resolves to { count?: string | number | undefined; }
+knex('users').count({ count: '*' }); // Resolves to { count?: string | number | undefined; }[]
 ```
 
 Working with `string | number` can be inconvenient if you are not working with large tables. Two alternatives are available:
@@ -2745,7 +2736,7 @@ knex('accounts')
 Sets a distinct clause on the query. If the parameter is falsy or empty array, method falls back to '\*'.
 
 ```js
-// select distinct 'first_name' from customers
+// select distinct "first_name", "last_name" from "customers"
 // @sql
 knex('customers').distinct('first_name', 'last_name');
 

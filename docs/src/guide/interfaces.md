@@ -245,7 +245,7 @@ knex
 
 **.toString()**
 
-Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging, but should not be used to create queries for running them against DB.
+Returns the query as a string with the bindings filled in. Useful for debugging, but should not be used to create queries for running them against DB.
 
 ```js
 const toStringQuery = knex.select('*').from('users').where('id', 1).toString();
@@ -259,7 +259,7 @@ const toStringQuery = knex.select('*').from('users').where('id', 1).toString();
 **.toSQL()**  
 **.toSQL().toNative()**
 
-Returns an array of query strings filled out with the correct values based on bindings, etc. Useful for debugging and building queries for running them manually with DB driver. `.toSQL().toNative()` outputs object with sql string and bindings in a dialects format in the same way that knex internally sends them to underlying DB driver.
+Returns an object with the query string, which uses placeholders, and its bindings. Schema builder queries return an array of these objects. Useful for debugging and building queries for running them manually with DB driver. `.toSQL().toNative()` outputs object with sql string and bindings in a dialects format in the same way that knex internally sends them to underlying DB driver.
 
 ```js
 knex
@@ -272,7 +272,9 @@ knex
 //   bindings: [1],
 //   method: 'select',
 //   sql: 'select * from "users" where id = ?',
-//   options: undefined,
+//   options: {},
+//   timeout: false,
+//   cancelOnTimeout: false,
 //   toNative: function () {}
 // }
 
