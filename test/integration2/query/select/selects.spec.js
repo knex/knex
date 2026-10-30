@@ -1104,17 +1104,9 @@ describe('Selects', function () {
               });
           });
         } catch (err) {
-          // mssql fails because it tries to rollback at the same time when update query is running
-          // hopefully for share really works though...
-          if (isMssql(knex)) {
-            expect(err.message).to.be.contain(
-              "Can't rollback transaction. There is a request in progress"
-            );
-          } else {
-            expect(err.message).to.be.contain(
-              'Defined query timeout of 100ms exceeded when running query'
-            );
-          }
+          expect(err.message).to.be.contain(
+            'Defined query timeout of 100ms exceeded when running query'
+          );
           return;
         }
         expect('Second query should have timed out').to.be.false;
