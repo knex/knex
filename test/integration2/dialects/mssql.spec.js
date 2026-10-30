@@ -391,6 +391,86 @@ describe('MSSQL dialect', () => {
             await query;
           });
         });
+
+        describe('requests issued in parallel on a transaction', () => {
+          // Keeps the connection busy long enough for the sibling requests to
+          // pile up in the queue, and reports which connection ran it.
+          const slowSpid = (trx) =>
+            trx
+              .raw(`waitfor delay '00:00:00.050'; select @@SPID as spid`)
+              .then(([row]) => row.spid);
+
+          it('runs each request on the connection of its own transaction', async () => {
+            const results = await Promise.all(
+              [1, 2, 3].map(() =>
+                knex.transaction(async (trx) => {
+                  const [{ spid }] = await trx.raw('select @@SPID as spid');
+                  const ranOn = await Promise.all([
+                    slowSpid(trx),
+                    slowSpid(trx),
+                    slowSpid(trx),
+                    slowSpid(trx),
+                  ]);
+                  return { spid, ranOn };
+                })
+              )
+            );
+
+            for (const { spid, ranOn } of results) {
+              expect(ranOn).to.deep.equal([spid, spid, spid, spid]);
+            }
+            expect(new Set(results.map((result) => result.spid)).size).to.equal(
+              3
+            );
+          });
+
+          it('waits for the in-flight requests before creating a savepoint', async () => {
+            await knex.transaction(async (trx) => {
+              const [{ spid }] = await trx.raw('select @@SPID as spid');
+              const [ranOn, nested] = await Promise.all([
+                slowSpid(trx),
+                trx.transaction((inner) => slowSpid(inner)),
+              ]);
+              expect(ranOn).to.equal(spid);
+              expect(nested).to.equal(spid);
+            });
+          });
+
+          it('rolls back when a request fails while its siblings are still in flight', async () => {
+            // A single connection, so the next query is guaranteed to reuse the
+            // one the failed transaction ran on.
+            const singleConnection = getKnexForDb(db, {
+              pool: { min: 1, max: 1 },
+            });
+            try {
+              let error;
+              try {
+                await singleConnection.transaction((trx) =>
+                  Promise.all([
+                    trx('test').insert({ nvarchar: 'rolled back' }),
+                    trx.raw('select 1/0 as boom'),
+                    slowSpid(trx),
+                    slowSpid(trx),
+                  ])
+                );
+              } catch (err) {
+                error = err;
+              }
+              expect(error).to.be.an('error');
+              expect(error.message).to.contain('Divide by zero');
+
+              const [{ trancount }] = await singleConnection.raw(
+                'select @@TRANCOUNT as trancount'
+              );
+              expect(trancount).to.equal(0);
+              expect(await singleConnection('test').select('id')).to.deep.equal(
+                []
+              );
+            } finally {
+              await singleConnection.destroy();
+            }
+          });
+        });
       });
     });
 });
