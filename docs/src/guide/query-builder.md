@@ -2863,6 +2863,19 @@ knex('users')
   .having('count', '>', 100);
 ```
 
+Pass a callback to group HAVING conditions in parentheses. The callback can use
+`having` and `orHaving`; existing callbacks using `where` and `orWhere` are also
+supported.
+
+```js
+// @sql
+knex('users')
+  .groupBy('count')
+  .having(function () {
+    this.having('count', '>', 100).orHaving('count', '=', 0);
+  });
+```
+
 ### havingIn
 
 **.havingIn(column, values)**
