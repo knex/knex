@@ -3621,6 +3621,101 @@ describe('QueryBuilder', () => {
     );
   });
 
+  Object.entries(clients).forEach(([dialect, client]) => {
+    describe(`wrapped having predicates (${dialect})`, () => {
+      const total = client.wrapIdentifier('total');
+      const select = `select * from ${client.wrapIdentifier('users')}`;
+
+      it('compiles having and orHaving inside a callback', () => {
+        const query = client
+          .queryBuilder()
+          .from('users')
+          .having(function () {
+            this.having('total', '>', 5).orHaving('total', '=', 0);
+          })
+          .toSQL();
+
+        expect(query.sql).to.equal(
+          `${select} having (${total} > ? or ${total} = ?)`
+        );
+        expect(query.bindings).to.deep.equal([5, 0]);
+      });
+
+      it('preserves the order of mixed where and having predicates', () => {
+        const query = client
+          .queryBuilder()
+          .from('users')
+          .havingWrapped(function () {
+            this.where('total', '>', 1)
+              .orHaving('total', '=', 0)
+              .where('total', '<', 10);
+          })
+          .toSQL();
+
+        expect(query.sql).to.equal(
+          `${select} having (${total} > ? or ${total} = ? and ${total} < ?)`
+        );
+        expect(query.bindings).to.deep.equal([1, 0, 10]);
+      });
+
+      it('compiles nested having groups and raw predicates', () => {
+        const query = client
+          .queryBuilder()
+          .from('users')
+          .having(function () {
+            this.having('total', '>', 5).orHaving(function () {
+              this.havingRaw('?? = ?', ['total', 0]).havingNull('total');
+            });
+          })
+          .toSQL();
+
+        expect(query.sql).to.equal(
+          `${select} having (${total} > ? or (${total} = ? and ${total} is null))`
+        );
+        expect(query.bindings).to.deep.equal([5, 0]);
+      });
+
+      it('omits empty groups without leaving boolean operators or bindings', () => {
+        const query = client
+          .queryBuilder()
+          .from('users')
+          .having(function () {})
+          .orHaving(function () {
+            this.having(function () {}).having('total', '>', 5);
+          })
+          .toSQL();
+
+        expect(query.sql).to.equal(`${select} having (${total} > ?)`);
+        expect(query.bindings).to.deep.equal([5]);
+      });
+
+      it('retains undefined binding validation for legacy where callbacks', () => {
+        expect(() =>
+          client
+            .queryBuilder()
+            .from('users')
+            .having(function () {
+              this.where('total', '>', undefined);
+            })
+            .toSQL()
+        ).to.throw('Undefined binding(s)');
+      });
+
+      it('preserves negation around a having group', () => {
+        const query = client
+          .queryBuilder()
+          .from('users')
+          .not.having(function () {
+            this.havingIn('total', [0, 1]);
+          })
+          .toSQL();
+
+        expect(query.sql).to.equal(`${select} having not (${total} in (?, ?))`);
+        expect(query.bindings).to.deep.equal([0, 1]);
+      });
+    });
+  });
+
   it('grouped having', () => {
     testsql(
       qb().select('*').from('users').groupBy('email').having('email', '>', 1),
