@@ -275,5 +275,62 @@ for (const { driver, factory } of configs) {
         );
       });
     });
+
+    describe('transaction locking behavior', () => {
+      it('should emit BEGIN IMMEDIATE for immediate transaction', async () => {
+        const queries = [];
+        const client = unchecked;
+        const spyHandler = (query) => queries.push(query.sql);
+        client.on('query', spyHandler);
+        try {
+          await client.transaction(
+            async (trx) => {
+              await trx.raw('SELECT 1');
+            },
+            { behavior: 'immediate' }
+          );
+          expect(queries).to.include('BEGIN IMMEDIATE;');
+        } finally {
+          client.removeListener('query', spyHandler);
+        }
+      });
+
+      it('should emit BEGIN EXCLUSIVE for exclusive transaction', async () => {
+        const queries = [];
+        const client = unchecked;
+        const spyHandler = (query) => queries.push(query.sql);
+        client.on('query', spyHandler);
+        try {
+          await client.transaction(
+            async (trx) => {
+              await trx.raw('SELECT 1');
+            },
+            { behavior: 'exclusive' }
+          );
+          expect(queries).to.include('BEGIN EXCLUSIVE;');
+        } finally {
+          client.removeListener('query', spyHandler);
+        }
+      });
+
+      it('should keep readOnly transaction deferred even if immediate', async () => {
+        const queries = [];
+        const client = unchecked;
+        const spyHandler = (query) => queries.push(query.sql);
+        client.on('query', spyHandler);
+        try {
+          await client.transaction(
+            async (trx) => {
+              await trx.raw('SELECT 1');
+            },
+            { behavior: 'immediate', readOnly: true }
+          );
+          expect(queries).to.include('BEGIN;');
+          expect(queries).to.not.include('BEGIN IMMEDIATE;');
+        } finally {
+          client.removeListener('query', spyHandler);
+        }
+      });
+    });
   });
 }
