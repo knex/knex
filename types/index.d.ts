@@ -2326,6 +2326,8 @@ declare namespace Knex {
     | 'snapshot'
     | 'repeatable read'
     | 'serializable';
+  type SQLiteTransactionBehavior = 'deferred' | 'immediate' | 'exclusive';
+
   interface TransactionConfig {
     isolationLevel?: IsolationLevels;
     userParams?: Record<string, any>;
@@ -2334,6 +2336,10 @@ declare namespace Knex {
     readOnly?: boolean;
     /** sqlite3 only */
     enforceForeignCheck?: boolean | null;
+    /** sqlite3 and better-sqlite3 only: transaction locking behavior */
+    behavior?: SQLiteTransactionBehavior;
+    /** @alias behavior */
+    transactionBehavior?: SQLiteTransactionBehavior;
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any[]>
@@ -2789,6 +2795,10 @@ declare namespace Knex {
     log?: Logger;
     compileSqlOnError?: boolean;
     fetchAsString?: string[];
+    /**
+     * Default transaction locking behavior for sqlite3 and better-sqlite3.
+     */
+    transactionBehavior?: SQLiteTransactionBehavior;
     /**
      * If set, will be used as the default precision for datetime & timestamp columns.
      * Valid only on PostgreSQL and CockroachDB
