@@ -108,6 +108,9 @@
     },
     "better-sqlite3": {
       "optional": true
+    },
+    "mariadb/callback": {
+      "optional": true
     }
   },
   "lint-staged": {
