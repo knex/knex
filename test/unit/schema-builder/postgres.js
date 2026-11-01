@@ -2524,4 +2524,62 @@ describe('PostgreSQL SchemaBuilder', function () {
       );
     });
   });
+
+  describe('hasTable and hasColumn with schemas', function () {
+    it('hasTable without schema uses current_schema()', function () {
+      tableSql = client.schemaBuilder().hasTable('users').toSQL();
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'select * from information_schema.tables where table_name = ? and table_schema = current_schema()'
+      );
+      expect(tableSql[0].bindings).to.deep.equal(['users']);
+    });
+
+    it('hasTable with withSchema uses specified schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .hasTable('users')
+        .toSQL();
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'select * from information_schema.tables where table_name = ? and table_schema = ?'
+      );
+      expect(tableSql[0].bindings).to.deep.equal(['users', 'myschema']);
+    });
+
+    it('hasTable with dot-notated tableName extracts schema (#5435)', function () {
+      tableSql = client.schemaBuilder().hasTable('myschema.users').toSQL();
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'select * from information_schema.tables where table_name = ? and table_schema = ?'
+      );
+      expect(tableSql[0].bindings).to.deep.equal(['users', 'myschema']);
+    });
+
+    it('hasColumn with dot-notated tableName extracts schema (#5435)', function () {
+      tableSql = client
+        .schemaBuilder()
+        .hasColumn('myschema.users', 'email')
+        .toSQL();
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'select * from information_schema.columns where table_name = ? and column_name = ? and table_schema = ?'
+      );
+      expect(tableSql[0].bindings).to.deep.equal(['users', 'email', 'myschema']);
+    });
+
+    it('hasColumn with withSchema uses specified schema', function () {
+      tableSql = client
+        .schemaBuilder()
+        .withSchema('myschema')
+        .hasColumn('users', 'email')
+        .toSQL();
+      expect(tableSql.length).to.equal(1);
+      expect(tableSql[0].sql).to.equal(
+        'select * from information_schema.columns where table_name = ? and column_name = ? and table_schema = ?'
+      );
+      expect(tableSql[0].bindings).to.deep.equal(['users', 'email', 'myschema']);
+    });
+  });
 });
