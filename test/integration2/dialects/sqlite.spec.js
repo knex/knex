@@ -275,5 +275,41 @@ for (const { driver, factory } of configs) {
         );
       });
     });
+
+    describe('truncate', () => {
+      const truncateAndReinsert = async (knex, tableName) => {
+        await knex.schema.dropTableIfExists(tableName);
+        await knex.schema.createTable(tableName, (table) => {
+          table.increments('id');
+          table.string('name');
+        });
+        try {
+          await knex(tableName).insert([{ name: 'a' }, { name: 'b' }]);
+          await knex(tableName).truncate();
+          await knex(tableName).insert({ name: 'c' });
+          return await knex(tableName).select('id');
+        } finally {
+          await knex.schema.dropTable(tableName);
+        }
+      };
+
+      it('should reset the autoincrement sequence of a table whose name contains a quote', async () => {
+        const rows = await truncateAndReinsert(knexUnchecked, "truncate'test");
+        expect(rows).to.deep.equal([{ id: 1 }]);
+      });
+
+      it('should reset the autoincrement sequence when wrapIdentifier maps the table name', async () => {
+        const knex = factory(false, {
+          wrapIdentifier: (value, origImpl) =>
+            origImpl(value.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)),
+        });
+        try {
+          const rows = await truncateAndReinsert(knex, 'truncateTest');
+          expect(rows).to.deep.equal([{ id: 1 }]);
+        } finally {
+          await knex.destroy();
+        }
+      });
+    });
   });
 }
