@@ -373,8 +373,8 @@ describe('MSSQL dialect', () => {
               .where('varchar', { value: 'testing', type: TYPES.VarChar })
               .select('id');
             const { bindings } = query.toSQL().toNative();
-            expect(bindings[0].type, TYPES.VarChar);
-            expect(bindings[0].value, 'testing');
+            expect(bindings[0].type).to.equal(TYPES.VarChar);
+            expect(bindings[0].value).to.equal('testing');
 
             // verify the query runs successfully
             await query;
@@ -385,7 +385,7 @@ describe('MSSQL dialect', () => {
               .select('id');
 
             const { bindings } = query.toSQL().toNative();
-            expect(bindings[0], 'testing');
+            expect(bindings[0]).to.equal('testing');
 
             // verify the query runs successfully
             await query;
