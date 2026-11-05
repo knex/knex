@@ -87,7 +87,7 @@ describe('MSSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "CREATE VIEW [adults] ([name]) AS select [name] from [users] where [age] > '18'"
+        "CREATE VIEW [adults] ([name]) AS select [name] from [users] where [age] > ?"
       );
     });
 
@@ -100,8 +100,20 @@ describe('MSSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "CREATE VIEW [adults] AS select [name] from [users] where [age] > '18'"
+        "CREATE VIEW [adults] AS select [name] from [users] where [age] > ?"
       );
+    });
+
+    it('create view preserves bindings (no inline SQL in view body)', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('v', function (view) {
+          view.as(knexMssql('users').select('name').where('name', 'x\n; DROP TABLE secrets;--'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.not.include('DROP TABLE');
+      expect(viewSql[0].bindings).to.deep.equal(['x\n; DROP TABLE secrets;--']);
     });
 
     it('create view or replace', async function () {
@@ -114,7 +126,7 @@ describe('MSSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "CREATE OR ALTER VIEW [adults] ([name]) AS select [name] from [users] where [age] > '18'"
+        "CREATE OR ALTER VIEW [adults] ([name]) AS select [name] from [users] where [age] > ?"
       );
     });
 
@@ -127,7 +139,7 @@ describe('MSSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "CREATE OR ALTER VIEW [adults] AS select [name] from [users] where [age] > '18'"
+        "CREATE OR ALTER VIEW [adults] AS select [name] from [users] where [age] > ?"
       );
     });
 

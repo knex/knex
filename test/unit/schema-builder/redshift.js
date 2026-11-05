@@ -129,7 +129,7 @@ describe('Redshift SchemaBuilder', function () {
         .toSQL();
       expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
-        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+        'create view "adults" ("name") as select "name" from "users" where "age" > ?'
       );
     });
 
@@ -142,7 +142,7 @@ describe('Redshift SchemaBuilder', function () {
         .toSQL();
       expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
-        'create view "adults" as select "name" from "users" where "age" > \'18\''
+        'create view "adults" as select "name" from "users" where "age" > ?'
       );
     });
 
@@ -156,7 +156,7 @@ describe('Redshift SchemaBuilder', function () {
         .toSQL();
       expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
-        'create or replace view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+        'create or replace view "adults" ("name") as select "name" from "users" where "age" > ?'
       );
     });
 
@@ -169,7 +169,7 @@ describe('Redshift SchemaBuilder', function () {
         .toSQL();
       expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
-        'create or replace view "adults" as select "name" from "users" where "age" > \'18\''
+        'create or replace view "adults" as select "name" from "users" where "age" > ?'
       );
     });
 
@@ -184,7 +184,7 @@ describe('Redshift SchemaBuilder', function () {
         .toSQL();
       expect(viewSqlLocalCheck.length).to.equal(1);
       expect(viewSqlLocalCheck[0].sql).to.equal(
-        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with local check option'
+        'create view "adults" ("name") as select "name" from "users" where "age" > ? with local check option'
       );
 
       const viewSqlCascadedCheck = client
@@ -197,7 +197,7 @@ describe('Redshift SchemaBuilder', function () {
         .toSQL();
       expect(viewSqlCascadedCheck.length).to.equal(1);
       expect(viewSqlCascadedCheck[0].sql).to.equal(
-        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with cascaded check option'
+        'create view "adults" ("name") as select "name" from "users" where "age" > ? with cascaded check option'
       );
     });
 
@@ -254,7 +254,7 @@ describe('Redshift SchemaBuilder', function () {
         .toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > \'18\''
+        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > ?'
       );
     });
 

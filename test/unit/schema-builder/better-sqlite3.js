@@ -92,7 +92,7 @@ describe('BetterSQLite3 SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+        "create view `adults` (`name`) as select `name` from `users` where `age` > ?"
       );
     });
 
@@ -105,7 +105,7 @@ describe('BetterSQLite3 SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "create view `adults` as select `name` from `users` where `age` > '18'"
+        "create view `adults` as select `name` from `users` where `age` > ?"
       );
     });
 

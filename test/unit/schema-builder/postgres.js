@@ -368,7 +368,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+        'create view "adults" ("name") as select "name" from "users" where "age" > ?'
       );
     });
 
@@ -381,8 +381,20 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create view "adults" as select "name" from "users" where "age" > \'18\''
+        'create view "adults" as select "name" from "users" where "age" > ?'
       );
+    });
+
+    it('create view preserves bindings (no inline SQL in view body)', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('v', function (view) {
+          view.as(knexPg('users').select('name').where('name', 'x\n; DROP TABLE secrets;--'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.not.include('DROP TABLE');
+      expect(viewSql[0].bindings).to.deep.equal(['x\n; DROP TABLE secrets;--']);
     });
 
     it('create view or replace', async function () {
@@ -395,7 +407,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       expect(viewSql.length).to.equal(1);
       expect(viewSql[0].sql).to.equal(
-        'create or replace view "adults" ("name") as select "name" from "users" where "age" > \'18\''
+        'create or replace view "adults" ("name") as select "name" from "users" where "age" > ?'
       );
     });
 
@@ -408,7 +420,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        'create or replace view "adults" as select "name" from "users" where "age" > \'18\''
+        'create or replace view "adults" as select "name" from "users" where "age" > ?'
       );
     });
 
@@ -423,7 +435,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSqlLocalCheck.length);
       expect(viewSqlLocalCheck[0].sql).to.equal(
-        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with local check option'
+        'create view "adults" ("name") as select "name" from "users" where "age" > ? with local check option'
       );
 
       const viewSqlCascadedCheck = client
@@ -436,7 +448,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSqlCascadedCheck.length);
       expect(viewSqlCascadedCheck[0].sql).to.equal(
-        'create view "adults" ("name") as select "name" from "users" where "age" > \'18\' with cascaded check option'
+        'create view "adults" ("name") as select "name" from "users" where "age" > ? with cascaded check option'
       );
     });
 
@@ -493,7 +505,7 @@ describe('PostgreSQL SchemaBuilder', function () {
         .toSQL();
       equal(1, tableSql.length);
       expect(tableSql[0].sql).to.equal(
-        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > \'18\''
+        'create materialized view "mat_view" ("name") as select "name" from "users" where "age" > ?'
       );
     });
 

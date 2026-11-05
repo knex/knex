@@ -168,7 +168,7 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSql.length);
         expect(viewSql[0].sql).to.equal(
-          "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+          "create view `adults` (`name`) as select `name` from `users` where `age` > ?"
         );
       });
 
@@ -181,7 +181,7 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSql.length);
         expect(viewSql[0].sql).to.equal(
-          "create view `adults` as select `name` from `users` where `age` > '18'"
+          "create view `adults` as select `name` from `users` where `age` > ?"
         );
       });
 
@@ -195,7 +195,7 @@ module.exports = function (dialect) {
           .toSQL();
         expect(viewSql.length).to.equal(1);
         expect(viewSql[0].sql).to.equal(
-          "create or replace view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+          "create or replace view `adults` (`name`) as select `name` from `users` where `age` > ?"
         );
       });
 
@@ -208,7 +208,7 @@ module.exports = function (dialect) {
           .toSQL();
         expect(viewSql.length).to.equal(1);
         expect(viewSql[0].sql).to.equal(
-          "create or replace view `adults` as select `name` from `users` where `age` > '18'"
+          "create or replace view `adults` as select `name` from `users` where `age` > ?"
         );
       });
 
@@ -223,8 +223,9 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSqlLocalCheck.length);
         expect(viewSqlLocalCheck[0].sql).to.equal(
-          "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with local check option"
+          "create view `adults` (`name`) as select `name` from `users` where `age` > ? with local check option"
         );
+        expect(viewSqlLocalCheck[0].sql.bindings).to.deep.equal(['18']);
 
         const viewSqlCascadedCheck = client
           .schemaBuilder()
@@ -236,8 +237,9 @@ module.exports = function (dialect) {
           .toSQL();
         equal(1, viewSqlCascadedCheck.length);
         expect(viewSqlCascadedCheck[0].sql).to.equal(
-          "create view `adults` (`name`) as select `name` from `users` where `age` > '18' with cascaded check option"
+          "create view `adults` (`name`) as select `name` from `users` where `age` > ? with cascaded check option"
         );
+        expect(viewSqlCascadedCheck[0].sql.bindings).to.deep.equal(['18']);
       });
 
       it('drop view', function () {

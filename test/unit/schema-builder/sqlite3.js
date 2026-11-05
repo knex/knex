@@ -92,7 +92,7 @@ describe('SQLite SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+        "create view `adults` (`name`) as select `name` from `users` where `age` > ?"
       );
     });
 
@@ -105,8 +105,20 @@ describe('SQLite SchemaBuilder', function () {
         .toSQL();
       equal(1, viewSql.length);
       expect(viewSql[0].sql).to.equal(
-        "create view `adults` as select `name` from `users` where `age` > '18'"
+        "create view `adults` as select `name` from `users` where `age` > ?"
       );
+    });
+
+    it('create view preserves bindings (no inline SQL in view body)', async function () {
+      const viewSql = client
+        .schemaBuilder()
+        .createView('v', function (view) {
+          view.as(knexSqlite3('users').select('name').where('name', 'x\n; DROP TABLE secrets;--'));
+        })
+        .toSQL();
+      equal(1, viewSql.length);
+      expect(viewSql[0].sql).to.not.include('DROP TABLE');
+      expect(viewSql[0].bindings).to.deep.equal(['x\n; DROP TABLE secrets;--']);
     });
 
     it('create view or replace', async function () {
@@ -120,7 +132,7 @@ describe('SQLite SchemaBuilder', function () {
       expect(viewSql.length).to.equal(2);
       expect(viewSql[0].sql).to.equal('drop view if exists `adults`');
       expect(viewSql[1].sql).to.equal(
-        "create view `adults` (`name`) as select `name` from `users` where `age` > '18'"
+        "create view `adults` (`name`) as select `name` from `users` where `age` > ?"
       );
     });
 
@@ -134,7 +146,7 @@ describe('SQLite SchemaBuilder', function () {
       expect(viewSql.length).to.equal(2);
       expect(viewSql[0].sql).to.equal('drop view if exists `adults`');
       expect(viewSql[1].sql).to.equal(
-        "create view `adults` as select `name` from `users` where `age` > '18'"
+        "create view `adults` as select `name` from `users` where `age` > ?"
       );
     });
 
