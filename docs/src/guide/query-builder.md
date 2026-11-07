@@ -2502,7 +2502,10 @@ knex
 
 **.onNotIn(column, values)**
 
-Adds a onNotIn clause to the query.
+Adds an `onNotIn` clause to the query. Passing an empty array produces `1 = 1`,
+just like `whereNotIn`. Subsequent join conditions keep their own meaning. For
+example, `.onNotIn('contacts.id', []).onNull('contacts.email')` still checks that
+`contacts.email` is null.
 
 ```js
 // @sql
