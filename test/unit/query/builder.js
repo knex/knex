@@ -4765,6 +4765,100 @@ describe('QueryBuilder', () => {
     );
   });
 
+  describe('empty join membership (#6565)', () => {
+    function testJoinSql(query, condition, bindings = []) {
+      const sql =
+        'select * from "users" left join "orders" on "users"."id" = "orders"."user_id" and ' +
+        condition;
+      const expected = {};
+      for (const dialect of Object.keys(clients)) {
+        const quotedSql =
+          dialect === 'mysql' || dialect === 'sqlite3'
+            ? sql.replace(/"/g, '`')
+            : dialect === 'mssql'
+            ? sql.replace(/"([^"]+)"/g, '[$1]')
+            : sql;
+        expected[dialect] = { sql: quotedSql, bindings };
+      }
+      testsql(query, expected);
+    }
+
+    for (const method of [
+      'onIn',
+      'andOnIn',
+      'orOnIn',
+      'onNotIn',
+      'andOnNotIn',
+      'orOnNotIn',
+    ]) {
+      it(`${method} consumes empty membership flags once`, () => {
+        const bool = method.startsWith('or') ? 'or' : 'and';
+        const value = method.includes('Not') ? 1 : 0;
+        testJoinSql(
+          qb()
+            .from('users')
+            .leftJoin('orders', function () {
+              this.on('users.id', 'orders.user_id').andOn(function () {
+                this.onVal('orders.status', 'open')
+                  [method]('orders.status', [])
+                  .andOnNull('orders.note')
+                  .andOnIn('orders.status', ['open']);
+              });
+            }),
+          `("orders"."status" = ? ${bool} 1 = ${value} and "orders"."note" is null and "orders"."status" in (?))`,
+          ['open', 'open']
+        );
+      });
+    }
+
+    it('keeps the reported null predicate after an empty exclusion', () => {
+      testJoinSql(
+        qb()
+          .from('users')
+          .leftJoin('orders', function () {
+            this.on('users.id', 'orders.user_id')
+              .andOnNotIn('orders.status', [])
+              .andOnNull('orders.note');
+          }),
+        '1 = 1 and "orders"."note" is null'
+      );
+    });
+
+    it('keeps nested OR and subsequent non-null predicates independent', () => {
+      testJoinSql(
+        qb()
+          .from('users')
+          .leftJoin('orders', function () {
+            this.on('users.id', 'orders.user_id')
+              .andOn(function () {
+                this.onNotIn('orders.status', [])
+                  .onVal('orders.status', 'missing')
+                  .orOnNull('orders.note');
+              })
+              .andOnNotNull('orders.user_id');
+          }),
+        '(1 = 1 and "orders"."status" = ? or "orders"."note" is null) and "orders"."user_id" is not null',
+        ['missing']
+      );
+    });
+
+    it('keeps nonempty membership bindings and SQL NULL semantics', () => {
+      testJoinSql(
+        qb()
+          .from('users')
+          .leftJoin('orders', function () {
+            this.on('users.id', 'orders.user_id')
+              .onNotIn('orders.status', ['closed', null])
+              .onNull('orders.note')
+              .onIn('orders.status', ['open'])
+              .onNotNull('orders.user_id');
+          }),
+        '"orders"."status" not in (?, ?) and "orders"."note" is null and "orders"."status" in (?) and "orders"."user_id" is not null',
+        ['closed', null, 'open']
+      );
+    });
+  });
+
   it('joins with raw', () => {
     testsql(
       qb()
