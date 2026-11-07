@@ -48,6 +48,85 @@ describe('Joins', function () {
         await knex.destroy();
       });
 
+      describe('empty join membership (#6565)', () => {
+        before(async () => {
+          await knex.schema.createTable('join_users', (table) => {
+            table.string('id').primary();
+          });
+          await knex.schema.createTable('join_orders', (table) => {
+            table.string('id').primary();
+            table.string('user_id');
+            table.string('status');
+            table.string('note');
+          });
+          await knex('join_users').insert([{ id: 'alice' }, { id: 'bob' }]);
+          await knex('join_orders').insert([
+            { id: 'a', user_id: 'alice', status: 'open', note: null },
+            { id: 'b', user_id: 'alice', status: 'closed', note: 'memo' },
+            { id: 'c', user_id: 'bob', status: null, note: null },
+          ]);
+        });
+
+        after(async () => {
+          await knex.schema.dropTableIfExists('join_orders');
+          await knex.schema.dropTableIfExists('join_users');
+        });
+
+        for (const join of ['leftJoin', 'innerJoin']) {
+          it(`${join} retains matches with an empty exclusion and null predicate`, async () => {
+            const rows = await knex('join_users as users')
+              [join]('join_orders as orders', function () {
+                this.on('users.id', 'orders.user_id')
+                  .andOnNotIn('orders.status', [])
+                  .andOnNull('orders.note');
+              })
+              .select('users.id as user_id', 'orders.id as order_id')
+              .orderBy('users.id');
+
+            expect(rows).to.deep.equal([
+              { user_id: 'alice', order_id: 'a' },
+              { user_id: 'bob', order_id: 'c' },
+            ]);
+          });
+        }
+
+        it('does not negate a following OR null predicate', async () => {
+          const rows = await knex('join_users as users')
+            .join('join_orders as orders', function () {
+              this.on('users.id', 'orders.user_id').andOn(function () {
+                this.onNotIn('orders.status', [])
+                  .onVal('orders.id', 'missing')
+                  .orOnNull('orders.note');
+              });
+            })
+            .select('orders.id')
+            .orderBy('orders.id');
+
+          // The impossible AND predicate makes the result depend on onNull,
+          // independently of the constant used for empty membership.
+          expect(rows).to.deep.equal([{ id: 'a' }, { id: 'c' }]);
+        });
+
+        it('preserves positive empty and nonempty membership results', async () => {
+          for (const [method, values, expected] of [
+            ['onIn', [], []],
+            ['onIn', ['open'], [{ id: 'a' }]],
+            ['onNotIn', ['closed'], [{ id: 'a' }]],
+            ['onNotIn', ['closed', null], []],
+          ]) {
+            const rows = await knex('join_users as users')
+              .join('join_orders as orders', function () {
+                this.on('users.id', 'orders.user_id')
+                  [method]('orders.status', values)
+                  .onNull('orders.note');
+              })
+              .select('orders.id')
+              .orderBy('orders.id');
+            expect(rows).to.deep.equal(expected);
+          }
+        });
+      });
+
       it('uses inner join by default', async function () {
         await knex('accounts')
           .join(
