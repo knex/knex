@@ -364,6 +364,43 @@ describe('knex', () => {
     }).to.throw('Knex: run\n$ npm install foo-bar --save\nCannot require...');
   });
 
+  it('no sqlite3 filename warning for a connection function', async () => {
+    const warnings = [];
+    const knex = Knex({
+      client: 'sqlite3',
+      connection: () => ({ filename: ':memory:' }),
+      log: {
+        warn: (msg) => {
+          warnings.push(msg);
+        },
+      },
+      useNullAsDefault: true,
+    });
+
+    expect(warnings).to.deep.equal([]);
+    const [result] = await knex.select(knex.raw('1 as value'));
+    expect(result.value).to.equal(1);
+    await knex.destroy();
+  });
+
+  it('warns about a missing sqlite3 filename in a connection object', async () => {
+    const warnings = [];
+    const knex = Knex({
+      client: 'sqlite3',
+      connection: {},
+      log: {
+        warn: (msg) => {
+          warnings.push(msg);
+        },
+      },
+      useNullAsDefault: true,
+    });
+
+    expect(warnings).to.have.length(1);
+    expect(warnings[0]).to.match(/Could not find `connection.filename`/);
+    await knex.destroy();
+  });
+
   it('surfaces acquire connection errors to the user', async () => {
     // create a fake client that will fail in exactly the situation we want, in order
     // to produce the "propagated error message" behavior from tarn
