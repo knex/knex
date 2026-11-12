@@ -5238,6 +5238,37 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('on not in with empty array is always true and does not leak the not flag', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .leftJoin('orders', function () {
+          this.on('users.id', '=', 'orders.user_id')
+            .andOnNotIn('orders.status', [])
+            .andOnNull('orders.note');
+        }),
+      {
+        mysql: {
+          sql: 'select * from `users` left join `orders` on `users`.`id` = `orders`.`user_id` and 1 = 1 and `orders`.`note` is null',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] left join [orders] on [users].[id] = [orders].[user_id] and 1 = 1 and [orders].[note] is null',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "users" left join "orders" on "users"."id" = "orders"."user_id" and 1 = 1 and "orders"."note" is null',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" left join "orders" on "users"."id" = "orders"."user_id" and 1 = 1 and "orders"."note" is null',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('on json path join', () => {
     testsql(
       qb()
