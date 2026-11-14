@@ -106,9 +106,16 @@ describe('String utility functions', () => {
 
     it('should escape a string with quotes', () => {
       expect(escapeString('foo = "bar"')).to.equal('\'foo = \\"bar\\"\'');
-      expect(escapeString("foo = 'bar'")).to.equal("'foo = \\'bar\\''");
+      expect(escapeString("foo = 'bar'")).to.equal("'foo = ''bar'''");
     });
 
+    it('should escape single quotes by doubling so they stay safe without backslash semantics', () => {
+      // Under sql_mode NO_BACKSLASH_ESCAPES a backslash is a literal character,
+      // so backslash-escaping a quote does not protect the literal. Doubling the
+      // quote is safe under both modes.
+      expect(escapeString("it's")).to.equal("'it''s'");
+      expect(escapeString("a\\'s")).to.equal("'a\\\\''s'");
+    });
     it('should escape a encoded json string', () => {
       const input = '{"foo": "bar"}';
       const output = '\'{\\"foo\\": \\"bar\\"}\'';
@@ -146,7 +153,7 @@ describe('String utility functions', () => {
         escapeString(password) +
         ';';
       const sqlOutput =
-        "SELECT * FROM users WHERE user = 'foo' AND password = 'Test;$3`\\'[/*;';";
+        "SELECT * FROM users WHERE user = 'foo' AND password = 'Test;$3`''[/*;';";
 
       expect(sql).to.equal(sqlOutput);
     });
@@ -161,7 +168,7 @@ describe('String utility functions', () => {
         escapeString(password) +
         ';';
       const sqlOutput =
-        "SELECT * FROM users WHERE user = '\\' OR 0 = 0' AND password = '\\' OR 1 = 1; DROP TABLE users; /*';";
+        "SELECT * FROM users WHERE user = ''' OR 0 = 0' AND password = ''' OR 1 = 1; DROP TABLE users; /*';";
 
       expect(sql).to.equal(sqlOutput);
     });
