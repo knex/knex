@@ -627,7 +627,7 @@ knex.schema.createTable('date_example', function (table) {
 
 **table.datetime(name, options={[useTz: boolean], [precision: number]})**
 
-Adds a datetime column. By default PostgreSQL creates column with timezone (timestamptz type). This behaviour can be overriden by passing the useTz option (which is by default true for PostgreSQL). MySQL and MSSQL do not have useTz option.
+Adds a datetime column. By default PostgreSQL creates column with timezone (timestamptz type). This behaviour can be overridden by passing the useTz option (which is by default true for PostgreSQL). MySQL and MSSQL do not have useTz option.
 
 A precision option may be passed:
 
@@ -657,7 +657,7 @@ knex.schema.createTable('events', (table) => {
 
 **table.timestamp(name, options={[useTz: boolean], [precision: number]})**
 
-Adds a timestamp column. By default PostgreSQL creates column with timezone (timestamptz type) and MSSQL does not (datetime2). This behaviour can be overriden by passing the useTz option (which is by default false for MSSQL and true for PostgreSQL). MySQL does not have useTz option.
+Adds a timestamp column. By default PostgreSQL creates column with timezone (timestamptz type) and MSSQL does not (datetime2). This behaviour can be overridden by passing the useTz option (which is by default false for MSSQL and true for PostgreSQL). MySQL does not have useTz option.
 
 ```js
 // @sql

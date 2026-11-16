@@ -634,7 +634,7 @@ module.exports = function (knex) {
           }
         )
         .then(function () {
-          expect(true).to.equal(false, 'Transaction should not have commited');
+          expect(true).to.equal(false, 'Transaction should not have committed');
         })
         .catch(function (error) {
           expect(error instanceof Error).to.equal(true);

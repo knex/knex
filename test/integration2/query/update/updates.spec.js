@@ -330,7 +330,7 @@ describe('Updates', function () {
       });
 
       it('should allow query builder with returning as update value', async function () {
-        // mysql / cockroach do not not support this subquery syntax
+        // mysql / cockroach do not support this subquery syntax
         if (isMysql(knex) || isOracle(knex)) {
           return this.skip();
         }
