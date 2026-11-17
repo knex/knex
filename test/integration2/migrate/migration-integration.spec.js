@@ -793,6 +793,50 @@ describe('Migrations', function () {
         });
 
         describe('knex.migrate.down', () => {
+          it('should undo the last executed migration when migrations ran out of order', async () => {
+            const migrations = ['migrate_down_1', 'migrate_down_2'];
+            const tableName = 'migrations_down_order';
+            const migrationConfig = {
+              tableName,
+              migrationSource: {
+                getMigrations: () => Promise.resolve(migrations),
+                getMigrationName: (migration) => migration,
+                getMigration: (table) => ({
+                  up: (knex) =>
+                    knex.schema.createTable(table, (t) => t.integer('id')),
+                  down: (knex) => knex.schema.dropTable(table),
+                }),
+              },
+            };
+
+            try {
+              await knex.migrate.up({
+                ...migrationConfig,
+                name: migrations[1],
+              });
+              await knex.migrate.up({
+                ...migrationConfig,
+                name: migrations[0],
+              });
+
+              const [, log] = await knex.migrate.down(migrationConfig);
+              expect(log).to.deep.equal([migrations[0]]);
+              expect(await knex.schema.hasTable(migrations[0])).to.equal(false);
+              expect(await knex.schema.hasTable(migrations[1])).to.equal(true);
+              expect(await knex(tableName).select('name')).to.deep.equal([
+                { name: migrations[1] },
+              ]);
+            } finally {
+              for (const table of [
+                ...migrations,
+                tableName,
+                `${tableName}_lock`,
+              ]) {
+                await knex.schema.dropTableIfExists(table);
+              }
+            }
+          });
+
           describe('with transactions enabled', () => {
             beforeEach(async () => {
               await knex.migrate.latest({
