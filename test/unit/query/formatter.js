@@ -51,3 +51,39 @@ describe('formatter', () => {
     });
   });
 });
+
+describe('unwrapRaw bindings', () => {
+  const MySQL_Client = require('../../../lib/dialects/mysql');
+  const knex = require('../../../knex')(new MySQL_Client({ client: 'mysql' }));
+  const ids = Array.from({ length: 200000 }, (_, i) => i + 1);
+
+  it('merges bindings from a union subquery in from() without an argument spread', () => {
+    const union = knex
+      .from({ a: 'edges' })
+      .select('a.child_id')
+      .whereIn('a.parent_id', ids)
+      .union(
+        knex
+          .from({ b: 'edges' })
+          .select('b.child_id')
+          .whereIn('b.parent_id', ids)
+      );
+    const { bindings } = knex
+      .from(union.as('reachable'))
+      .select('reachable.child_id')
+      .toSQL();
+    expect(bindings).to.have.lengthOf(ids.length * 2);
+    expect(bindings[0]).to.equal(1);
+    expect(bindings[bindings.length - 1]).to.equal(ids.length);
+  });
+
+  it('merges bindings from a raw where clause without an argument spread', () => {
+    const { bindings } = knex
+      .from('t')
+      .where(knex.raw(`id in (${ids.map(() => '?').join(',')})`, ids))
+      .toSQL();
+    expect(bindings).to.have.lengthOf(ids.length);
+    expect(bindings[0]).to.equal(1);
+    expect(bindings[bindings.length - 1]).to.equal(ids.length);
+  });
+});
