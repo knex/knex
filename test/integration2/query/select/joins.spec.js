@@ -2177,6 +2177,22 @@ describe('Joins', function () {
           });
       });
 
+      it('treats onNotIn with an empty array as always true', async function () {
+        const rows = await knex('accounts')
+          .join('test_table_two', (j) =>
+            j
+              .on('accounts.id', '=', 'test_table_two.account_id')
+              .onNotIn('test_table_two.status', [])
+              .onIn('test_table_two.status', [1])
+          )
+          .select('accounts.id')
+          .orderBy('accounts.id');
+
+        expect(rows.length).to.equal(2);
+        assertNumber(knex, rows[0].id, 2);
+        assertNumber(knex, rows[1].id, 3);
+      });
+
       it('supports joins with overlapping column names', async function () {
         if (isOracle(knex)) {
           return this.skip();
