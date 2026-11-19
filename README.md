@@ -15,7 +15,7 @@ Node.js, featuring:
 - [transactions](https://knexjs.org/guide/transactions.html)
 - [connection pooling](https://knexjs.org/guide/#pool)
 - [streaming queries](https://knexjs.org/guide/interfaces.html#streams)
-- both a [promise](https://knexjs.org/#Interfaces-Promises) and [callback](https://knexjs.org/guide/interfaces.html#callbacks) API
+- both a [promise](https://knexjs.org/guide/interfaces.html#promises) and [callback](https://knexjs.org/guide/interfaces.html#callbacks) API
 - a [thorough test suite](https://github.com/knex/knex/actions)
 
 Node.js versions 16+ are supported.
