@@ -4765,6 +4765,37 @@ describe('QueryBuilder', () => {
     );
   });
 
+  it('complex join with empty not in', () => {
+    testsql(
+      qb()
+        .select('*')
+        .from('users')
+        .join('contacts', (qb) => {
+          qb.on('users.id', '=', 'contacts.id')
+            .onNotIn('users.name', [])
+            .onNull('contacts.deleted_at');
+        }),
+      {
+        mysql: {
+          sql: 'select * from `users` inner join `contacts` on `users`.`id` = `contacts`.`id` and 1 = 1 and `contacts`.`deleted_at` is null',
+          bindings: [],
+        },
+        mssql: {
+          sql: 'select * from [users] inner join [contacts] on [users].[id] = [contacts].[id] and 1 = 1 and [contacts].[deleted_at] is null',
+          bindings: [],
+        },
+        pg: {
+          sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and 1 = 1 and "contacts"."deleted_at" is null',
+          bindings: [],
+        },
+        'pg-redshift': {
+          sql: 'select * from "users" inner join "contacts" on "users"."id" = "contacts"."id" and 1 = 1 and "contacts"."deleted_at" is null',
+          bindings: [],
+        },
+      }
+    );
+  });
+
   it('joins with raw', () => {
     testsql(
       qb()
