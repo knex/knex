@@ -1,5 +1,5 @@
 import Knex from '../types';
-import { clientConfig, User, Department } from './common';
+import { clientConfig, User, Department, Article } from './common';
 import { expectType } from 'tsd';
 
 const knex = Knex(clientConfig);
@@ -82,6 +82,31 @@ const main = async () => {
     await knex.select().from(function () {
       return this.from<User>('users').select('name');
     })
+  );
+
+  // A subquery on another table, selected among column names
+  expectType<{ id: number; departmentName: string | null }[]>(
+    await knex<User>('users').select<
+      { id: number; departmentName: string | null }[]
+    >(
+      'users.id',
+      knex<Department>('departments')
+        .select('departments.departmentName')
+        .whereRaw('departments.id = users.departmentId')
+        .as('departmentName')
+    )
+  );
+
+  expectType<{ id: number; lastArticleId: number | null }[]>(
+    await knex<User>('users').select<
+      { id: number; lastArticleId: number | null }[]
+    >(
+      'users.id',
+      knex<Article>('articles')
+        .max('articles.id')
+        .whereRaw('articles.authorId = users.id')
+        .as('lastArticleId')
+    )
   );
 
   knex.transaction(async (trx) => {

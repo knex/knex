@@ -518,7 +518,7 @@ declare namespace Knex {
   type ColumnDescriptor<TRecord extends {}, TResult> =
     | string
     | Knex.Raw
-    | Knex.QueryBuilder<TRecord, TResult>
+    | Knex.QueryBuilder<any, any>
     | Dict<string>;
 
   type InferrableColumnDescriptor<TRecord extends {}> =
