@@ -275,5 +275,69 @@ for (const { driver, factory } of configs) {
         );
       });
     });
+
+    describe('transaction behavior (BEGIN IMMEDIATE / EXCLUSIVE / DEFERRED)', () => {
+      it('should allow setting transaction behavior per transaction', async () => {
+        const knex = knexUnchecked;
+
+        for (const mode of ['immediate', 'exclusive', 'deferred']) {
+          const queries = [];
+          const queryHandler = (q) => queries.push(q.sql);
+          knex.on('query', queryHandler);
+
+          try {
+            await knex.transaction(
+              async (trx) => {
+                await trx.select(1);
+              },
+              { behavior: mode }
+            );
+          } finally {
+            knex.off('query', queryHandler);
+          }
+
+          expect(queries).to.include(`BEGIN ${mode.toUpperCase()};`);
+        }
+      });
+
+      it('should default to BEGIN; when behavior is not specified', async () => {
+        const knex = knexUnchecked;
+        const queries = [];
+        const queryHandler = (q) => queries.push(q.sql);
+        knex.on('query', queryHandler);
+
+        try {
+          await knex.transaction(async (trx) => {
+            await trx.select(1);
+          });
+        } finally {
+          knex.off('query', queryHandler);
+        }
+
+        expect(queries).to.include('BEGIN;');
+      });
+
+      it('should support client-level transactionBehavior', async () => {
+        const knexClient = factory(false, { transactionBehavior: 'immediate' });
+
+        try {
+          const queries = [];
+          const queryHandler = (q) => queries.push(q.sql);
+          knexClient.on('query', queryHandler);
+
+          try {
+            await knexClient.transaction(async (trx) => {
+              await trx.select(1);
+            });
+          } finally {
+            knexClient.off('query', queryHandler);
+          }
+
+          expect(queries).to.include('BEGIN IMMEDIATE;');
+        } finally {
+          await knexClient.destroy();
+        }
+      });
+    });
   });
 }

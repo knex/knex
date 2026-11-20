@@ -2334,6 +2334,8 @@ declare namespace Knex {
     readOnly?: boolean;
     /** sqlite3 only */
     enforceForeignCheck?: boolean | null;
+    /** sqlite3 only */
+    behavior?: 'deferred' | 'immediate' | 'exclusive';
   }
 
   interface Transaction<TRecord extends {} = any, TResult = any[]>
@@ -2783,6 +2785,8 @@ declare namespace Knex {
     ) => string;
     seeds?: SeederConfig<SV>;
     acquireConnectionTimeout?: number;
+    /** sqlite3 only */
+    transactionBehavior?: 'deferred' | 'immediate' | 'exclusive';
     useNullAsDefault?: boolean;
     searchPath?: string | readonly string[];
     asyncStackTraces?: boolean;
