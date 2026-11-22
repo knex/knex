@@ -32,7 +32,16 @@ knex
 
 **.then(onFulfilled, [onRejected])**
 
-Coerces the current query builder chain into a promise state, accepting the resolve and reject handlers as specified by the Promises/A+ spec. As stated in the spec, more than one call to the then method for the current query chain will resolve with the same value, in the order they were called; the query will not be executed multiple times.
+Executes the query and returns a promise, accepting fulfillment and rejection handlers. Each call to `.then()` on the builder starts a new execution. Awaiting the builder also calls its `.then()` method, so awaiting the same builder twice runs the query twice. For an `INSERT`, this can add duplicate rows or cause a uniqueness error.
+
+To share one execution, store and reuse the promise returned by `.then()`:
+
+```js
+const insert = knex('users').insert({ name: 'Tim' });
+const result = insert.then(); // Starts one INSERT.
+await result;
+await result; // Reuses its result.
+```
 
 ```js
 knex
@@ -82,7 +91,7 @@ return knex
 
 **.asCallback(callback)**
 
-If you'd prefer a callback interface over promises, the asCallback function accepts a standard node style callback for executing the query chain. Note that as with the then method, subsequent calls to the same query chain will return the same result.
+If you'd prefer a callback interface over promises, the asCallback function accepts a standard node style callback for executing the query chain. Each call to `.asCallback()` on the builder executes the query again, just like `.then()`.
 
 ```js
 knex
