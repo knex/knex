@@ -807,6 +807,21 @@ knex
   .update({ json_data: JSON.stringify(['a', 'b']) });
 ```
 
+For MySQL and Aurora MySQL, serialize JavaScript objects or arrays with `JSON.stringify()` before passing them as values for a `JSON` column. This gives the driver a single JSON string to bind, which the database parses when writing to the column.
+
+```js
+await knex('events').insert({
+  id: 1,
+  payload: JSON.stringify({ type: 'created', tags: ['new'] }),
+});
+
+await knex('events')
+  .where({ id: 1 })
+  .update({ payload: JSON.stringify({ type: 'updated', tags: [] }) });
+```
+
+If the value is already serialized JSON, pass that string directly. Use JavaScript `null` for SQL `NULL` and `JSON.stringify(null)` for the JSON value `null`.
+
 ### jsonb
 
 **table.jsonb(name)**
